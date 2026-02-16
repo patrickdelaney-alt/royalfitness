@@ -1,0 +1,400 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── AUTH ────────────────────────────────────────────────────────
+
+model User {
+  id             String   @id @default(cuid())
+  name           String?
+  username       String   @unique
+  email          String   @unique
+  passwordHash   String?
+  bio            String?  @default("")
+  avatarUrl      String?
+  isPrivate      Boolean  @default(false)
+  instagramUrl   String?
+  tiktokUrl      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  posts          Post[]
+  comments       Comment[]
+  likes          Like[]
+
+  followers      Follow[]  @relation("following")
+  following      Follow[]  @relation("follower")
+  followRequestsReceived FollowRequest[] @relation("followRequestTarget")
+  followRequestsSent     FollowRequest[] @relation("followRequestSender")
+
+  gymMemberships GymMembership[]
+
+  savedMeals       SavedMeal[]
+  savedWorkouts    SavedWorkout[]
+  supplements      Supplement[]
+  wellnessAccessories WellnessAccessory[]
+
+  stepsEntries   StepsEntry[]
+
+  reportsMade    Report[]      @relation("reporter")
+  blockedUsers   BlockedUser[] @relation("blocker")
+  blockedBy      BlockedUser[] @relation("blocked")
+
+  accounts       Account[]
+  sessions       Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── SOCIAL ──────────────────────────────────────────────────────
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
+
+model FollowRequest {
+  id        String   @id @default(cuid())
+  senderId  String
+  targetId  String
+  createdAt DateTime @default(now())
+
+  sender User @relation("followRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  target User @relation("followRequestTarget", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, targetId])
+}
+
+// ─── POSTS ───────────────────────────────────────────────────────
+
+enum PostType {
+  WORKOUT
+  MEAL
+  WELLNESS
+  GENERAL
+}
+
+enum Visibility {
+  PUBLIC
+  FOLLOWERS
+  PRIVATE
+}
+
+enum PostTiming {
+  BEFORE
+  DURING
+  AFTER
+}
+
+model Post {
+  id          String     @id @default(cuid())
+  type        PostType
+  caption     String?
+  mediaUrl    String?
+  visibility  Visibility @default(PUBLIC)
+  tags        String[]   @default([])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  authorId    String
+  author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  gymId       String?
+  gym         Gym?       @relation(fields: [gymId], references: [id])
+
+  workoutDetail  WorkoutDetail?
+  mealDetail     MealDetail?
+  wellnessDetail WellnessDetail?
+
+  comments    Comment[]
+  likes       Like[]
+  externalContent ExternalContent[]
+
+  @@index([authorId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+}
+
+model WorkoutDetail {
+  id                String    @id @default(cuid())
+  postId            String    @unique
+  post              Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  workoutName       String
+  isClass           Boolean   @default(false)
+  durationMinutes   Int?
+  perceivedExertion Int?
+  moodAfter         Int?
+  notes             String?
+  postTiming        PostTiming @default(AFTER)
+
+  exercises         Exercise[]
+}
+
+model Exercise {
+  id              String        @id @default(cuid())
+  workoutDetailId String
+  workoutDetail   WorkoutDetail @relation(fields: [workoutDetailId], references: [id], onDelete: Cascade)
+
+  name            String
+  sortOrder       Int           @default(0)
+  sets            ExerciseSet[]
+}
+
+model ExerciseSet {
+  id         String   @id @default(cuid())
+  exerciseId String
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  reps       Int?
+  weight     Float?
+  unit       String   @default("lbs")
+  rpe        Int?
+  sortOrder  Int      @default(0)
+}
+
+model MealDetail {
+  id              String   @id @default(cuid())
+  postId          String   @unique
+  post            Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  mealName        String
+  mealType        String   @default("snack")
+  ingredients     String[] @default([])
+  calories        Int?
+  protein         Float?
+  carbs           Float?
+  fat             Float?
+  recipeSourceUrl String?
+  saveToCatalog   Boolean  @default(false)
+}
+
+model WellnessDetail {
+  id              String @id @default(cuid())
+  postId          String @unique
+  post            Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  activityType    String
+  durationMinutes Int?
+  intensity       Int?
+  moodAfter       Int?
+  notes           String?
+}
+
+// ─── EXTERNAL CONTENT ────────────────────────────────────────────
+
+model ExternalContent {
+  id          String  @id @default(cuid())
+  postId      String
+  post        Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  url         String
+  title       String?
+  description String?
+  imageUrl    String?
+  siteName    String?
+  createdAt   DateTime @default(now())
+}
+
+// ─── COMMENTS & LIKES ────────────────────────────────────────────
+
+model Comment {
+  id        String   @id @default(cuid())
+  text      String
+  createdAt DateTime @default(now())
+
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt(sort: Desc)])
+}
+
+model Like {
+  id       String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId   String
+  post     Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+}
+
+// ─── GYMS / GROUPS ───────────────────────────────────────────────
+
+model Gym {
+  id        String   @id @default(cuid())
+  name      String
+  address   String?
+  latitude  Float?
+  longitude Float?
+  createdAt DateTime @default(now())
+
+  members   GymMembership[]
+  posts     Post[]
+}
+
+enum GymRole {
+  MEMBER
+  ADMIN
+}
+
+model GymMembership {
+  id     String  @id @default(cuid())
+  userId String
+  gymId  String
+  role   GymRole @default(MEMBER)
+  joinedAt DateTime @default(now())
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gym    Gym     @relation(fields: [gymId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gymId])
+}
+
+// ─── CATALOGS ────────────────────────────────────────────────────
+
+model SavedMeal {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name            String
+  ingredients     String[] @default([])
+  calories        Int?
+  protein         Float?
+  carbs           Float?
+  fat             Float?
+  recipeSourceUrl String?
+  photoUrl        String?
+  tags            String[] @default([])
+  notes           String?
+  createdAt       DateTime @default(now())
+}
+
+model SavedWorkout {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name            String
+  exercisesJson   String
+  tags            String[] @default([])
+  notes           String?
+  createdAt       DateTime @default(now())
+}
+
+model Supplement {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name      String
+  brand     String?
+  dose      String?
+  schedule  String?
+  notes     String?
+  photoUrl  String?
+  link      String?
+  tags      String[] @default([])
+  createdAt DateTime @default(now())
+}
+
+model WellnessAccessory {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name      String
+  type      String?
+  link      String?
+  photoUrl  String?
+  tags      String[] @default([])
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+// ─── STEPS ───────────────────────────────────────────────────────
+
+model StepsEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date      DateTime @db.Date
+  count     Int
+  source    String   @default("manual")
+  createdAt DateTime @default(now())
+
+  @@unique([userId, date])
+}
+
+// ─── MODERATION ──────────────────────────────────────────────────
+
+model Report {
+  id         String   @id @default(cuid())
+  reporterId String
+  reporter   User     @relation("reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  postId     String?
+  reason     String
+  createdAt  DateTime @default(now())
+}
+
+model BlockedUser {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  blocker   User     @relation("blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+}

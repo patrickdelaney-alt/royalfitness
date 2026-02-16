@@ -1,0 +1,22 @@
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
+      <div className="mb-8 text-center">
+        <h1 className="text-4xl font-extrabold tracking-tight">
+          <span className="text-primary">Royal</span>
+          <span className="text-foreground">Fitness</span>
+        </h1>
+        <p className="mt-2 text-sm text-muted">
+          Track workouts, meals &amp; wellness
+        </p>
+      </div>
+      <div className="w-full max-w-md rounded-2xl bg-card p-8 shadow-lg border border-border">
+        {children}
+      </div>
+    </div>
+  );
+}
