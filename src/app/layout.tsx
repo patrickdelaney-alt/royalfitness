@@ -1,13 +1,8 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "react-hot-toast";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "RoyalFitness - Gym, Nutrition & Wellness",
@@ -21,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} antialiased bg-background`}>
+      <body className={`${GeistSans.variable} antialiased bg-background`}>
         <Providers>
           {children}
           <Toaster position="bottom-center" />
