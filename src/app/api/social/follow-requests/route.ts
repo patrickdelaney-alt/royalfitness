@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Use a transaction to delete the request and create the follow
-    const follow = await prisma.$transaction(async (tx) => {
+    const follow = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.followRequest.delete({
         where: { id: requestId },
       });
