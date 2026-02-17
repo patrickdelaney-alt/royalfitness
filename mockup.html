@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoyalFitness - App Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #fc4c02;
+            --primary-dark: #e04400;
+            --background: #fafafa;
+            --foreground: #171717;
+            --card: #ffffff;
+            --border: #e5e7eb;
+            --muted: #6b7280;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .brand-orange {
+            color: var(--primary);
+        }
+
+        .bg-brand {
+            background-color: var(--primary);
+        }
+
+        .text-muted {
+            color: var(--muted);
+        }
+
+        .post-workout {
+            border-left: 4px solid #f97316;
+        }
+
+        .post-meal {
+            border-left: 4px solid #22c55e;
+        }
+
+        .post-wellness {
+            border-left: 4px solid #a855f7;
+        }
+
+        .badge-workout {
+            background-color: #fed7aa;
+            color: #92400e;
+        }
+
+        .badge-meal {
+            background-color: #bbf7d0;
+            color: #166534;
+        }
+
+        .badge-wellness {
+            background-color: #e9d5ff;
+            color: #6b21a8;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .tab-active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(252, 76, 2, 0.1);
+        }
+
+        button:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+
+        .like-btn {
+            transition: all 0.2s ease;
+        }
+
+        .like-btn.liked {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-lg mx-auto bg-white min-h-screen relative">
+        <!-- SCREEN 1: FEED -->
+        <div id="screen-feed" class="pb-24">
+            <!-- Header -->
+            <div class="sticky top-0 bg-white border-b border-gray-200 z-10">
+                <div class="px-4 py-3 flex items-center justify-between">
+                    <h1 class="text-xl font-bold brand-orange">RoyalFitness</h1>
+                    <button onclick="goToScreen('stats')" class="text-gray-600 text-lg">📊</button>
+                </div>
+                <!-- Filter tabs -->
+                <div class="px-4 flex gap-4 overflow-x-auto border-b border-gray-200 pb-2">
+                    <button onclick="filterPosts('ALL')" class="whitespace-nowrap pb-2 tab-active">All</button>
+                    <button onclick="filterPosts('WORKOUT')" class="whitespace-nowrap pb-2 text-gray-600">Workout</button>
+                    <button onclick="filterPosts('MEAL')" class="whitespace-nowrap pb-2 text-gray-600">Meal</button>
+                    <button onclick="filterPosts('WELLNESS')" class="whitespace-nowrap pb-2 text-gray-600">Wellness</button>
+                </div>
+            </div>
+
+            <!-- Post 1: Workout -->
+            <div class="border-b border-gray-200 post-workout">
+                <div class="p-4">
+                    <!-- Author -->
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 font-bold">A</div>
+                            <div>
+                                <p class="font-semibold text-sm">Alice Johnson</p>
+                                <p class="text-xs text-gray-500">@alice • 2 hours ago</p>
+                            </div>
+                        </div>
+                        <span class="badge-workout text-xs px-2 py-1 rounded">WORKOUT</span>
+                    </div>
+
+                    <!-- Caption -->
+                    <p class="text-sm mb-3">Leg day done! Feeling strong today 💪</p>
+
+                    <!-- Gym -->
+                    <p class="text-xs text-gray-600 mb-3">📍 Iron Temple</p>
+
+                    <!-- Workout Details -->
+                    <div class="bg-orange-50 rounded-lg p-3 mb-3 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="font-semibold">Leg Day</span>
+                            <span class="text-gray-600">75 min</span>
+                        </div>
+                        <div class="text-xs text-gray-600 space-y-1">
+                            <div>• Barbell Squat: 5x5 @ 225-265 lbs</div>
+                            <div>• Romanian Deadlift: 3x10 @ 135-175 lbs</div>
+                            <div>• Leg Press: 2x12 @ 360-450 lbs</div>
+                            <div>• Walking Lunges: 2x20 @ 50 lbs</div>
+                        </div>
+                        <div class="flex gap-4 pt-2 border-t border-orange-200 text-xs">
+                            <span>💪 Exertion: 8/10</span>
+                            <span>😊 Mood: 9/10</span>
+                        </div>
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="flex gap-2 mb-3 flex-wrap">
+                        <span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">#legs</span>
+                        <span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">#strength</span>
+                    </div>
+
+                    <!-- Interactions -->
+                    <div class="flex gap-4 text-gray-600 text-sm">
+                        <button class="flex items-center gap-1 like-btn hover:text-red-500">
+                            <span>❤️</span> <span>24</span>
+                        </button>
+                        <button class="flex items-center gap-1">
+                            <span>💬</span> <span>3</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Post 2: Meal -->
+            <div class="border-b border-gray-200 post-meal">
+                <div class="p-4">
+                    <!-- Author -->
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center text-green-700 font-bold">D</div>
+                            <div>
+                                <p class="font-semibold text-sm">Dave Chen</p>
+                                <p class="text-xs text-gray-500">@dave • 4 hours ago</p>
+                            </div>
+                        </div>
+                        <span class="badge-meal text-xs px-2 py-1 rounded">MEAL</span>
+                    </div>
+
+                    <!-- Caption -->
+                    <p class="text-sm mb-3">Overnight oats prep for the week. 5 jars ready to go. 🥣</p>
+
+                    <!-- Meal Details -->
+                    <div class="bg-green-50 rounded-lg p-3 mb-3 space-y-2">
+                        <div class="font-semibold text-sm mb-2">Protein Overnight Oats</div>
+                        <div class="text-xs text-gray-600 space-y-1">
+                            <div>Rolled oats, Greek yogurt, Protein powder, Almond milk, Chia seeds, Blueberries</div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2 pt-2 border-t border-green-200">
+                            <div class="text-center">
+                                <div class="font-semibold text-sm">420</div>
+                                <div class="text-xs text-gray-600">cal</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-semibold text-sm">35g</div>
+                                <div class="text-xs text-gray-600">protein</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-semibold text-sm">48g</div>
+                                <div class="text-xs text-gray-600">carbs</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-semibold text-sm">12g</div>
+                                <div class="text-xs text-gray-600">fat</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interactions -->
+                    <div class="flex gap-4 text-gray-600 text-sm">
+                        <button class="flex items-center gap-1 like-btn hover:text-red-500">
+                            <span>❤️</span> <span>18</span>
+                        </button>
+                        <button class="flex items-center gap-1">
+                            <span>💬</span> <span>2</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Post 3: Wellness -->
+            <div class="border-b border-gray-200 post-wellness">
+                <div class="p-4">
+                    <!-- Author -->
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center text-purple-700 font-bold">B</div>
+                            <div>
+                                <p class="font-semibold text-sm">Bob Smith</p>
+                                <p class="text-xs text-gray-500">@bob • 1 hour ago</p>
+                            </div>
+                        </div>
+                        <span class="badge-wellness text-xs px-2 py-1 rounded">WELLNESS</span>
+                    </div>
+
+                    <!-- Caption -->
+                    <p class="text-sm mb-3">Morning breathwork session. 20 minutes of Wim Hof method. 🌬️</p>
+
+                    <!-- Wellness Details -->
+                    <div class="bg-purple-50 rounded-lg p-3 mb-3 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span>Activity: Breathwork</span>
+                            <span>20 min</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-purple-500 h-2 rounded-full" style="width: 60%"></div>
+                        </div>
+                        <p class="text-xs text-gray-600">Intensity: 6/10</p>
+                        <p class="text-xs text-gray-600">Mood after: 9/10 😊</p>
+                    </div>
+
+                    <!-- Interactions -->
+                    <div class="flex gap-4 text-gray-600 text-sm">
+                        <button class="flex items-center gap-1 like-btn hover:text-red-500">
+                            <span>❤️</span> <span>31</span>
+                        </button>
+                        <button class="flex items-center gap-1">
+                            <span>💬</span> <span>5</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: CREATE POST -->
+        <div id="screen-create" class="hidden pb-24">
+            <!-- Header -->
+            <div class="sticky top-0 bg-white border-b border-gray-200 z-10 px-4 py-4">
+                <h2 class="text-lg font-bold">Create Post</h2>
+            </div>
+
+            <div class="p-4 space-y-4">
+                <!-- Post Type Selector -->
+                <div>
+                    <label class="block text-sm font-semibold mb-2">What are you sharing?</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="switchPostType('WORKOUT')" class="p-3 rounded-lg border-2 border-orange-500 bg-orange-50 text-center">
+                            <div class="text-xl mb-1">💪</div>
+                            <div class="text-sm font-semibold">Workout</div>
+                        </button>
+                        <button onclick="switchPostType('MEAL')" class="p-3 rounded-lg border border-gray-200 text-center hover:border-green-500 hover:bg-green-50">
+                            <div class="text-xl mb-1">🍱</div>
+                            <div class="text-sm font-semibold">Meal</div>
+                        </button>
+                        <button onclick="switchPostType('WELLNESS')" class="p-3 rounded-lg border border-gray-200 text-center hover:border-purple-500 hover:bg-purple-50">
+                            <div class="text-xl mb-1">🧘</div>
+                            <div class="text-sm font-semibold">Wellness</div>
+                        </button>
+                        <button onclick="switchPostType('GENERAL')" class="p-3 rounded-lg border border-gray-200 text-center hover:border-blue-500 hover:bg-blue-50">
+                            <div class="text-xl mb-1">💭</div>
+                            <div class="text-sm font-semibold">Thought</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Common Fields -->
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Caption</label>
+                    <textarea class="w-full p-3 border border-gray-200 rounded-lg focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" rows="3" placeholder="What's on your mind?"></textarea>
+                </div>
+
+                <!-- WORKOUT TYPE -->
+                <div id="type-WORKOUT" class="space-y-4 bg-orange-50 p-4 rounded-lg">
+                    <h3 class="font-semibold flex items-center gap-2"><span>💪</span> Workout Details</h3>
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Workout Name</label>
+                        <input type="text" class="w-full p-3 border border-gray-200 rounded-lg text-sm" placeholder="e.g., Leg Day, Push Day">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Duration (min)</label>
+                            <input type="number" class="w-full p-3 border border-gray-200 rounded-lg text-sm" placeholder="75">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Exertion (1-10)</label>
+                            <input type="number" class="w-full p-3 border border-gray-200 rounded-lg text-sm" placeholder="8" min="1" max="10">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Mood After (1-10)</label>
+                        <input type="number" class="w-full p-3 border border-gray-200 rounded-lg text-sm" placeholder="9" min="1" max="10">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Exercises (e.g., "Squat 5x5, Deadlift 3x3")</label>
+                        <textarea class="w-full p-3 border border-gray-200 rounded-lg text-sm" rows="3" placeholder="List your exercises..."></textarea>
+                    </div>
+                </div>
+
+                <!-- MEAL TYPE -->
+                <div id="type-MEAL" class="hidden space-y-4 bg-green-50 p-4 rounded-lg">
+                    <h3 class="font-semibold flex items-center gap-2"><span>🍱</span> Meal Details</h3>
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Meal Name</label>
+                        <input type="text" class="w-full p-3 border border-gray-200 rounded-lg text-sm" placeholder="e.g., Chicken & Rice Bowl">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Meal Type</label>
+                        <select class="w-full p-3 border border-gray-200 rounded-lg text-sm">
+                            <option>Breakfast</option>
+                            <option>Lunch</option>
+                            <option>Dinner</option>
+                            <option>Snack</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Calories</label>
+                            <input type="number" class="w-full p-3 border border-gray-200 rounded-lg text-sm" placeholder="650">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Protein (g)</label>
+                            <input type="number" class="w-full p-3 border border-gray-200 rounded-lg text-sm" placeholder="45">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Carbs (g)</label>
+                            <input type="number" class="w-full p-3 border border-gray-200 rounded-lg text-sm" placeholder="60">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Fat (g)</label>
+                            <input type="number" class="w-full p-3 border border-gray-200 rounded-lg text-sm" placeholder="22">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WELLNESS TYPE -->
+                <div id="type-WELLNESS" class="hidden space-y-4 bg-purple-50 p-4 rounded-lg">
+                    <h3 class="font-semibold flex items-center gap-2"><span>🧘</span> Wellness Details</h3>
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Activity Type</label>
+                        <select class="w-full p-3 border border-gray-200 rounded-lg text-sm">
+                            <option>Breathwork</option>
+                            <option>Meditation</option>
+                            <option>Cold Plunge</option>
+                            <option>Sauna</option>
+                            <option>Stretching</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Duration (min)</label>
+                            <input type="number" class="w-full p-3 border border-gray-200 rounded-lg text-sm" placeholder="20">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Intensity (1-10)</label>
+                            <input type="number" class="w-full p-3 border border-gray-200 rounded-lg text-sm" placeholder="6" min="1" max="10">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visibility & Tags -->
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Visibility</label>
+                    <select class="w-full p-3 border border-gray-200 rounded-lg text-sm">
+                        <option>🌍 Public</option>
+                        <option>👥 Followers Only</option>
+                        <option>🔒 Private</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Tags</label>
+                    <input type="text" class="w-full p-3 border border-gray-200 rounded-lg text-sm" placeholder="e.g., #legs #strength #pr">
+                </div>
+
+                <!-- Submit -->
+                <button class="w-full bg-brand text-white font-semibold py-3 rounded-lg">Share Post</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: PROFILE -->
+        <div id="screen-profile" class="hidden pb-24">
+            <!-- Header -->
+            <div class="sticky top-0 bg-white border-b border-gray-200 z-10 px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold">Profile</h2>
+                    <button onclick="goToScreen('feed')" class="text-gray-600">✕</button>
+                </div>
+            </div>
+
+            <!-- Profile Header -->
+            <div class="bg-white border-b border-gray-200 p-4">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-2xl font-bold text-blue-700">AJ</div>
+                    <button class="px-4 py-2 bg-brand text-white rounded-lg text-sm font-semibold">Follow</button>
+                </div>
+
+                <h2 class="text-lg font-bold">Alice Johnson</h2>
+                <p class="text-sm text-gray-600">@alice</p>
+                <p class="text-sm mt-2">Fitness enthusiast. Lifting heavy, eating clean. 💪</p>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-3 gap-3 mt-4">
+                    <div class="text-center py-3 bg-gray-50 rounded-lg">
+                        <div class="text-xl font-bold">47</div>
+                        <div class="text-xs text-gray-600">Posts</div>
+                    </div>
+                    <div class="text-center py-3 bg-gray-50 rounded-lg">
+                        <div class="text-xl font-bold">234</div>
+                        <div class="text-xs text-gray-600">Followers</div>
+                    </div>
+                    <div class="text-center py-3 bg-gray-50 rounded-lg">
+                        <div class="text-xl font-bold">89</div>
+                        <div class="text-xs text-gray-600">Following</div>
+                    </div>
+                </div>
+
+                <button class="w-full mt-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50">View All Posts</button>
+            </div>
+
+            <!-- Recent Posts -->
+            <div class="p-4">
+                <h3 class="font-bold mb-4">Recent Posts</h3>
+
+                <!-- Post Card in Profile -->
+                <div class="border border-gray-200 rounded-lg mb-3 overflow-hidden">
+                    <div class="border-l-4 border-orange-500 p-3">
+                        <div class="flex gap-2 mb-2">
+                            <span class="badge-workout text-xs px-2 py-1 rounded">WORKOUT</span>
+                            <span class="text-xs text-gray-500">2h ago</span>
+                        </div>
+                        <p class="text-sm font-semibold mb-2">Leg day done! 💪</p>
+                        <div class="text-xs text-gray-600 space-y-1 mb-2">
+                            <div>Barbell Squat • Romanian Deadlift</div>
+                            <div>Leg Press • Walking Lunges</div>
+                            <div>📍 Iron Temple • 75 min</div>
+                        </div>
+                        <div class="flex gap-3 text-gray-600 text-sm">
+                            <span>❤️ 24</span>
+                            <span>💬 3</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border border-gray-200 rounded-lg mb-3 overflow-hidden">
+                    <div class="border-l-4 border-green-500 p-3">
+                        <div class="flex gap-2 mb-2">
+                            <span class="badge-meal text-xs px-2 py-1 rounded">MEAL</span>
+                            <span class="text-xs text-gray-500">1d ago</span>
+                        </div>
+                        <p class="text-sm font-semibold mb-2">Post-workout protein bowl 🍗</p>
+                        <div class="text-xs text-gray-600 mb-2">
+                            650 cal • 45g protein • 60g carbs • 22g fat
+                        </div>
+                        <div class="flex gap-3 text-gray-600 text-sm">
+                            <span>❤️ 18</span>
+                            <span>💬 2</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: STATS -->
+        <div id="screen-stats" class="hidden pb-24">
+            <!-- Header -->
+            <div class="sticky top-0 bg-white border-b border-gray-200 z-10 px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold">Stats & Progress</h2>
+                    <button onclick="goToScreen('feed')" class="text-gray-600">✕</button>
+                </div>
+            </div>
+
+            <div class="p-4 space-y-4">
+                <!-- Streaks -->
+                <div class="bg-gradient-to-r from-orange-400 to-orange-600 text-white rounded-lg p-4">
+                    <h3 class="font-bold mb-3">🔥 Streaks</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <div class="text-2xl font-bold">12</div>
+                            <div class="text-sm opacity-90">Day Streak</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold">8</div>
+                            <div class="text-sm opacity-90">Workout Streak</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Period Stats -->
+                <div>
+                    <label class="block text-sm font-semibold mb-2">View Period</label>
+                    <select class="w-full p-3 border border-gray-200 rounded-lg text-sm">
+                        <option>This Week</option>
+                        <option>This Month</option>
+                        <option>This Year</option>
+                    </select>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="text-2xl font-bold brand-orange">5</div>
+                        <div class="text-xs text-gray-600 mt-1">Workouts</div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="text-2xl font-bold brand-orange">340</div>
+                        <div class="text-xs text-gray-600 mt-1">Wellness Minutes</div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="text-2xl font-bold brand-orange">3,450</div>
+                        <div class="text-xs text-gray-600 mt-1">Total Volume (lbs)</div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="text-2xl font-bold brand-orange">8.2</div>
+                        <div class="text-xs text-gray-600 mt-1">Avg Mood</div>
+                    </div>
+                </div>
+
+                <!-- Leaderboard -->
+                <div>
+                    <h3 class="font-bold mb-3">🏆 Friends Leaderboard</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">🥇</span>
+                                <div>
+                                    <p class="text-sm font-semibold">Bob Smith</p>
+                                    <p class="text-xs text-gray-600">6 workouts this week</p>
+                                </div>
+                            </div>
+                            <span class="font-bold">6</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">🥈</span>
+                                <div>
+                                    <p class="text-sm font-semibold">You</p>
+                                    <p class="text-xs text-gray-600">5 workouts this week</p>
+                                </div>
+                            </div>
+                            <span class="font-bold">5</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">🥉</span>
+                                <div>
+                                    <p class="text-sm font-semibold">Eve Wilson</p>
+                                    <p class="text-xs text-gray-600">4 workouts this week</p>
+                                </div>
+                            </div>
+                            <span class="font-bold">4</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM NAVIGATION -->
+        <div class="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t border-gray-200">
+            <div class="flex justify-around">
+                <button onclick="goToScreen('feed')" class="flex-1 py-3 text-center text-gray-600 hover:brand-orange transition">
+                    <div class="text-xl">🏠</div>
+                    <div class="text-xs mt-1">Feed</div>
+                </button>
+                <button onclick="goToScreen('feed')" class="flex-1 py-3 text-center text-gray-600 hover:brand-orange transition">
+                    <div class="text-xl">🔍</div>
+                    <div class="text-xs mt-1">Explore</div>
+                </button>
+                <button onclick="goToScreen('create')" class="flex-1 py-3 text-center text-gray-600 hover:brand-orange transition">
+                    <div class="text-xl">➕</div>
+                    <div class="text-xs mt-1">Create</div>
+                </button>
+                <button onclick="goToScreen('stats')" class="flex-1 py-3 text-center text-gray-600 hover:brand-orange transition">
+                    <div class="text-xl">📊</div>
+                    <div class="text-xs mt-1">Stats</div>
+                </button>
+                <button onclick="goToScreen('profile')" class="flex-1 py-3 text-center text-gray-600 hover:brand-orange transition">
+                    <div class="text-xl">👤</div>
+                    <div class="text-xs mt-1">Profile</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function goToScreen(screenName) {
+            // Hide all screens
+            document.querySelectorAll('[id^="screen-"]').forEach(el => {
+                el.classList.add('hidden');
+            });
+            // Show selected screen
+            document.getElementById(`screen-${screenName}`).classList.remove('hidden');
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function switchPostType(type) {
+            // Hide all type fields
+            document.querySelectorAll('[id^="type-"]').forEach(el => {
+                el.classList.add('hidden');
+            });
+            // Show selected type
+            document.getElementById(`type-${type}`).classList.remove('hidden');
+            // Update buttons
+            document.querySelectorAll('[onclick*="switchPostType"]').forEach(btn => {
+                btn.classList.remove('border-orange-500', 'bg-orange-50');
+                btn.classList.add('border-gray-200', 'hover:border-green-500');
+            });
+            event.target.closest('button').classList.remove('border-gray-200');
+            event.target.closest('button').classList.add('border-orange-500', 'bg-orange-50');
+        }
+
+        function filterPosts(type) {
+            // Update active tab
+            document.querySelectorAll('[onclick*="filterPosts"]').forEach(btn => {
+                btn.classList.remove('tab-active');
+                btn.classList.add('text-gray-600');
+            });
+            event.target.classList.add('tab-active');
+            event.target.classList.remove('text-gray-600');
+        }
+
+        // Initialize
+        goToScreen('feed');
+    </script>
+</body>
+</html>
