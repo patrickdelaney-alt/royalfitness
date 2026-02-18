@@ -1,22 +1,12 @@
-"use client";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+export default async function ProfileRedirect() {
+  const session = await auth();
 
-export default function ProfileRedirect() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  if (!session?.user?.username) {
+    redirect("/feed");
+  }
 
-  useEffect(() => {
-    if (status === "authenticated" && session?.user) {
-      router.replace(`/profile/${(session.user as { username?: string }).username ?? ""}`);
-    }
-  }, [status, session, router]);
-
-  return (
-    <div className="flex justify-center items-center py-20">
-      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
+  redirect(`/profile/${session.user.username}`);
 }

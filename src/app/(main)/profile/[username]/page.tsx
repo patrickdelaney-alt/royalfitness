@@ -49,7 +49,7 @@ function initials(name?: string | null): string {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  WORKOUT: "bg-[#fc4c02]/10 text-[#fc4c02]",
+  WORKOUT: "bg-[#2563EB]/10 text-[#2563EB]",
   MEAL: "bg-green-100 text-green-700",
   WELLNESS: "bg-purple-100 text-purple-700",
   GENERAL: "bg-gray-100 text-gray-600",

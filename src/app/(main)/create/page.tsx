@@ -40,7 +40,6 @@ export default function CreatePostPage() {
   // Workout fields
   const [workoutName, setWorkoutName] = useState("");
   const [isClass, setIsClass] = useState(false);
-  const [postTiming, setPostTiming] = useState<"BEFORE" | "DURING" | "AFTER">("AFTER");
   const [durationMinutes, setDurationMinutes] = useState("");
   const [perceivedExertion, setPerceivedExertion] = useState("");
   const [moodAfter, setMoodAfter] = useState("");
@@ -174,7 +173,6 @@ export default function CreatePostPage() {
         body.workout = {
           workoutName: workoutName.trim(),
           isClass,
-          postTiming,
           durationMinutes: durationMinutes ? parseInt(durationMinutes) : undefined,
           perceivedExertion: perceivedExertion ? parseInt(perceivedExertion) : undefined,
           moodAfter: moodAfter ? parseInt(moodAfter) : undefined,
@@ -350,30 +348,16 @@ export default function CreatePostPage() {
               />
             </div>
 
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-foreground mb-1">Timing</label>
-                <select
-                  value={postTiming}
-                  onChange={(e) => setPostTiming(e.target.value as "BEFORE" | "DURING" | "AFTER")}
-                  className={inputClass}
-                >
-                  <option value="BEFORE">Before</option>
-                  <option value="DURING">During</option>
-                  <option value="AFTER">After</option>
-                </select>
-              </div>
-              <div className="flex items-end pb-1">
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isClass}
-                    onChange={(e) => setIsClass(e.target.checked)}
-                    className="accent-primary w-4 h-4"
-                  />
-                  <span className="text-foreground">Group class</span>
-                </label>
-              </div>
+            <div className="flex items-center">
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isClass}
+                  onChange={(e) => setIsClass(e.target.checked)}
+                  className="accent-primary w-4 h-4"
+                />
+                <span className="text-foreground">Group class</span>
+              </label>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
