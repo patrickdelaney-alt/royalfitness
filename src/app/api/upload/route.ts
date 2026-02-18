@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { writeFile } from "fs/promises";
-import { join } from "path";
+import { put } from "@vercel/blob";
 import crypto from "crypto";
 
 const ALLOWED_TYPES = [
@@ -26,10 +25,7 @@ export async function POST(req: NextRequest) {
     const file = formData.get("file") as File | null;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     if (!ALLOWED_TYPES.includes(file.type)) {
@@ -47,18 +43,11 @@ export async function POST(req: NextRequest) {
     }
 
     const ext = file.name.split(".").pop() || "bin";
-    const uniqueName = `${crypto.randomUUID()}.${ext}`;
-    const uploadDir = join(process.cwd(), "public", "uploads");
-    const filePath = join(uploadDir, uniqueName);
+    const uniqueName = `uploads/${crypto.randomUUID()}.${ext}`;
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    const blob = await put(uniqueName, file, { access: "public" });
 
-    await writeFile(filePath, buffer);
-
-    const url = `/uploads/${uniqueName}`;
-
-    return NextResponse.json({ url }, { status: 201 });
+    return NextResponse.json({ url: blob.url }, { status: 201 });
   } catch (error) {
     console.error("POST /api/upload error:", error);
     return NextResponse.json(
