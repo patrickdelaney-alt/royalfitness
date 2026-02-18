@@ -3,8 +3,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 
-const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith("https://") ||
-  process.env.VERCEL_URL !== undefined;
+// Stable cookie name — must never change after launch because it is used
+// as the JWT encryption salt. Using a prefix-free name keeps it identical
+// across local (http) and production (https) environments.
+const COOKIE_NAME = "authjs.session-token";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -15,35 +17,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   cookies: {
     sessionToken: {
-      name: useSecureCookies
-        ? "__Secure-authjs.session-token"
-        : "authjs.session-token",
+      name: COOKIE_NAME,
       options: {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: useSecureCookies,
-      },
-    },
-    callbackUrl: {
-      name: useSecureCookies
-        ? "__Secure-authjs.callback-url"
-        : "authjs.callback-url",
-      options: {
-        sameSite: "lax",
-        path: "/",
-        secure: useSecureCookies,
-      },
-    },
-    csrfToken: {
-      name: useSecureCookies
-        ? "__Host-authjs.csrf-token"
-        : "authjs.csrf-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: useSecureCookies,
+        secure: process.env.NODE_ENV === "production",
       },
     },
   },
