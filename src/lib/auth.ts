@@ -3,6 +3,14 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 
+// NextAuth v5 beta.30 reads AUTH_SECRET directly from process.env in several
+// internal code paths (JWT signing, cookie encryption) regardless of what is
+// passed to the `secret` config option.  Polyfill it from NEXTAUTH_SECRET so
+// environments that were configured with the v4 variable name keep working.
+if (!process.env.AUTH_SECRET && process.env.NEXTAUTH_SECRET) {
+  process.env.AUTH_SECRET = process.env.NEXTAUTH_SECRET;
+}
+
 // Stable cookie name — must never change after launch because it is used
 // as the JWT encryption salt. Using a prefix-free name keeps it identical
 // across local (http) and production (https) environments.
