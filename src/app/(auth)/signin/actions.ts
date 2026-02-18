@@ -18,7 +18,8 @@ export async function signInAction(
     if (error instanceof AuthError) {
       return "Invalid email or password. Please try again.";
     }
-    throw error;
+    console.error("[signInAction]", error);
+    return "Something went wrong. Please try again later.";
   }
   // redirect() must be called outside try/catch so Next.js can handle it
   redirect("/feed");
