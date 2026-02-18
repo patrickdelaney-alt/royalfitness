@@ -21,6 +21,88 @@ interface Exercise {
 const emptySet = (): ExerciseSet => ({ reps: "", weight: "", unit: "lbs", rpe: "" });
 const emptyExercise = (): Exercise => ({ name: "", sets: [emptySet()] });
 
+const moodLabels: Record<number, string> = {
+  1: "Awful",
+  2: "Bad",
+  3: "Meh",
+  4: "Low",
+  5: "Okay",
+  6: "Decent",
+  7: "Good",
+  8: "Great",
+  9: "Amazing",
+  10: "On Top",
+};
+
+function MoodSlider({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  const pct = ((value - 1) / 9) * 100;
+  // Color goes from red (1) to yellow (5) to green (10)
+  const hue = (value - 1) * (120 / 9); // 0 = red, 120 = green
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <label className="text-sm font-medium text-foreground">Mood After</label>
+        <span
+          className="text-sm font-semibold px-2 py-0.5 rounded-full"
+          style={{ backgroundColor: `hsl(${hue}, 80%, 90%)`, color: `hsl(${hue}, 70%, 30%)` }}
+        >
+          {value} &mdash; {moodLabels[value]}
+        </span>
+      </div>
+      <div className="relative pt-1 pb-2">
+        <input
+          type="range"
+          min={1}
+          max={10}
+          step={1}
+          value={value}
+          onChange={(e) => onChange(parseInt(e.target.value))}
+          className="w-full h-2 appearance-none rounded-full cursor-pointer"
+          style={{
+            background: `linear-gradient(to right, hsl(${hue}, 80%, 55%) 0%, hsl(${hue}, 80%, 55%) ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`,
+          }}
+        />
+        <style jsx>{`
+          input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid hsl(${hue}, 80%, 55%);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            cursor: pointer;
+          }
+          input[type="range"]::-moz-range-thumb {
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid hsl(${hue}, 80%, 55%);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            cursor: pointer;
+          }
+        `}</style>
+        <div className="flex justify-between mt-1 px-0.5">
+          {Array.from({ length: 10 }, (_, i) => (
+            <span key={i} className="text-[10px] text-muted w-4 text-center">
+              {i + 1}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CreatePostPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -42,7 +124,7 @@ export default function CreatePostPage() {
   const [isClass, setIsClass] = useState(false);
   const [durationMinutes, setDurationMinutes] = useState("");
   const [perceivedExertion, setPerceivedExertion] = useState("");
-  const [moodAfter, setMoodAfter] = useState("");
+  const [moodAfter, setMoodAfter] = useState(7);
   const [workoutNotes, setWorkoutNotes] = useState("");
   const [exercises, setExercises] = useState<Exercise[]>([]);
 
@@ -60,7 +142,7 @@ export default function CreatePostPage() {
   const [activityType, setActivityType] = useState("");
   const [wellnessDuration, setWellnessDuration] = useState("");
   const [intensity, setIntensity] = useState("");
-  const [wellnessMood, setWellnessMood] = useState("");
+  const [wellnessMood, setWellnessMood] = useState(7);
   const [wellnessNotes, setWellnessNotes] = useState("");
 
   // ── Media upload ──────────────────────────────────────────────
@@ -175,7 +257,7 @@ export default function CreatePostPage() {
           isClass,
           durationMinutes: durationMinutes ? parseInt(durationMinutes) : undefined,
           perceivedExertion: perceivedExertion ? parseInt(perceivedExertion) : undefined,
-          moodAfter: moodAfter ? parseInt(moodAfter) : undefined,
+          moodAfter,
           notes: workoutNotes || undefined,
           exercises: exercises
             .filter((ex) => ex.name.trim())
@@ -224,7 +306,7 @@ export default function CreatePostPage() {
           activityType: activityType.trim(),
           durationMinutes: wellnessDuration ? parseInt(wellnessDuration) : undefined,
           intensity: intensity ? parseInt(intensity) : undefined,
-          moodAfter: wellnessMood ? parseInt(wellnessMood) : undefined,
+          moodAfter: wellnessMood,
           notes: wellnessNotes || undefined,
         };
       }
@@ -284,58 +366,10 @@ export default function CreatePostPage() {
       )}
 
       <div className="space-y-4">
-        {/* Caption */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Caption</label>
-          <textarea
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            rows={3}
-            placeholder="What's on your mind?"
-            className={inputClass + " resize-none"}
-          />
-        </div>
-
-        {/* Media upload */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Photo / Video</label>
-          {mediaPreview ? (
-            <div className="relative rounded-lg overflow-hidden border border-border">
-              <img src={mediaPreview} alt="Preview" className="w-full max-h-60 object-cover" />
-              {uploading && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
-              <button
-                onClick={removeMedia}
-                className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
-              >
-                <HiX className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
-            >
-              <HiPhotograph className="w-8 h-8" />
-              <span className="text-sm">Add photo or video</span>
-            </button>
-          )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,video/mp4,video/quicktime"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-        </div>
-
-        {/* Type-specific fields */}
+        {/* ─── WORKOUT ─────────────────────────────────────── */}
         {type === "WORKOUT" && (
           <>
+            {/* 1. Workout Name (top) */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">
                 Workout Name *
@@ -348,6 +382,59 @@ export default function CreatePostPage() {
               />
             </div>
 
+            {/* 2. Photo / Video */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Photo / Video</label>
+              {mediaPreview ? (
+                <div className="relative rounded-lg overflow-hidden border border-border">
+                  <img src={mediaPreview} alt="Preview" className="w-full max-h-60 object-cover" />
+                  {uploading && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                  <button
+                    onClick={removeMedia}
+                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
+                  >
+                    <HiX className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
+                >
+                  <HiPhotograph className="w-8 h-8" />
+                  <span className="text-sm">Add photo or video</span>
+                </button>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/mp4,video/quicktime"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </div>
+
+            {/* 3. Mood After (slider) */}
+            <MoodSlider value={moodAfter} onChange={setMoodAfter} />
+
+            {/* 4. Caption */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Caption</label>
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                rows={3}
+                placeholder="How did the workout go?"
+                className={inputClass + " resize-none"}
+              />
+            </div>
+
+            {/* Additional workout fields */}
             <div className="flex items-center">
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <input
@@ -388,20 +475,7 @@ export default function CreatePostPage() {
                 />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
-                Mood After (1-10)
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                value={moodAfter}
-                onChange={(e) => setMoodAfter(e.target.value)}
-                placeholder="8"
-                className={inputClass}
-              />
-            </div>
+
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Notes</label>
               <textarea
@@ -518,8 +592,10 @@ export default function CreatePostPage() {
           </>
         )}
 
+        {/* ─── MEAL ────────────────────────────────────────── */}
         {type === "MEAL" && (
           <>
+            {/* 1. Meal Name (top) */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">
                 Meal Name *
@@ -531,6 +607,57 @@ export default function CreatePostPage() {
                 className={inputClass}
               />
             </div>
+
+            {/* 2. Photo / Video */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Photo / Video</label>
+              {mediaPreview ? (
+                <div className="relative rounded-lg overflow-hidden border border-border">
+                  <img src={mediaPreview} alt="Preview" className="w-full max-h-60 object-cover" />
+                  {uploading && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                  <button
+                    onClick={removeMedia}
+                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
+                  >
+                    <HiX className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
+                >
+                  <HiPhotograph className="w-8 h-8" />
+                  <span className="text-sm">Add photo or video</span>
+                </button>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/mp4,video/quicktime"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </div>
+
+            {/* 3. Caption */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Caption</label>
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                rows={3}
+                placeholder="Tell us about this meal..."
+                className={inputClass + " resize-none"}
+              />
+            </div>
+
+            {/* Meal-specific fields */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Meal Type</label>
               <select
@@ -611,8 +738,10 @@ export default function CreatePostPage() {
           </>
         )}
 
+        {/* ─── WELLNESS ────────────────────────────────────── */}
         {type === "WELLNESS" && (
           <>
+            {/* 1. Activity Type (top) */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">
                 Activity Type *
@@ -624,6 +753,60 @@ export default function CreatePostPage() {
                 className={inputClass}
               />
             </div>
+
+            {/* 2. Photo / Video */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Photo / Video</label>
+              {mediaPreview ? (
+                <div className="relative rounded-lg overflow-hidden border border-border">
+                  <img src={mediaPreview} alt="Preview" className="w-full max-h-60 object-cover" />
+                  {uploading && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                  <button
+                    onClick={removeMedia}
+                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
+                  >
+                    <HiX className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
+                >
+                  <HiPhotograph className="w-8 h-8" />
+                  <span className="text-sm">Add photo or video</span>
+                </button>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/mp4,video/quicktime"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </div>
+
+            {/* 3. Mood After (slider) */}
+            <MoodSlider value={wellnessMood} onChange={setWellnessMood} />
+
+            {/* 4. Caption */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Caption</label>
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                rows={3}
+                placeholder="How did it go?"
+                className={inputClass + " resize-none"}
+              />
+            </div>
+
+            {/* Additional wellness fields */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">
@@ -653,26 +836,66 @@ export default function CreatePostPage() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
-                Mood After (1-10)
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                value={wellnessMood}
-                onChange={(e) => setWellnessMood(e.target.value)}
-                placeholder="8"
-                className={inputClass}
-              />
-            </div>
-            <div>
               <label className="block text-sm font-medium text-foreground mb-1">Notes</label>
               <textarea
                 value={wellnessNotes}
                 onChange={(e) => setWellnessNotes(e.target.value)}
                 rows={2}
-                placeholder="How did it go?"
+                placeholder="Any notes..."
+                className={inputClass + " resize-none"}
+              />
+            </div>
+          </>
+        )}
+
+        {/* ─── GENERAL ─────────────────────────────────────── */}
+        {type === "GENERAL" && (
+          <>
+            {/* 1. Photo / Video */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Photo / Video</label>
+              {mediaPreview ? (
+                <div className="relative rounded-lg overflow-hidden border border-border">
+                  <img src={mediaPreview} alt="Preview" className="w-full max-h-60 object-cover" />
+                  {uploading && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                  <button
+                    onClick={removeMedia}
+                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
+                  >
+                    <HiX className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
+                >
+                  <HiPhotograph className="w-8 h-8" />
+                  <span className="text-sm">Add photo or video</span>
+                </button>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/mp4,video/quicktime"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </div>
+
+            {/* 2. Caption */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Caption</label>
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                rows={3}
+                placeholder="What's on your mind?"
                 className={inputClass + " resize-none"}
               />
             </div>
