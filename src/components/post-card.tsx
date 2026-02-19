@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire } from "react-icons/hi";
+import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical } from "react-icons/hi";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -123,11 +123,11 @@ export interface Post {
 
 // ── badge colours ────────────────────────────────────────────────────────────
 
-const TYPE_BADGE: Record<Post["type"], { bg: string; text: string; label: string }> = {
-  WORKOUT: { bg: "bg-[#2563EB]/10", text: "text-[#2563EB]", label: "Workout" },
-  MEAL: { bg: "bg-green-100", text: "text-green-700", label: "Meal" },
-  WELLNESS: { bg: "bg-purple-100", text: "text-purple-700", label: "Wellness" },
-  GENERAL: { bg: "bg-gray-100", text: "text-gray-600", label: "General" },
+const TYPE_BADGE: Record<Post["type"], { bg: string; text: string; label: string; emoji: string; animation: string }> = {
+  WORKOUT: { bg: "bg-[#2563EB]/10", text: "text-[#2563EB]", label: "Workout", emoji: "💪", animation: "animate-workout" },
+  MEAL: { bg: "bg-green-100", text: "text-green-700", label: "Meal", emoji: "🥗", animation: "animate-meal" },
+  WELLNESS: { bg: "bg-purple-100", text: "text-purple-700", label: "Wellness", emoji: "🧘", animation: "animate-wellness" },
+  GENERAL: { bg: "bg-gray-100", text: "text-gray-600", label: "General", emoji: "⭐", animation: "animate-general" },
 };
 
 // ── mood emoji helper ────────────────────────────────────────────────────────
@@ -299,7 +299,15 @@ function WellnessSection({ detail }: { detail: WellnessDetail }) {
 
 // ── main PostCard ────────────────────────────────────────────────────────────
 
-export default function PostCard({ post }: { post: Post }) {
+export default function PostCard({
+  post,
+  currentUserId,
+  onDelete,
+}: {
+  post: Post;
+  currentUserId?: string;
+  onDelete?: (id: string) => void;
+}) {
   const [liked, setLiked] = useState(post.likedByMe);
   const [likeCount, setLikeCount] = useState(post._count.likes);
   const [likeLoading, setLikeLoading] = useState(false);
@@ -311,7 +319,11 @@ export default function PostCard({ post }: { post: Post }) {
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [commentCount, setCommentCount] = useState(post._count.comments);
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   const badge = TYPE_BADGE[post.type];
+  const isOwner = !!currentUserId && currentUserId === post.author.id;
 
   // ── like toggle ──
 
@@ -394,6 +406,24 @@ export default function PostCard({ post }: { post: Post }) {
     }
   }, [commentText, commentSubmitting, post.id]);
 
+  // ── delete post ──
+
+  const handleDelete = useCallback(async () => {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
+      if (res.ok) {
+        onDelete?.(post.id);
+      }
+    } catch {
+      // silent fail
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  }, [deleting, post.id, onDelete]);
+
   // ── render ──
 
   return (
@@ -418,7 +448,8 @@ export default function PostCard({ post }: { post: Post }) {
             <span className="font-semibold text-sm text-foreground truncate">
               {post.author.username}
             </span>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.bg} ${badge.text}`}>
+            <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1 ${badge.bg} ${badge.text}`}>
+              <span className="inline-block transition-transform hover:scale-125 duration-200">{badge.emoji}</span>
               {badge.label}
             </span>
           </div>
@@ -432,6 +463,37 @@ export default function PostCard({ post }: { post: Post }) {
             )}
           </div>
         </div>
+
+        {/* delete menu for post owner */}
+        {isOwner && (
+          <div className="relative">
+            {showDeleteConfirm ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="text-xs text-muted hover:text-foreground px-2 py-1 rounded transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="text-xs font-medium text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 px-2 py-1 rounded transition-colors"
+                >
+                  {deleting ? "Deleting…" : "Delete"}
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="p-1.5 rounded-full text-muted hover:text-red-500 hover:bg-red-50 transition-colors"
+                aria-label="Delete post"
+              >
+                <HiDotsVertical className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── body ── */}
