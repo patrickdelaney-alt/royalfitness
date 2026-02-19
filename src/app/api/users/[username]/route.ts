@@ -94,6 +94,7 @@ export async function GET(
           visibility: true,
           tags: true,
           createdAt: true,
+          updatedAt: true,
           _count: {
             select: {
               comments: true,

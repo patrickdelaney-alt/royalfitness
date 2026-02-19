@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
-import { HiLogout, HiPencil, HiCheck, HiX } from "react-icons/hi";
+import { signOut, useSession } from "next-auth/react";
+import { HiLogout, HiPencil, HiCheck, HiX, HiLockClosed, HiUsers, HiQrcode } from "react-icons/hi";
 import Link from "next/link";
+import ProfileQRModal from "@/components/profile-qr-modal";
 
 interface UserProfile {
   id: string;
@@ -24,6 +25,8 @@ interface PostSummary {
   type: string;
   caption: string | null;
   createdAt: string;
+  updatedAt: string;
+  visibility: string;
   _count: { likes: number; comments: number };
 }
 
@@ -58,6 +61,8 @@ const TYPE_COLORS: Record<string, string> = {
 export default function ProfilePage() {
   const params = useParams();
   const router = useRouter();
+  const { data: session, status: sessionStatus } = useSession();
+  const isAuthenticated = sessionStatus === "authenticated";
   const username = params.username as string;
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -70,6 +75,7 @@ export default function ProfilePage() {
 
   const [followRequests, setFollowRequests] = useState<FollowRequest[]>([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -257,30 +263,71 @@ export default function ProfilePage() {
             My Catalog
           </Link>
           <button
+            onClick={() => setShowQR(true)}
+            className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-border text-sm font-medium text-muted hover:text-primary hover:border-primary/50 transition-colors"
+            title="Share QR Code"
+          >
+            <HiQrcode className="w-4 h-4" />
+          </button>
+          <button
             onClick={() => signOut({ callbackUrl: "/signin" })}
             className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-border text-sm font-medium text-muted hover:text-red-500 hover:border-red-300 transition-colors"
           >
             <HiLogout className="w-4 h-4" />
           </button>
         </div>
-      ) : (
-        <button
-          onClick={handleFollow}
-          disabled={followLoading || hasRequested}
-          className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-colors mb-6 ${
-            isFollowing
-              ? "border border-border text-foreground hover:border-red-300 hover:text-red-500"
+      ) : isAuthenticated ? (
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={handleFollow}
+            disabled={followLoading || hasRequested}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+              isFollowing
+                ? "border border-border text-foreground hover:border-red-300 hover:text-red-500"
+                : hasRequested
+                ? "bg-gray-200 text-muted cursor-not-allowed"
+                : "bg-primary text-white hover:bg-primary-dark"
+            }`}
+          >
+            {isFollowing
+              ? "Following"
               : hasRequested
-              ? "bg-gray-200 text-muted cursor-not-allowed"
-              : "bg-primary text-white hover:bg-primary-dark"
-          }`}
-        >
-          {isFollowing
-            ? "Following"
-            : hasRequested
-            ? "Requested"
-            : "Follow"}
-        </button>
+              ? "Requested"
+              : "Follow"}
+          </button>
+          <button
+            onClick={() => setShowQR(true)}
+            className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-border text-sm font-medium text-muted hover:text-primary hover:border-primary/50 transition-colors"
+            title="Share QR Code"
+          >
+            <HiQrcode className="w-4 h-4" />
+          </button>
+        </div>
+      ) : (
+        <div className="mb-6 space-y-3">
+          <div className="text-center p-4 rounded-xl bg-gray-50 border border-border">
+            <p className="text-sm text-foreground font-medium mb-1">
+              Want to connect with @{profile.username}?
+            </p>
+            <p className="text-xs text-muted mb-3">
+              Create an account or sign in to follow and interact.
+            </p>
+            <div className="flex gap-2">
+              <Link
+                href="/signup"
+                className="flex-1 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-dark transition-colors text-center"
+              >
+                Sign Up
+              </Link>
+              <Link
+                href="/signin"
+                className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:border-gray-400 transition-colors text-center"
+              >
+                Sign In
+              </Link>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Follow requests (own profile only) */}
@@ -353,7 +400,7 @@ export default function ProfilePage() {
               key={post.id}
               className="p-3 rounded-xl bg-card border border-border"
             >
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <span
                   className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                     TYPE_COLORS[post.type] ?? TYPE_COLORS.GENERAL
@@ -361,9 +408,35 @@ export default function ProfilePage() {
                 >
                   {post.type.charAt(0) + post.type.slice(1).toLowerCase()}
                 </span>
-                <span className="text-xs text-muted">
+                <span
+                  className="text-xs text-muted"
+                  title={new Date(post.createdAt).toLocaleString()}
+                >
                   {new Date(post.createdAt).toLocaleDateString()}
                 </span>
+                {post.updatedAt &&
+                  Math.abs(
+                    new Date(post.updatedAt).getTime() -
+                      new Date(post.createdAt).getTime()
+                  ) > 1000 && (
+                    <span
+                      className="text-xs text-muted flex items-center gap-0.5"
+                      title={`Edited ${new Date(post.updatedAt).toLocaleString()}`}
+                    >
+                      <HiPencil className="w-3 h-3" />
+                      edited
+                    </span>
+                  )}
+                {post.visibility === "PRIVATE" && (
+                  <span className="text-xs text-muted" title="Private">
+                    <HiLockClosed className="w-3 h-3" />
+                  </span>
+                )}
+                {post.visibility === "FOLLOWERS" && (
+                  <span className="text-xs text-muted" title="Followers only">
+                    <HiUsers className="w-3 h-3" />
+                  </span>
+                )}
               </div>
               {post.caption && (
                 <p className="text-sm text-foreground line-clamp-2">{post.caption}</p>
@@ -375,6 +448,16 @@ export default function ProfilePage() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* QR Code Modal */}
+      {showQR && profile && (
+        <ProfileQRModal
+          username={profile.username}
+          name={profile.name}
+          avatarUrl={profile.avatarUrl}
+          onClose={() => setShowQR(false)}
+        />
       )}
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire } from "react-icons/hi";
+import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiLockClosed, HiUsers, HiPencil } from "react-icons/hi";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -19,6 +19,22 @@ function timeAgo(date: string): string {
   const months = Math.floor(days / 30);
   if (months < 12) return `${months}mo ago`;
   return `${Math.floor(months / 12)}y ago`;
+}
+
+function formatFullDate(date: string): string {
+  const d = new Date(date);
+  return d.toLocaleString(undefined, {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function wasEdited(createdAt: string, updatedAt: string): boolean {
+  return Math.abs(new Date(updatedAt).getTime() - new Date(createdAt).getTime()) > 1000;
 }
 
 function initials(name?: string | null): string {
@@ -109,6 +125,7 @@ export interface Post {
   visibility: string;
   tags: string[];
   createdAt: string;
+  updatedAt: string;
   author: Author;
   workoutDetail: WorkoutDetail | null;
   mealDetail: MealDetail | null;
@@ -423,7 +440,35 @@ export default function PostCard({ post }: { post: Post }) {
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted">
-            <span>{timeAgo(post.createdAt)}</span>
+            <span title={formatFullDate(post.createdAt)}>{timeAgo(post.createdAt)}</span>
+            {post.updatedAt && wasEdited(post.createdAt, post.updatedAt) && (
+              <>
+                <span>·</span>
+                <span
+                  className="flex items-center gap-0.5"
+                  title={`Edited ${formatFullDate(post.updatedAt)}`}
+                >
+                  <HiPencil className="w-3 h-3" />
+                  edited
+                </span>
+              </>
+            )}
+            {post.visibility === "PRIVATE" && (
+              <>
+                <span>·</span>
+                <span className="flex items-center gap-0.5" title="Private">
+                  <HiLockClosed className="w-3 h-3" />
+                </span>
+              </>
+            )}
+            {post.visibility === "FOLLOWERS" && (
+              <>
+                <span>·</span>
+                <span className="flex items-center gap-0.5" title="Followers only">
+                  <HiUsers className="w-3 h-3" />
+                </span>
+              </>
+            )}
             {post.gym && (
               <>
                 <span>·</span>
