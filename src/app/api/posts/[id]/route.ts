@@ -78,9 +78,13 @@ export async function GET(
       }
     }
 
+    const likes =
+      "likes" in post
+        ? (post as typeof post & { likes: { id: string }[] }).likes
+        : [];
     const responsePost = {
       ...post,
-      likedByMe: userId ? (post as any).likes?.length > 0 : false,
+      likedByMe: likes.length > 0,
       likes: undefined,
     };
 
