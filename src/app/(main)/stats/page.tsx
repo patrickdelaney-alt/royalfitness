@@ -30,6 +30,13 @@ interface Leaderboard {
   mealsLogged: LeaderboardEntry[];
 }
 
+interface StepsEntry {
+  id: string;
+  date: string;
+  count: number;
+  source: string;
+}
+
 function initials(name?: string | null): string {
   if (!name) return "?";
   return name
@@ -40,12 +47,25 @@ function initials(name?: string | null): string {
     .slice(0, 2);
 }
 
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
 export default function StatsPage() {
   const [period, setPeriod] = useState<"week" | "month" | "year">("week");
   const [stats, setStats] = useState<Stats | null>(null);
   const [leaderboard, setLeaderboard] = useState<Leaderboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeBoard, setActiveBoard] = useState<"workoutCount" | "wellnessMinutes" | "mealsLogged">("workoutCount");
+
+  // Steps state
+  const [stepsEntries, setStepsEntries] = useState<StepsEntry[]>([]);
+  const [stepsCount, setStepsCount] = useState("");
+  const [stepsDate, setStepsDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [stepsSubmitting, setStepsSubmitting] = useState(false);
+  const [stepsError, setStepsError] = useState("");
+  const [showStepsForm, setShowStepsForm] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -70,6 +90,58 @@ export default function StatsPage() {
     }
     load();
   }, [period]);
+
+  // Load steps entries
+  useEffect(() => {
+    fetch("/api/steps")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setStepsEntries(data.slice(0, 14));
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleLogSteps = async () => {
+    const count = parseInt(stepsCount);
+    if (!stepsCount || isNaN(count) || count <= 0) {
+      setStepsError("Enter a valid step count");
+      return;
+    }
+    setStepsSubmitting(true);
+    setStepsError("");
+    try {
+      const res = await fetch("/api/steps", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: stepsDate, count, source: "manual" }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        setStepsError(d.error || "Failed to log steps");
+        return;
+      }
+      const entry = await res.json();
+      setStepsEntries((prev) => {
+        const filtered = prev.filter((e) => e.date.split("T")[0] !== stepsDate);
+        return [entry, ...filtered].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 14);
+      });
+      setStepsCount("");
+      setShowStepsForm(false);
+    } catch {
+      setStepsError("Something went wrong");
+    } finally {
+      setStepsSubmitting(false);
+    }
+  };
+
+  const totalStepsWeek = stepsEntries
+    .filter((e) => {
+      const d = new Date(e.date);
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 7);
+      return d >= cutoff;
+    })
+    .reduce((sum, e) => sum + e.count, 0);
 
   const periodLabel = period === "week" ? "This Week" : period === "month" ? "This Month" : "This Year";
 
@@ -169,6 +241,90 @@ export default function StatsPage() {
               <p className="text-xs text-muted mb-1">Meals Logged</p>
               <p className="text-xl font-bold text-foreground">{stats.mealsPosted}</p>
             </div>
+          </div>
+
+          {/* Steps section */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-muted uppercase tracking-wide">
+                Steps
+              </h2>
+              <button
+                onClick={() => setShowStepsForm((v) => !v)}
+                className="text-xs text-primary font-medium hover:text-primary-dark"
+              >
+                {showStepsForm ? "Cancel" : "Log steps"}
+              </button>
+            </div>
+
+            {/* Summary card */}
+            <div className="bg-card rounded-xl border border-border p-4 mb-3">
+              <p className="text-xs text-muted mb-1">Last 7 days</p>
+              <p className="text-2xl font-bold text-foreground">
+                {totalStepsWeek.toLocaleString()}
+              </p>
+              <p className="text-xs text-muted">steps</p>
+            </div>
+
+            {/* Log form */}
+            {showStepsForm && (
+              <div className="p-4 border border-border rounded-xl bg-gray-50/50 mb-3 space-y-3">
+                {stepsError && <p className="text-xs text-red-600">{stepsError}</p>}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs text-muted mb-1">Date</label>
+                    <input
+                      type="date"
+                      value={stepsDate}
+                      onChange={(e) => setStepsDate(e.target.value)}
+                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-muted mb-1">Steps</label>
+                    <input
+                      type="number"
+                      value={stepsCount}
+                      onChange={(e) => setStepsCount(e.target.value)}
+                      placeholder="e.g. 8000"
+                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={handleLogSteps}
+                  disabled={stepsSubmitting}
+                  className="w-full py-2 rounded-lg bg-primary text-white text-sm font-semibold disabled:opacity-50"
+                >
+                  {stepsSubmitting ? "Logging..." : "Log Steps"}
+                </button>
+              </div>
+            )}
+
+            {/* Steps history */}
+            {stepsEntries.length > 0 && (
+              <div className="space-y-1.5">
+                {stepsEntries.map((e) => {
+                  const pct = Math.min((e.count / 10000) * 100, 100);
+                  return (
+                    <div key={e.id} className="flex items-center gap-3">
+                      <span className="text-xs text-muted w-16 flex-shrink-0">
+                        {formatDate(e.date)}
+                      </span>
+                      <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-medium text-foreground w-16 text-right">
+                        {e.count.toLocaleString()}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Leaderboard */}

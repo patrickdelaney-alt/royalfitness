@@ -124,7 +124,7 @@ export interface Post {
 // ── badge colours ────────────────────────────────────────────────────────────
 
 const TYPE_BADGE: Record<Post["type"], { bg: string; text: string; label: string }> = {
-  WORKOUT: { bg: "bg-[#fc4c02]/10", text: "text-[#fc4c02]", label: "Workout" },
+  WORKOUT: { bg: "bg-[#2563EB]/10", text: "text-[#2563EB]", label: "Workout" },
   MEAL: { bg: "bg-green-100", text: "text-green-700", label: "Meal" },
   WELLNESS: { bg: "bg-purple-100", text: "text-purple-700", label: "Wellness" },
   GENERAL: { bg: "bg-gray-100", text: "text-gray-600", label: "General" },
@@ -190,10 +190,10 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
       <div className="flex items-center gap-4 flex-wrap">
         {detail.perceivedExertion != null && (
           <div className="flex items-center gap-2">
-            <HiFire className="w-4 h-4 text-[#fc4c02]" />
+            <HiFire className="w-4 h-4 text-[#2563EB]" />
             <div className="w-24 h-2 rounded-full bg-gray-200 overflow-hidden">
               <div
-                className="h-full rounded-full bg-[#fc4c02]"
+                className="h-full rounded-full bg-[#2563EB]"
                 style={{ width: `${detail.perceivedExertion * 10}%` }}
               />
             </div>
@@ -408,7 +408,7 @@ export default function PostCard({ post }: { post: Post }) {
             className="w-10 h-10 rounded-full object-cover"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-[#fc4c02] flex items-center justify-center text-white text-sm font-bold">
+          <div className="w-10 h-10 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-sm font-bold">
             {initials(post.author.name)}
           </div>
         )}
@@ -449,7 +449,7 @@ export default function PostCard({ post }: { post: Post }) {
             {post.tags.map((tag) => (
               <span
                 key={tag}
-                className="text-xs text-[#fc4c02] bg-[#fc4c02]/10 rounded-full px-2 py-0.5"
+                className="text-xs text-[#2563EB] bg-[#2563EB]/10 rounded-full px-2 py-0.5"
               >
                 #{tag}
               </span>
@@ -485,7 +485,7 @@ export default function PostCard({ post }: { post: Post }) {
         <button
           onClick={toggleLike}
           disabled={likeLoading}
-          className="flex items-center gap-1.5 text-sm transition-colors hover:text-[#fc4c02]"
+          className="flex items-center gap-1.5 text-sm transition-colors hover:text-[#2563EB]"
         >
           {liked ? (
             <HiHeart className="w-5 h-5 text-red-500" />
@@ -522,12 +522,12 @@ export default function PostCard({ post }: { post: Post }) {
                 }
               }}
               placeholder="Add a comment..."
-              className="flex-1 text-sm border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#fc4c02]/30 focus:border-[#fc4c02] bg-background"
+              className="flex-1 text-sm border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB] bg-background"
             />
             <button
               onClick={handleAddComment}
               disabled={commentSubmitting || !commentText.trim()}
-              className="text-sm font-medium text-white bg-[#fc4c02] hover:bg-[#e04400] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg px-3 py-2 transition-colors"
+              className="text-sm font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg px-3 py-2 transition-colors"
             >
               Post
             </button>

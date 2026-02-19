@@ -9,7 +9,7 @@ export default async function MainLayout({
 }) {
   const session = await auth();
 
-  if (!session) {
+  if (!session?.user?.id) {
     redirect("/signin");
   }
 

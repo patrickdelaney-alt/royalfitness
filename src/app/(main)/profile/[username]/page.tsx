@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { HiLogout } from "react-icons/hi";
+import { HiLogout, HiPencil, HiCheck, HiX } from "react-icons/hi";
+import Link from "next/link";
 
 interface UserProfile {
   id: string;
@@ -26,6 +27,17 @@ interface PostSummary {
   _count: { likes: number; comments: number };
 }
 
+interface FollowRequest {
+  id: string;
+  createdAt: string;
+  sender: {
+    id: string;
+    name: string | null;
+    username: string;
+    avatarUrl: string | null;
+  };
+}
+
 function initials(name?: string | null): string {
   if (!name) return "?";
   return name
@@ -37,7 +49,7 @@ function initials(name?: string | null): string {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  WORKOUT: "bg-[#fc4c02]/10 text-[#fc4c02]",
+  WORKOUT: "bg-[#2563EB]/10 text-[#2563EB]",
   MEAL: "bg-green-100 text-green-700",
   WELLNESS: "bg-purple-100 text-purple-700",
   GENERAL: "bg-gray-100 text-gray-600",
@@ -45,6 +57,7 @@ const TYPE_COLORS: Record<string, string> = {
 
 export default function ProfilePage() {
   const params = useParams();
+  const router = useRouter();
   const username = params.username as string;
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -54,6 +67,9 @@ export default function ProfilePage() {
   const [hasRequested, setHasRequested] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const [followRequests, setFollowRequests] = useState<FollowRequest[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -77,6 +93,17 @@ export default function ProfilePage() {
     load();
   }, [username]);
 
+  // Load follow requests for own profile
+  useEffect(() => {
+    if (!isOwnProfile) return;
+    setRequestsLoading(true);
+    fetch("/api/social/follow-requests")
+      .then((r) => r.json())
+      .then((d) => setFollowRequests(d.followRequests ?? []))
+      .catch(() => {})
+      .finally(() => setRequestsLoading(false));
+  }, [isOwnProfile]);
+
   const handleFollow = useCallback(async () => {
     if (!profile || followLoading) return;
     setFollowLoading(true);
@@ -93,7 +120,6 @@ export default function ProfilePage() {
             p ? { ...p, followerCount: p.followerCount - 1 } : p
           );
         } else {
-          // For private accounts, a follow request is sent
           if (profile.isPrivate) {
             setHasRequested(true);
           } else {
@@ -110,6 +136,29 @@ export default function ProfilePage() {
       setFollowLoading(false);
     }
   }, [profile, isFollowing, followLoading]);
+
+  const handleAcceptRequest = async (requestId: string) => {
+    const res = await fetch("/api/social/follow-requests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ requestId }),
+    });
+    if (res.ok) {
+      setFollowRequests((prev) => prev.filter((r) => r.id !== requestId));
+      setProfile((p) => (p ? { ...p, followerCount: p.followerCount + 1 } : p));
+    }
+  };
+
+  const handleDeclineRequest = async (requestId: string) => {
+    const res = await fetch("/api/social/follow-requests", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ requestId }),
+    });
+    if (res.ok) {
+      setFollowRequests((prev) => prev.filter((r) => r.id !== requestId));
+    }
+  };
 
   if (loading) {
     return (
@@ -165,15 +214,55 @@ export default function ProfilePage() {
         <p className="text-sm text-foreground mb-4 whitespace-pre-wrap">{profile.bio}</p>
       )}
 
+      {/* Social links */}
+      {(profile.instagramUrl || profile.tiktokUrl) && (
+        <div className="flex gap-3 mb-4">
+          {profile.instagramUrl && (
+            <a
+              href={profile.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-primary hover:underline"
+            >
+              Instagram
+            </a>
+          )}
+          {profile.tiktokUrl && (
+            <a
+              href={profile.tiktokUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-primary hover:underline"
+            >
+              TikTok
+            </a>
+          )}
+        </div>
+      )}
+
       {/* Action buttons */}
       {isOwnProfile ? (
-        <button
-          onClick={() => signOut({ callbackUrl: "/signin" })}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-border text-sm font-medium text-muted hover:text-foreground hover:border-gray-400 transition-colors mb-6"
-        >
-          <HiLogout className="w-4 h-4" />
-          Sign Out
-        </button>
+        <div className="flex gap-2 mb-6">
+          <Link
+            href="/profile/edit"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:border-gray-400 transition-colors"
+          >
+            <HiPencil className="w-4 h-4" />
+            Edit Profile
+          </Link>
+          <Link
+            href="/catalog"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:border-gray-400 transition-colors"
+          >
+            My Catalog
+          </Link>
+          <button
+            onClick={() => signOut({ callbackUrl: "/signin" })}
+            className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-border text-sm font-medium text-muted hover:text-red-500 hover:border-red-300 transition-colors"
+          >
+            <HiLogout className="w-4 h-4" />
+          </button>
+        </div>
       ) : (
         <button
           onClick={handleFollow}
@@ -192,6 +281,62 @@ export default function ProfilePage() {
             ? "Requested"
             : "Follow"}
         </button>
+      )}
+
+      {/* Follow requests (own profile only) */}
+      {isOwnProfile && !requestsLoading && followRequests.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-sm font-semibold text-muted uppercase tracking-wide mb-3">
+            Follow Requests ({followRequests.length})
+          </h2>
+          <div className="space-y-2">
+            {followRequests.map((req) => (
+              <div
+                key={req.id}
+                className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border"
+              >
+                {req.sender.avatarUrl ? (
+                  <img
+                    src={req.sender.avatarUrl}
+                    alt={req.sender.username}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold">
+                    {initials(req.sender.name)}
+                  </div>
+                )}
+                <button
+                  onClick={() => router.push(`/profile/${req.sender.username}`)}
+                  className="flex-1 min-w-0 text-left"
+                >
+                  <p className="font-semibold text-sm text-foreground truncate">
+                    {req.sender.username}
+                  </p>
+                  {req.sender.name && (
+                    <p className="text-xs text-muted truncate">{req.sender.name}</p>
+                  )}
+                </button>
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => handleAcceptRequest(req.id)}
+                    className="p-1.5 rounded-full bg-primary text-white hover:bg-primary-dark"
+                    title="Accept"
+                  >
+                    <HiCheck className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDeclineRequest(req.id)}
+                    className="p-1.5 rounded-full bg-gray-200 text-muted hover:bg-gray-300"
+                    title="Decline"
+                  >
+                    <HiX className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Posts */}
