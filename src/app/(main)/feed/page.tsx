@@ -5,6 +5,14 @@ import PostCard, { Post } from "@/components/post-card";
 
 const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS", "GENERAL"] as const;
 
+const TYPE_EMOJI: Record<string, string> = {
+  ALL: "🏠",
+  WORKOUT: "💪",
+  MEAL: "🥗",
+  WELLNESS: "🧘",
+  GENERAL: "⭐",
+};
+
 export default function FeedPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -12,7 +20,19 @@ export default function FeedPage() {
   const [cursor, setCursor] = useState<string | undefined>();
   const [hasMore, setHasMore] = useState(true);
   const [filter, setFilter] = useState<string>("ALL");
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
   const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/session")
+      .then((r) => r.json())
+      .then((s) => setCurrentUserId(s?.user?.id ?? undefined))
+      .catch(() => {});
+  }, []);
+
+  const handleDeletePost = useCallback((id: string) => {
+    setPosts((prev) => prev.filter((p) => p.id !== id));
+  }, []);
 
   const fetchPosts = useCallback(
     async (reset = false) => {
@@ -90,12 +110,15 @@ export default function FeedPage() {
           <button
             key={type}
             onClick={() => setFilter(type)}
-            className={`whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${
               filter === type
-                ? "bg-primary text-white"
-                : "bg-gray-100 text-muted hover:bg-gray-200"
+                ? "bg-primary text-white scale-105 shadow-sm"
+                : "bg-gray-100 text-muted hover:bg-gray-200 hover:scale-105"
             }`}
           >
+            <span className={`transition-transform duration-300 ${filter === type ? "scale-110" : ""}`}>
+              {TYPE_EMOJI[type]}
+            </span>
             {type === "ALL" ? "All" : type.charAt(0) + type.slice(1).toLowerCase()}
           </button>
         ))}
@@ -121,7 +144,7 @@ export default function FeedPage() {
       ) : (
         <div className="space-y-4 pb-4">
           {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
+            <PostCard key={post.id} post={post} currentUserId={currentUserId} onDelete={handleDeletePost} />
           ))}
           {loadingMore && (
             <div className="flex justify-center py-4">
