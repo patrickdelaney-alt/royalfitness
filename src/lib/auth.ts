@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import Apple from "next-auth/providers/apple";
@@ -5,12 +6,26 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 
-// NextAuth v5 beta.30 reads AUTH_SECRET directly from process.env in several
-// internal code paths (JWT signing, cookie encryption) regardless of what is
-// passed to the `secret` config option.  Polyfill it from NEXTAUTH_SECRET so
-// environments that were configured with the v4 variable name keep working.
-if (!process.env.AUTH_SECRET && process.env.NEXTAUTH_SECRET) {
-  process.env.AUTH_SECRET = process.env.NEXTAUTH_SECRET;
+// AUTH_SECRET is required by NextAuth v5 for JWT signing and cookie encryption.
+// Resolution order:
+//  1. AUTH_SECRET   — canonical v5 name
+//  2. NEXTAUTH_SECRET — v4 compat alias
+//  3. Derived from DATABASE_URL — automatic fallback so the app works even
+//     when neither secret is explicitly configured in the environment.
+//     DATABASE_URL is always present (the DB would be unreachable otherwise)
+//     and it's unique per deployment, giving a stable, hard-to-guess secret.
+if (!process.env.AUTH_SECRET) {
+  if (process.env.NEXTAUTH_SECRET) {
+    process.env.AUTH_SECRET = process.env.NEXTAUTH_SECRET;
+  } else if (process.env.DATABASE_URL) {
+    process.env.AUTH_SECRET = createHash("sha256")
+      .update("royalfitness-auth-v1:" + process.env.DATABASE_URL)
+      .digest("hex");
+    console.warn(
+      "[auth] AUTH_SECRET not set — derived from DATABASE_URL. " +
+        "Add AUTH_SECRET to your environment variables for explicit control."
+    );
+  }
 }
 
 // Stable cookie name — must never change after launch because it is used
