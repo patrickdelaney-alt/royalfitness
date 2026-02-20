@@ -100,7 +100,7 @@ export default function FeedPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold text-foreground">
-          <span className="text-primary">Royal</span>Fitness
+          <span className="text-primary">Royal</span>Wellness <span className="text-xs font-normal text-muted">Beta</span>
         </h1>
       </div>
 
