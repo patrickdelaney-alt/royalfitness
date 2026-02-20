@@ -37,6 +37,7 @@ model User {
   savedWorkouts    SavedWorkout[]
   supplements      Supplement[]
   wellnessAccessories WellnessAccessory[]
+  savedWellness    SavedWellness[]
 
   stepsEntries   StepsEntry[]
 
@@ -326,6 +327,7 @@ model SavedWorkout {
 
   name            String
   exercisesJson   String
+  videoUrl        String?
   tags            String[] @default([])
   notes           String?
   createdAt       DateTime @default(now())
@@ -359,6 +361,21 @@ model WellnessAccessory {
   tags      String[] @default([])
   notes     String?
   createdAt DateTime @default(now())
+}
+
+model SavedWellness {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name            String
+  activityType    String?
+  durationMinutes Int?
+  link            String?
+  photoUrl        String?
+  tags            String[] @default([])
+  notes           String?
+  createdAt       DateTime @default(now())
 }
 
 // ─── STEPS ───────────────────────────────────────────────────────

@@ -359,7 +359,7 @@ export default function ProfilePage() {
                     TYPE_COLORS[post.type] ?? TYPE_COLORS.GENERAL
                   }`}
                 >
-                  {post.type.charAt(0) + post.type.slice(1).toLowerCase()}
+                  {post.type.charAt(0) + post.type.slice(1).toLowerCase() + "s"}
                 </span>
                 <span className="text-xs text-muted">
                   {new Date(post.createdAt).toLocaleDateString()}

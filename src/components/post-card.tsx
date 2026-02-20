@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Link from "next/link";
 import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical } from "react-icons/hi";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -124,8 +125,8 @@ export interface Post {
 // ── badge colours ────────────────────────────────────────────────────────────
 
 const TYPE_BADGE: Record<Post["type"], { bg: string; text: string; label: string; emoji: string; animation: string }> = {
-  WORKOUT: { bg: "bg-[#2563EB]/10", text: "text-[#2563EB]", label: "Workout", emoji: "💪", animation: "animate-workout" },
-  MEAL: { bg: "bg-green-100", text: "text-green-700", label: "Meal", emoji: "🥗", animation: "animate-meal" },
+  WORKOUT: { bg: "bg-[#2563EB]/10", text: "text-[#2563EB]", label: "Workouts", emoji: "💪", animation: "animate-workout" },
+  MEAL: { bg: "bg-green-100", text: "text-green-700", label: "Meals", emoji: "🥗", animation: "animate-meal" },
   WELLNESS: { bg: "bg-purple-100", text: "text-purple-700", label: "Wellness", emoji: "🧘", animation: "animate-wellness" },
   GENERAL: { bg: "bg-gray-100", text: "text-gray-600", label: "General", emoji: "⭐", animation: "animate-general" },
 };
@@ -431,23 +432,25 @@ export default function PostCard({
       {/* ── header ── */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
         {/* avatar */}
-        {post.author.avatarUrl ? (
-          <img
-            src={post.author.avatarUrl}
-            alt={post.author.username}
-            className="w-10 h-10 rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-sm font-bold">
-            {initials(post.author.name)}
-          </div>
-        )}
+        <Link href={`/profile/${post.author.username}`} className="flex-shrink-0">
+          {post.author.avatarUrl ? (
+            <img
+              src={post.author.avatarUrl}
+              alt={post.author.username}
+              className="w-10 h-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-sm font-bold">
+              {initials(post.author.name)}
+            </div>
+          )}
+        </Link>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-sm text-foreground truncate">
+            <Link href={`/profile/${post.author.username}`} className="font-semibold text-sm text-foreground truncate hover:underline">
               {post.author.username}
-            </span>
+            </Link>
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1 ${badge.bg} ${badge.text}`}>
               <span className="inline-block transition-transform hover:scale-125 duration-200">{badge.emoji}</span>
               {badge.label}
@@ -522,11 +525,19 @@ export default function PostCard({
         {/* media */}
         {post.mediaUrl && (
           <div className="mt-2 rounded-lg overflow-hidden">
-            <img
-              src={post.mediaUrl}
-              alt="Post media"
-              className="w-full max-h-96 object-cover"
-            />
+            {post.mediaUrl.match(/\.(mp4|mov|webm)($|\?)/i) ? (
+              <video
+                src={post.mediaUrl}
+                controls
+                className="w-full max-h-96 object-cover"
+              />
+            ) : (
+              <img
+                src={post.mediaUrl}
+                alt="Post media"
+                className="w-full max-h-96 object-cover"
+              />
+            )}
           </div>
         )}
 
@@ -604,22 +615,24 @@ export default function PostCard({
 
           {comments.map((c) => (
             <div key={c.id} className="flex gap-2">
-              {c.author.avatarUrl ? (
-                <img
-                  src={c.author.avatarUrl}
-                  alt={c.author.username}
-                  className="w-7 h-7 rounded-full object-cover mt-0.5"
-                />
-              ) : (
-                <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-white mt-0.5">
-                  {initials(c.author.name)}
-                </div>
-              )}
+              <Link href={`/profile/${c.author.username}`} className="flex-shrink-0">
+                {c.author.avatarUrl ? (
+                  <img
+                    src={c.author.avatarUrl}
+                    alt={c.author.username}
+                    className="w-7 h-7 rounded-full object-cover mt-0.5"
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-white mt-0.5">
+                    {initials(c.author.name)}
+                  </div>
+                )}
+              </Link>
               <div className="flex-1 min-w-0">
                 <p className="text-sm">
-                  <span className="font-semibold text-foreground">
+                  <Link href={`/profile/${c.author.username}`} className="font-semibold text-foreground hover:underline">
                     {c.author.username}
-                  </span>{" "}
+                  </Link>{" "}
                   <span className="text-foreground">{c.text}</span>
                 </p>
                 <p className="text-xs text-muted mt-0.5">

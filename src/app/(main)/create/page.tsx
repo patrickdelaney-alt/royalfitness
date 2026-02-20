@@ -1,10 +1,44 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX } from "react-icons/hi";
+import { useState, useRef, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiSparkles } from "react-icons/hi";
 
 type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL";
+
+// Stock photo suggestions based on post type / workout keywords
+const STOCK_PHOTOS: Record<string, { url: string; label: string }[]> = {
+  WORKOUT: [
+    { url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&h=400&fit=crop", label: "Gym weights" },
+    { url: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&h=400&fit=crop", label: "Weight training" },
+    { url: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&h=400&fit=crop", label: "Barbell workout" },
+    { url: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&h=400&fit=crop", label: "Push ups" },
+    { url: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=600&h=400&fit=crop", label: "Gym floor" },
+    { url: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=600&h=400&fit=crop", label: "Running" },
+  ],
+  MEAL: [
+    { url: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&h=400&fit=crop", label: "Healthy meal" },
+    { url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=400&fit=crop", label: "Fresh salad" },
+    { url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=400&fit=crop", label: "Veggie bowl" },
+    { url: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&h=400&fit=crop", label: "Protein plate" },
+    { url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=400&fit=crop", label: "Grilled food" },
+    { url: "https://images.unsplash.com/photo-1505576399279-0d754687a2d8?w=600&h=400&fit=crop", label: "Smoothie bowl" },
+  ],
+  WELLNESS: [
+    { url: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&h=400&fit=crop", label: "Yoga" },
+    { url: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&h=400&fit=crop", label: "Meditation" },
+    { url: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=600&h=400&fit=crop", label: "Stretching" },
+    { url: "https://images.unsplash.com/photo-1600618528240-fb9fc964b853?w=600&h=400&fit=crop", label: "Recovery" },
+    { url: "https://images.unsplash.com/photo-1552196563-55cd4e45efb3?w=600&h=400&fit=crop", label: "Mindfulness" },
+    { url: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=600&h=400&fit=crop", label: "Nature walk" },
+  ],
+  GENERAL: [
+    { url: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=600&h=400&fit=crop", label: "Fitness" },
+    { url: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=400&fit=crop", label: "Active life" },
+    { url: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=600&h=400&fit=crop", label: "Gym" },
+    { url: "https://images.unsplash.com/photo-1594737625785-a6cbdabd333c?w=600&h=400&fit=crop", label: "Wellness" },
+  ],
+};
 
 interface ExerciseSet {
   reps: string;
@@ -105,12 +139,22 @@ function MoodSlider({
 
 export default function CreatePostPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [type, setType] = useState<PostType>("WORKOUT");
+  const initialType = ((): PostType => {
+    const param = searchParams.get("type")?.toUpperCase();
+    if (param && ["WORKOUT", "MEAL", "WELLNESS", "GENERAL"].includes(param)) {
+      return param as PostType;
+    }
+    return "WORKOUT";
+  })();
+
+  const [type, setType] = useState<PostType>(initialType);
   const [caption, setCaption] = useState("");
   const [tags, setTags] = useState("");
   const [visibility, setVisibility] = useState<"PUBLIC" | "FOLLOWERS" | "PRIVATE">("PUBLIC");
+  const [postDate, setPostDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -137,6 +181,16 @@ export default function CreatePostPage() {
   const [carbs, setCarbs] = useState("");
   const [fat, setFat] = useState("");
   const [saveToCatalog, setSaveToCatalog] = useState(false);
+
+  // Stock photo suggestions
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestions = useMemo(() => STOCK_PHOTOS[type] || STOCK_PHOTOS.GENERAL, [type]);
+
+  const selectStockPhoto = (url: string) => {
+    setMediaUrl(url);
+    setMediaPreview(url);
+    setShowSuggestions(false);
+  };
 
   // Wellness fields
   const [activityType, setActivityType] = useState("");
@@ -244,6 +298,7 @@ export default function CreatePostPage() {
           .map((t) => t.trim())
           .filter(Boolean),
         mediaUrl: mediaUrl || undefined,
+        postDate: postDate || undefined,
       };
 
       if (type === "WORKOUT") {
@@ -356,7 +411,7 @@ export default function CreatePostPage() {
                 : "bg-gray-100 text-muted hover:bg-gray-200"
             }`}
           >
-            {t.charAt(0) + t.slice(1).toLowerCase()}
+            {t.charAt(0) + t.slice(1).toLowerCase() + "s"}
           </button>
         ))}
       </div>
@@ -401,14 +456,41 @@ export default function CreatePostPage() {
                   </button>
                 </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
-                >
-                  <HiPhotograph className="w-8 h-8" />
-                  <span className="text-sm">Add photo or video</span>
-                </button>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
+                  >
+                    <HiPhotograph className="w-8 h-8" />
+                    <span className="text-sm">Add photo or video</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowSuggestions((v) => !v)}
+                    className="flex items-center gap-1.5 text-xs text-primary font-medium hover:text-primary-dark"
+                  >
+                    <HiSparkles className="w-3.5 h-3.5" />
+                    {showSuggestions ? "Hide suggested photos" : "Browse stock photos"}
+                  </button>
+                  {showSuggestions && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {suggestions.map((photo) => (
+                        <button
+                          key={photo.url}
+                          type="button"
+                          onClick={() => selectStockPhoto(photo.url)}
+                          className="relative rounded-lg overflow-hidden border border-border hover:border-primary transition-colors aspect-[3/2]"
+                        >
+                          <img src={photo.url} alt={photo.label} className="w-full h-full object-cover" />
+                          <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] px-1 py-0.5 text-center truncate">
+                            {photo.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
               <input
                 ref={fileInputRef}
@@ -627,14 +709,41 @@ export default function CreatePostPage() {
                   </button>
                 </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
-                >
-                  <HiPhotograph className="w-8 h-8" />
-                  <span className="text-sm">Add photo or video</span>
-                </button>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
+                  >
+                    <HiPhotograph className="w-8 h-8" />
+                    <span className="text-sm">Add photo or video</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowSuggestions((v) => !v)}
+                    className="flex items-center gap-1.5 text-xs text-primary font-medium hover:text-primary-dark"
+                  >
+                    <HiSparkles className="w-3.5 h-3.5" />
+                    {showSuggestions ? "Hide suggested photos" : "Browse stock photos"}
+                  </button>
+                  {showSuggestions && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {suggestions.map((photo) => (
+                        <button
+                          key={photo.url}
+                          type="button"
+                          onClick={() => selectStockPhoto(photo.url)}
+                          className="relative rounded-lg overflow-hidden border border-border hover:border-primary transition-colors aspect-[3/2]"
+                        >
+                          <img src={photo.url} alt={photo.label} className="w-full h-full object-cover" />
+                          <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] px-1 py-0.5 text-center truncate">
+                            {photo.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
               <input
                 ref={fileInputRef}
@@ -773,14 +882,41 @@ export default function CreatePostPage() {
                   </button>
                 </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
-                >
-                  <HiPhotograph className="w-8 h-8" />
-                  <span className="text-sm">Add photo or video</span>
-                </button>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
+                  >
+                    <HiPhotograph className="w-8 h-8" />
+                    <span className="text-sm">Add photo or video</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowSuggestions((v) => !v)}
+                    className="flex items-center gap-1.5 text-xs text-primary font-medium hover:text-primary-dark"
+                  >
+                    <HiSparkles className="w-3.5 h-3.5" />
+                    {showSuggestions ? "Hide suggested photos" : "Browse stock photos"}
+                  </button>
+                  {showSuggestions && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {suggestions.map((photo) => (
+                        <button
+                          key={photo.url}
+                          type="button"
+                          onClick={() => selectStockPhoto(photo.url)}
+                          className="relative rounded-lg overflow-hidden border border-border hover:border-primary transition-colors aspect-[3/2]"
+                        >
+                          <img src={photo.url} alt={photo.label} className="w-full h-full object-cover" />
+                          <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] px-1 py-0.5 text-center truncate">
+                            {photo.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
               <input
                 ref={fileInputRef}
@@ -870,14 +1006,41 @@ export default function CreatePostPage() {
                   </button>
                 </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
-                >
-                  <HiPhotograph className="w-8 h-8" />
-                  <span className="text-sm">Add photo or video</span>
-                </button>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
+                  >
+                    <HiPhotograph className="w-8 h-8" />
+                    <span className="text-sm">Add photo or video</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowSuggestions((v) => !v)}
+                    className="flex items-center gap-1.5 text-xs text-primary font-medium hover:text-primary-dark"
+                  >
+                    <HiSparkles className="w-3.5 h-3.5" />
+                    {showSuggestions ? "Hide suggested photos" : "Browse stock photos"}
+                  </button>
+                  {showSuggestions && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {suggestions.map((photo) => (
+                        <button
+                          key={photo.url}
+                          type="button"
+                          onClick={() => selectStockPhoto(photo.url)}
+                          className="relative rounded-lg overflow-hidden border border-border hover:border-primary transition-colors aspect-[3/2]"
+                        >
+                          <img src={photo.url} alt={photo.label} className="w-full h-full object-cover" />
+                          <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] px-1 py-0.5 text-center truncate">
+                            {photo.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
               <input
                 ref={fileInputRef}
@@ -928,6 +1091,24 @@ export default function CreatePostPage() {
             <option value="FOLLOWERS">Followers Only</option>
             <option value="PRIVATE">Private</option>
           </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Date (leave blank for today)
+          </label>
+          <input
+            type="date"
+            value={postDate}
+            onChange={(e) => setPostDate(e.target.value)}
+            max={new Date().toISOString().split("T")[0]}
+            className={inputClass}
+          />
+          {postDate && (
+            <p className="text-xs text-muted mt-1">
+              This post will appear as if posted on {new Date(postDate + "T12:00:00").toLocaleDateString()}
+            </p>
+          )}
         </div>
 
         {/* Submit */}

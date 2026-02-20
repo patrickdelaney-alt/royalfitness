@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import PostCard, { Post } from "@/components/post-card";
 
 const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS", "GENERAL"] as const;
@@ -14,12 +15,14 @@ const TYPE_EMOJI: Record<string, string> = {
 };
 
 export default function FeedPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [cursor, setCursor] = useState<string | undefined>();
   const [hasMore, setHasMore] = useState(true);
-  const [filter, setFilter] = useState<string>("ALL");
+  const [filter, setFilter] = useState<string>(searchParams.get("filter") || "ALL");
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -109,7 +112,11 @@ export default function FeedPage() {
         {POST_TYPES.map((type) => (
           <button
             key={type}
-            onClick={() => setFilter(type)}
+            onClick={() => {
+              setFilter(type);
+              const url = type === "ALL" ? "/feed" : `/feed?filter=${type}`;
+              router.replace(url, { scroll: false });
+            }}
             className={`whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${
               filter === type
                 ? "bg-primary text-white scale-105 shadow-sm"
@@ -119,7 +126,7 @@ export default function FeedPage() {
             <span className={`transition-transform duration-300 ${filter === type ? "scale-110" : ""}`}>
               {TYPE_EMOJI[type]}
             </span>
-            {type === "ALL" ? "All" : type.charAt(0) + type.slice(1).toLowerCase()}
+            {type === "ALL" ? "All" : type.charAt(0) + type.slice(1).toLowerCase() + "s"}
           </button>
         ))}
       </div>

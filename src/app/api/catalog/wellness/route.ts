@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { catalogWorkoutSchema } from "@/lib/validations";
+import { catalogWellnessSchema } from "@/lib/validations";
 
 export async function DELETE(req: NextRequest) {
   try {
@@ -17,21 +17,21 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Missing id parameter" }, { status: 400 });
     }
 
-    const workout = await prisma.savedWorkout.findUnique({ where: { id } });
+    const item = await prisma.savedWellness.findUnique({ where: { id } });
 
-    if (!workout) {
-      return NextResponse.json({ error: "Workout not found" }, { status: 404 });
+    if (!item) {
+      return NextResponse.json({ error: "Wellness item not found" }, { status: 404 });
     }
 
-    if (workout.userId !== session.user.id) {
+    if (item.userId !== session.user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    await prisma.savedWorkout.delete({ where: { id } });
+    await prisma.savedWellness.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("DELETE /api/catalog/workouts error:", error);
+    console.error("DELETE /api/catalog/wellness error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -43,18 +43,15 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const workouts = await prisma.savedWorkout.findMany({
+    const items = await prisma.savedWellness.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(workouts);
+    return NextResponse.json(items);
   } catch (error) {
-    console.error("GET /api/catalog/workouts error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error("GET /api/catalog/wellness error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -66,20 +63,22 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const data = catalogWorkoutSchema.parse(body);
+    const data = catalogWellnessSchema.parse(body);
 
-    const workout = await prisma.savedWorkout.create({
+    const item = await prisma.savedWellness.create({
       data: {
         userId: session.user.id,
         name: data.name,
-        exercisesJson: data.exercisesJson,
-        videoUrl: data.videoUrl,
+        activityType: data.activityType,
+        durationMinutes: data.durationMinutes,
+        link: data.link,
+        photoUrl: data.photoUrl,
         tags: data.tags,
         notes: data.notes,
       },
     });
 
-    return NextResponse.json(workout, { status: 201 });
+    return NextResponse.json(item, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
       return NextResponse.json(
@@ -87,10 +86,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    console.error("POST /api/catalog/workouts error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error("POST /api/catalog/wellness error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
