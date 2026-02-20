@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "RoyalFitness",
-    short_name: "RoyalFitness",
-    description: "Track workouts, meals & wellness. Connect with friends.",
+    name: "RoyalWellness Beta",
+    short_name: "RoyalWellness",
+    description: "Track your workouts. Track your nutrition. Track your wellness.",
     start_url: "/",
     display: "standalone",
     orientation: "portrait",
