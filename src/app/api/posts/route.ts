@@ -181,7 +181,8 @@ export async function POST(req: NextRequest) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const post = await prisma.$transaction(async (tx: any) => {
-      // Create the base post
+      // Create the base post (support backdating via postDate)
+      const createdAt = data.postDate ? new Date(data.postDate) : undefined;
       const newPost = await tx.post.create({
         data: {
           type: data.type,
@@ -191,6 +192,7 @@ export async function POST(req: NextRequest) {
           mediaUrl: data.mediaUrl,
           authorId: userId,
           gymId: data.gymId,
+          ...(createdAt && !isNaN(createdAt.getTime()) ? { createdAt } : {}),
         },
       });
 
