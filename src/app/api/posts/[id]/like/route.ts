@@ -61,6 +61,18 @@ export async function POST(
       data: { userId, postId },
     });
 
+    // Notify the post author (skip if liking own post)
+    if (post.authorId !== userId) {
+      await prisma.notification.create({
+        data: {
+          type: "LIKE",
+          recipientId: post.authorId,
+          actorId: userId,
+          postId,
+        },
+      }).catch((err) => console.error("Failed to create like notification:", err));
+    }
+
     const likesCount = await prisma.like.count({ where: { postId } });
 
     return NextResponse.json(

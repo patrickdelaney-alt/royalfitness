@@ -82,6 +82,15 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      // Notify the target about the follow request
+      await prisma.notification.create({
+        data: {
+          type: "FOLLOW_REQUEST",
+          recipientId: targetUserId,
+          actorId: session.user.id,
+        },
+      }).catch((err) => console.error("Failed to create follow request notification:", err));
+
       return NextResponse.json(
         { followRequest, status: "requested" },
         { status: 201 }
@@ -95,6 +104,15 @@ export async function POST(req: NextRequest) {
         followingId: targetUserId,
       },
     });
+
+    // Notify the user about the new follower
+    await prisma.notification.create({
+      data: {
+        type: "FOLLOW",
+        recipientId: targetUserId,
+        actorId: session.user.id,
+      },
+    }).catch((err) => console.error("Failed to create follow notification:", err));
 
     return NextResponse.json(
       { follow, status: "following" },

@@ -90,6 +90,15 @@ export async function POST(req: NextRequest) {
       });
     });
 
+    // Notify the requester that their follow request was accepted
+    await prisma.notification.create({
+      data: {
+        type: "FOLLOW",
+        recipientId: followRequest.senderId,
+        actorId: session.user.id,
+      },
+    }).catch((err) => console.error("Failed to create follow-accept notification:", err));
+
     return NextResponse.json({ follow, message: "Follow request accepted" });
   } catch (error) {
     console.error("Error in POST /api/social/follow-requests:", error);
