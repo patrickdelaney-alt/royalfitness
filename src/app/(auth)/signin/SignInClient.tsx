@@ -86,8 +86,9 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
       if (result?.error) {
         setError("Invalid email or password. Please try again.");
       } else {
-        router.push("/feed");
-        router.refresh();
+        // Full page navigation ensures the new session cookie is picked up
+        // by the server on the next request (client-side push can miss it).
+        window.location.href = "/feed";
       }
     } catch {
       setError("Something went wrong. Please try again.");
