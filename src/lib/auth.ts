@@ -28,6 +28,15 @@ if (!process.env.AUTH_SECRET) {
   }
 }
 
+// AUTH_URL / NEXTAUTH_URL tells NextAuth where the app is hosted so it can
+// construct callback URLs and validate requests.  On Vercel, VERCEL_URL is
+// always injected automatically — use it as a zero-config fallback.
+if (!process.env.AUTH_URL && !process.env.NEXTAUTH_URL) {
+  if (process.env.VERCEL_URL) {
+    process.env.AUTH_URL = `https://${process.env.VERCEL_URL}`;
+  }
+}
+
 // Stable cookie name — must never change after launch because it is used
 // as the JWT encryption salt. Using a prefix-free name keeps it identical
 // across local (http) and production (https) environments.
