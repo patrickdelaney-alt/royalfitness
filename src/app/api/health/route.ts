@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
+import { safeAuth } from "@/lib/safe-auth";
 
 // Temporary diagnostic endpoint — remove after debugging
 export async function GET() {
@@ -12,26 +12,27 @@ export async function GET() {
     AUTH_SECRET_set: !!process.env.AUTH_SECRET,
     AUTH_URL_set: !!process.env.AUTH_URL,
     NEXTAUTH_URL_set: !!process.env.NEXTAUTH_URL,
+    VERCEL_URL: process.env.VERCEL_URL ?? null,
   };
 
   try {
-    const session = await safeAuth();
-    info.auth_status = "ok";
-    info.auth_user = session?.user?.id ?? null;
-  } catch (err) {
-    info.auth_status = "error";
-    info.auth_error =
-      err instanceof Error ? { message: err.message, name: err.name } : String(err);
-  }
-
-  try {
-    // Minimal query — just count users
     const userCount = await prisma.user.count();
     info.db_status = "ok";
     info.user_count = userCount;
   } catch (err) {
     info.db_status = "error";
     info.db_error =
+      err instanceof Error
+        ? { message: err.message, name: err.name }
+        : String(err);
+  }
+
+  try {
+    const session = await safeAuth();
+    info.auth_status = session ? "authenticated" : "unauthenticated";
+  } catch (err) {
+    info.auth_status = "error";
+    info.auth_error =
       err instanceof Error
         ? { message: err.message, name: err.name }
         : String(err);
