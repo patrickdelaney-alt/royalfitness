@@ -110,7 +110,14 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
       </h2>
 
       {error && (
-        <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200">
+        <div
+          className="mb-4 rounded-lg p-3 text-sm border"
+          style={{
+            background: "rgba(239,68,68,0.1)",
+            borderColor: "rgba(239,68,68,0.3)",
+            color: "#fca5a5",
+          }}
+        >
           {error}
         </div>
       )}
@@ -123,7 +130,8 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
               <button
                 onClick={() => handleOAuth("apple")}
                 disabled={oauthLoading !== null || loading}
-                className="w-full flex items-center justify-center gap-3 rounded-lg bg-black text-white py-2.5 text-sm font-semibold transition-colors hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-3 rounded-xl py-3 text-sm font-semibold transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: "#1a1a1a", color: "#fff", border: "1px solid rgba(255,255,255,0.1)" }}
               >
                 <AppleIcon />
                 {oauthLoading === "apple" ? "Redirecting…" : "Sign in with Apple"}
@@ -134,7 +142,8 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
               <button
                 onClick={() => handleOAuth("google")}
                 disabled={oauthLoading !== null || loading}
-                className="w-full flex items-center justify-center gap-3 rounded-lg border border-border bg-background text-foreground py-2.5 text-sm font-semibold transition-colors hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-3 rounded-xl py-3 text-sm font-semibold transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: "rgba(255,255,255,0.06)", color: "#fff", border: "1px solid rgba(255,255,255,0.08)" }}
               >
                 <GoogleIcon />
                 {oauthLoading === "google" ? "Redirecting…" : "Sign in with Google"}
@@ -145,10 +154,13 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
           {/* ── Divider ─────────────────────────────────────────────── */}
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
+              <div className="w-full border-t border-surface" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-card px-3 text-xs text-muted">
+              <span
+                className="px-3 text-xs text-muted-dim"
+                style={{ background: "#13141f" }}
+              >
                 or continue with email
               </span>
             </div>
@@ -159,10 +171,7 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
       {/* ── Credentials form ────────────────────────────────────────── */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label
-            htmlFor="email"
-            className="mb-1 block text-sm font-medium text-foreground"
-          >
+          <label htmlFor="email" className="mb-1.5 block text-xs font-semibold text-muted-dim uppercase tracking-wider">
             Email
           </label>
           <input
@@ -172,15 +181,12 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder-muted outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="input-dark"
           />
         </div>
 
         <div>
-          <label
-            htmlFor="password"
-            className="mb-1 block text-sm font-medium text-foreground"
-          >
+          <label htmlFor="password" className="mb-1.5 block text-xs font-semibold text-muted-dim uppercase tracking-wider">
             Password
           </label>
           <input
@@ -189,25 +195,31 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Your password"
-            className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder-muted outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+            placeholder="••••••••"
+            className="input-dark"
           />
+          <div className="mt-1 text-right">
+            <span className="text-xs font-semibold" style={{ color: "#8b88f8" }}>
+              Forgot password?
+            </span>
+          </div>
         </div>
 
         <button
           type="submit"
           disabled={loading || oauthLoading !== null}
-          className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-xl py-3 text-sm font-bold text-white btn-gradient shadow-glow transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? "Signing in…" : "Sign In"}
+          {loading ? "Signing in…" : "Sign In 👑"}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-muted">
+      <p className="mt-6 text-center text-sm text-sub">
         Don&apos;t have an account?{" "}
         <Link
           href="/signup"
-          className="font-medium text-primary hover:text-primary-dark transition-colors"
+          className="font-bold transition-colors"
+          style={{ color: "#8b88f8" }}
         >
           Sign up
         </Link>

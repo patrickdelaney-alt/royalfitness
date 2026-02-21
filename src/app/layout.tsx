@@ -12,7 +12,7 @@ export const viewport: Viewport = {
   // Prevents iOS from zooming in when a form input is focused
   maximumScale: 1,
   // Colours the browser chrome / status bar to match the app
-  themeColor: "#2563EB",
+  themeColor: "#6d6af5",
 };
 
 export const metadata: Metadata = {

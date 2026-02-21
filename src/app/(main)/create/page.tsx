@@ -55,39 +55,174 @@ interface Exercise {
 const emptySet = (): ExerciseSet => ({ reps: "", weight: "", unit: "lbs", rpe: "" });
 const emptyExercise = (): Exercise => ({ name: "", sets: [emptySet()] });
 
-const moodLabels: Record<number, string> = {
-  1: "Awful",
-  2: "Bad",
-  3: "Meh",
-  4: "Low",
-  5: "Okay",
-  6: "Decent",
-  7: "Good",
-  8: "Great",
-  9: "Amazing",
-  10: "On Top",
+// ── Muscle Groups ────────────────────────────────────────────
+interface MuscleGroup {
+  id: string;
+  label: string;
+  icon: (active: boolean) => React.ReactNode;
+}
+
+const MUSCLES: MuscleGroup[] = [
+  {
+    id: "chest",
+    label: "Chest",
+    icon: (active) => (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
+        <path d="M12 8C10 6 6 5 3 7v8c3-2 6-2 9 0 3-2 6-2 9 0V7c-3-2-7-1-9 1z" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+  {
+    id: "back",
+    label: "Back",
+    icon: (active) => (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
+        <path d="M12 3v18M8 6l4-3 4 3M8 18l4 3 4-3M5 10h14M5 14h14" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    id: "legs",
+    label: "Legs",
+    icon: (active) => (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
+        <path d="M9 3h2v8l-2 10M15 3h-2v8l2 10M7 11h10" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+  {
+    id: "shoulders",
+    label: "Shoulders",
+    icon: (active) => (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
+        <circle cx="12" cy="7" r="2"/>
+        <path d="M4 10c2-3 4-4 8-3s6 0 8 3" strokeLinecap="round"/>
+        <path d="M4 10v8M20 10v8" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    id: "arms",
+    label: "Arms",
+    icon: (active) => (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
+        <path d="M6 6c0 0 2-2 4-1s3 3 3 5-1 4-2 5l-2 5" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M18 6c0 0-2-2-4-1s-3 3-3 5 1 4 2 5l2 5" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+  {
+    id: "core",
+    label: "Core",
+    icon: (active) => (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
+        <rect x="8" y="4" width="8" height="16" rx="2"/>
+        <line x1="8" y1="9" x2="16" y2="9"/>
+        <line x1="8" y1="13" x2="16" y2="13"/>
+        <line x1="12" y1="4" x2="12" y2="20"/>
+      </svg>
+    ),
+  },
+  {
+    id: "glutes",
+    label: "Glutes",
+    icon: (active) => (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
+        <path d="M5 8c0-3 3-5 7-5s7 2 7 5c0 4-2 7-7 9-5-2-7-5-7-9z" strokeLinejoin="round"/>
+        <line x1="12" y1="3" x2="12" y2="17"/>
+      </svg>
+    ),
+  },
+  {
+    id: "cardio",
+    label: "Cardio",
+    icon: (active) => (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
+        <path d="M3 12h3l2-7 4 14 2-7h7" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+];
+
+const MUSCLE_NAMES: Record<string, string> = {
+  chest: "Chest",
+  back: "Back",
+  legs: "Legs",
+  shoulders: "Shoulders",
+  arms: "Arms",
+  core: "Core",
+  glutes: "Glutes",
+  cardio: "Cardio",
 };
 
-function MoodSlider({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (v: number) => void;
-}) {
-  const pct = ((value - 1) / 9) * 100;
-  // Color goes from red (1) to yellow (5) to green (10)
-  const hue = (value - 1) * (120 / 9); // 0 = red, 120 = green
+// ── Energy Slider ────────────────────────────────────────────
+const ENERGY_STEPS = [
+  { value: 1, emoji: "💀" },
+  { value: 3, emoji: "😮‍💨" },
+  { value: 5, emoji: "😐" },
+  { value: 7, emoji: "💪" },
+  { value: 9, emoji: "🔥" },
+  { value: 10, emoji: "🔥" },
+];
 
+function sliderTrackColor(value: number): string {
+  const pct = ((value - 1) / 9) * 100;
+  // purple(1) → amber(5) → red(10)
+  if (value <= 5) {
+    return `linear-gradient(to right, #6d6af5 0%, #f59e0b ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`;
+  }
+  return `linear-gradient(to right, #6d6af5 0%, #f59e0b 44%, #ef4444 ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`;
+}
+
+function EnergySlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const currentEmoji = ENERGY_STEPS.reduce((acc, s) => (value >= s.value ? s.emoji : acc), "💀");
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <label className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.9)" }}>
+          Energy Level
+        </label>
+        <span className="text-xl">{currentEmoji}</span>
+      </div>
+      <div className="relative pt-1 pb-1">
+        <input
+          type="range"
+          min={1}
+          max={10}
+          step={1}
+          value={value}
+          onChange={(e) => onChange(parseInt(e.target.value))}
+          className="energy-slider w-full h-2 appearance-none rounded-full cursor-pointer"
+          style={{ background: sliderTrackColor(value) }}
+        />
+        <div className="flex justify-between mt-2 px-0.5">
+          {ENERGY_STEPS.slice(0, 5).map((s) => (
+            <span key={s.value} className="text-sm">{s.emoji}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Mood Slider (for Wellness) ────────────────────────────────
+const moodLabels: Record<number, string> = {
+  1: "Awful", 2: "Bad", 3: "Meh", 4: "Low", 5: "Okay",
+  6: "Decent", 7: "Good", 8: "Great", 9: "Amazing", 10: "On Top",
+};
+
+function MoodSlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const pct = ((value - 1) / 9) * 100;
+  const hue = (value - 1) * (120 / 9);
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <label className="text-sm font-medium text-foreground">Mood After</label>
+        <label className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.9)" }}>Mood After</label>
         <span
           className="text-sm font-semibold px-2 py-0.5 rounded-full"
-          style={{ backgroundColor: `hsl(${hue}, 80%, 90%)`, color: `hsl(${hue}, 70%, 30%)` }}
+          style={{ backgroundColor: `hsl(${hue}, 70%, 20%)`, color: `hsl(${hue}, 80%, 65%)` }}
         >
-          {value} &mdash; {moodLabels[value]}
+          {value} — {moodLabels[value]}
         </span>
       </div>
       <div className="relative pt-1 pb-2">
@@ -98,41 +233,103 @@ function MoodSlider({
           step={1}
           value={value}
           onChange={(e) => onChange(parseInt(e.target.value))}
-          className="w-full h-2 appearance-none rounded-full cursor-pointer"
+          className="energy-slider w-full h-2 appearance-none rounded-full cursor-pointer"
           style={{
-            background: `linear-gradient(to right, hsl(${hue}, 80%, 55%) 0%, hsl(${hue}, 80%, 55%) ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`,
+            background: `linear-gradient(to right, hsl(${hue},80%,45%) 0%, hsl(${hue},80%,45%) ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`,
           }}
         />
-        <style jsx>{`
-          input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            height: 24px;
-            width: 24px;
-            border-radius: 50%;
-            background: white;
-            border: 3px solid hsl(${hue}, 80%, 55%);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-            cursor: pointer;
-          }
-          input[type="range"]::-moz-range-thumb {
-            height: 24px;
-            width: 24px;
-            border-radius: 50%;
-            background: white;
-            border: 3px solid hsl(${hue}, 80%, 55%);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-            cursor: pointer;
-          }
-        `}</style>
         <div className="flex justify-between mt-1 px-0.5">
           {Array.from({ length: 10 }, (_, i) => (
-            <span key={i} className="text-[10px] text-muted w-4 text-center">
+            <span key={i} className="text-[10px] w-4 text-center" style={{ color: "rgba(255,255,255,0.3)" }}>
               {i + 1}
             </span>
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Media Upload Block (shared across types) ─────────────────
+function MediaBlock({
+  mediaPreview, uploading, onRemove, onFileClick, showSuggestions, onToggleSuggestions, suggestions, onSelectStock, fileInputRef, onFileChange,
+}: {
+  mediaPreview: string | null;
+  uploading: boolean;
+  onRemove: () => void;
+  onFileClick: () => void;
+  showSuggestions: boolean;
+  onToggleSuggestions: () => void;
+  suggestions: { url: string; label: string }[];
+  onSelectStock: (url: string) => void;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Photo / Video</label>
+      {mediaPreview ? (
+        <div className="relative rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
+          <img src={mediaPreview} alt="Preview" className="w-full max-h-60 object-cover" />
+          {uploading && (
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+          <button onClick={onRemove} className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80">
+            <HiX className="w-4 h-4" />
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={onFileClick}
+            className="w-full rounded-xl py-8 flex flex-col items-center gap-2 transition-colors"
+            style={{
+              border: "2px dashed rgba(255,255,255,0.12)",
+              color: "rgba(255,255,255,0.35)",
+            }}
+          >
+            <HiPhotograph className="w-8 h-8" />
+            <span className="text-sm">Add photo or video</span>
+          </button>
+          <button
+            type="button"
+            onClick={onToggleSuggestions}
+            className="flex items-center gap-1.5 text-xs font-medium"
+            style={{ color: "#8b88f8" }}
+          >
+            <HiSparkles className="w-3.5 h-3.5" />
+            {showSuggestions ? "Hide suggested photos" : "Browse stock photos"}
+          </button>
+          {showSuggestions && (
+            <div className="grid grid-cols-3 gap-2">
+              {suggestions.map((photo) => (
+                <button
+                  key={photo.url}
+                  type="button"
+                  onClick={() => onSelectStock(photo.url)}
+                  className="relative rounded-lg overflow-hidden transition-colors aspect-[3/2]"
+                  style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+                >
+                  <img src={photo.url} alt={photo.label} className="w-full h-full object-cover" />
+                  <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] px-1 py-0.5 text-center truncate">
+                    {photo.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,video/mp4,video/quicktime"
+        className="hidden"
+        onChange={onFileChange}
+      />
     </div>
   );
 }
@@ -155,6 +352,7 @@ export default function CreatePostPage() {
   const [tags, setTags] = useState("");
   const [visibility, setVisibility] = useState<"PUBLIC" | "FOLLOWERS" | "PRIVATE">("PUBLIC");
   const [postDate, setPostDate] = useState("");
+  const [showBackdate, setShowBackdate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -165,10 +363,12 @@ export default function CreatePostPage() {
 
   // Workout fields
   const [workoutName, setWorkoutName] = useState("");
+  const [editingName, setEditingName] = useState(false);
+  const [selectedMuscles, setSelectedMuscles] = useState<string[]>([]);
   const [isClass, setIsClass] = useState(false);
   const [durationMinutes, setDurationMinutes] = useState("");
   const [perceivedExertion, setPerceivedExertion] = useState("");
-  const [moodAfter, setMoodAfter] = useState(7);
+  const [energy, setEnergy] = useState(7);
   const [workoutNotes, setWorkoutNotes] = useState("");
   const [exercises, setExercises] = useState<Exercise[]>([]);
 
@@ -199,16 +399,31 @@ export default function CreatePostPage() {
   const [wellnessMood, setWellnessMood] = useState(7);
   const [wellnessNotes, setWellnessNotes] = useState("");
 
-  // ── Media upload ──────────────────────────────────────────────
+  // ── Muscle toggle with auto-name ──────────────────────────
+  const toggleMuscle = (id: string) => {
+    setSelectedMuscles((prev) => {
+      const next = prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id];
+      if (!editingName) {
+        if (next.length === 0) {
+          setWorkoutName("");
+        } else if (next.length === 1) {
+          setWorkoutName(`${MUSCLE_NAMES[next[0]]} Day`);
+        } else {
+          const [first, ...rest] = next;
+          setWorkoutName(`${MUSCLE_NAMES[first]} + ${rest.length} more`);
+        }
+      }
+      return next;
+    });
+  };
 
+  // ── Media upload ──────────────────────────────────────────
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setMediaPreview(URL.createObjectURL(file));
     setUploading(true);
     setError("");
-
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -235,68 +450,40 @@ export default function CreatePostPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // ── Exercise helpers ──────────────────────────────────────────
-
+  // ── Exercise helpers ──────────────────────────────────────
   const addExercise = () => setExercises((prev) => [...prev, emptyExercise()]);
-
-  const removeExercise = (idx: number) =>
-    setExercises((prev) => prev.filter((_, i) => i !== idx));
-
+  const removeExercise = (idx: number) => setExercises((prev) => prev.filter((_, i) => i !== idx));
   const updateExerciseName = (idx: number, name: string) =>
-    setExercises((prev) =>
-      prev.map((ex, i) => (i === idx ? { ...ex, name } : ex))
-    );
-
+    setExercises((prev) => prev.map((ex, i) => (i === idx ? { ...ex, name } : ex)));
   const addSet = (exIdx: number) =>
     setExercises((prev) =>
-      prev.map((ex, i) =>
-        i === exIdx ? { ...ex, sets: [...ex.sets, emptySet()] } : ex
-      )
+      prev.map((ex, i) => (i === exIdx ? { ...ex, sets: [...ex.sets, emptySet()] } : ex))
     );
-
   const removeSet = (exIdx: number, setIdx: number) =>
     setExercises((prev) =>
       prev.map((ex, i) =>
-        i === exIdx
-          ? { ...ex, sets: ex.sets.filter((_, si) => si !== setIdx) }
-          : ex
+        i === exIdx ? { ...ex, sets: ex.sets.filter((_, si) => si !== setIdx) } : ex
       )
     );
-
-  const updateSet = (
-    exIdx: number,
-    setIdx: number,
-    field: keyof ExerciseSet,
-    value: string
-  ) =>
+  const updateSet = (exIdx: number, setIdx: number, field: keyof ExerciseSet, value: string) =>
     setExercises((prev) =>
       prev.map((ex, i) =>
         i === exIdx
-          ? {
-              ...ex,
-              sets: ex.sets.map((s, si) =>
-                si === setIdx ? { ...s, [field]: value } : s
-              ),
-            }
+          ? { ...ex, sets: ex.sets.map((s, si) => (si === setIdx ? { ...s, [field]: value } : s)) }
           : ex
       )
     );
 
-  // ── Submit ────────────────────────────────────────────────────
-
+  // ── Submit ────────────────────────────────────────────────
   const handleSubmit = async () => {
     setError("");
     setSubmitting(true);
-
     try {
       const body: Record<string, unknown> = {
         type,
         caption: caption || undefined,
         visibility,
-        tags: tags
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean),
+        tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
         mediaUrl: mediaUrl || undefined,
         postDate: postDate || undefined,
       };
@@ -312,7 +499,7 @@ export default function CreatePostPage() {
           isClass,
           durationMinutes: durationMinutes ? parseInt(durationMinutes) : undefined,
           perceivedExertion: perceivedExertion ? parseInt(perceivedExertion) : undefined,
-          moodAfter,
+          moodAfter: energy,
           notes: workoutNotes || undefined,
           exercises: exercises
             .filter((ex) => ex.name.trim())
@@ -339,10 +526,7 @@ export default function CreatePostPage() {
         body.meal = {
           mealName: mealName.trim(),
           mealType,
-          ingredients: ingredients
-            .split(",")
-            .map((i) => i.trim())
-            .filter(Boolean),
+          ingredients: ingredients.split(",").map((i) => i.trim()).filter(Boolean),
           calories: calories ? parseInt(calories) : undefined,
           protein: protein ? parseFloat(protein) : undefined,
           carbs: carbs ? parseFloat(carbs) : undefined,
@@ -386,233 +570,201 @@ export default function CreatePostPage() {
     }
   };
 
-  const inputClass =
-    "w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary";
+  const mediaProps = {
+    mediaPreview,
+    uploading,
+    onRemove: removeMedia,
+    onFileClick: () => fileInputRef.current?.click(),
+    showSuggestions,
+    onToggleSuggestions: () => setShowSuggestions((v) => !v),
+    suggestions,
+    onSelectStock: selectStockPhoto,
+    fileInputRef,
+    onFileChange: handleFileChange,
+  };
+
+  const TYPE_LABELS: Record<PostType, string> = {
+    WORKOUT: "Workout",
+    MEAL: "Meal",
+    WELLNESS: "Wellness",
+    GENERAL: "General",
+  };
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-8">
+    <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => router.back()} className="text-muted hover:text-foreground">
+        <button
+          onClick={() => router.back()}
+          className="p-2 rounded-xl transition-colors"
+          style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)" }}
+        >
           <HiArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-lg font-bold text-foreground">New Post</h1>
+        <h1 className="text-lg font-bold">New Post</h1>
       </div>
 
       {/* Post type selector */}
-      <div className="flex gap-2 mb-5">
+      <div className="flex gap-2 mb-5 p-1 rounded-xl" style={{ background: "rgba(255,255,255,0.04)" }}>
         {(["WORKOUT", "MEAL", "WELLNESS", "GENERAL"] as PostType[]).map((t) => (
           <button
             key={t}
             onClick={() => setType(t)}
-            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all"
+            style={
               type === t
-                ? "bg-primary text-white"
-                : "bg-gray-100 text-muted hover:bg-gray-200"
-            }`}
+                ? { background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)", color: "#ffffff" }
+                : { background: "transparent", color: "rgba(255,255,255,0.4)" }
+            }
           >
-            {t.charAt(0) + t.slice(1).toLowerCase() + "s"}
+            {TYPE_LABELS[t]}
           </button>
         ))}
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-sm">{error}</div>
+        <div className="mb-4 p-3 rounded-xl text-sm" style={{ background: "rgba(239,68,68,0.15)", color: "#f87171", border: "1px solid rgba(239,68,68,0.3)" }}>
+          {error}
+        </div>
       )}
 
       <div className="space-y-4">
         {/* ─── WORKOUT ─────────────────────────────────────── */}
         {type === "WORKOUT" && (
           <>
-            {/* 1. Workout Name (top) */}
+            {/* 1. Muscle group selector */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
+              <label className="block text-sm font-medium mb-2" style={{ color: "rgba(255,255,255,0.9)" }}>
+                Target Muscles
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {MUSCLES.map((m) => {
+                  const active = selectedMuscles.includes(m.id);
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => toggleMuscle(m.id)}
+                      className="flex flex-col items-center gap-1.5 py-3 rounded-xl transition-all text-xs font-medium"
+                      style={
+                        active
+                          ? {
+                              background: "rgba(109,106,245,0.2)",
+                              border: "1px solid rgba(139,136,248,0.5)",
+                              color: "#8b88f8",
+                            }
+                          : {
+                              background: "rgba(255,255,255,0.04)",
+                              border: "1px solid rgba(255,255,255,0.07)",
+                              color: "rgba(255,255,255,0.4)",
+                            }
+                      }
+                    >
+                      {m.icon(active)}
+                      {m.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 2. Workout Name */}
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>
                 Workout Name *
               </label>
               <input
                 value={workoutName}
-                onChange={(e) => setWorkoutName(e.target.value)}
+                onChange={(e) => {
+                  setWorkoutName(e.target.value);
+                  setEditingName(true);
+                }}
+                onBlur={() => { if (!workoutName.trim()) setEditingName(false); }}
                 placeholder="e.g. Upper Body, Leg Day"
-                className={inputClass}
+                className="input-dark w-full"
               />
             </div>
 
-            {/* 2. Photo / Video */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Photo / Video</label>
-              {mediaPreview ? (
-                <div className="relative rounded-lg overflow-hidden border border-border">
-                  <img src={mediaPreview} alt="Preview" className="w-full max-h-60 object-cover" />
-                  {uploading && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    </div>
-                  )}
-                  <button
-                    onClick={removeMedia}
-                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
-                  >
-                    <HiX className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
-                  >
-                    <HiPhotograph className="w-8 h-8" />
-                    <span className="text-sm">Add photo or video</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowSuggestions((v) => !v)}
-                    className="flex items-center gap-1.5 text-xs text-primary font-medium hover:text-primary-dark"
-                  >
-                    <HiSparkles className="w-3.5 h-3.5" />
-                    {showSuggestions ? "Hide suggested photos" : "Browse stock photos"}
-                  </button>
-                  {showSuggestions && (
-                    <div className="grid grid-cols-3 gap-2">
-                      {suggestions.map((photo) => (
-                        <button
-                          key={photo.url}
-                          type="button"
-                          onClick={() => selectStockPhoto(photo.url)}
-                          className="relative rounded-lg overflow-hidden border border-border hover:border-primary transition-colors aspect-[3/2]"
-                        >
-                          <img src={photo.url} alt={photo.label} className="w-full h-full object-cover" />
-                          <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] px-1 py-0.5 text-center truncate">
-                            {photo.label}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*,video/mp4,video/quicktime"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-            </div>
+            {/* 3. Media */}
+            <MediaBlock {...mediaProps} />
 
-            {/* 3. Mood After (slider) */}
-            <MoodSlider value={moodAfter} onChange={setMoodAfter} />
+            {/* 4. Energy slider */}
+            <EnergySlider value={energy} onChange={setEnergy} />
 
-            {/* 4. Caption */}
+            {/* 5. Caption */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Caption</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Caption</label>
               <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 rows={3}
                 placeholder="How did the workout go?"
-                className={inputClass + " resize-none"}
+                className="textarea-dark w-full resize-none"
               />
             </div>
 
-            {/* Additional workout fields */}
-            <div className="flex items-center">
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isClass}
-                  onChange={(e) => setIsClass(e.target.checked)}
-                  className="accent-primary w-4 h-4"
-                />
-                <span className="text-foreground">Group class</span>
-              </label>
-            </div>
+            {/* Group class toggle */}
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isClass}
+                onChange={(e) => setIsClass(e.target.checked)}
+                className="accent-primary w-4 h-4"
+              />
+              <span style={{ color: "rgba(255,255,255,0.8)" }}>Group class</span>
+            </label>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Duration (min)
-                </label>
-                <input
-                  type="number"
-                  value={durationMinutes}
-                  onChange={(e) => setDurationMinutes(e.target.value)}
-                  placeholder="60"
-                  className={inputClass}
-                />
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Duration (min)</label>
+                <input type="number" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} placeholder="60" className="input-dark w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Exertion (1-10)
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={perceivedExertion}
-                  onChange={(e) => setPerceivedExertion(e.target.value)}
-                  placeholder="7"
-                  className={inputClass}
-                />
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Exertion (1-10)</label>
+                <input type="number" min="1" max="10" value={perceivedExertion} onChange={(e) => setPerceivedExertion(e.target.value)} placeholder="7" className="input-dark w-full" />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Notes</label>
-              <textarea
-                value={workoutNotes}
-                onChange={(e) => setWorkoutNotes(e.target.value)}
-                rows={2}
-                placeholder="Any notes about this workout..."
-                className={inputClass + " resize-none"}
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Notes</label>
+              <textarea value={workoutNotes} onChange={(e) => setWorkoutNotes(e.target.value)} rows={2} placeholder="Any notes about this workout..." className="textarea-dark w-full resize-none" />
             </div>
 
             {/* Exercises */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium text-foreground">Exercises</label>
-                <button
-                  type="button"
-                  onClick={addExercise}
-                  className="flex items-center gap-1 text-xs text-primary font-medium hover:text-primary-dark"
-                >
+                <label className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.9)" }}>Exercises</label>
+                <button type="button" onClick={addExercise} className="flex items-center gap-1 text-xs font-medium" style={{ color: "#8b88f8" }}>
                   <HiPlus className="w-4 h-4" />
                   Add exercise
                 </button>
               </div>
 
               {exercises.length === 0 && (
-                <p className="text-xs text-muted text-center py-3 border border-dashed border-border rounded-lg">
+                <p className="text-xs text-center py-3 rounded-xl" style={{ border: "1px dashed rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.25)" }}>
                   No exercises added yet
                 </p>
               )}
 
               <div className="space-y-3">
                 {exercises.map((ex, exIdx) => (
-                  <div key={exIdx} className="border border-border rounded-xl p-3 bg-gray-50/50">
+                  <div key={exIdx} className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
                     <div className="flex gap-2 mb-2">
                       <input
                         value={ex.name}
                         onChange={(e) => updateExerciseName(exIdx, e.target.value)}
                         placeholder="Exercise name (e.g. Bench Press)"
-                        className={inputClass + " flex-1"}
+                        className="input-dark flex-1"
                       />
-                      <button
-                        type="button"
-                        onClick={() => removeExercise(exIdx)}
-                        className="text-muted hover:text-red-500 flex-shrink-0"
-                      >
+                      <button type="button" onClick={() => removeExercise(exIdx)} className="flex-shrink-0" style={{ color: "rgba(255,255,255,0.3)" }}>
                         <HiTrash className="w-5 h-5" />
                       </button>
                     </div>
 
-                    {/* Sets */}
                     <div className="space-y-2">
                       {ex.sets.map((set, setIdx) => (
                         <div key={setIdx} className="flex gap-1.5 items-center">
-                          <span className="text-xs text-muted w-8 flex-shrink-0 text-center font-medium">
+                          <span className="text-xs w-8 flex-shrink-0 text-center font-medium" style={{ color: "rgba(255,255,255,0.3)" }}>
                             S{setIdx + 1}
                           </span>
                           <input
@@ -620,19 +772,19 @@ export default function CreatePostPage() {
                             value={set.reps}
                             onChange={(e) => updateSet(exIdx, setIdx, "reps", e.target.value)}
                             placeholder="Reps"
-                            className="border border-border rounded-md px-2 py-1 text-xs bg-background focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary w-16"
+                            className="input-dark w-16 text-xs px-2 py-1"
                           />
                           <input
                             type="number"
                             value={set.weight}
                             onChange={(e) => updateSet(exIdx, setIdx, "weight", e.target.value)}
-                            placeholder="Weight"
-                            className="border border-border rounded-md px-2 py-1 text-xs bg-background focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary w-20"
+                            placeholder="Wt"
+                            className="input-dark w-20 text-xs px-2 py-1"
                           />
                           <select
                             value={set.unit}
                             onChange={(e) => updateSet(exIdx, setIdx, "unit", e.target.value)}
-                            className="border border-border rounded-md px-1 py-1 text-xs bg-background focus:outline-none w-14"
+                            className="select-dark w-14 text-xs px-1 py-1"
                           >
                             <option value="lbs">lbs</option>
                             <option value="kg">kg</option>
@@ -644,14 +796,10 @@ export default function CreatePostPage() {
                             value={set.rpe}
                             onChange={(e) => updateSet(exIdx, setIdx, "rpe", e.target.value)}
                             placeholder="RPE"
-                            className="border border-border rounded-md px-2 py-1 text-xs bg-background focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary w-14"
+                            className="input-dark w-14 text-xs px-2 py-1"
                           />
                           {ex.sets.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removeSet(exIdx, setIdx)}
-                              className="text-muted hover:text-red-500 flex-shrink-0"
-                            >
+                            <button type="button" onClick={() => removeSet(exIdx, setIdx)} style={{ color: "rgba(255,255,255,0.25)" }}>
                               <HiX className="w-3.5 h-3.5" />
                             </button>
                           )}
@@ -659,11 +807,7 @@ export default function CreatePostPage() {
                       ))}
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => addSet(exIdx)}
-                      className="mt-2 flex items-center gap-1 text-xs text-muted hover:text-primary"
-                    >
+                    <button type="button" onClick={() => addSet(exIdx)} className="mt-2 flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
                       <HiPlus className="w-3.5 h-3.5" />
                       Add set
                     </button>
@@ -677,172 +821,55 @@ export default function CreatePostPage() {
         {/* ─── MEAL ────────────────────────────────────────── */}
         {type === "MEAL" && (
           <>
-            {/* 1. Meal Name (top) */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
-                Meal Name *
-              </label>
-              <input
-                value={mealName}
-                onChange={(e) => setMealName(e.target.value)}
-                placeholder="e.g. Protein Smoothie, Chicken Rice Bowl"
-                className={inputClass}
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Meal Name *</label>
+              <input value={mealName} onChange={(e) => setMealName(e.target.value)} placeholder="e.g. Protein Smoothie, Chicken Rice Bowl" className="input-dark w-full" />
             </div>
 
-            {/* 2. Photo / Video */}
+            <MediaBlock {...mediaProps} />
+
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Photo / Video</label>
-              {mediaPreview ? (
-                <div className="relative rounded-lg overflow-hidden border border-border">
-                  <img src={mediaPreview} alt="Preview" className="w-full max-h-60 object-cover" />
-                  {uploading && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    </div>
-                  )}
-                  <button
-                    onClick={removeMedia}
-                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
-                  >
-                    <HiX className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
-                  >
-                    <HiPhotograph className="w-8 h-8" />
-                    <span className="text-sm">Add photo or video</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowSuggestions((v) => !v)}
-                    className="flex items-center gap-1.5 text-xs text-primary font-medium hover:text-primary-dark"
-                  >
-                    <HiSparkles className="w-3.5 h-3.5" />
-                    {showSuggestions ? "Hide suggested photos" : "Browse stock photos"}
-                  </button>
-                  {showSuggestions && (
-                    <div className="grid grid-cols-3 gap-2">
-                      {suggestions.map((photo) => (
-                        <button
-                          key={photo.url}
-                          type="button"
-                          onClick={() => selectStockPhoto(photo.url)}
-                          className="relative rounded-lg overflow-hidden border border-border hover:border-primary transition-colors aspect-[3/2]"
-                        >
-                          <img src={photo.url} alt={photo.label} className="w-full h-full object-cover" />
-                          <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] px-1 py-0.5 text-center truncate">
-                            {photo.label}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*,video/mp4,video/quicktime"
-                className="hidden"
-                onChange={handleFileChange}
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Caption</label>
+              <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={3} placeholder="Tell us about this meal..." className="textarea-dark w-full resize-none" />
             </div>
 
-            {/* 3. Caption */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Caption</label>
-              <textarea
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                rows={3}
-                placeholder="Tell us about this meal..."
-                className={inputClass + " resize-none"}
-              />
-            </div>
-
-            {/* Meal-specific fields */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Meal Type</label>
-              <select
-                value={mealType}
-                onChange={(e) => setMealType(e.target.value)}
-                className={inputClass}
-              >
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Meal Type</label>
+              <select value={mealType} onChange={(e) => setMealType(e.target.value)} className="select-dark w-full">
                 <option value="breakfast">Breakfast</option>
                 <option value="lunch">Lunch</option>
                 <option value="dinner">Dinner</option>
                 <option value="snack">Snack</option>
               </select>
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
-                Ingredients (comma-separated)
-              </label>
-              <input
-                value={ingredients}
-                onChange={(e) => setIngredients(e.target.value)}
-                placeholder="chicken, rice, broccoli"
-                className={inputClass}
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Ingredients (comma-separated)</label>
+              <input value={ingredients} onChange={(e) => setIngredients(e.target.value)} placeholder="chicken, rice, broccoli" className="input-dark w-full" />
             </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Calories</label>
-                <input
-                  type="number"
-                  value={calories}
-                  onChange={(e) => setCalories(e.target.value)}
-                  placeholder="500"
-                  className={inputClass}
-                />
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Calories</label>
+                <input type="number" value={calories} onChange={(e) => setCalories(e.target.value)} placeholder="500" className="input-dark w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Protein (g)
-                </label>
-                <input
-                  type="number"
-                  value={protein}
-                  onChange={(e) => setProtein(e.target.value)}
-                  placeholder="30"
-                  className={inputClass}
-                />
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Protein (g)</label>
+                <input type="number" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="30" className="input-dark w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Carbs (g)</label>
-                <input
-                  type="number"
-                  value={carbs}
-                  onChange={(e) => setCarbs(e.target.value)}
-                  placeholder="50"
-                  className={inputClass}
-                />
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Carbs (g)</label>
+                <input type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="50" className="input-dark w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Fat (g)</label>
-                <input
-                  type="number"
-                  value={fat}
-                  onChange={(e) => setFat(e.target.value)}
-                  placeholder="15"
-                  className={inputClass}
-                />
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Fat (g)</label>
+                <input type="number" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="15" className="input-dark w-full" />
               </div>
             </div>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={saveToCatalog}
-                onChange={(e) => setSaveToCatalog(e.target.checked)}
-                className="accent-primary w-4 h-4"
-              />
-              <span className="text-foreground">Save to my meal catalog</span>
+
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" checked={saveToCatalog} onChange={(e) => setSaveToCatalog(e.target.checked)} className="accent-primary w-4 h-4" />
+              <span style={{ color: "rgba(255,255,255,0.8)" }}>Save to my meal catalog</span>
             </label>
           </>
         )}
@@ -850,136 +877,34 @@ export default function CreatePostPage() {
         {/* ─── WELLNESS ────────────────────────────────────── */}
         {type === "WELLNESS" && (
           <>
-            {/* 1. Activity Type (top) */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
-                Activity Type *
-              </label>
-              <input
-                value={activityType}
-                onChange={(e) => setActivityType(e.target.value)}
-                placeholder="e.g. Yoga, Meditation, Sauna"
-                className={inputClass}
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Activity Type *</label>
+              <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="e.g. Yoga, Meditation, Sauna" className="input-dark w-full" />
             </div>
 
-            {/* 2. Photo / Video */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Photo / Video</label>
-              {mediaPreview ? (
-                <div className="relative rounded-lg overflow-hidden border border-border">
-                  <img src={mediaPreview} alt="Preview" className="w-full max-h-60 object-cover" />
-                  {uploading && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    </div>
-                  )}
-                  <button
-                    onClick={removeMedia}
-                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
-                  >
-                    <HiX className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
-                  >
-                    <HiPhotograph className="w-8 h-8" />
-                    <span className="text-sm">Add photo or video</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowSuggestions((v) => !v)}
-                    className="flex items-center gap-1.5 text-xs text-primary font-medium hover:text-primary-dark"
-                  >
-                    <HiSparkles className="w-3.5 h-3.5" />
-                    {showSuggestions ? "Hide suggested photos" : "Browse stock photos"}
-                  </button>
-                  {showSuggestions && (
-                    <div className="grid grid-cols-3 gap-2">
-                      {suggestions.map((photo) => (
-                        <button
-                          key={photo.url}
-                          type="button"
-                          onClick={() => selectStockPhoto(photo.url)}
-                          className="relative rounded-lg overflow-hidden border border-border hover:border-primary transition-colors aspect-[3/2]"
-                        >
-                          <img src={photo.url} alt={photo.label} className="w-full h-full object-cover" />
-                          <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] px-1 py-0.5 text-center truncate">
-                            {photo.label}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*,video/mp4,video/quicktime"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-            </div>
+            <MediaBlock {...mediaProps} />
 
-            {/* 3. Mood After (slider) */}
             <MoodSlider value={wellnessMood} onChange={setWellnessMood} />
 
-            {/* 4. Caption */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Caption</label>
-              <textarea
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                rows={3}
-                placeholder="How did it go?"
-                className={inputClass + " resize-none"}
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Caption</label>
+              <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={3} placeholder="How did it go?" className="textarea-dark w-full resize-none" />
             </div>
 
-            {/* Additional wellness fields */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Duration (min)
-                </label>
-                <input
-                  type="number"
-                  value={wellnessDuration}
-                  onChange={(e) => setWellnessDuration(e.target.value)}
-                  placeholder="30"
-                  className={inputClass}
-                />
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Duration (min)</label>
+                <input type="number" value={wellnessDuration} onChange={(e) => setWellnessDuration(e.target.value)} placeholder="30" className="input-dark w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Intensity (1-10)
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={intensity}
-                  onChange={(e) => setIntensity(e.target.value)}
-                  placeholder="5"
-                  className={inputClass}
-                />
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Intensity (1-10)</label>
+                <input type="number" min="1" max="10" value={intensity} onChange={(e) => setIntensity(e.target.value)} placeholder="5" className="input-dark w-full" />
               </div>
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Notes</label>
-              <textarea
-                value={wellnessNotes}
-                onChange={(e) => setWellnessNotes(e.target.value)}
-                rows={2}
-                placeholder="Any notes..."
-                className={inputClass + " resize-none"}
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Notes</label>
+              <textarea value={wellnessNotes} onChange={(e) => setWellnessNotes(e.target.value)} rows={2} placeholder="Any notes..." className="textarea-dark w-full resize-none" />
             </div>
           </>
         )}
@@ -987,127 +912,70 @@ export default function CreatePostPage() {
         {/* ─── GENERAL ─────────────────────────────────────── */}
         {type === "GENERAL" && (
           <>
-            {/* 1. Photo / Video */}
+            <MediaBlock {...mediaProps} />
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Photo / Video</label>
-              {mediaPreview ? (
-                <div className="relative rounded-lg overflow-hidden border border-border">
-                  <img src={mediaPreview} alt="Preview" className="w-full max-h-60 object-cover" />
-                  {uploading && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    </div>
-                  )}
-                  <button
-                    onClick={removeMedia}
-                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
-                  >
-                    <HiX className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full border-2 border-dashed border-border rounded-lg py-8 flex flex-col items-center gap-2 text-muted hover:border-primary/50 hover:text-primary transition-colors"
-                  >
-                    <HiPhotograph className="w-8 h-8" />
-                    <span className="text-sm">Add photo or video</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowSuggestions((v) => !v)}
-                    className="flex items-center gap-1.5 text-xs text-primary font-medium hover:text-primary-dark"
-                  >
-                    <HiSparkles className="w-3.5 h-3.5" />
-                    {showSuggestions ? "Hide suggested photos" : "Browse stock photos"}
-                  </button>
-                  {showSuggestions && (
-                    <div className="grid grid-cols-3 gap-2">
-                      {suggestions.map((photo) => (
-                        <button
-                          key={photo.url}
-                          type="button"
-                          onClick={() => selectStockPhoto(photo.url)}
-                          className="relative rounded-lg overflow-hidden border border-border hover:border-primary transition-colors aspect-[3/2]"
-                        >
-                          <img src={photo.url} alt={photo.label} className="w-full h-full object-cover" />
-                          <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] px-1 py-0.5 text-center truncate">
-                            {photo.label}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*,video/mp4,video/quicktime"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-            </div>
-
-            {/* 2. Caption */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Caption</label>
-              <textarea
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                rows={3}
-                placeholder="What's on your mind?"
-                className={inputClass + " resize-none"}
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Caption</label>
+              <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={3} placeholder="What's on your mind?" className="textarea-dark w-full resize-none" />
             </div>
           </>
         )}
 
-        {/* Common fields */}
+        {/* ─── Common fields ───────────────────────────────── */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">
-            Tags (comma-separated)
-          </label>
-          <input
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            placeholder="gym, gains, health"
-            className={inputClass}
-          />
+          <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Tags (comma-separated)</label>
+          <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="gym, gains, health" className="input-dark w-full" />
         </div>
 
+        {/* Visibility */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Visibility</label>
-          <select
-            value={visibility}
-            onChange={(e) =>
-              setVisibility(e.target.value as "PUBLIC" | "FOLLOWERS" | "PRIVATE")
-            }
-            className={inputClass}
+          <label className="block text-sm font-medium mb-2" style={{ color: "rgba(255,255,255,0.9)" }}>Visibility</label>
+          <div className="flex gap-2">
+            {(["PUBLIC", "FOLLOWERS", "PRIVATE"] as const).map((v) => {
+              const labels = { PUBLIC: "🌍 Public", FOLLOWERS: "👥 Followers", PRIVATE: "🔒 Private" };
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setVisibility(v)}
+                  className="flex-1 py-2 rounded-xl text-xs font-medium transition-all"
+                  style={
+                    visibility === v
+                      ? { background: "rgba(109,106,245,0.2)", border: "1px solid rgba(139,136,248,0.5)", color: "#8b88f8" }
+                      : { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)" }
+                  }
+                >
+                  {labels[v]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Backdate */}
+        <div>
+          <button
+            type="button"
+            onClick={() => { setShowBackdate((v) => !v); if (showBackdate) setPostDate(""); }}
+            className="text-xs font-medium"
+            style={{ color: "rgba(255,255,255,0.35)" }}
           >
-            <option value="PUBLIC">Public</option>
-            <option value="FOLLOWERS">Followers Only</option>
-            <option value="PRIVATE">Private</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1">
-            Date (leave blank for today)
-          </label>
-          <input
-            type="date"
-            value={postDate}
-            onChange={(e) => setPostDate(e.target.value)}
-            max={new Date().toISOString().split("T")[0]}
-            className={inputClass}
-          />
-          {postDate && (
-            <p className="text-xs text-muted mt-1">
-              This post will appear as if posted on {new Date(postDate + "T12:00:00").toLocaleDateString()}
-            </p>
+            {showBackdate ? "▲ Hide backdate" : "▼ Backdate this post"}
+          </button>
+          {showBackdate && (
+            <div className="mt-2">
+              <input
+                type="date"
+                value={postDate}
+                onChange={(e) => setPostDate(e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
+                className="input-dark w-full"
+              />
+              {postDate && (
+                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  Will appear as posted on {new Date(postDate + "T12:00:00").toLocaleDateString()}
+                </p>
+              )}
+            </div>
           )}
         </div>
 
@@ -1115,7 +983,8 @@ export default function CreatePostPage() {
         <button
           onClick={handleSubmit}
           disabled={submitting || uploading}
-          className="w-full py-3 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3 rounded-xl font-semibold transition-all btn-gradient shadow-glow disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ color: "#ffffff" }}
         >
           {uploading ? "Uploading media..." : submitting ? "Posting..." : "Post"}
         </button>
