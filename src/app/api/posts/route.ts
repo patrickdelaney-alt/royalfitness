@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 import { createPostSchema } from "@/lib/validations";
 
 // GET /api/posts — Feed with cursor-based pagination and filters
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
+    const session = await safeAuth();
     const userId = session?.user?.id;
 
     const { searchParams } = req.nextUrl;
@@ -131,7 +131,7 @@ export async function GET(req: NextRequest) {
 // POST /api/posts — Create a new post
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
+    const session = await safeAuth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
