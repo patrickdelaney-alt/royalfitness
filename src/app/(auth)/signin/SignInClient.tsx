@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { credentialsSignIn } from "../actions";
 import Link from "next/link";
 
 // Map NextAuth ?error= param values to user-friendly messages
@@ -78,16 +79,15 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
     setError("");
     setLoading(true);
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-      if (result?.error) {
-        setError("Invalid email or password. Please try again.");
+      // Use the server action so the session cookie is guaranteed to be set
+      // before we navigate. The client-side signIn() from next-auth/react
+      // returns undefined in auth.js v5 beta, making error detection unreliable.
+      const result = await credentialsSignIn(email, password);
+      if (result.error) {
+        setError(result.error);
       } else {
         // Full page navigation ensures the new session cookie is picked up
-        // by the server on the next request (client-side push can miss it).
+        // by the server on the next request.
         window.location.href = "/feed";
       }
     } catch {

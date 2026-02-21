@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { credentialsSignIn } from "../actions";
 import Link from "next/link";
 
 function AppleIcon() {
@@ -92,18 +93,15 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
         return;
       }
 
-      // Auto sign in after successful registration
-      const signInResult = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
+      // Auto sign in after successful registration using the server action
+      // so the session cookie is set reliably before we navigate.
+      const signInResult = await credentialsSignIn(email, password);
 
-      if (signInResult?.error) {
+      if (signInResult.error) {
         window.location.href = "/signin";
       } else {
         // Full page navigation ensures the new session cookie is picked up
-        // by the server on the next request (client-side push can miss it).
+        // by the server on the next request.
         window.location.href = "/feed";
       }
     } catch {
