@@ -330,9 +330,10 @@ export default function ProfilePage() {
           {posts.map((post) => {
             const badge = TYPE_BADGE[post.type] ?? TYPE_BADGE.GENERAL;
             return (
-              <div
+              <Link
                 key={post.id}
-                className="p-3 rounded-xl"
+                href={`/posts/${post.id}`}
+                className="block p-3 rounded-xl transition-opacity active:opacity-70"
                 style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
               >
                 <div className="flex items-center gap-2 mb-1">
@@ -353,7 +354,7 @@ export default function ProfilePage() {
                   <span>{post._count.likes} likes</span>
                   <span>{post._count.comments} comments</span>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
