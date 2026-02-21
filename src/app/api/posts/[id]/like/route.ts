@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 
 // POST /api/posts/[id]/like — Toggle like (create if not exists)
@@ -9,7 +9,7 @@ export async function POST(
 ) {
   try {
     const { id: postId } = await params;
-    const session = await auth();
+    const session = await safeAuth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -95,7 +95,7 @@ export async function DELETE(
 ) {
   try {
     const { id: postId } = await params;
-    const session = await auth();
+    const session = await safeAuth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

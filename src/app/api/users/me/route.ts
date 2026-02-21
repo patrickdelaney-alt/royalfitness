@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -14,7 +14,7 @@ const updateProfileSchema = z.object({
 
 export async function PATCH(req: NextRequest) {
   try {
-    const session = await auth();
+    const session = await safeAuth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
-import { auth } from "@/lib/auth";
+import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/social/follow-requests - Get pending follow requests for the current user
 export async function GET() {
   try {
-    const session = await auth();
+    const session = await safeAuth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -43,7 +43,7 @@ export async function GET() {
 // POST /api/social/follow-requests - Accept a follow request
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
+    const session = await safeAuth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
 // DELETE /api/social/follow-requests - Reject a follow request
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await auth();
+    const session = await safeAuth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
