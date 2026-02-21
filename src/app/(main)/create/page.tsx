@@ -576,6 +576,7 @@ export default function CreatePostPage() {
         body.workout = {
           workoutName: workoutName.trim(),
           isClass,
+          muscleGroups: selectedMuscles,
           durationMinutes: durationMinutes ? parseInt(durationMinutes) : undefined,
           perceivedExertion: perceivedExertion ? parseInt(perceivedExertion) : undefined,
           moodAfter: energy,
