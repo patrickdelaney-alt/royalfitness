@@ -30,6 +30,7 @@ export const createPostSchema = z.object({
     .object({
       workoutName: z.string().min(1).max(200),
       isClass: z.boolean().default(false),
+      muscleGroups: z.array(z.string()).default([]),
       durationMinutes: z.number().int().positive().optional(),
       perceivedExertion: z.number().int().min(1).max(10).optional(),
       moodAfter: z.number().int().min(1).max(10).optional(),

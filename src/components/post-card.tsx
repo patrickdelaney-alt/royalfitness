@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical } from "react-icons/hi";
+import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -61,6 +62,7 @@ interface WorkoutDetail {
   id: string;
   workoutName: string;
   isClass: boolean;
+  muscleGroups: string[];
   durationMinutes: number | null;
   perceivedExertion: number | null;
   moodAfter: number | null;
@@ -305,6 +307,33 @@ function WellnessSection({ detail }: { detail: WellnessDetail }) {
   );
 }
 
+// ── WorkoutBadgeCard ─────────────────────────────────────────────────────────
+
+function WorkoutBadgeCard({ badge }: { badge: BadgeData }) {
+  return (
+    <div
+      className="mt-2 rounded-xl overflow-hidden flex flex-col items-center justify-center py-8 px-4 gap-2"
+      style={{ background: badge.gradient, minHeight: "180px" }}
+    >
+      <span style={{ fontSize: "64px", lineHeight: 1, filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.4))" }}>
+        {badge.emoji}
+      </span>
+      <p
+        className="font-bold tracking-wide text-center mt-2"
+        style={{ color: "#fff", fontSize: "20px", textShadow: "0 1px 4px rgba(0,0,0,0.4)", letterSpacing: "0.04em" }}
+      >
+        {badge.name.toUpperCase()}
+      </p>
+      <p
+        className="text-center"
+        style={{ color: "rgba(255,255,255,0.7)", fontSize: "13px" }}
+      >
+        {badge.subtitle}
+      </p>
+    </div>
+  );
+}
+
 // ── main PostCard ────────────────────────────────────────────────────────────
 
 export default function PostCard({
@@ -535,7 +564,7 @@ export default function PostCard({
           </div>
         )}
 
-        {post.mediaUrl && (
+        {post.mediaUrl ? (
           <div className="mt-2 rounded-lg overflow-hidden">
             {post.mediaUrl.match(/\.(mp4|mov|webm)($|\?)/i) ? (
               <video src={post.mediaUrl} controls className="w-full max-h-96 object-cover" />
@@ -543,6 +572,11 @@ export default function PostCard({
               <img src={post.mediaUrl} alt="Post media" className="w-full max-h-96 object-cover" />
             )}
           </div>
+        ) : (
+          (() => {
+            const badge = getPostBadge(post);
+            return badge ? <WorkoutBadgeCard badge={badge} /> : null;
+          })()
         )}
 
         {post.type === "WORKOUT"  && post.workoutDetail  && <WorkoutSection  detail={post.workoutDetail}  />}

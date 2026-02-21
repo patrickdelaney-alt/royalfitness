@@ -203,6 +203,7 @@ export async function POST(req: NextRequest) {
             postId: newPost.id,
             workoutName: data.workout.workoutName,
             isClass: data.workout.isClass,
+            muscleGroups: data.workout.muscleGroups,
             durationMinutes: data.workout.durationMinutes,
             perceivedExertion: data.workout.perceivedExertion,
             moodAfter: data.workout.moodAfter,
