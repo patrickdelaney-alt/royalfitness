@@ -7,10 +7,10 @@ import PostCard, { Post } from "@/components/post-card";
 const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS", "GENERAL"] as const;
 
 const TYPE_EMOJI: Record<string, string> = {
-  ALL: "🏠",
+  ALL:     "🏠",
   WORKOUT: "💪",
-  MEAL: "🥗",
-  WELLNESS: "🧘",
+  MEAL:    "🥗",
+  WELLNESS:"🧘",
   GENERAL: "⭐",
 };
 
@@ -102,33 +102,48 @@ export default function FeedPage() {
     <div className="max-w-lg mx-auto px-4 pt-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold text-foreground">
-          <span className="text-primary">Royal</span>Wellness <span className="text-xs font-normal text-muted">Beta</span>
-        </h1>
+        <div className="flex items-center gap-2">
+          <span className="text-xl">👑</span>
+          <h1 className="text-xl font-bold text-foreground tracking-tight">
+            RoyalWellness
+          </h1>
+          <span className="text-xs font-medium text-muted-dim">Beta</span>
+        </div>
       </div>
 
       {/* Filter chips */}
-      <div className="flex gap-2 overflow-x-auto pb-3 mb-2 scrollbar-hide">
-        {POST_TYPES.map((type) => (
-          <button
-            key={type}
-            onClick={() => {
-              setFilter(type);
-              const url = type === "ALL" ? "/feed" : `/feed?filter=${type}`;
-              router.replace(url, { scroll: false });
-            }}
-            className={`whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${
-              filter === type
-                ? "bg-primary text-white scale-105 shadow-sm"
-                : "bg-gray-100 text-muted hover:bg-gray-200 hover:scale-105"
-            }`}
-          >
-            <span className={`transition-transform duration-300 ${filter === type ? "scale-110" : ""}`}>
-              {TYPE_EMOJI[type]}
-            </span>
-            {type === "ALL" ? "All" : type.charAt(0) + type.slice(1).toLowerCase() + "s"}
-          </button>
-        ))}
+      <div className="flex gap-2 overflow-x-auto pb-3 mb-2" style={{ scrollbarWidth: "none" }}>
+        {POST_TYPES.map((type) => {
+          const isActive = filter === type;
+          return (
+            <button
+              key={type}
+              onClick={() => {
+                setFilter(type);
+                const url = type === "ALL" ? "/feed" : `/feed?filter=${type}`;
+                router.replace(url, { scroll: false });
+              }}
+              className="whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 flex-shrink-0"
+              style={
+                isActive
+                  ? {
+                      background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)",
+                      color: "#ffffff",
+                      boxShadow: "0 8px 24px rgba(109,106,245,0.3)",
+                      border: "none",
+                    }
+                  : {
+                      background: "rgba(255,255,255,0.045)",
+                      color: "rgba(255,255,255,0.45)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                    }
+              }
+            >
+              <span>{TYPE_EMOJI[type]}</span>
+              {type === "ALL" ? "All" : type.charAt(0) + type.slice(1).toLowerCase() + "s"}
+            </button>
+          );
+        })}
       </div>
 
       {/* Posts */}
@@ -137,14 +152,15 @@ export default function FeedPage() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-card rounded-xl border border-border h-48 animate-pulse"
+              className="rounded-xl border h-48 animate-pulse"
+              style={{ background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.08)" }}
             />
           ))}
         </div>
       ) : posts.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-muted text-sm">No posts yet.</p>
-          <p className="text-muted text-xs mt-1">
+          <p className="text-sub text-sm">No posts yet.</p>
+          <p className="text-muted-dim text-xs mt-1">
             Follow people or create your first post!
           </p>
         </div>
@@ -155,7 +171,10 @@ export default function FeedPage() {
           ))}
           {loadingMore && (
             <div className="flex justify-center py-4">
-              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <div
+                className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
+                style={{ borderColor: "rgba(109,106,245,0.5)", borderTopColor: "transparent" }}
+              />
             </div>
           )}
           <div ref={sentinelRef} className="h-1" />
