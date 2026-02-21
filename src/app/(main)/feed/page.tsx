@@ -4,14 +4,13 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import PostCard, { Post } from "@/components/post-card";
 
-const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS", "GENERAL"] as const;
+const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS"] as const;
 
 const TYPE_EMOJI: Record<string, string> = {
   ALL: "🏠",
   WORKOUT: "💪",
   MEAL: "🥗",
   WELLNESS: "🧘",
-  GENERAL: "⭐",
 };
 
 export default function FeedPage() {
@@ -126,7 +125,7 @@ export default function FeedPage() {
             <span className={`transition-transform duration-300 ${filter === type ? "scale-110" : ""}`}>
               {TYPE_EMOJI[type]}
             </span>
-            {type === "ALL" ? "All" : type.charAt(0) + type.slice(1).toLowerCase() + "s"}
+            {type === "ALL" ? "All" : type === "WELLNESS" ? "Wellness" : type.charAt(0) + type.slice(1).toLowerCase() + "s"}
           </button>
         ))}
       </div>
