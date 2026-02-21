@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 function AppleIcon() {
@@ -30,7 +29,6 @@ interface Props {
 }
 
 export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -102,9 +100,11 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
       });
 
       if (signInResult?.error) {
-        router.push("/signin");
+        window.location.href = "/signin";
       } else {
-        router.push("/feed");
+        // Full page navigation ensures the new session cookie is picked up
+        // by the server on the next request (client-side push can miss it).
+        window.location.href = "/feed";
       }
     } catch {
       setError("Something went wrong. Please try again.");
