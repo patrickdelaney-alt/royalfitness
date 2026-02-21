@@ -173,9 +173,9 @@ export default function FeedPage() {
         </div>
       ) : posts.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-sub text-sm">No posts yet.</p>
+          <p className="text-sub text-sm">No public posts yet.</p>
           <p className="text-muted-dim text-xs mt-1">
-            Follow people or create your first post!
+            Create a post set to <span style={{ color: "#34d399" }}>Public</span> to see it here.
           </p>
         </div>
       ) : (

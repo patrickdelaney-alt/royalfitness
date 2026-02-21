@@ -23,6 +23,7 @@ interface PostSummary {
   id: string;
   type: string;
   caption: string | null;
+  visibility: string;
   createdAt: string;
   _count: { likes: number; comments: number };
 }
@@ -336,7 +337,7 @@ export default function ProfilePage() {
                 className="block p-3 rounded-xl transition-opacity active:opacity-70"
                 style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
               >
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <span
                     className="text-xs px-2 py-0.5 rounded-full font-medium"
                     style={{ background: badge.bg, color: badge.color }}
@@ -345,6 +346,15 @@ export default function ProfilePage() {
                   </span>
                   <span className="text-xs" style={{ color: muted }}>
                     {new Date(post.createdAt).toLocaleDateString()}
+                  </span>
+                  <span
+                    className="text-xs px-1.5 py-0.5 rounded-full ml-auto"
+                    style={{
+                      background: post.visibility === "PUBLIC" ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.06)",
+                      color: post.visibility === "PUBLIC" ? "#34d399" : "rgba(255,255,255,0.3)",
+                    }}
+                  >
+                    {post.visibility === "PUBLIC" ? "🌍 Public" : post.visibility === "FOLLOWERS" ? "👥 Followers" : "🔒 Private"}
                   </span>
                 </div>
                 {post.caption && (
