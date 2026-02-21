@@ -66,80 +66,159 @@ const MUSCLES: MuscleGroup[] = [
   {
     id: "chest",
     label: "Chest",
-    icon: (active) => (
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
-        <path d="M12 8C10 6 6 5 3 7v8c3-2 6-2 9 0 3-2 6-2 9 0V7c-3-2-7-1-9 1z" strokeLinejoin="round"/>
-      </svg>
-    ),
+    icon: (active) => {
+      const f = active ? "#8b88f8" : "rgba(255,255,255,0.28)";
+      const s = active ? "rgba(109,106,245,0.6)" : "rgba(0,0,0,0.25)";
+      return (
+        <svg viewBox="0 0 32 32" className="w-7 h-7">
+          {/* left pec */}
+          <path d="M4 10 Q4 5 9 5 Q14 5 15.5 10 L15.5 19 Q11 22 7 20 Q3 17 4 13 Z" fill={f}/>
+          {/* right pec */}
+          <path d="M28 10 Q28 5 23 5 Q18 5 16.5 10 L16.5 19 Q21 22 25 20 Q29 17 28 13 Z" fill={f}/>
+          {/* collarbone */}
+          <path d="M9 6 Q16 4 23 6" stroke={s} strokeWidth="1.4" fill="none" strokeLinecap="round"/>
+          {/* center groove */}
+          <line x1="16" y1="10" x2="16" y2="20" stroke={s} strokeWidth="1.2"/>
+          {/* muscle highlight */}
+          <ellipse cx="10.5" cy="10" rx="2.5" ry="1.5" fill="rgba(255,255,255,0.15)" transform="rotate(-15,10.5,10)"/>
+          <ellipse cx="21.5" cy="10" rx="2.5" ry="1.5" fill="rgba(255,255,255,0.15)" transform="rotate(15,21.5,10)"/>
+        </svg>
+      );
+    },
   },
   {
     id: "back",
     label: "Back",
-    icon: (active) => (
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
-        <path d="M12 3v18M8 6l4-3 4 3M8 18l4 3 4-3M5 10h14M5 14h14" strokeLinecap="round"/>
-      </svg>
-    ),
+    icon: (active) => {
+      const f = active ? "#8b88f8" : "rgba(255,255,255,0.28)";
+      const s = active ? "rgba(109,106,245,0.6)" : "rgba(0,0,0,0.25)";
+      return (
+        <svg viewBox="0 0 32 32" className="w-7 h-7">
+          {/* lat spread V-taper */}
+          <path d="M16 27 L3 19 L3 11 L9 7 L16 10 L23 7 L29 11 L29 19 Z" fill={f}/>
+          {/* spine */}
+          <line x1="16" y1="10" x2="16" y2="27" stroke={s} strokeWidth="1.5"/>
+          {/* trap shoulder line */}
+          <path d="M9 7 Q16 9 23 7" stroke={s} strokeWidth="1.2" fill="none"/>
+          {/* lat definition */}
+          <path d="M7 16 Q16 18 25 16" stroke={s} strokeWidth="0.9" fill="none"/>
+          {/* highlight */}
+          <ellipse cx="10" cy="13" rx="3" ry="2" fill="rgba(255,255,255,0.12)" transform="rotate(20,10,13)"/>
+          <ellipse cx="22" cy="13" rx="3" ry="2" fill="rgba(255,255,255,0.12)" transform="rotate(-20,22,13)"/>
+        </svg>
+      );
+    },
   },
   {
     id: "legs",
     label: "Legs",
     icon: (active) => (
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
-        <path d="M9 3h2v8l-2 10M15 3h-2v8l2 10M7 11h10" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
+      <span
+        style={{
+          fontSize: "22px",
+          lineHeight: 1,
+          filter: active ? "drop-shadow(0 0 6px rgba(139,136,248,0.9))" : "grayscale(0.2)",
+          opacity: active ? 1 : 0.55,
+        }}
+      >
+        🦵
+      </span>
     ),
   },
   {
     id: "shoulders",
     label: "Shoulders",
-    icon: (active) => (
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
-        <circle cx="12" cy="7" r="2"/>
-        <path d="M4 10c2-3 4-4 8-3s6 0 8 3" strokeLinecap="round"/>
-        <path d="M4 10v8M20 10v8" strokeLinecap="round"/>
-      </svg>
-    ),
+    icon: (active) => {
+      const f = active ? "#8b88f8" : "rgba(255,255,255,0.28)";
+      const s = active ? "rgba(109,106,245,0.6)" : "rgba(0,0,0,0.25)";
+      return (
+        <svg viewBox="0 0 32 32" className="w-7 h-7">
+          {/* left delt cap */}
+          <circle cx="6.5" cy="15" r="5.5" fill={f}/>
+          {/* right delt cap */}
+          <circle cx="25.5" cy="15" r="5.5" fill={f}/>
+          {/* trap/neck body */}
+          <path d="M12 15 Q16 10 20 15 L20 22 Q16 25 12 22 Z" fill={f}/>
+          {/* neck */}
+          <rect x="13.5" y="7" width="5" height="6" rx="2.5" fill={f}/>
+          {/* delt highlight */}
+          <ellipse cx="5" cy="13" rx="2" ry="1.5" fill="rgba(255,255,255,0.2)" transform="rotate(-20,5,13)"/>
+          <ellipse cx="27" cy="13" rx="2" ry="1.5" fill="rgba(255,255,255,0.2)" transform="rotate(20,27,13)"/>
+          {/* seam lines */}
+          <path d="M12 15 Q9 14 6.5 15" stroke={s} strokeWidth="0.8" fill="none"/>
+          <path d="M20 15 Q23 14 25.5 15" stroke={s} strokeWidth="0.8" fill="none"/>
+        </svg>
+      );
+    },
   },
   {
     id: "arms",
     label: "Arms",
     icon: (active) => (
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
-        <path d="M6 6c0 0 2-2 4-1s3 3 3 5-1 4-2 5l-2 5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M18 6c0 0-2-2-4-1s-3 3-3 5 1 4 2 5l2 5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
+      <span
+        style={{
+          fontSize: "22px",
+          lineHeight: 1,
+          filter: active ? "drop-shadow(0 0 6px rgba(139,136,248,0.9))" : "grayscale(0.2)",
+          opacity: active ? 1 : 0.55,
+        }}
+      >
+        💪
+      </span>
     ),
   },
   {
     id: "core",
     label: "Core",
-    icon: (active) => (
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
-        <rect x="8" y="4" width="8" height="16" rx="2"/>
-        <line x1="8" y1="9" x2="16" y2="9"/>
-        <line x1="8" y1="13" x2="16" y2="13"/>
-        <line x1="12" y1="4" x2="12" y2="20"/>
-      </svg>
-    ),
+    icon: (active) => {
+      const f = active ? "#8b88f8" : "rgba(255,255,255,0.28)";
+      const gap = active ? "rgba(13,14,25,0.7)" : "rgba(0,0,0,0.35)";
+      return (
+        <svg viewBox="0 0 32 32" className="w-7 h-7">
+          {/* 6-pack: 2 columns × 3 rows */}
+          <rect x="7"  y="5"  width="7" height="6" rx="2" fill={f}/>
+          <rect x="18" y="5"  width="7" height="6" rx="2" fill={f}/>
+          <rect x="7"  y="13" width="7" height="6" rx="2" fill={f}/>
+          <rect x="18" y="13" width="7" height="6" rx="2" fill={f}/>
+          <rect x="7"  y="21" width="7" height="6" rx="2" fill={f}/>
+          <rect x="18" y="21" width="7" height="6" rx="2" fill={f}/>
+          {/* highlights */}
+          <rect x="8"  y="6"  width="3" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+          <rect x="19" y="6"  width="3" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+        </svg>
+      );
+    },
   },
   {
     id: "glutes",
     label: "Glutes",
     icon: (active) => (
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
-        <path d="M5 8c0-3 3-5 7-5s7 2 7 5c0 4-2 7-7 9-5-2-7-5-7-9z" strokeLinejoin="round"/>
-        <line x1="12" y1="3" x2="12" y2="17"/>
-      </svg>
+      <span
+        style={{
+          fontSize: "22px",
+          lineHeight: 1,
+          filter: active ? "drop-shadow(0 0 6px rgba(139,136,248,0.9))" : "grayscale(0.2)",
+          opacity: active ? 1 : 0.55,
+        }}
+      >
+        🍑
+      </span>
     ),
   },
   {
     id: "cardio",
     label: "Cardio",
     icon: (active) => (
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke={active ? "#8b88f8" : "rgba(255,255,255,0.4)"} strokeWidth="1.5">
-        <path d="M3 12h3l2-7 4 14 2-7h7" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
+      <span
+        style={{
+          fontSize: "22px",
+          lineHeight: 1,
+          filter: active ? "drop-shadow(0 0 6px rgba(239,68,68,0.8))" : "grayscale(0.2)",
+          opacity: active ? 1 : 0.55,
+        }}
+      >
+        ❤️‍🔥
+      </span>
     ),
   },
 ];
