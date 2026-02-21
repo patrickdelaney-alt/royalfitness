@@ -20,6 +20,7 @@ export default function FeedPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState(false);
   const [cursor, setCursor] = useState<string | undefined>();
   const [hasMore, setHasMore] = useState(true);
   const [filter, setFilter] = useState<string>(searchParams.get("filter") || "ALL");
@@ -58,13 +59,14 @@ export default function FeedPage() {
 
         if (reset) {
           setPosts(data.posts);
+          setError(false);
         } else {
           setPosts((prev) => [...prev, ...data.posts]);
         }
         setCursor(data.nextCursor);
         setHasMore(!!data.nextCursor);
       } catch {
-        // silent fail
+        if (reset) setError(true);
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -77,6 +79,7 @@ export default function FeedPage() {
   useEffect(() => {
     setCursor(undefined);
     setHasMore(true);
+    setError(false);
     fetchPosts(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
@@ -156,6 +159,17 @@ export default function FeedPage() {
               style={{ background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.08)" }}
             />
           ))}
+        </div>
+      ) : error ? (
+        <div className="text-center py-16">
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>Failed to load posts.</p>
+          <button
+            onClick={() => fetchPosts(true)}
+            className="mt-3 text-xs underline"
+            style={{ color: "#8b88f8" }}
+          >
+            Try again
+          </button>
         </div>
       ) : posts.length === 0 ? (
         <div className="text-center py-16">
