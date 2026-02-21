@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/users/[username] - Get user profile
@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ username: string }> }
 ) {
   try {
-    const session = await auth();
+    const session = await safeAuth();
     const currentUserId = session?.user?.id;
 
     const { username } = await params;

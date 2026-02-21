@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 
 // Temporary diagnostic endpoint — remove after debugging
@@ -9,8 +10,19 @@ export async function GET() {
       ? process.env.DATABASE_URL.replace(/:\/\/[^@]+@/, "://<credentials>@").slice(0, 80)
       : null,
     AUTH_SECRET_set: !!process.env.AUTH_SECRET,
+    AUTH_URL_set: !!process.env.AUTH_URL,
     NEXTAUTH_URL_set: !!process.env.NEXTAUTH_URL,
   };
+
+  try {
+    const session = await safeAuth();
+    info.auth_status = "ok";
+    info.auth_user = session?.user?.id ?? null;
+  } catch (err) {
+    info.auth_status = "error";
+    info.auth_error =
+      err instanceof Error ? { message: err.message, name: err.name } : String(err);
+  }
 
   try {
     // Minimal query — just count users

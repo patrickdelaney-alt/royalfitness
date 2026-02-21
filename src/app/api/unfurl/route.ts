@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { safeAuth } from "@/lib/safe-auth";
 
 function extractMetaTag(html: string, property: string): string | null {
   // Match both property="og:xxx" and name="og:xxx" variants
@@ -38,7 +38,7 @@ function extractTitle(html: string): string | null {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
+    const session = await safeAuth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

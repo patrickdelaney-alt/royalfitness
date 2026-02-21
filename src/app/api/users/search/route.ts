@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/users/search?q= - Search users by username or name
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
+    const session = await safeAuth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
