@@ -171,6 +171,7 @@ model WorkoutDetail {
 
   workoutName       String
   isClass           Boolean   @default(false)
+  muscleGroups      String[]  @default([])
   durationMinutes   Int?
   perceivedExertion Int?
   moodAfter         Int?
