@@ -48,11 +48,11 @@ function initials(name?: string | null): string {
     .slice(0, 2);
 }
 
-const TYPE_COLORS: Record<string, string> = {
-  WORKOUT: "bg-[#2563EB]/10 text-[#2563EB]",
-  MEAL: "bg-green-100 text-green-700",
-  WELLNESS: "bg-purple-100 text-purple-700",
-  GENERAL: "bg-gray-100 text-gray-600",
+const TYPE_BADGE: Record<string, { bg: string; color: string; label: string }> = {
+  WORKOUT: { bg: "rgba(109,106,245,0.15)", color: "#8b88f8", label: "Workout" },
+  MEAL: { bg: "rgba(52,211,153,0.15)", color: "#34d399", label: "Meal" },
+  WELLNESS: { bg: "rgba(167,139,250,0.15)", color: "#a78bfa", label: "Wellness" },
+  GENERAL: { bg: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)", label: "General" },
 };
 
 export default function ProfilePage() {
@@ -93,7 +93,6 @@ export default function ProfilePage() {
     load();
   }, [username]);
 
-  // Load follow requests for own profile
   useEffect(() => {
     if (!isOwnProfile) return;
     setRequestsLoading(true);
@@ -116,17 +115,13 @@ export default function ProfilePage() {
       if (res.ok) {
         if (isFollowing) {
           setIsFollowing(false);
-          setProfile((p) =>
-            p ? { ...p, followerCount: p.followerCount - 1 } : p
-          );
+          setProfile((p) => p ? { ...p, followerCount: p.followerCount - 1 } : p);
         } else {
           if (profile.isPrivate) {
             setHasRequested(true);
           } else {
             setIsFollowing(true);
-            setProfile((p) =>
-              p ? { ...p, followerCount: p.followerCount + 1 } : p
-            );
+            setProfile((p) => p ? { ...p, followerCount: p.followerCount + 1 } : p);
           }
         }
       }
@@ -163,7 +158,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
-        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "#8b88f8", borderTopColor: "transparent" }} />
       </div>
     );
   }
@@ -171,39 +166,37 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="text-center py-20">
-        <p className="text-muted">User not found</p>
+        <p style={{ color: "rgba(255,255,255,0.3)" }}>User not found</p>
       </div>
     );
   }
 
+  const muted = "rgba(255,255,255,0.4)";
+
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-8">
+    <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>
       {/* Profile header */}
       <div className="flex items-start gap-4 mb-5">
         {profile.avatarUrl ? (
-          <img
-            src={profile.avatarUrl}
-            alt={profile.username}
-            className="w-20 h-20 rounded-full object-cover"
-          />
+          <img src={profile.avatarUrl} alt={profile.username} className="w-20 h-20 rounded-full object-cover" />
         ) : (
-          <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">
+          <div className="w-20 h-20 rounded-full btn-gradient flex items-center justify-center text-white text-2xl font-bold">
             {initials(profile.name)}
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold text-foreground truncate">{profile.username}</h1>
+          <h1 className="text-lg font-bold truncate">{profile.username}</h1>
           {profile.name && (
-            <p className="text-sm text-muted truncate">{profile.name}</p>
+            <p className="text-sm truncate" style={{ color: muted }}>{profile.name}</p>
           )}
           <div className="flex gap-4 mt-2">
             <div className="text-center">
-              <p className="text-sm font-bold text-foreground">{profile.followerCount}</p>
-              <p className="text-xs text-muted">Followers</p>
+              <p className="text-sm font-bold">{profile.followerCount}</p>
+              <p className="text-xs" style={{ color: muted }}>Followers</p>
             </div>
             <div className="text-center">
-              <p className="text-sm font-bold text-foreground">{profile.followingCount}</p>
-              <p className="text-xs text-muted">Following</p>
+              <p className="text-sm font-bold">{profile.followingCount}</p>
+              <p className="text-xs" style={{ color: muted }}>Following</p>
             </div>
           </div>
         </div>
@@ -211,29 +204,19 @@ export default function ProfilePage() {
 
       {/* Bio */}
       {profile.bio && (
-        <p className="text-sm text-foreground mb-4 whitespace-pre-wrap">{profile.bio}</p>
+        <p className="text-sm mb-4 whitespace-pre-wrap" style={{ color: "rgba(255,255,255,0.8)" }}>{profile.bio}</p>
       )}
 
       {/* Social links */}
       {(profile.instagramUrl || profile.tiktokUrl) && (
         <div className="flex gap-3 mb-4">
           {profile.instagramUrl && (
-            <a
-              href={profile.instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-primary hover:underline"
-            >
+            <a href={profile.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "#8b88f8" }}>
               Instagram
             </a>
           )}
           {profile.tiktokUrl && (
-            <a
-              href={profile.tiktokUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-primary hover:underline"
-            >
+            <a href={profile.tiktokUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "#8b88f8" }}>
               TikTok
             </a>
           )}
@@ -245,20 +228,23 @@ export default function ProfilePage() {
         <div className="flex gap-2 mb-6">
           <Link
             href="/profile/edit"
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:border-gray-400 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
           >
             <HiPencil className="w-4 h-4" />
             Edit Profile
           </Link>
           <Link
             href="/catalog"
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:border-gray-400 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
           >
             My Catalog
           </Link>
           <button
             onClick={() => signOut({ callbackUrl: "/signin" })}
-            className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-border text-sm font-medium text-muted hover:text-red-500 hover:border-red-300 transition-colors"
+            className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-colors"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}
           >
             <HiLogout className="w-4 h-4" />
           </button>
@@ -267,42 +253,36 @@ export default function ProfilePage() {
         <button
           onClick={handleFollow}
           disabled={followLoading || hasRequested}
-          className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-colors mb-6 ${
+          className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all mb-6 disabled:opacity-60"
+          style={
             isFollowing
-              ? "border border-border text-foreground hover:border-red-300 hover:text-red-500"
+              ? { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)" }
               : hasRequested
-              ? "bg-gray-200 text-muted cursor-not-allowed"
-              : "bg-primary text-white hover:bg-primary-dark"
-          }`}
+              ? { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)" }
+              : { background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)", boxShadow: "0 8px 24px rgba(109,106,245,0.3)", color: "#ffffff" }
+          }
         >
-          {isFollowing
-            ? "Following"
-            : hasRequested
-            ? "Requested"
-            : "Follow"}
+          {isFollowing ? "Following" : hasRequested ? "Requested" : "Follow"}
         </button>
       )}
 
       {/* Follow requests (own profile only) */}
       {isOwnProfile && !requestsLoading && followRequests.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-sm font-semibold text-muted uppercase tracking-wide mb-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
             Follow Requests ({followRequests.length})
           </h2>
           <div className="space-y-2">
             {followRequests.map((req) => (
               <div
                 key={req.id}
-                className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border"
+                className="flex items-center gap-3 p-3 rounded-xl"
+                style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
               >
                 {req.sender.avatarUrl ? (
-                  <img
-                    src={req.sender.avatarUrl}
-                    alt={req.sender.username}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
+                  <img src={req.sender.avatarUrl} alt={req.sender.username} className="w-10 h-10 rounded-full object-cover" />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold">
+                  <div className="w-10 h-10 rounded-full btn-gradient flex items-center justify-center text-white text-sm font-bold">
                     {initials(req.sender.name)}
                   </div>
                 )}
@@ -310,24 +290,23 @@ export default function ProfilePage() {
                   onClick={() => router.push(`/profile/${req.sender.username}`)}
                   className="flex-1 min-w-0 text-left"
                 >
-                  <p className="font-semibold text-sm text-foreground truncate">
-                    {req.sender.username}
-                  </p>
+                  <p className="font-semibold text-sm truncate">{req.sender.username}</p>
                   {req.sender.name && (
-                    <p className="text-xs text-muted truncate">{req.sender.name}</p>
+                    <p className="text-xs truncate" style={{ color: muted }}>{req.sender.name}</p>
                   )}
                 </button>
                 <div className="flex gap-1.5">
                   <button
                     onClick={() => handleAcceptRequest(req.id)}
-                    className="p-1.5 rounded-full bg-primary text-white hover:bg-primary-dark"
+                    className="p-1.5 rounded-full btn-gradient text-white"
                     title="Accept"
                   >
                     <HiCheck className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDeclineRequest(req.id)}
-                    className="p-1.5 rounded-full bg-gray-200 text-muted hover:bg-gray-300"
+                    className="p-1.5 rounded-full"
+                    style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}
                     title="Decline"
                   >
                     <HiX className="w-4 h-4" />
@@ -340,40 +319,43 @@ export default function ProfilePage() {
       )}
 
       {/* Posts */}
-      <h2 className="text-sm font-semibold text-muted uppercase tracking-wide mb-3">
+      <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
         Recent Posts
       </h2>
 
       {posts.length === 0 ? (
-        <p className="text-center text-muted text-sm py-8">No posts yet</p>
+        <p className="text-center text-sm py-8" style={{ color: muted }}>No posts yet</p>
       ) : (
         <div className="space-y-2">
-          {posts.map((post) => (
-            <div
-              key={post.id}
-              className="p-3 rounded-xl bg-card border border-border"
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                    TYPE_COLORS[post.type] ?? TYPE_COLORS.GENERAL
-                  }`}
-                >
-                  {post.type.charAt(0) + post.type.slice(1).toLowerCase() + "s"}
-                </span>
-                <span className="text-xs text-muted">
-                  {new Date(post.createdAt).toLocaleDateString()}
-                </span>
+          {posts.map((post) => {
+            const badge = TYPE_BADGE[post.type] ?? TYPE_BADGE.GENERAL;
+            return (
+              <div
+                key={post.id}
+                className="p-3 rounded-xl"
+                style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full font-medium"
+                    style={{ background: badge.bg, color: badge.color }}
+                  >
+                    {badge.label}
+                  </span>
+                  <span className="text-xs" style={{ color: muted }}>
+                    {new Date(post.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                {post.caption && (
+                  <p className="text-sm line-clamp-2" style={{ color: "rgba(255,255,255,0.8)" }}>{post.caption}</p>
+                )}
+                <div className="flex gap-3 mt-1.5 text-xs" style={{ color: muted }}>
+                  <span>{post._count.likes} likes</span>
+                  <span>{post._count.comments} comments</span>
+                </div>
               </div>
-              {post.caption && (
-                <p className="text-sm text-foreground line-clamp-2">{post.caption}</p>
-              )}
-              <div className="flex gap-3 mt-1.5 text-xs text-muted">
-                <span>{post._count.likes} likes</span>
-                <span>{post._count.comments} comments</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
