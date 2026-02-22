@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { HiHeart, HiChatBubbleLeft, HiUserPlus, HiUserCircle } from "react-icons/hi2";
 
 interface NotificationActor {
@@ -61,7 +60,7 @@ function getNotificationLink(notification: Notification): string {
   if (notification.post) {
     return `/feed?post=${notification.post.id}`;
   }
-  return `/${notification.actor.username}`;
+  return `/profile/${notification.actor.username}`;
 }
 
 function timeAgo(dateStr: string): string {
@@ -193,12 +192,10 @@ export default function NotificationsPage() {
                 {/* Avatar */}
                 <div className="relative flex-shrink-0">
                   {notification.actor.avatarUrl ? (
-                    <Image
+                    <img
                       src={notification.actor.avatarUrl}
                       alt={notification.actor.username}
-                      width={40}
-                      height={40}
-                      className="rounded-full object-cover"
+                      className="w-10 h-10 rounded-full object-cover"
                     />
                   ) : (
                     <HiUserCircle className="h-10 w-10 text-gray-300" />
