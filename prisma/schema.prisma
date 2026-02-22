@@ -243,6 +243,7 @@ model ExternalContent {
   description String?
   imageUrl    String?
   siteName    String?
+  embedHtml   String?
   createdAt   DateTime @default(now())
 }
 

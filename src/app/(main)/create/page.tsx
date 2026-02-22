@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiSparkles } from "react-icons/hi";
+import LinkPreview, { type LinkPreviewContent } from "@/components/link-preview";
 
 type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL";
 
@@ -478,6 +479,43 @@ export default function CreatePostPage() {
   const [wellnessMood, setWellnessMood] = useState(7);
   const [wellnessNotes, setWellnessNotes] = useState("");
 
+  // External link
+  const [externalUrl, setExternalUrl] = useState("");
+  const [urlPreview, setUrlPreview] = useState<LinkPreviewContent | null>(null);
+  const [urlLoading, setUrlLoading] = useState(false);
+  const [urlError, setUrlError] = useState("");
+
+  // ── Debounced URL preview ─────────────────────────────────
+  useEffect(() => {
+    if (!externalUrl.trim()) {
+      setUrlPreview(null);
+      setUrlError("");
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setUrlLoading(true);
+      setUrlError("");
+      try {
+        const res = await fetch("/api/unfurl", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: externalUrl.trim() }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUrlPreview({ url: externalUrl.trim(), ...data });
+        } else {
+          setUrlError("Couldn't load preview");
+        }
+      } catch {
+        setUrlError("Couldn't load preview");
+      } finally {
+        setUrlLoading(false);
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [externalUrl]);
+
   // ── Muscle toggle with auto-name ──────────────────────────
   const toggleMuscle = (id: string) => {
     setSelectedMuscles((prev) => {
@@ -565,6 +603,7 @@ export default function CreatePostPage() {
         tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
         mediaUrl: mediaUrl || undefined,
         postDate: postDate || undefined,
+        externalUrl: externalUrl.trim() || undefined,
       };
 
       if (type === "WORKOUT") {
@@ -1029,6 +1068,44 @@ export default function CreatePostPage() {
               );
             })}
           </div>
+        </div>
+
+        {/* Link */}
+        <div>
+          <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>
+            Link (optional)
+          </label>
+          <div className="relative">
+            <input
+              type="url"
+              value={externalUrl}
+              onChange={(e) => { setExternalUrl(e.target.value); setUrlPreview(null); setUrlError(""); }}
+              placeholder="Paste an Instagram, TikTok, or any URL"
+              className="input-dark w-full pr-8"
+            />
+            {externalUrl && (
+              <button
+                type="button"
+                onClick={() => { setExternalUrl(""); setUrlPreview(null); setUrlError(""); }}
+                className="absolute right-2 top-1/2 -translate-y-1/2"
+                style={{ color: "rgba(255,255,255,0.35)" }}
+                aria-label="Clear URL"
+              >
+                <HiX className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          {urlLoading && (
+            <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>Loading preview…</p>
+          )}
+          {urlError && (
+            <p className="text-xs mt-1" style={{ color: "#f87171" }}>{urlError}</p>
+          )}
+          {urlPreview && !urlLoading && (
+            <div className="mt-2">
+              <LinkPreview content={urlPreview} />
+            </div>
+          )}
         </div>
 
         {/* Backdate */}

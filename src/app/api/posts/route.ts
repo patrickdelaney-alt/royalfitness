@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createPostSchema } from "@/lib/validations";
+import { getImporterForUrl } from "@/services/external-content";
 
 // GET /api/posts — Feed with cursor-based pagination and filters
 export async function GET(req: NextRequest) {
@@ -94,6 +95,7 @@ export async function GET(req: NextRequest) {
         },
         mealDetail: true,
         wellnessDetail: true,
+        externalContent: true,
         gym: { select: { id: true, name: true } },
         _count: { select: { likes: true, comments: true } },
         ...(userId
@@ -176,6 +178,17 @@ export async function POST(req: NextRequest) {
           { error: "Gym not found" },
           { status: 404 }
         );
+      }
+    }
+
+    // Prefetch external URL metadata outside the transaction (network I/O)
+    let externalMeta = null;
+    if (data.externalUrl && data.externalUrl !== "") {
+      try {
+        const importer = getImporterForUrl(data.externalUrl);
+        externalMeta = await importer.fetchMetadata(data.externalUrl);
+      } catch {
+        // graceful fallback: store URL with no metadata
       }
     }
 
@@ -281,6 +294,11 @@ export async function POST(req: NextRequest) {
           data: {
             postId: newPost.id,
             url: data.externalUrl,
+            title: externalMeta?.title ?? null,
+            description: externalMeta?.description ?? null,
+            imageUrl: externalMeta?.imageUrl ?? null,
+            siteName: externalMeta?.siteName ?? null,
+            embedHtml: externalMeta?.embedHtml ?? null,
           },
         });
       }

@@ -1,40 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-
-function extractMetaTag(html: string, property: string): string | null {
-  // Match both property="og:xxx" and name="og:xxx" variants
-  const patterns = [
-    new RegExp(
-      `<meta[^>]+property=["']${property}["'][^>]+content=["']([^"']*)["']`,
-      "i"
-    ),
-    new RegExp(
-      `<meta[^>]+content=["']([^"']*)["'][^>]+property=["']${property}["']`,
-      "i"
-    ),
-    new RegExp(
-      `<meta[^>]+name=["']${property}["'][^>]+content=["']([^"']*)["']`,
-      "i"
-    ),
-    new RegExp(
-      `<meta[^>]+content=["']([^"']*)["'][^>]+name=["']${property}["']`,
-      "i"
-    ),
-  ];
-
-  for (const pattern of patterns) {
-    const match = html.match(pattern);
-    if (match?.[1]) {
-      return match[1];
-    }
-  }
-  return null;
-}
-
-function extractTitle(html: string): string | null {
-  const match = html.match(/<title[^>]*>([^<]*)<\/title>/i);
-  return match?.[1]?.trim() || null;
-}
+import { getImporterForUrl } from "@/services/external-content";
 
 export async function POST(req: NextRequest) {
   try {
@@ -53,7 +19,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate the URL
     let parsedUrl: URL;
     try {
       parsedUrl = new URL(url);
@@ -68,58 +33,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Fetch with timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-    let html: string;
-    try {
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          "User-Agent": "RoyalFitness-Unfurl/1.0",
-          Accept: "text/html",
-        },
-        redirect: "follow",
-      });
-
-      if (!response.ok) {
-        return NextResponse.json(
-          { error: `Failed to fetch URL: ${response.status}` },
-          { status: 422 }
-        );
-      }
-
-      html = await response.text();
-    } catch (fetchError) {
-      if (fetchError instanceof Error && fetchError.name === "AbortError") {
-        return NextResponse.json(
-          { error: "Request timed out" },
-          { status: 408 }
-        );
-      }
-      return NextResponse.json(
-        { error: "Failed to fetch URL" },
-        { status: 422 }
-      );
-    } finally {
-      clearTimeout(timeoutId);
-    }
-
-    const title =
-      extractMetaTag(html, "og:title") || extractTitle(html) || null;
-    const description =
-      extractMetaTag(html, "og:description") ||
-      extractMetaTag(html, "description") ||
-      null;
-    const imageUrl = extractMetaTag(html, "og:image") || null;
-    const siteName = extractMetaTag(html, "og:site_name") || null;
+    const importer = getImporterForUrl(url);
+    const meta = await importer.fetchMetadata(url);
 
     return NextResponse.json({
-      title,
-      description,
-      imageUrl,
-      siteName,
+      title: meta.title,
+      description: meta.description,
+      imageUrl: meta.imageUrl,
+      siteName: meta.siteName,
+      embedHtml: meta.embedHtml,
     });
   } catch (error) {
     console.error("POST /api/unfurl error:", error);

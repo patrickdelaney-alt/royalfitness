@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical } from "react-icons/hi";
 import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
+import LinkPreview from "@/components/link-preview";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -104,6 +105,16 @@ interface Gym {
   name: string;
 }
 
+interface ExternalContent {
+  id: string;
+  url: string;
+  title: string | null;
+  description: string | null;
+  imageUrl: string | null;
+  siteName: string | null;
+  embedHtml: string | null;
+}
+
 export interface Post {
   id: string;
   type: "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL";
@@ -117,6 +128,7 @@ export interface Post {
   mealDetail: MealDetail | null;
   wellnessDetail: WellnessDetail | null;
   gym: Gym | null;
+  externalContent?: ExternalContent[];
   likedByMe: boolean;
   _count: {
     likes: number;
@@ -582,6 +594,12 @@ export default function PostCard({
         {post.type === "WORKOUT"  && post.workoutDetail  && <WorkoutSection  detail={post.workoutDetail}  />}
         {post.type === "MEAL"     && post.mealDetail      && <MealSection     detail={post.mealDetail}      />}
         {post.type === "WELLNESS" && post.wellnessDetail  && <WellnessSection detail={post.wellnessDetail}  />}
+
+        {post.externalContent?.[0] && (
+          <div className="mt-3">
+            <LinkPreview content={post.externalContent[0]} />
+          </div>
+        )}
       </div>
 
       {/* ── actions ── */}

@@ -1,7 +1,8 @@
 /**
- * External Content Integration (MVP: link-based)
+ * External Content Integration
  *
- * Phase 2: Add real IG/TikTok API integrations.
+ * Supports Instagram and TikTok via their oEmbed APIs (no auth required for
+ * public posts). Falls back to generic OpenGraph scraping for all other URLs.
  */
 
 export interface ContentMetadata {
@@ -10,12 +11,46 @@ export interface ContentMetadata {
   description: string | null;
   imageUrl: string | null;
   siteName: string | null;
+  embedHtml: string | null;
 }
 
 export interface ContentImporter {
   name: string;
   canHandle(url: string): boolean;
   fetchMetadata(url: string): Promise<ContentMetadata>;
+}
+
+/**
+ * Strip <script> tags from oEmbed HTML before storage/rendering.
+ * The blockquote body is safe; scripts are handled by the platform's embed.js
+ * loaded separately when needed.
+ */
+function stripScriptTags(html: string): string {
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .trim();
+}
+
+function extractMeta(html: string, property: string): string | null {
+  const regex = new RegExp(
+    `<meta[^>]*(?:property|name)=["']${property}["'][^>]*content=["']([^"']*)["']`,
+    "i"
+  );
+  const match = html.match(regex);
+  if (match) return match[1];
+
+  const regex2 = new RegExp(
+    `<meta[^>]*content=["']([^"']*)["'][^>]*(?:property|name)=["']${property}["']`,
+    "i"
+  );
+  const match2 = html.match(regex2);
+  return match2 ? match2[1] : null;
+}
+
+function extractTag(html: string, tag: string): string | null {
+  const regex = new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`, "i");
+  const match = html.match(regex);
+  return match ? match[1].trim() : null;
 }
 
 /**
@@ -51,81 +86,116 @@ export class OpenGraphImporter implements ContentImporter {
           extractMeta(html, "description"),
         imageUrl: extractMeta(html, "og:image"),
         siteName: extractMeta(html, "og:site_name"),
+        embedHtml: null,
       };
     } catch {
-      return { url, title: null, description: null, imageUrl: null, siteName: null };
+      return {
+        url,
+        title: null,
+        description: null,
+        imageUrl: null,
+        siteName: null,
+        embedHtml: null,
+      };
     }
   }
 }
 
-function extractMeta(html: string, property: string): string | null {
-  // Match both property="" and name="" attributes
-  const regex = new RegExp(
-    `<meta[^>]*(?:property|name)=["']${property}["'][^>]*content=["']([^"']*)["']`,
-    "i"
-  );
-  const match = html.match(regex);
-  if (match) return match[1];
-
-  // Try reverse attribute order
-  const regex2 = new RegExp(
-    `<meta[^>]*content=["']([^"']*)["'][^>]*(?:property|name)=["']${property}["']`,
-    "i"
-  );
-  const match2 = html.match(regex2);
-  return match2 ? match2[1] : null;
-}
-
-function extractTag(html: string, tag: string): string | null {
-  const regex = new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`, "i");
-  const match = html.match(regex);
-  return match ? match[1].trim() : null;
-}
-
 /**
- * Instagram-specific stub — Phase 2 will use IG oEmbed API.
+ * Instagram oEmbed — uses api.instagram.com/oembed for public posts/reels.
+ * Falls back to OpenGraph on error.
  */
 export class InstagramImporter implements ContentImporter {
   name = "instagram";
 
   canHandle(url: string): boolean {
-    return /instagram\.com/.test(url);
+    return /instagram\.com\/(p|reel|tv)\//.test(url);
   }
 
   async fetchMetadata(url: string): Promise<ContentMetadata> {
-    // Phase 2: Use Instagram oEmbed API
-    // For now, fall back to OpenGraph
-    const og = new OpenGraphImporter();
-    const metadata = await og.fetchMetadata(url);
-    return { ...metadata, siteName: "Instagram" };
+    try {
+      const oEmbedUrl = `https://api.instagram.com/oembed?url=${encodeURIComponent(url)}&format=json`;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+
+      const res = await fetch(oEmbedUrl, { signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (!res.ok) {
+        const og = new OpenGraphImporter();
+        const meta = await og.fetchMetadata(url);
+        return { ...meta, siteName: meta.siteName ?? "Instagram" };
+      }
+
+      const data = await res.json();
+      return {
+        url,
+        title: data.title ?? null,
+        description: null,
+        imageUrl: data.thumbnail_url ?? null,
+        siteName: data.provider_name ?? "Instagram",
+        embedHtml: data.html ? stripScriptTags(data.html) : null,
+      };
+    } catch {
+      const og = new OpenGraphImporter();
+      const meta = await og.fetchMetadata(url);
+      return { ...meta, siteName: meta.siteName ?? "Instagram" };
+    }
   }
 }
 
 /**
- * TikTok-specific stub — Phase 2 will use TikTok oEmbed API.
+ * TikTok oEmbed — uses tiktok.com/oembed for public videos.
+ * Falls back to OpenGraph on error.
  */
 export class TikTokImporter implements ContentImporter {
   name = "tiktok";
 
   canHandle(url: string): boolean {
-    return /tiktok\.com/.test(url);
+    return /tiktok\.com\/@[\w.]+\/video\//.test(url);
   }
 
   async fetchMetadata(url: string): Promise<ContentMetadata> {
-    // Phase 2: Use TikTok oEmbed API
-    const og = new OpenGraphImporter();
-    const metadata = await og.fetchMetadata(url);
-    return { ...metadata, siteName: "TikTok" };
+    try {
+      const oEmbedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+
+      const res = await fetch(oEmbedUrl, { signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (!res.ok) {
+        const og = new OpenGraphImporter();
+        const meta = await og.fetchMetadata(url);
+        return { ...meta, siteName: meta.siteName ?? "TikTok" };
+      }
+
+      const data = await res.json();
+      return {
+        url,
+        title: data.title ?? null,
+        description: null,
+        imageUrl: data.thumbnail_url ?? null,
+        siteName: data.provider_name ?? "TikTok",
+        embedHtml: data.html ? stripScriptTags(data.html) : null,
+      };
+    } catch {
+      const og = new OpenGraphImporter();
+      const meta = await og.fetchMetadata(url);
+      return { ...meta, siteName: meta.siteName ?? "TikTok" };
+    }
   }
 }
 
-// Registry — add new importers here
+// Registry — add new importers here; OpenGraph must be last (fallback)
 const importers: ContentImporter[] = [
   new InstagramImporter(),
   new TikTokImporter(),
-  new OpenGraphImporter(), // fallback, must be last
+  new OpenGraphImporter(),
 ];
 
 export function getImporterForUrl(url: string): ContentImporter {
-  return importers.find((i) => i.canHandle(url)) || importers[importers.length - 1];
+  return (
+    importers.find((i) => i.canHandle(url)) || importers[importers.length - 1]
+  );
 }
