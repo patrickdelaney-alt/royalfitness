@@ -235,7 +235,16 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
 // useSearchParams() requires Suspense in Next.js app router
 export default function SignInClient(props: Props) {
   return (
-    <Suspense>
+    <Suspense
+      fallback={
+        <div className="flex justify-center py-12">
+          <div
+            className="w-6 h-6 border-2 rounded-full animate-spin"
+            style={{ borderColor: "#8b88f8", borderTopColor: "transparent" }}
+          />
+        </div>
+      }
+    >
       <SignInForm {...props} />
     </Suspense>
   );

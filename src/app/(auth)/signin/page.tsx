@@ -1,8 +1,8 @@
 import SignInClient from "./SignInClient";
 
-// Server component — reads env vars at request time and passes provider
-// availability flags to the client component so OAuth buttons are only
-// rendered when the credentials are actually configured in the environment.
+// Must be dynamic so env vars are read at request time (not baked at build).
+export const dynamic = "force-dynamic";
+
 export default function SignInPage() {
   return (
     <SignInClient
