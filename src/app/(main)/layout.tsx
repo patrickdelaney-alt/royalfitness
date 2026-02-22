@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { safeAuth } from "@/lib/safe-auth";
 import { BottomNav } from "@/components/bottom-nav";
@@ -16,7 +17,9 @@ export default async function MainLayout({
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <main className="flex-1 overflow-y-auto pb-16">{children}</main>
-      <BottomNav />
+      <Suspense fallback={<div className="h-16" />}>
+        <BottomNav />
+      </Suspense>
     </div>
   );
 }
