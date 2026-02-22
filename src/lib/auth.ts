@@ -35,6 +35,13 @@ if (!process.env.AUTH_URL && !process.env.NEXTAUTH_URL) {
   if (process.env.VERCEL_URL) {
     process.env.AUTH_URL = `https://${process.env.VERCEL_URL}`;
   }
+} else if (process.env.AUTH_URL && !process.env.AUTH_URL.startsWith("http")) {
+  // If AUTH_URL is set but missing the protocol, add it
+  process.env.AUTH_URL = `https://${process.env.AUTH_URL}`;
+  console.warn(
+    "[auth] AUTH_URL was missing https:// protocol — auto-corrected. " +
+      "Please update your environment variable to include the full URL for clarity."
+  );
 }
 
 // Stable cookie name — must never change after launch because it is used
