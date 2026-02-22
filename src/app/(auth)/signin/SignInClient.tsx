@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -243,20 +243,8 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
   );
 }
 
-// useSearchParams() requires Suspense in Next.js app router
+// Suspense is handled by the server component (signin/page.tsx) that
+// imports this — keeping it there ensures proper SSR suspension handling.
 export default function SignInClient(props: Props) {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center py-12">
-          <div
-            className="w-6 h-6 border-2 rounded-full animate-spin"
-            style={{ borderColor: "#8b88f8", borderTopColor: "transparent" }}
-          />
-        </div>
-      }
-    >
-      <SignInForm {...props} />
-    </Suspense>
-  );
+  return <SignInForm {...props} />;
 }
