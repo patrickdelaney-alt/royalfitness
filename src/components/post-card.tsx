@@ -124,13 +124,13 @@ export interface Post {
   };
 }
 
-// ── badge colours (dark theme) ────────────────────────────────────────────────
+// ── badge colours (light theme) ───────────────────────────────────────────────
 
 const TYPE_BADGE: Record<Post["type"], { bg: string; text: string; label: string; emoji: string }> = {
-  WORKOUT: { bg: "rgba(109,106,245,0.15)", text: "#8b88f8", label: "Workout", emoji: "💪" },
-  MEAL:    { bg: "rgba(34,197,94,0.12)",   text: "#4ade80", label: "Meal",    emoji: "🥗" },
-  WELLNESS:{ bg: "rgba(168,85,247,0.12)",  text: "#c084fc", label: "Wellness",emoji: "🧘" },
-  GENERAL: { bg: "rgba(255,255,255,0.08)", text: "rgba(255,255,255,0.45)", label: "General", emoji: "⭐" },
+  WORKOUT: { bg: "#fed7aa", text: "#92400e", label: "Workout", emoji: "💪" },
+  MEAL:    { bg: "#bbf7d0", text: "#166534", label: "Meal",    emoji: "🥗" },
+  WELLNESS:{ bg: "#e9d5ff", text: "#6b21a8", label: "Wellness",emoji: "🧘" },
+  GENERAL: { bg: "#f3f4f6", text: "#6b7280", label: "General", emoji: "⭐" },
 };
 
 // ── mood label ────────────────────────────────────────────────────────────────
@@ -154,7 +154,7 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
         {detail.isClass && (
           <span
             className="text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(109,106,245,0.15)", color: "#8b88f8" }}
+            style={{ background: "rgba(252,76,2,0.1)", color: "#e04400" }}
           >
             Class
           </span>
@@ -179,7 +179,7 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
                     <span
                       key={s.id}
                       className="text-xs text-muted-dim rounded px-1.5 py-0.5"
-                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                      style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}
                     >
                       Set {idx + 1}
                       {s.reps != null ? `: ${s.reps} reps` : ""}
@@ -198,12 +198,12 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
         {detail.perceivedExertion != null && (
           <div className="flex items-center gap-2">
             <HiFire className="w-4 h-4 text-primary" />
-            <div className="w-24 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+            <div className="w-24 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(0,0,0,0.1)" }}>
               <div
                 className="h-full rounded-full"
                 style={{
                   width: `${detail.perceivedExertion * 10}%`,
-                  background: "linear-gradient(90deg, #6d6af5, #8b88f8)",
+                  background: "linear-gradient(90deg, #fc4c02, #ff6a33)",
                 }}
               />
             </div>
@@ -227,7 +227,7 @@ function MealSection({ detail }: { detail: MealDetail }) {
         <span className="font-semibold text-foreground">{detail.mealName}</span>
         <span
           className="text-xs px-2 py-0.5 rounded-full capitalize"
-          style={{ background: "rgba(34,197,94,0.1)", color: "#4ade80" }}
+          style={{ background: "rgba(34,197,94,0.12)", color: "#16a34a" }}
         >
           {detail.mealType}
         </span>
@@ -248,7 +248,7 @@ function MealSection({ detail }: { detail: MealDetail }) {
             <div
               key={m.label}
               className="text-center rounded-lg py-2 px-1"
-              style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.12)" }}
+              style={{ background: "rgba(34,197,94,0.07)", border: "1px solid rgba(34,197,94,0.2)" }}
             >
               <p className="text-xs text-muted-dim">{m.label}</p>
               <p className="font-semibold text-foreground text-sm">
@@ -281,7 +281,7 @@ function WellnessSection({ detail }: { detail: WellnessDetail }) {
         {detail.intensity != null && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-dim">Intensity:</span>
-            <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+            <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(0,0,0,0.1)" }}>
               <div
                 className="h-full rounded-full"
                 style={{
@@ -465,7 +465,7 @@ export default function PostCard({
   return (
     <article
       className="rounded-xl overflow-hidden border"
-      style={{ background: "#13141f", borderColor: "rgba(255,255,255,0.08)" }}
+      style={{ background: "#ffffff", borderColor: "#e5e7eb" }}
     >
       {/* ── header ── */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
@@ -556,7 +556,7 @@ export default function PostCard({
               <span
                 key={tag}
                 className="text-xs rounded-full px-2 py-0.5 font-medium"
-                style={{ color: "#8b88f8", background: "rgba(109,106,245,0.12)" }}
+                style={{ color: "#e04400", background: "rgba(252,76,2,0.08)" }}
               >
                 #{tag}
               </span>
@@ -587,7 +587,7 @@ export default function PostCard({
       {/* ── actions ── */}
       <div
         className="flex items-center gap-4 px-4 py-3 border-t"
-        style={{ borderColor: "rgba(255,255,255,0.06)" }}
+        style={{ borderColor: "#f3f4f6" }}
       >
         <button
           onClick={toggleLike}
@@ -617,7 +617,7 @@ export default function PostCard({
       {showComments && (
         <div
           className="border-t px-4 py-3 space-y-3"
-          style={{ borderColor: "rgba(255,255,255,0.06)" }}
+          style={{ borderColor: "#f3f4f6" }}
         >
           {/* comment input */}
           <div className="flex gap-2">

@@ -117,9 +117,9 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
         <div
           className="mb-4 rounded-lg p-3 text-sm border"
           style={{
-            background: "rgba(239,68,68,0.1)",
-            borderColor: "rgba(239,68,68,0.3)",
-            color: "#fca5a5",
+            background: "rgba(239,68,68,0.07)",
+            borderColor: "rgba(239,68,68,0.25)",
+            color: "#dc2626",
           }}
         >
           {error}
@@ -135,7 +135,7 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
                 onClick={() => handleOAuth("apple")}
                 disabled={oauthLoading !== null || loading}
                 className="w-full flex items-center justify-center gap-3 rounded-xl py-3 text-sm font-semibold transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ background: "#1a1a1a", color: "#fff", border: "1px solid rgba(255,255,255,0.1)" }}
+                style={{ background: "#111827", color: "#fff", border: "1px solid #111827" }}
               >
                 <AppleIcon />
                 {oauthLoading === "apple" ? "Redirecting…" : "Sign in with Apple"}
@@ -147,7 +147,7 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
                 onClick={() => handleOAuth("google")}
                 disabled={oauthLoading !== null || loading}
                 className="w-full flex items-center justify-center gap-3 rounded-xl py-3 text-sm font-semibold transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ background: "rgba(255,255,255,0.06)", color: "#fff", border: "1px solid rgba(255,255,255,0.08)" }}
+                style={{ background: "#f9fafb", color: "#171717", border: "1px solid #e5e7eb" }}
               >
                 <GoogleIcon />
                 {oauthLoading === "google" ? "Redirecting…" : "Sign in with Google"}
@@ -163,7 +163,7 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
             <div className="relative flex justify-center">
               <span
                 className="px-3 text-xs text-muted-dim"
-                style={{ background: "#13141f" }}
+                style={{ background: "#ffffff" }}
               >
                 or continue with email
               </span>
@@ -203,7 +203,7 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
             className="input-dark"
           />
           <div className="mt-1 text-right">
-            <span className="text-xs font-semibold" style={{ color: "#8b88f8" }}>
+            <span className="text-xs font-semibold" style={{ color: "#fc4c02" }}>
               Forgot password?
             </span>
           </div>
@@ -223,7 +223,7 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
         <Link
           href="/signup"
           className="font-bold transition-colors"
-          style={{ color: "#8b88f8" }}
+          style={{ color: "#fc4c02" }}
         >
           Sign up
         </Link>

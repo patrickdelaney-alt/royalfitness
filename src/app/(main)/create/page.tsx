@@ -67,8 +67,8 @@ const MUSCLES: MuscleGroup[] = [
     id: "chest",
     label: "Chest",
     icon: (active) => {
-      const f = active ? "#8b88f8" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(109,106,245,0.6)" : "rgba(0,0,0,0.25)";
+      const f = active ? "#fc4c02" : "rgba(0,0,0,0.18)";
+      const s = active ? "rgba(252,76,2,0.5)" : "rgba(0,0,0,0.15)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* left pec */}
@@ -90,8 +90,8 @@ const MUSCLES: MuscleGroup[] = [
     id: "back",
     label: "Back",
     icon: (active) => {
-      const f = active ? "#8b88f8" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(109,106,245,0.6)" : "rgba(0,0,0,0.25)";
+      const f = active ? "#fc4c02" : "rgba(0,0,0,0.18)";
+      const s = active ? "rgba(252,76,2,0.5)" : "rgba(0,0,0,0.15)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* lat spread V-taper */}
@@ -117,7 +117,7 @@ const MUSCLES: MuscleGroup[] = [
         style={{
           fontSize: "22px",
           lineHeight: 1,
-          filter: active ? "drop-shadow(0 0 6px rgba(139,136,248,0.9))" : "grayscale(0.2)",
+          filter: active ? "drop-shadow(0 0 6px rgba(252,76,2,0.8))" : "grayscale(0.2)",
           opacity: active ? 1 : 0.55,
         }}
       >
@@ -129,8 +129,8 @@ const MUSCLES: MuscleGroup[] = [
     id: "shoulders",
     label: "Shoulders",
     icon: (active) => {
-      const f = active ? "#8b88f8" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(109,106,245,0.6)" : "rgba(0,0,0,0.25)";
+      const f = active ? "#fc4c02" : "rgba(0,0,0,0.18)";
+      const s = active ? "rgba(252,76,2,0.5)" : "rgba(0,0,0,0.15)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* left delt cap */}
@@ -159,7 +159,7 @@ const MUSCLES: MuscleGroup[] = [
         style={{
           fontSize: "22px",
           lineHeight: 1,
-          filter: active ? "drop-shadow(0 0 6px rgba(139,136,248,0.9))" : "grayscale(0.2)",
+          filter: active ? "drop-shadow(0 0 6px rgba(252,76,2,0.8))" : "grayscale(0.2)",
           opacity: active ? 1 : 0.55,
         }}
       >
@@ -171,8 +171,8 @@ const MUSCLES: MuscleGroup[] = [
     id: "core",
     label: "Core",
     icon: (active) => {
-      const f = active ? "#8b88f8" : "rgba(255,255,255,0.28)";
-      const gap = active ? "rgba(13,14,25,0.7)" : "rgba(0,0,0,0.35)";
+      const f = active ? "#fc4c02" : "rgba(0,0,0,0.18)";
+      const gap = active ? "rgba(252,76,2,0.15)" : "rgba(0,0,0,0.1)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* 6-pack: 2 columns × 3 rows */}
@@ -197,7 +197,7 @@ const MUSCLES: MuscleGroup[] = [
         style={{
           fontSize: "22px",
           lineHeight: 1,
-          filter: active ? "drop-shadow(0 0 6px rgba(139,136,248,0.9))" : "grayscale(0.2)",
+          filter: active ? "drop-shadow(0 0 6px rgba(252,76,2,0.8))" : "grayscale(0.2)",
           opacity: active ? 1 : 0.55,
         }}
       >
@@ -246,11 +246,11 @@ const ENERGY_STEPS = [
 
 function sliderTrackColor(value: number): string {
   const pct = ((value - 1) / 9) * 100;
-  // purple(1) → amber(5) → red(10)
+  // orange(1) → amber(5) → red(10)
   if (value <= 5) {
-    return `linear-gradient(to right, #6d6af5 0%, #f59e0b ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`;
+    return `linear-gradient(to right, #fc4c02 0%, #f59e0b ${pct}%, rgba(0,0,0,0.1) ${pct}%, rgba(0,0,0,0.1) 100%)`;
   }
-  return `linear-gradient(to right, #6d6af5 0%, #f59e0b 44%, #ef4444 ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`;
+  return `linear-gradient(to right, #fc4c02 0%, #f59e0b 44%, #ef4444 ${pct}%, rgba(0,0,0,0.1) ${pct}%, rgba(0,0,0,0.1) 100%)`;
 }
 
 function EnergySlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -258,7 +258,7 @@ function EnergySlider({ value, onChange }: { value: number; onChange: (v: number
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <label className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.9)" }}>
+        <label className="text-sm font-medium" style={{ color: "rgba(0,0,0,0.75)" }}>
           Energy Level
         </label>
         <span className="text-xl">{currentEmoji}</span>
@@ -296,7 +296,7 @@ function MoodSlider({ value, onChange }: { value: number; onChange: (v: number) 
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <label className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.9)" }}>Mood After</label>
+        <label className="text-sm font-medium" style={{ color: "rgba(0,0,0,0.75)" }}>Mood After</label>
         <span
           className="text-sm font-semibold px-2 py-0.5 rounded-full"
           style={{ backgroundColor: `hsl(${hue}, 70%, 20%)`, color: `hsl(${hue}, 80%, 65%)` }}
@@ -314,12 +314,12 @@ function MoodSlider({ value, onChange }: { value: number; onChange: (v: number) 
           onChange={(e) => onChange(parseInt(e.target.value))}
           className="energy-slider w-full h-2 appearance-none rounded-full cursor-pointer"
           style={{
-            background: `linear-gradient(to right, hsl(${hue},80%,45%) 0%, hsl(${hue},80%,45%) ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`,
+            background: `linear-gradient(to right, hsl(${hue},80%,45%) 0%, hsl(${hue},80%,45%) ${pct}%, rgba(0,0,0,0.1) ${pct}%, rgba(0,0,0,0.1) 100%)`,
           }}
         />
         <div className="flex justify-between mt-1 px-0.5">
           {Array.from({ length: 10 }, (_, i) => (
-            <span key={i} className="text-[10px] w-4 text-center" style={{ color: "rgba(255,255,255,0.3)" }}>
+            <span key={i} className="text-[10px] w-4 text-center" style={{ color: "rgba(0,0,0,0.35)" }}>
               {i + 1}
             </span>
           ))}
@@ -346,9 +346,9 @@ function MediaBlock({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Photo / Video</label>
+      <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Photo / Video</label>
       {mediaPreview ? (
-        <div className="relative rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
+        <div className="relative rounded-xl overflow-hidden" style={{ border: "1px solid #e5e7eb" }}>
           <img src={mediaPreview} alt="Preview" className="w-full max-h-60 object-cover" />
           {uploading && (
             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
@@ -366,8 +366,8 @@ function MediaBlock({
             onClick={onFileClick}
             className="w-full rounded-xl py-8 flex flex-col items-center gap-2 transition-colors"
             style={{
-              border: "2px dashed rgba(255,255,255,0.12)",
-              color: "rgba(255,255,255,0.35)",
+              border: "2px dashed #d1d5db",
+              color: "rgba(0,0,0,0.35)",
             }}
           >
             <HiPhotograph className="w-8 h-8" />
@@ -377,7 +377,7 @@ function MediaBlock({
             type="button"
             onClick={onToggleSuggestions}
             className="flex items-center gap-1.5 text-xs font-medium"
-            style={{ color: "#8b88f8" }}
+            style={{ color: "#fc4c02" }}
           >
             <HiSparkles className="w-3.5 h-3.5" />
             {showSuggestions ? "Hide suggested photos" : "Browse stock photos"}
@@ -390,7 +390,7 @@ function MediaBlock({
                   type="button"
                   onClick={() => onSelectStock(photo.url)}
                   className="relative rounded-lg overflow-hidden transition-colors aspect-[3/2]"
-                  style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+                  style={{ border: "1px solid #e5e7eb" }}
                 >
                   <img src={photo.url} alt={photo.label} className="w-full h-full object-cover" />
                   <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] px-1 py-0.5 text-center truncate">
@@ -671,13 +671,13 @@ export default function CreatePostPage() {
   };
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>
+    <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#171717" }}>
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={() => router.back()}
           className="p-2 rounded-xl transition-colors"
-          style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)" }}
+          style={{ background: "#f3f4f6", color: "rgba(0,0,0,0.6)" }}
         >
           <HiArrowLeft className="w-5 h-5" />
         </button>
@@ -685,7 +685,7 @@ export default function CreatePostPage() {
       </div>
 
       {/* Post type selector */}
-      <div className="flex gap-2 mb-5 p-1 rounded-xl" style={{ background: "rgba(255,255,255,0.04)" }}>
+      <div className="flex gap-2 mb-5 p-1 rounded-xl" style={{ background: "#f3f4f6" }}>
         {(["WORKOUT", "MEAL", "WELLNESS", "GENERAL"] as PostType[]).map((t) => (
           <button
             key={t}
@@ -693,8 +693,8 @@ export default function CreatePostPage() {
             className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all"
             style={
               type === t
-                ? { background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)", color: "#ffffff" }
-                : { background: "transparent", color: "rgba(255,255,255,0.4)" }
+                ? { background: "linear-gradient(135deg, #fc4c02 0%, #ff6a33 100%)", color: "#ffffff" }
+                : { background: "transparent", color: "rgba(0,0,0,0.45)" }
             }
           >
             {TYPE_LABELS[t]}
@@ -703,7 +703,7 @@ export default function CreatePostPage() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-xl text-sm" style={{ background: "rgba(239,68,68,0.15)", color: "#f87171", border: "1px solid rgba(239,68,68,0.3)" }}>
+        <div className="mb-4 p-3 rounded-xl text-sm" style={{ background: "rgba(239,68,68,0.07)", color: "#dc2626", border: "1px solid rgba(239,68,68,0.25)" }}>
           {error}
         </div>
       )}
@@ -714,7 +714,7 @@ export default function CreatePostPage() {
           <>
             {/* 1. Muscle group selector */}
             <div>
-              <label className="block text-sm font-medium mb-2" style={{ color: "rgba(255,255,255,0.9)" }}>
+              <label className="block text-sm font-medium mb-2" style={{ color: "rgba(0,0,0,0.75)" }}>
                 Target Muscles
               </label>
               <div className="grid grid-cols-4 gap-2">
@@ -729,14 +729,14 @@ export default function CreatePostPage() {
                       style={
                         active
                           ? {
-                              background: "rgba(109,106,245,0.2)",
-                              border: "1px solid rgba(139,136,248,0.5)",
-                              color: "#8b88f8",
+                              background: "rgba(252,76,2,0.1)",
+                              border: "1px solid rgba(252,76,2,0.4)",
+                              color: "#e04400",
                             }
                           : {
-                              background: "rgba(255,255,255,0.04)",
-                              border: "1px solid rgba(255,255,255,0.07)",
-                              color: "rgba(255,255,255,0.4)",
+                              background: "#f9fafb",
+                              border: "1px solid #e5e7eb",
+                              color: "rgba(0,0,0,0.4)",
                             }
                       }
                     >
@@ -750,7 +750,7 @@ export default function CreatePostPage() {
 
             {/* 2. Workout Name */}
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>
                 Workout Name *
               </label>
               <input
@@ -773,7 +773,7 @@ export default function CreatePostPage() {
 
             {/* 5. Caption */}
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Caption</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Caption</label>
               <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
@@ -791,44 +791,44 @@ export default function CreatePostPage() {
                 onChange={(e) => setIsClass(e.target.checked)}
                 className="accent-primary w-4 h-4"
               />
-              <span style={{ color: "rgba(255,255,255,0.8)" }}>Group class</span>
+              <span style={{ color: "rgba(0,0,0,0.7)" }}>Group class</span>
             </label>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Duration (min)</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Duration (min)</label>
                 <input type="number" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} placeholder="60" className="input-dark w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Exertion (1-10)</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Exertion (1-10)</label>
                 <input type="number" min="1" max="10" value={perceivedExertion} onChange={(e) => setPerceivedExertion(e.target.value)} placeholder="7" className="input-dark w-full" />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Notes</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Notes</label>
               <textarea value={workoutNotes} onChange={(e) => setWorkoutNotes(e.target.value)} rows={2} placeholder="Any notes about this workout..." className="textarea-dark w-full resize-none" />
             </div>
 
             {/* Exercises */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.9)" }}>Exercises</label>
-                <button type="button" onClick={addExercise} className="flex items-center gap-1 text-xs font-medium" style={{ color: "#8b88f8" }}>
+                <label className="text-sm font-medium" style={{ color: "rgba(0,0,0,0.75)" }}>Exercises</label>
+                <button type="button" onClick={addExercise} className="flex items-center gap-1 text-xs font-medium" style={{ color: "#fc4c02" }}>
                   <HiPlus className="w-4 h-4" />
                   Add exercise
                 </button>
               </div>
 
               {exercises.length === 0 && (
-                <p className="text-xs text-center py-3 rounded-xl" style={{ border: "1px dashed rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.25)" }}>
+                <p className="text-xs text-center py-3 rounded-xl" style={{ border: "1px dashed #d1d5db", color: "rgba(0,0,0,0.3)" }}>
                   No exercises added yet
                 </p>
               )}
 
               <div className="space-y-3">
                 {exercises.map((ex, exIdx) => (
-                  <div key={exIdx} className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                  <div key={exIdx} className="rounded-xl p-3" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
                     <div className="flex gap-2 mb-2">
                       <input
                         value={ex.name}
@@ -836,7 +836,7 @@ export default function CreatePostPage() {
                         placeholder="Exercise name (e.g. Bench Press)"
                         className="input-dark flex-1"
                       />
-                      <button type="button" onClick={() => removeExercise(exIdx)} className="flex-shrink-0" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      <button type="button" onClick={() => removeExercise(exIdx)} className="flex-shrink-0" style={{ color: "rgba(0,0,0,0.3)" }}>
                         <HiTrash className="w-5 h-5" />
                       </button>
                     </div>
@@ -844,7 +844,7 @@ export default function CreatePostPage() {
                     <div className="space-y-2">
                       {ex.sets.map((set, setIdx) => (
                         <div key={setIdx} className="flex gap-1.5 items-center">
-                          <span className="text-xs w-8 flex-shrink-0 text-center font-medium" style={{ color: "rgba(255,255,255,0.3)" }}>
+                          <span className="text-xs w-8 flex-shrink-0 text-center font-medium" style={{ color: "rgba(0,0,0,0.35)" }}>
                             S{setIdx + 1}
                           </span>
                           <input
@@ -879,7 +879,7 @@ export default function CreatePostPage() {
                             className="input-dark w-14 text-xs px-2 py-1"
                           />
                           {ex.sets.length > 1 && (
-                            <button type="button" onClick={() => removeSet(exIdx, setIdx)} style={{ color: "rgba(255,255,255,0.25)" }}>
+                            <button type="button" onClick={() => removeSet(exIdx, setIdx)} style={{ color: "rgba(0,0,0,0.25)" }}>
                               <HiX className="w-3.5 h-3.5" />
                             </button>
                           )}
@@ -887,7 +887,7 @@ export default function CreatePostPage() {
                       ))}
                     </div>
 
-                    <button type="button" onClick={() => addSet(exIdx)} className="mt-2 flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                    <button type="button" onClick={() => addSet(exIdx)} className="mt-2 flex items-center gap-1 text-xs" style={{ color: "rgba(0,0,0,0.4)" }}>
                       <HiPlus className="w-3.5 h-3.5" />
                       Add set
                     </button>
@@ -902,19 +902,19 @@ export default function CreatePostPage() {
         {type === "MEAL" && (
           <>
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Meal Name *</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Meal Name *</label>
               <input value={mealName} onChange={(e) => setMealName(e.target.value)} placeholder="e.g. Protein Smoothie, Chicken Rice Bowl" className="input-dark w-full" />
             </div>
 
             <MediaBlock {...mediaProps} />
 
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Caption</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Caption</label>
               <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={3} placeholder="Tell us about this meal..." className="textarea-dark w-full resize-none" />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Meal Type</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Meal Type</label>
               <select value={mealType} onChange={(e) => setMealType(e.target.value)} className="select-dark w-full">
                 <option value="breakfast">Breakfast</option>
                 <option value="lunch">Lunch</option>
@@ -924,32 +924,32 @@ export default function CreatePostPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Ingredients (comma-separated)</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Ingredients (comma-separated)</label>
               <input value={ingredients} onChange={(e) => setIngredients(e.target.value)} placeholder="chicken, rice, broccoli" className="input-dark w-full" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Calories</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Calories</label>
                 <input type="number" value={calories} onChange={(e) => setCalories(e.target.value)} placeholder="500" className="input-dark w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Protein (g)</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Protein (g)</label>
                 <input type="number" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="30" className="input-dark w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Carbs (g)</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Carbs (g)</label>
                 <input type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="50" className="input-dark w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Fat (g)</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Fat (g)</label>
                 <input type="number" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="15" className="input-dark w-full" />
               </div>
             </div>
 
             <label className="flex items-center gap-2 text-sm cursor-pointer">
               <input type="checkbox" checked={saveToCatalog} onChange={(e) => setSaveToCatalog(e.target.checked)} className="accent-primary w-4 h-4" />
-              <span style={{ color: "rgba(255,255,255,0.8)" }}>Save to my meal catalog</span>
+              <span style={{ color: "rgba(0,0,0,0.7)" }}>Save to my meal catalog</span>
             </label>
           </>
         )}
@@ -958,7 +958,7 @@ export default function CreatePostPage() {
         {type === "WELLNESS" && (
           <>
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Activity Type *</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Activity Type *</label>
               <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="e.g. Yoga, Meditation, Sauna" className="input-dark w-full" />
             </div>
 
@@ -967,23 +967,23 @@ export default function CreatePostPage() {
             <MoodSlider value={wellnessMood} onChange={setWellnessMood} />
 
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Caption</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Caption</label>
               <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={3} placeholder="How did it go?" className="textarea-dark w-full resize-none" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Duration (min)</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Duration (min)</label>
                 <input type="number" value={wellnessDuration} onChange={(e) => setWellnessDuration(e.target.value)} placeholder="30" className="input-dark w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Intensity (1-10)</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Intensity (1-10)</label>
                 <input type="number" min="1" max="10" value={intensity} onChange={(e) => setIntensity(e.target.value)} placeholder="5" className="input-dark w-full" />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Notes</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Notes</label>
               <textarea value={wellnessNotes} onChange={(e) => setWellnessNotes(e.target.value)} rows={2} placeholder="Any notes..." className="textarea-dark w-full resize-none" />
             </div>
           </>
@@ -994,7 +994,7 @@ export default function CreatePostPage() {
           <>
             <MediaBlock {...mediaProps} />
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Caption</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Caption</label>
               <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={3} placeholder="What's on your mind?" className="textarea-dark w-full resize-none" />
             </div>
           </>
@@ -1002,13 +1002,13 @@ export default function CreatePostPage() {
 
         {/* ─── Common fields ───────────────────────────────── */}
         <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Tags (comma-separated)</label>
+          <label className="block text-sm font-medium mb-1" style={{ color: "rgba(0,0,0,0.75)" }}>Tags (comma-separated)</label>
           <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="gym, gains, health" className="input-dark w-full" />
         </div>
 
         {/* Visibility */}
         <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: "rgba(255,255,255,0.9)" }}>Visibility</label>
+          <label className="block text-sm font-medium mb-2" style={{ color: "rgba(0,0,0,0.75)" }}>Visibility</label>
           <div className="flex gap-2">
             {(["PUBLIC", "FOLLOWERS", "PRIVATE"] as const).map((v) => {
               const labels = { PUBLIC: "🌍 Public", FOLLOWERS: "👥 Followers", PRIVATE: "🔒 Private" };
@@ -1020,8 +1020,8 @@ export default function CreatePostPage() {
                   className="flex-1 py-2 rounded-xl text-xs font-medium transition-all"
                   style={
                     visibility === v
-                      ? { background: "rgba(109,106,245,0.2)", border: "1px solid rgba(139,136,248,0.5)", color: "#8b88f8" }
-                      : { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)" }
+                      ? { background: "rgba(252,76,2,0.1)", border: "1px solid rgba(252,76,2,0.4)", color: "#e04400" }
+                      : { background: "#f9fafb", border: "1px solid #e5e7eb", color: "rgba(0,0,0,0.4)" }
                   }
                 >
                   {labels[v]}
@@ -1037,7 +1037,7 @@ export default function CreatePostPage() {
             type="button"
             onClick={() => { setShowBackdate((v) => !v); if (showBackdate) setPostDate(""); }}
             className="text-xs font-medium"
-            style={{ color: "rgba(255,255,255,0.35)" }}
+            style={{ color: "rgba(0,0,0,0.4)" }}
           >
             {showBackdate ? "▲ Hide backdate" : "▼ Backdate this post"}
           </button>
@@ -1051,7 +1051,7 @@ export default function CreatePostPage() {
                 className="input-dark w-full"
               />
               {postDate && (
-                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                <p className="text-xs mt-1" style={{ color: "rgba(0,0,0,0.4)" }}>
                   Will appear as posted on {new Date(postDate + "T12:00:00").toLocaleDateString()}
                 </p>
               )}

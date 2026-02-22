@@ -52,9 +52,9 @@ export function BottomNav() {
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t"
       style={{
-        background: "rgba(11,12,20,0.96)",
+        background: "rgba(250,250,250,0.97)",
         backdropFilter: "blur(20px)",
-        borderColor: "rgba(255,255,255,0.08)",
+        borderColor: "#e5e7eb",
       }}
     >
       {tabs.map((tab) => {
@@ -69,7 +69,7 @@ export function BottomNav() {
             key={tab.href}
             href={href}
             className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-xs font-semibold transition-colors"
-            style={{ color: isActive ? "#8b88f8" : "rgba(255,255,255,0.22)" }}
+            style={{ color: isActive ? "#fc4c02" : "rgba(0,0,0,0.35)" }}
           >
             <div className="relative">
               <tab.icon className="h-6 w-6" />
@@ -82,7 +82,8 @@ export function BottomNav() {
             <span>{tab.label}</span>
             {isActive && (
               <div
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full btn-gradient"
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full"
+                style={{ background: "#fc4c02" }}
               />
             )}
           </Link>

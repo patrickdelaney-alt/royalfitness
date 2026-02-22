@@ -50,10 +50,10 @@ function initials(name?: string | null): string {
 }
 
 const TYPE_BADGE: Record<string, { bg: string; color: string; label: string }> = {
-  WORKOUT: { bg: "rgba(109,106,245,0.15)", color: "#8b88f8", label: "Workout" },
-  MEAL: { bg: "rgba(52,211,153,0.15)", color: "#34d399", label: "Meal" },
+  WORKOUT: { bg: "rgba(252,76,2,0.1)", color: "#fc4c02", label: "Workout" },
+  MEAL: { bg: "rgba(52,211,153,0.15)", color: "#16a34a", label: "Meal" },
   WELLNESS: { bg: "rgba(167,139,250,0.15)", color: "#a78bfa", label: "Wellness" },
-  GENERAL: { bg: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)", label: "General" },
+  GENERAL: { bg: "#e5e7eb", color: "rgba(0,0,0,0.5)", label: "General" },
 };
 
 export default function ProfilePage() {
@@ -159,7 +159,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
-        <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "#8b88f8", borderTopColor: "transparent" }} />
+        <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "#fc4c02", borderTopColor: "transparent" }} />
       </div>
     );
   }
@@ -167,12 +167,12 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="text-center py-20">
-        <p style={{ color: "rgba(255,255,255,0.3)" }}>User not found</p>
+        <p style={{ color: "rgba(0,0,0,0.35)" }}>User not found</p>
       </div>
     );
   }
 
-  const muted = "rgba(255,255,255,0.4)";
+  const muted = "rgba(0,0,0,0.4)";
 
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>
@@ -205,19 +205,19 @@ export default function ProfilePage() {
 
       {/* Bio */}
       {profile.bio && (
-        <p className="text-sm mb-4 whitespace-pre-wrap" style={{ color: "rgba(255,255,255,0.8)" }}>{profile.bio}</p>
+        <p className="text-sm mb-4 whitespace-pre-wrap" style={{ color: "rgba(0,0,0,0.7)" }}>{profile.bio}</p>
       )}
 
       {/* Social links */}
       {(profile.instagramUrl || profile.tiktokUrl) && (
         <div className="flex gap-3 mb-4">
           {profile.instagramUrl && (
-            <a href={profile.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "#8b88f8" }}>
+            <a href={profile.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "#fc4c02" }}>
               Instagram
             </a>
           )}
           {profile.tiktokUrl && (
-            <a href={profile.tiktokUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "#8b88f8" }}>
+            <a href={profile.tiktokUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "#fc4c02" }}>
               TikTok
             </a>
           )}
@@ -230,7 +230,7 @@ export default function ProfilePage() {
           <Link
             href="/profile/edit"
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors"
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
+            style={{ background: "#f3f4f6", border: "1px solid #e5e7eb", color: "rgba(0,0,0,0.7)" }}
           >
             <HiPencil className="w-4 h-4" />
             Edit Profile
@@ -238,14 +238,14 @@ export default function ProfilePage() {
           <Link
             href="/catalog"
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors"
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
+            style={{ background: "#f3f4f6", border: "1px solid #e5e7eb", color: "rgba(0,0,0,0.7)" }}
           >
             My Catalog
           </Link>
           <button
             onClick={() => signOut({ callbackUrl: "/signin" })}
             className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-colors"
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}
+            style={{ background: "#f3f4f6", border: "1px solid #e5e7eb", color: "rgba(0,0,0,0.4)" }}
           >
             <HiLogout className="w-4 h-4" />
           </button>
@@ -257,10 +257,10 @@ export default function ProfilePage() {
           className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all mb-6 disabled:opacity-60"
           style={
             isFollowing
-              ? { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)" }
+              ? { background: "#f3f4f6", border: "1px solid #e5e7eb", color: "rgba(0,0,0,0.6)" }
               : hasRequested
-              ? { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)" }
-              : { background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)", boxShadow: "0 8px 24px rgba(109,106,245,0.3)", color: "#ffffff" }
+              ? { background: "#f9fafb", border: "1px solid #f3f4f6", color: "rgba(0,0,0,0.35)" }
+              : { background: "linear-gradient(135deg, #fc4c02 0%, #ff6a33 100%)", boxShadow: "0 8px 24px rgba(252,76,2,0.25)", color: "#ffffff" }
           }
         >
           {isFollowing ? "Following" : hasRequested ? "Requested" : "Follow"}
@@ -278,7 +278,7 @@ export default function ProfilePage() {
               <div
                 key={req.id}
                 className="flex items-center gap-3 p-3 rounded-xl"
-                style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+                style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}
               >
                 {req.sender.avatarUrl ? (
                   <img src={req.sender.avatarUrl} alt={req.sender.username} className="w-10 h-10 rounded-full object-cover" />
@@ -307,7 +307,7 @@ export default function ProfilePage() {
                   <button
                     onClick={() => handleDeclineRequest(req.id)}
                     className="p-1.5 rounded-full"
-                    style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}
+                    style={{ background: "#e5e7eb", color: "rgba(0,0,0,0.5)" }}
                     title="Decline"
                   >
                     <HiX className="w-4 h-4" />
@@ -335,7 +335,7 @@ export default function ProfilePage() {
                 key={post.id}
                 href={`/posts/${post.id}`}
                 className="block p-3 rounded-xl transition-opacity active:opacity-70"
-                style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+                style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}
               >
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <span
@@ -350,15 +350,15 @@ export default function ProfilePage() {
                   <span
                     className="text-xs px-1.5 py-0.5 rounded-full ml-auto"
                     style={{
-                      background: post.visibility === "PUBLIC" ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.06)",
-                      color: post.visibility === "PUBLIC" ? "#34d399" : "rgba(255,255,255,0.3)",
+                      background: post.visibility === "PUBLIC" ? "rgba(52,211,153,0.12)" : "#f3f4f6",
+                      color: post.visibility === "PUBLIC" ? "#16a34a" : "rgba(0,0,0,0.35)",
                     }}
                   >
                     {post.visibility === "PUBLIC" ? "🌍 Public" : post.visibility === "FOLLOWERS" ? "👥 Followers" : "🔒 Private"}
                   </span>
                 </div>
                 {post.caption && (
-                  <p className="text-sm line-clamp-2" style={{ color: "rgba(255,255,255,0.8)" }}>{post.caption}</p>
+                  <p className="text-sm line-clamp-2" style={{ color: "rgba(0,0,0,0.7)" }}>{post.caption}</p>
                 )}
                 <div className="flex gap-3 mt-1.5 text-xs" style={{ color: muted }}>
                   <span>{post._count.likes} likes</span>

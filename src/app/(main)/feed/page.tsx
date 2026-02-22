@@ -130,15 +130,15 @@ export default function FeedPage() {
               style={
                 isActive
                   ? {
-                      background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)",
+                      background: "linear-gradient(135deg, #fc4c02 0%, #ff6a33 100%)",
                       color: "#ffffff",
-                      boxShadow: "0 8px 24px rgba(109,106,245,0.3)",
+                      boxShadow: "0 4px 16px rgba(252,76,2,0.25)",
                       border: "none",
                     }
                   : {
-                      background: "rgba(255,255,255,0.045)",
-                      color: "rgba(255,255,255,0.45)",
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "#ffffff",
+                      color: "rgba(0,0,0,0.5)",
+                      border: "1px solid #e5e7eb",
                     }
               }
             >
@@ -156,17 +156,17 @@ export default function FeedPage() {
             <div
               key={i}
               className="rounded-xl border h-48 animate-pulse"
-              style={{ background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.08)" }}
+              style={{ background: "#f3f4f6", borderColor: "#e5e7eb" }}
             />
           ))}
         </div>
       ) : error ? (
         <div className="text-center py-16">
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>Failed to load posts.</p>
+          <p className="text-sm" style={{ color: "rgba(0,0,0,0.5)" }}>Failed to load posts.</p>
           <button
             onClick={() => fetchPosts(true)}
             className="mt-3 text-xs underline"
-            style={{ color: "#8b88f8" }}
+            style={{ color: "#fc4c02" }}
           >
             Try again
           </button>
@@ -175,7 +175,7 @@ export default function FeedPage() {
         <div className="text-center py-16">
           <p className="text-sub text-sm">No public posts yet.</p>
           <p className="text-muted-dim text-xs mt-1">
-            Create a post set to <span style={{ color: "#34d399" }}>Public</span> to see it here.
+            Create a post set to <span style={{ color: "#16a34a" }}>Public</span> to see it here.
           </p>
         </div>
       ) : (
@@ -187,7 +187,7 @@ export default function FeedPage() {
             <div className="flex justify-center py-4">
               <div
                 className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
-                style={{ borderColor: "rgba(109,106,245,0.5)", borderTopColor: "transparent" }}
+                style={{ borderColor: "rgba(252,76,2,0.4)", borderTopColor: "transparent" }}
               />
             </div>
           )}

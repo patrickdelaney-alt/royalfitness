@@ -111,7 +111,7 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
   };
 
   return (
-    <div className="space-y-3 p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+    <div className="space-y-3 p-4 rounded-xl" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
       {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Meal name *" className={inputCls} />
       <input value={recipeSourceUrl} onChange={(e) => setRecipeSourceUrl(e.target.value)} placeholder="Instagram / TikTok link (optional)" className={inputCls} />
@@ -158,7 +158,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
   };
 
   return (
-    <div className="space-y-3 p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+    <div className="space-y-3 p-4 rounded-xl" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
       {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Supplement name *" className={inputCls} />
       <div className="grid grid-cols-2 gap-2">
@@ -201,7 +201,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
   };
 
   return (
-    <div className="space-y-3 p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+    <div className="space-y-3 p-4 rounded-xl" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
       {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Accessory name *" className={inputCls} />
       <input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (e.g. Recovery, Gear)" className={inputCls} />
@@ -248,7 +248,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
   };
 
   return (
-    <div className="space-y-3 p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+    <div className="space-y-3 p-4 rounded-xl" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
       {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Wellness item name *" className={inputCls} />
       <div className="grid grid-cols-2 gap-2">
@@ -291,7 +291,7 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
   };
 
   return (
-    <div className="space-y-3 p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+    <div className="space-y-3 p-4 rounded-xl" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
       {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Workout name *" className={inputCls} />
       <input value={exercises} onChange={(e) => setExercises(e.target.value)} placeholder="Exercises (comma-separated)" className={inputCls} />
@@ -308,7 +308,7 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
 
 function ItemCard({ onDelete, children }: { onDelete: () => void; children: React.ReactNode }) {
   return (
-    <div className="p-4 rounded-xl" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
+    <div className="p-4 rounded-xl" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">{children}</div>
         <button onClick={onDelete} className="flex-shrink-0" style={{ color: "rgba(255,255,255,0.25)" }}>
@@ -321,7 +321,7 @@ function ItemCard({ onDelete, children }: { onDelete: () => void; children: Reac
 
 function Pill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(109,106,245,0.15)", color: "#8b88f8" }}>
+    <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(252,76,2,0.1)", color: "#fc4c02" }}>
       {children}
     </span>
   );
@@ -329,7 +329,7 @@ function Pill({ children }: { children: React.ReactNode }) {
 
 function ExternalLink({ href, label }: { href: string; label: string }) {
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs mt-1 hover:underline" style={{ color: "#8b88f8" }}>
+    <a href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs mt-1 hover:underline" style={{ color: "#fc4c02" }}>
       <HiExternalLink className="w-3.5 h-3.5" />
       {label}
     </a>
@@ -394,14 +394,14 @@ export default function CatalogPage() {
     { key: "accessories", label: "Accessories" },
   ];
 
-  const muted = "rgba(255,255,255,0.4)";
+  const muted = "rgba(0,0,0,0.4)";
 
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="p-2 rounded-xl" style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)" }}>
+          <button onClick={() => router.back()} className="p-2 rounded-xl" style={{ background: "#f3f4f6", color: "rgba(0,0,0,0.6)" }}>
             <HiArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-lg font-bold">My Catalog</h1>
@@ -409,7 +409,7 @@ export default function CatalogPage() {
         <button
           onClick={() => setShowForm((v) => !v)}
           className="flex items-center gap-1.5 text-sm font-medium"
-          style={{ color: "#8b88f8" }}
+          style={{ color: "#fc4c02" }}
         >
           <HiPlus className="w-4 h-4" />
           Add
@@ -425,8 +425,8 @@ export default function CatalogPage() {
             className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all"
             style={
               tab === t.key
-                ? { background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)", color: "#ffffff" }
-                : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
+                ? { background: "linear-gradient(135deg, #fc4c02 0%, #fc4c02 100%)", color: "#ffffff" }
+                : { background: "#f3f4f6", color: "rgba(0,0,0,0.4)" }
             }
           >
             {t.label}
@@ -449,7 +449,7 @@ export default function CatalogPage() {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
+            <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: "#f3f4f6" }} />
           ))}
         </div>
       ) : (

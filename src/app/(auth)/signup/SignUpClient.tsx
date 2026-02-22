@@ -123,9 +123,9 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
         <div
           className="mb-4 rounded-lg p-3 text-sm border"
           style={{
-            background: "rgba(239,68,68,0.1)",
-            borderColor: "rgba(239,68,68,0.3)",
-            color: "#fca5a5",
+            background: "rgba(239,68,68,0.07)",
+            borderColor: "rgba(239,68,68,0.25)",
+            color: "#dc2626",
           }}
         >
           {error}
@@ -141,7 +141,7 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
                 onClick={() => handleOAuth("apple")}
                 disabled={oauthLoading !== null || loading}
                 className="w-full flex items-center justify-center gap-3 rounded-xl py-3 text-sm font-semibold transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ background: "#1a1a1a", color: "#fff", border: "1px solid rgba(255,255,255,0.1)" }}
+                style={{ background: "#111827", color: "#fff", border: "1px solid #111827" }}
               >
                 <AppleIcon />
                 {oauthLoading === "apple" ? "Redirecting…" : "Continue with Apple"}
@@ -154,7 +154,7 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
                 onClick={() => handleOAuth("google")}
                 disabled={oauthLoading !== null || loading}
                 className="w-full flex items-center justify-center gap-3 rounded-xl py-3 text-sm font-semibold transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ background: "rgba(255,255,255,0.06)", color: "#fff", border: "1px solid rgba(255,255,255,0.08)" }}
+                style={{ background: "#f9fafb", color: "#171717", border: "1px solid #e5e7eb" }}
               >
                 <GoogleIcon />
                 {oauthLoading === "google" ? "Redirecting…" : "Continue with Google"}
@@ -167,7 +167,7 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
               <div className="w-full border-t border-surface" />
             </div>
             <div className="relative flex justify-center">
-              <span className="px-3 text-xs text-muted-dim" style={{ background: "#13141f" }}>
+              <span className="px-3 text-xs text-muted-dim" style={{ background: "#ffffff" }}>
                 or sign up with email
               </span>
             </div>
@@ -190,7 +190,7 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
             className="input-dark"
           />
           {fieldErrors.name && (
-            <p className="mt-1 text-xs" style={{ color: "#fca5a5" }}>{fieldErrors.name}</p>
+            <p className="mt-1 text-xs" style={{ color: "#dc2626" }}>{fieldErrors.name}</p>
           )}
         </div>
 
@@ -208,7 +208,7 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
             className="input-dark"
           />
           {fieldErrors.username && (
-            <p className="mt-1 text-xs" style={{ color: "#fca5a5" }}>{fieldErrors.username}</p>
+            <p className="mt-1 text-xs" style={{ color: "#dc2626" }}>{fieldErrors.username}</p>
           )}
         </div>
 
@@ -226,7 +226,7 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
             className="input-dark"
           />
           {fieldErrors.email && (
-            <p className="mt-1 text-xs" style={{ color: "#fca5a5" }}>{fieldErrors.email}</p>
+            <p className="mt-1 text-xs" style={{ color: "#dc2626" }}>{fieldErrors.email}</p>
           )}
         </div>
 
@@ -244,7 +244,7 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
             className="input-dark"
           />
           {fieldErrors.password && (
-            <p className="mt-1 text-xs" style={{ color: "#fca5a5" }}>{fieldErrors.password}</p>
+            <p className="mt-1 text-xs" style={{ color: "#dc2626" }}>{fieldErrors.password}</p>
           )}
         </div>
 
@@ -259,7 +259,7 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
 
       <p className="mt-6 text-center text-sm text-sub">
         Already have an account?{" "}
-        <Link href="/signin" className="font-bold" style={{ color: "#8b88f8" }}>
+        <Link href="/signin" className="font-bold" style={{ color: "#fc4c02" }}>
           Sign in
         </Link>
       </p>

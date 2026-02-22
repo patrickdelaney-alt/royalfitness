@@ -28,13 +28,13 @@ export default function AuthLayout({
         </p>
       </div>
 
-      {/* Dark card */}
+      {/* Card */}
       <div
         className="w-full max-w-md rounded-2xl p-8 border"
         style={{
-          background: "#13141f",
-          borderColor: "rgba(255,255,255,0.08)",
-          boxShadow: "0 40px 80px rgba(0,0,0,0.5), 0 0 60px rgba(109,106,245,0.07)",
+          background: "#ffffff",
+          borderColor: "#e5e7eb",
+          boxShadow: "0 4px 32px rgba(0,0,0,0.08)",
         }}
       >
         {children}

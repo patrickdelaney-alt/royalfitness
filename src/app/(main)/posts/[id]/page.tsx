@@ -47,7 +47,7 @@ export default function PostDetailPage() {
       <div className="flex justify-center items-center py-20">
         <div
           className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
-          style={{ borderColor: "#8b88f8", borderTopColor: "transparent" }}
+          style={{ borderColor: "#fc4c02", borderTopColor: "transparent" }}
         />
       </div>
     );
@@ -56,13 +56,13 @@ export default function PostDetailPage() {
   if (notFound || !post) {
     return (
       <div className="max-w-lg mx-auto px-4 pt-8 text-center">
-        <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+        <p className="text-sm" style={{ color: "rgba(0,0,0,0.4)" }}>
           Post not found or you don&apos;t have permission to view it.
         </p>
         <button
           onClick={() => router.back()}
           className="mt-4 text-sm underline"
-          style={{ color: "#8b88f8" }}
+          style={{ color: "#fc4c02" }}
         >
           Go back
         </button>
