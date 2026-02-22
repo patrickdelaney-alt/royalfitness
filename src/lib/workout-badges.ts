@@ -130,7 +130,7 @@ const WORKOUT_BADGES: Record<string, { names: string[]; emoji: string; gradient:
   },
   shoulders: {
     emoji: "🎯",
-    gradient: "linear-gradient(135deg, #d97706, #dc2626)",
+    gradient: "linear-gradient(135deg, #059669, #0d9488)",
     names: [
       "Boulder Shoulders",
       "Delt Destroyer",
@@ -161,7 +161,7 @@ const WORKOUT_BADGES: Record<string, { names: string[]; emoji: string; gradient:
   },
   arms: {
     emoji: "💪",
-    gradient: "linear-gradient(135deg, #ea580c, #dc2626)",
+    gradient: "linear-gradient(135deg, #6d6af5, #8b88f8)",
     names: [
       "Gun Show",
       "Bicep Bandit",
@@ -192,7 +192,7 @@ const WORKOUT_BADGES: Record<string, { names: string[]; emoji: string; gradient:
   },
   core: {
     emoji: "🔥",
-    gradient: "linear-gradient(135deg, #ca8a04, #d97706)",
+    gradient: "linear-gradient(135deg, #0891b2, #6d6af5)",
     names: [
       "Core Commander",
       "Ab Assassin",
