@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useMemo, Suspense } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiSparkles } from "react-icons/hi";
 
