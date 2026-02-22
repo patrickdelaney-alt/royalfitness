@@ -89,9 +89,11 @@ export default function NotificationsPage() {
 
   // Mark all as read on mount
   useEffect(() => {
-    fetch("/api/notifications", { method: "PATCH", body: "{}" }).catch(
-      () => {}
-    );
+    fetch("/api/notifications", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    }).catch(() => {});
   }, []);
 
   const fetchNotifications = useCallback(
@@ -184,7 +186,7 @@ export default function NotificationsPage() {
               <Link
                 key={notification.id}
                 href={getNotificationLink(notification)}
-                className={`flex items-start gap-3 p-3 rounded-xl transition-colors hover:bg-gray-50 ${
+                className={`flex items-start gap-3 p-3 rounded-xl transition-colors hover:bg-white/5 ${
                   !notification.read ? "bg-primary/5" : ""
                 }`}
               >

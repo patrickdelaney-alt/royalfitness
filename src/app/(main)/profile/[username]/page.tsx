@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { HiLogout, HiPencil, HiCheck, HiX } from "react-icons/hi";
 import Link from "next/link";
+import FollowListModal from "@/components/follow-list-modal";
 
 interface UserProfile {
   id: string;
@@ -70,6 +71,7 @@ export default function ProfilePage() {
 
   const [followRequests, setFollowRequests] = useState<FollowRequest[]>([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
+  const [followModal, setFollowModal] = useState<"followers" | "following" | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -190,14 +192,20 @@ export default function ProfilePage() {
             <p className="text-sm truncate" style={{ color: muted }}>{profile.name}</p>
           )}
           <div className="flex gap-4 mt-2">
-            <div className="text-center">
+            <button
+              onClick={() => setFollowModal("followers")}
+              className="text-center hover:opacity-70 transition-opacity"
+            >
               <p className="text-sm font-bold">{profile.followerCount}</p>
               <p className="text-xs" style={{ color: muted }}>Followers</p>
-            </div>
-            <div className="text-center">
+            </button>
+            <button
+              onClick={() => setFollowModal("following")}
+              className="text-center hover:opacity-70 transition-opacity"
+            >
               <p className="text-sm font-bold">{profile.followingCount}</p>
               <p className="text-xs" style={{ color: muted }}>Following</p>
-            </div>
+            </button>
           </div>
         </div>
       </div>
@@ -317,6 +325,14 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Followers / Following modal */}
+      <FollowListModal
+        username={profile.username}
+        type={followModal ?? "followers"}
+        isOpen={followModal !== null}
+        onClose={() => setFollowModal(null)}
+      />
 
       {/* Posts */}
       <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
