@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { HiX, HiUserCircle } from "react-icons/hi2";
+import { HiXMark, HiUserCircle } from "react-icons/hi2";
 
 interface FollowUser {
   id: string;
@@ -157,7 +157,7 @@ export default function FollowListModal({
               className="p-1.5 rounded-full transition-colors hover:bg-white/10"
               style={{ color: "rgba(255,255,255,0.5)" }}
             >
-              <HiX className="w-5 h-5" />
+              <HiXMark className="w-5 h-5" />
             </button>
           </div>
         </div>
