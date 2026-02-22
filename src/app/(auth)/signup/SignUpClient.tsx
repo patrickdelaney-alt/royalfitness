@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { credentialsSignIn } from "../actions";
 import Link from "next/link";
 
 function AppleIcon() {
@@ -93,16 +92,17 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
         return;
       }
 
-      // Auto sign in after successful registration using the server action
-      // so the session cookie is set reliably before we navigate.
-      const signInResult = await credentialsSignIn(email, password);
+      // Auto sign-in after registration. auth.js v5 beta's signIn() return
+      // value is unreliable, so we verify via /api/auth/session immediately after.
+      await signIn("credentials", { email, password, redirect: false });
 
-      if (signInResult.error) {
-        window.location.href = "/signin";
-      } else {
-        // Full page navigation ensures the new session cookie is picked up
-        // by the server on the next request.
+      const sessionRes = await fetch("/api/auth/session");
+      const session = await sessionRes.json();
+
+      if (session?.user?.id) {
         window.location.href = "/feed";
+      } else {
+        window.location.href = "/signin";
       }
     } catch {
       setError("Something went wrong. Please try again.");
