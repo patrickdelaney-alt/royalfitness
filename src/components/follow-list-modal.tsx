@@ -105,7 +105,7 @@ export default function FollowListModal({
           fetchUsers(false);
         }
       },
-      { rootMargin: "100px" }
+      { rootMargin: "200px" }
     );
 
     observer.observe(sentinelRef.current);
@@ -163,7 +163,7 @@ export default function FollowListModal({
         </div>
 
         {/* Scrollable list */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <div

@@ -92,7 +92,9 @@ export default function NotificationsPage() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({}),
-    }).catch(() => {});
+    }).catch((err) => {
+      console.error("Failed to mark notifications as read:", err);
+    });
   }, []);
 
   const fetchNotifications = useCallback(
@@ -109,9 +111,15 @@ export default function NotificationsPage() {
         if (!reset && cursor) params.set("cursor", cursor);
 
         const res = await fetch(`/api/notifications?${params.toString()}`);
-        if (!res.ok) throw new Error("Failed to fetch");
+        if (!res.ok) throw new Error(`API returned ${res.status}`);
 
         const data = await res.json();
+
+        // Validate response structure
+        if (!data || !Array.isArray(data.notifications)) {
+          console.error("Invalid notifications response:", data);
+          throw new Error("Invalid notification data structure");
+        }
 
         if (reset) {
           setNotifications(data.notifications);
@@ -120,8 +128,8 @@ export default function NotificationsPage() {
         }
         setCursor(data.nextCursor);
         setHasMore(!!data.nextCursor);
-      } catch {
-        // silent fail
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
       } finally {
         setLoading(false);
         setLoadingMore(false);

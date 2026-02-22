@@ -179,14 +179,18 @@ export async function POST(
 
     // Notify the post author (skip if commenting on own post)
     if (post.authorId !== userId) {
-      await prisma.notification.create({
-        data: {
-          type: "COMMENT",
-          recipientId: post.authorId,
-          actorId: userId,
-          postId,
-        },
-      }).catch((err) => console.error("Failed to create comment notification:", err));
+      try {
+        await prisma.notification.create({
+          data: {
+            type: "COMMENT",
+            recipientId: post.authorId,
+            actorId: userId,
+            postId,
+          },
+        });
+      } catch (err) {
+        console.error("Failed to create comment notification:", err);
+      }
     }
 
     return NextResponse.json(comment, { status: 201 });

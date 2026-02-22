@@ -322,6 +322,7 @@ model SavedMeal {
   photoUrl        String?
   tags            String[] @default([])
   notes           String?
+  isPrivate       Boolean  @default(false)
   createdAt       DateTime @default(now())
 }
 
@@ -335,6 +336,7 @@ model SavedWorkout {
   videoUrl        String?
   tags            String[] @default([])
   notes           String?
+  isPrivate       Boolean  @default(false)
   createdAt       DateTime @default(now())
 }
 
@@ -351,6 +353,7 @@ model Supplement {
   photoUrl  String?
   link      String?
   tags      String[] @default([])
+  isPrivate Boolean  @default(false)
   createdAt DateTime @default(now())
 }
 
@@ -365,6 +368,7 @@ model WellnessAccessory {
   photoUrl  String?
   tags      String[] @default([])
   notes     String?
+  isPrivate Boolean  @default(false)
   createdAt DateTime @default(now())
 }
 
@@ -380,6 +384,7 @@ model SavedWellness {
   photoUrl        String?
   tags            String[] @default([])
   notes           String?
+  isPrivate       Boolean  @default(false)
   createdAt       DateTime @default(now())
 }
 
