@@ -6,6 +6,7 @@ import { signOut } from "next-auth/react";
 import { HiLogout, HiPencil, HiCheck, HiX } from "react-icons/hi";
 import Link from "next/link";
 import FollowListModal from "@/components/follow-list-modal";
+import UserCatalogSection from "@/components/user-catalog-section";
 
 interface UserProfile {
   id: string;
@@ -385,6 +386,9 @@ export default function ProfilePage() {
           })}
         </div>
       )}
+
+      {/* User Catalog Section */}
+      <UserCatalogSection username={profile.username} isOwnProfile={isOwnProfile} />
     </div>
   );
 }

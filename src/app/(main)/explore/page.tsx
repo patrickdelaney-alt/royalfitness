@@ -91,7 +91,7 @@ export default function ExplorePage() {
           className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
             tab === "people"
               ? "bg-primary text-white"
-              : "bg-gray-100 text-muted hover:bg-gray-200"
+              : "bg-card text-foreground hover:bg-card/80"
           }`}
         >
           People
@@ -101,7 +101,7 @@ export default function ExplorePage() {
           className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
             tab === "gyms"
               ? "bg-primary text-white"
-              : "bg-gray-100 text-muted hover:bg-gray-200"
+              : "bg-card text-foreground hover:bg-card/80"
           }`}
         >
           Gyms
