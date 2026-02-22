@@ -78,12 +78,23 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
     setError("");
     setLoading(true);
     try {
-      // Use client-side signIn so the cookie is set directly by the browser
-      // handling the /api/auth/callback/credentials response (most reliable path).
-      // auth.js v5 beta returns undefined from signIn regardless of success/failure,
-      // so we verify by fetching the session immediately after.
-      await signIn("credentials", { email, password, redirect: false });
+      // signIn() with redirect:false returns a response object in next-auth v5.
+      // Check it first — if it contains an error the credentials were wrong and
+      // the session cookie was never set.
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
+      // next-auth v5 beta: result is { error, status, ok, url } or undefined.
+      if (result && !result.ok) {
+        setError("Invalid email or password. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      // Double-check the cookie was actually set by fetching the session.
       const sessionRes = await fetch("/api/auth/session");
       const session = await sessionRes.json();
 
@@ -235,7 +246,16 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
 // useSearchParams() requires Suspense in Next.js app router
 export default function SignInClient(props: Props) {
   return (
-    <Suspense>
+    <Suspense
+      fallback={
+        <div className="flex justify-center py-12">
+          <div
+            className="w-6 h-6 border-2 rounded-full animate-spin"
+            style={{ borderColor: "#8b88f8", borderTopColor: "transparent" }}
+          />
+        </div>
+      }
+    >
       <SignInForm {...props} />
     </Suspense>
   );

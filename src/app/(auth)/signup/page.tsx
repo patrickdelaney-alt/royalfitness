@@ -1,7 +1,7 @@
 import SignUpClient from "./SignUpClient";
 
-// Server component — checks which OAuth providers are configured and passes
-// the flags down so the client only renders buttons that will actually work.
+export const dynamic = "force-dynamic";
+
 export default function SignUpPage() {
   return (
     <SignUpClient

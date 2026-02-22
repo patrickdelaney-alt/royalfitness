@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { safeAuth } from "@/lib/safe-auth";
 import { BottomNav } from "@/components/bottom-nav";
 
+// Auth check requires request headers — never cache this layout statically.
+export const dynamic = "force-dynamic";
+
 export default async function MainLayout({
   children,
 }: {
