@@ -9,7 +9,10 @@ import { auth } from "@/lib/auth";
 export async function safeAuth(): Promise<Session | null> {
   try {
     return (await auth()) as Session | null;
-  } catch {
+  } catch (err) {
+    // Log so the real error shows up in Vercel / server logs instead of
+    // silently swallowing it and causing a mysterious redirect loop.
+    console.error("[safeAuth] auth() threw — session unavailable:", err);
     return null;
   }
 }
