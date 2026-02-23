@@ -135,12 +135,11 @@ export default function FollowListModal({
 
       {/* Sheet */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl"
+        className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl overflow-hidden"
         style={{
           background: "#13141f",
           border: "1px solid rgba(255,255,255,0.08)",
           maxHeight: "75vh",
-          height: "75vh",
         }}
       >
         {/* Handle + header */}
