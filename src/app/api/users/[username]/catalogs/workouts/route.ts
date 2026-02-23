@@ -53,7 +53,6 @@ export async function GET(
     const workouts = await prisma.savedWorkout.findMany({
       where: {
         userId: profileUser.id,
-        ...(isOwnProfile ? {} : { isPrivate: false }),
       },
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),

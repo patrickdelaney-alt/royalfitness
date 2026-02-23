@@ -57,8 +57,6 @@ export async function GET(
     const meals = await prisma.savedMeal.findMany({
       where: {
         userId: profileUser.id,
-        // Only show non-private items to non-owners, or all items to owner
-        ...(isOwnProfile ? {} : { isPrivate: false }),
       },
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),

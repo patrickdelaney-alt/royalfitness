@@ -140,6 +140,7 @@ export default function FollowListModal({
           background: "#13141f",
           border: "1px solid rgba(255,255,255,0.08)",
           maxHeight: "75vh",
+          height: "75vh",
         }}
       >
         {/* Handle + header */}
