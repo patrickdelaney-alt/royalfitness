@@ -450,6 +450,7 @@ export default function CreatePostContent() {
   const [energy, setEnergy] = useState(7);
   const [workoutNotes, setWorkoutNotes] = useState("");
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [postTiming, setPostTiming] = useState<"BEFORE" | "DURING" | "AFTER">("AFTER");
 
   // Meal fields
   const [mealName, setMealName] = useState("");
@@ -581,6 +582,7 @@ export default function CreatePostContent() {
           perceivedExertion: perceivedExertion ? parseInt(perceivedExertion) : undefined,
           moodAfter: energy,
           notes: workoutNotes || undefined,
+          postTiming,
           exercises: exercises
             .filter((ex) => ex.name.trim())
             .map((ex) => ({
