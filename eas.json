@@ -1,0 +1,40 @@
+{
+  "cli": {
+    "version": ">= 5.0.0",
+    "promptToConfigurePushNotifications": false
+  },
+  "build": {
+    "preview": {
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview2": {
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview3": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "production": {
+      "ios": {
+        "resourceClass": "default"
+      }
+    },
+    "development": {
+      "distribution": "internal",
+      "ios": {
+        "resourceClass": "m-1"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": null
+      }
+    }
+  }
+}
