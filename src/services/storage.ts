@@ -13,7 +13,10 @@ export class VercelBlobStorageProvider implements StorageProvider {
     filename: string,
     mimeType: string
   ): Promise<string> {
-    const ext = path.extname(filename);
+    // Extract and sanitize extension - only alphanumeric, lowercase
+    const ext = path.extname(filename)
+      .toLowerCase()
+      .replace(/[^a-z0-9.]/g, "");
     const uniqueName = `uploads/${crypto.randomUUID()}${ext}`;
     const blob = await put(uniqueName, file, {
       access: "public",

@@ -44,7 +44,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const ext = file.name.split(".").pop() || "bin";
+    // Extract and sanitize extension - only alphanumeric, lowercase
+    const ext = (file.name.split(".").pop() || "bin")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
     const uniqueName = `uploads/${crypto.randomUUID()}.${ext}`;
 
     const blob = await put(uniqueName, file, { access: "public" });
