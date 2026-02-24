@@ -516,8 +516,9 @@ export default function CreatePostContent() {
       }
       const { url } = await res.json();
       setMediaUrl(url);
-    } catch {
-      setError("Upload failed");
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Upload failed";
+      setError(errorMessage);
       setMediaPreview(null);
     } finally {
       setUploading(false);
