@@ -50,8 +50,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: blob.url }, { status: 201 });
   } catch (error) {
     console.error("POST /api/upload error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: errorMessage || "Internal server error" },
       { status: 500 }
     );
   }
