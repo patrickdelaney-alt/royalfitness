@@ -405,8 +405,8 @@ function MediaBlock({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*,video/mp4,video/quicktime"
-        className="hidden"
+        accept="image/*,image/heic,image/heif,video/mp4,video/quicktime"
+        style={{ position: "absolute", opacity: 0, width: 0, height: 0, pointerEvents: "none" }}
         onChange={onFileChange}
       />
     </div>

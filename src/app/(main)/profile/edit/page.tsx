@@ -157,8 +157,8 @@ export default function EditProfilePage() {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
-            className="hidden"
+            accept="image/*,image/heic,image/heif"
+            style={{ position: "absolute", opacity: 0, width: 0, height: 0, pointerEvents: "none" }}
             onChange={handleAvatarChange}
           />
         </div>
