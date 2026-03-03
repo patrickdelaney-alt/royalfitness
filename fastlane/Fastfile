@@ -1,0 +1,67 @@
+default_platform(:ios)
+
+platform :ios do
+  # ─── Shared setup ────────────────────────────────────────────────────────────
+
+  # Authenticate with App Store Connect via API key (no Apple ID / 2FA required)
+  # Set these three GitHub secrets:
+  #   ASC_API_KEY_ID         - Key ID (e.g. ABC1234567)
+  #   ASC_API_KEY_ISSUER_ID  - Issuer UUID from App Store Connect
+  #   ASC_API_KEY_BASE64     - base64-encoded contents of the .p8 key file
+  def app_store_connect_api_key_from_env
+    app_store_connect_api_key(
+      key_id:        ENV["ASC_API_KEY_ID"],
+      issuer_id:     ENV["ASC_API_KEY_ISSUER_ID"],
+      key_content:   Base64.decode64(ENV["ASC_API_KEY_BASE64"]),
+      is_key_content_base64: false,
+      in_house: false
+    )
+  end
+
+  # ─── Lane: build ─────────────────────────────────────────────────────────────
+  # Build the Capacitor iOS project and produce a signed .ipa.
+  # Required GitHub secrets (beyond the API key above):
+  #   CERTIFICATE_P12_BASE64   - base64 of the Distribution .p12 certificate
+  #   CERTIFICATE_PASSWORD     - password protecting the .p12
+  #   PROVISIONING_PROFILE_BASE64 - base64 of the App Store .mobileprovision
+  lane :build do
+    # Import distribution certificate into the CI keychain
+    import_certificate(
+      certificate_path:     "certificate.p12",
+      certificate_password: ENV["CERTIFICATE_PASSWORD"],
+      keychain_name:        "build.keychain",
+      keychain_password:    "ci"
+    )
+
+    # Install provisioning profile
+    install_provisioning_profile(path: "profile.mobileprovision")
+
+    # Build the Xcode project
+    build_app(
+      workspace:             "ios/App/App.xcworkspace",
+      scheme:                "App",
+      configuration:         "Release",
+      export_method:         "app-store",
+      output_directory:      "build",
+      output_name:           "RoyalWellness.ipa",
+      clean:                 true,
+      export_options: {
+        provisioningProfiles: {
+          "com.royalwellness.app" => ENV["PROVISIONING_PROFILE_NAME"]
+        }
+      }
+    )
+  end
+
+  # ─── Lane: deploy ─────────────────────────────────────────────────────────────
+  # Build + upload to TestFlight so Apple can process it for App Store review.
+  lane :deploy do
+    api_key = app_store_connect_api_key_from_env
+    build
+    upload_to_testflight(
+      api_key:           api_key,
+      ipa:               "build/RoyalWellness.ipa",
+      skip_waiting_for_build_processing: true
+    )
+  end
+end

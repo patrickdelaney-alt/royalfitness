@@ -1,0 +1,8 @@
+# The bundle identifier registered in Apple Developer Portal
+app_identifier("com.royalwellness.app")
+
+# Your Apple ID — used only for non-API-key auth; prefer API key in CI
+apple_id(ENV["APPLE_ID"])
+
+# Your Apple Developer Team ID (10-character string from developer.apple.com)
+team_id(ENV["APPLE_TEAM_ID"])

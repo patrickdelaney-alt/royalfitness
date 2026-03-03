@@ -1,0 +1,94 @@
+name: iOS Build & Deploy
+
+# Run manually from the GitHub Actions tab, or automatically on pushes to master
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      # Only rebuild when iOS-relevant code changes
+      - "src/**"
+      - "public/**"
+      - "capacitor.config.ts"
+      - "package.json"
+
+jobs:
+  deploy:
+    name: Build & Upload to TestFlight
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      # ── 1. Code ──────────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 2. Node / npm ────────────────────────────────────────────────────────
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      # ── 3. Capacitor sync ────────────────────────────────────────────────────
+      # Syncs the Capacitor configuration into the ios/ Xcode project.
+      # The ios/ folder must be committed to the repo (run `npx cap add ios`
+      # locally once, then commit the generated ios/ directory).
+      - name: Capacitor sync
+        run: npx cap sync ios
+
+      # ── 4. Ruby / Fastlane ───────────────────────────────────────────────────
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: fastlane
+
+      # ── 5. Code signing ──────────────────────────────────────────────────────
+      # Decode the distribution certificate and provisioning profile from secrets.
+      # See README / docs for how to export these from Xcode / Apple Developer.
+      - name: Decode signing assets
+        env:
+          CERTIFICATE_P12_BASE64: ${{ secrets.CERTIFICATE_P12_BASE64 }}
+          PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          echo "$CERTIFICATE_P12_BASE64" | base64 --decode > certificate.p12
+          echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > profile.mobileprovision
+
+      - name: Create build keychain
+        env:
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+        run: |
+          security create-keychain -p "ci" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "ci" build.keychain
+          security set-keychain-settings -t 3600 -u build.keychain
+          security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "ci" build.keychain
+
+      # ── 6. CocoaPods ─────────────────────────────────────────────────────────
+      - name: Install CocoaPods
+        run: |
+          gem install cocoapods --no-document
+          cd ios/App && pod install
+
+      # ── 7. Build & Upload ────────────────────────────────────────────────────
+      - name: Build & Deploy via Fastlane
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+          ASC_API_KEY_BASE64: ${{ secrets.ASC_API_KEY_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+          PROVISIONING_PROFILE_NAME: ${{ secrets.PROVISIONING_PROFILE_NAME }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+        run: cd fastlane && bundle exec fastlane ios deploy
+
+      # ── 8. Cleanup ───────────────────────────────────────────────────────────
+      - name: Delete keychain
+        if: always()
+        run: security delete-keychain build.keychain || true
