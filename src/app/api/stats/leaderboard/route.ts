@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
-import { subDays } from "date-fns";
+import {
+  safeTimeZone,
+  getUserToday,
+  midnightInTzToUTC,
+  getMonday,
+  getMonthStart,
+} from "@/lib/timezone";
 
 interface UserProfile {
   id: string;
@@ -34,20 +40,23 @@ export async function GET(req: NextRequest) {
     const currentUserId = session.user.id;
     const { searchParams } = req.nextUrl;
     const period = searchParams.get("period") ?? "week";
+    const tz = safeTimeZone(searchParams.get("tz"));
 
-    // Calculate the start date based on the requested period
-    const now = new Date();
-    let periodStart: Date;
+    // Calculate period boundaries in user's timezone, converted to UTC
+    const todayStr = getUserToday(tz);
+    let periodStartStr: string;
 
     switch (period) {
       case "month":
-        periodStart = subDays(now, 30);
+        periodStartStr = getMonthStart(todayStr);
         break;
       case "week":
       default:
-        periodStart = subDays(now, 7);
+        periodStartStr = getMonday(todayStr);
         break;
     }
+
+    const periodStart = midnightInTzToUTC(periodStartStr, tz);
 
     // Get all users the current user follows
     const followRecords = await prisma.follow.findMany({

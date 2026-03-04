@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
-import { startOfDay, subDays, format } from "date-fns";
+import {
+  safeTimeZone,
+  getUserToday,
+  midnightInTzToUTC,
+  utcToLocalDateStr,
+  getDayName,
+  getMonday,
+  getWeekDays,
+  getMonthStart,
+  getYearStart,
+  addDaysToDateStr,
+} from "@/lib/timezone";
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,23 +24,26 @@ export async function GET(req: NextRequest) {
     const { searchParams } = req.nextUrl;
     const period = searchParams.get("period") ?? "week";
     const userId = searchParams.get("userId") ?? session.user.id;
+    const tz = safeTimeZone(searchParams.get("tz"));
 
-    // Calculate the start date based on the requested period
-    const now = new Date();
-    let periodStart: Date;
+    // Calculate period boundaries in user's timezone, converted to UTC
+    const todayStr = getUserToday(tz);
+    let periodStartStr: string;
 
     switch (period) {
       case "month":
-        periodStart = subDays(now, 30);
+        periodStartStr = getMonthStart(todayStr);
         break;
       case "year":
-        periodStart = subDays(now, 365);
+        periodStartStr = getYearStart(todayStr);
         break;
       case "week":
       default:
-        periodStart = subDays(now, 7);
+        periodStartStr = getMonday(todayStr);
         break;
     }
+
+    const periodStart = midnightInTzToUTC(periodStartStr, tz);
 
     // Fetch all posts in the period for this user
     const posts = await prisma.post.findMany({
@@ -164,15 +178,19 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const currentStreak = calculateStreak(allDates);
-    const workoutStreak = calculateStreak(workoutDates);
+    const currentStreak = calculateStreak(allDates, tz);
+    const workoutStreak = calculateStreak(workoutDates, tz);
 
-    // Weekly workout breakdown (last 7 days, always, regardless of period)
+    // Weekly workout breakdown: Mon-Sun of current calendar week in user's TZ
+    const weekDays = getWeekDays(todayStr);
+    const weekStartUTC = midnightInTzToUTC(weekDays[0], tz);
+    const weekEndUTC = midnightInTzToUTC(addDaysToDateStr(weekDays[6], 1), tz);
+
     const weeklyPosts = await prisma.post.findMany({
       where: {
         authorId: userId,
         type: "WORKOUT",
-        createdAt: { gte: subDays(now, 6) },
+        createdAt: { gte: weekStartUTC, lt: weekEndUTC },
       },
       select: {
         createdAt: true,
@@ -180,20 +198,19 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Build a map for last 7 days (day 0 = today, day 6 = 6 days ago)
+    // Build day map keyed by YYYY-MM-DD in user's timezone
     const dayMap = new Map<
       string,
       { workoutCount: number; muscleGroups: string[] }
     >();
-    for (let i = 6; i >= 0; i--) {
-      const day = startOfDay(subDays(now, i));
-      dayMap.set(day.toISOString(), { workoutCount: 0, muscleGroups: [] });
+    for (const dayStr of weekDays) {
+      dayMap.set(dayStr, { workoutCount: 0, muscleGroups: [] });
     }
 
     for (const post of weeklyPosts) {
-      const dayKey = startOfDay(post.createdAt).toISOString();
-      if (dayMap.has(dayKey)) {
-        const entry = dayMap.get(dayKey)!;
+      const localDay = utcToLocalDateStr(post.createdAt, tz);
+      if (dayMap.has(localDay)) {
+        const entry = dayMap.get(localDay)!;
         entry.workoutCount++;
         if (post.workoutDetail?.muscleGroups) {
           for (const mg of post.workoutDetail.muscleGroups) {
@@ -205,14 +222,16 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const weeklyWorkouts = Array.from(dayMap.entries()).map(
-      ([dateIso, data]) => ({
-        date: dateIso,
-        dayName: format(new Date(dateIso), "EEE"),
+    const weeklyWorkouts = weekDays.map((dayStr) => {
+      const data = dayMap.get(dayStr)!;
+      return {
+        date: dayStr,
+        dayName: getDayName(dayStr, tz),
+        isToday: dayStr === todayStr,
         workoutCount: data.workoutCount,
         muscleGroups: data.muscleGroups,
-      })
-    );
+      };
+    });
 
     // Muscle group frequency for the selected period
     const periodWorkoutPosts = await prisma.post.findMany({
@@ -262,32 +281,35 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * Calculate consecutive days with at least one post, counting back from today.
- * If there is no post today, the streak is 0.
+ * Calculate consecutive days with at least one post, counting back from today
+ * in the user's timezone. If there is no post today, the streak is 0.
  */
-function calculateStreak(dates: Date[]): number {
+function calculateStreak(dates: Date[], timeZone: string): number {
   if (dates.length === 0) return 0;
 
-  // Normalize all dates to start-of-day and deduplicate
+  // Convert each UTC date to the user's local date string and deduplicate
   const uniqueDays = new Set<string>();
   for (const d of dates) {
-    const day = startOfDay(d).toISOString();
-    uniqueDays.add(day);
+    uniqueDays.add(utcToLocalDateStr(d, timeZone));
   }
 
-  const today = startOfDay(new Date());
+  const todayStr = getUserToday(timeZone);
 
-  // Check if today has a post
-  if (!uniqueDays.has(today.toISOString())) {
+  if (!uniqueDays.has(todayStr)) {
     return 0;
   }
 
   let streak = 1;
-  let checkDate = subDays(today, 1);
+  let checkDate = new Date(todayStr + "T12:00:00Z");
 
-  while (uniqueDays.has(checkDate.toISOString())) {
-    streak++;
-    checkDate = subDays(checkDate, 1);
+  while (true) {
+    checkDate = new Date(checkDate.getTime() - 86400000);
+    const checkStr = checkDate.toISOString().slice(0, 10);
+    if (uniqueDays.has(checkStr)) {
+      streak++;
+    } else {
+      break;
+    }
   }
 
   return streak;
