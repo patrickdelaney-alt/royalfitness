@@ -28,6 +28,7 @@ interface WeeklyWorkoutDay {
   dayName: string;
   workoutCount: number;
   muscleGroups: string[];
+  isToday: boolean;
 }
 
 interface Stats {
@@ -77,7 +78,8 @@ function initials(name?: string | null): string {
 }
 
 function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
+  // Handle both "YYYY-MM-DD" and full ISO strings; use noon to avoid day-shift
+  const d = new Date(dateStr.length === 10 ? dateStr + "T12:00:00" : dateStr);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
@@ -85,14 +87,13 @@ function formatDate(dateStr: string): string {
 function WeeklyWorkoutChart({ days }: { days: WeeklyWorkoutDay[] }) {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const maxCount = Math.max(...days.map((d) => d.workoutCount), 1);
-  const todayStr = new Date().toDateString();
 
   return (
     <div>
       {/* Bar chart */}
       <div className="flex items-end justify-between gap-1 h-20 mb-2">
         {days.map((day, i) => {
-          const isToday = new Date(day.date).toDateString() === todayStr;
+          const isToday = day.isToday;
           const isSelected = selectedDay === i;
           const heightPct = day.workoutCount > 0
             ? Math.max((day.workoutCount / maxCount) * 100, 20)
@@ -250,9 +251,10 @@ export default function StatsPage() {
     async function load() {
       setLoading(true);
       try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const [statsRes, lbRes] = await Promise.all([
-          fetch(`/api/stats?period=${period}`),
-          fetch(`/api/stats/leaderboard?period=${period}`),
+          fetch(`/api/stats?period=${period}&tz=${encodeURIComponent(tz)}`),
+          fetch(`/api/stats/leaderboard?period=${period}&tz=${encodeURIComponent(tz)}`),
         ]);
         if (statsRes.ok) setStats(await statsRes.json());
         if (lbRes.ok) setLeaderboard(await lbRes.json());
