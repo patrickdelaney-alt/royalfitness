@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { HiFire, HiClock, HiTrendingUp, HiEmojiHappy } from "react-icons/hi";
+import Link from "next/link";
 
 // Muscle group display config
 const MUSCLE_META: Record<string, { label: string; color: string }> = {
@@ -330,7 +331,20 @@ export default function StatsPage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>
-      <h1 className="text-xl font-bold mb-4">Stats</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-xl font-bold">Stats</h1>
+        <Link
+          href="/achievements"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+          style={{
+            background: "linear-gradient(135deg, rgba(109,106,245,0.15) 0%, rgba(139,136,248,0.15) 100%)",
+            border: "1px solid rgba(139,136,248,0.25)",
+            color: "#8b88f8",
+          }}
+        >
+          🏅 Badges
+        </Link>
+      </div>
 
       {/* Period selector */}
       <div className="flex gap-2 mb-5 p-1 rounded-xl" style={{ background: "rgba(255,255,255,0.04)" }}>

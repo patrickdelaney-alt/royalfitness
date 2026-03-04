@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import PostCard, { Post } from "@/components/post-card";
+import RecommendationCard from "@/components/recommendation-card";
 
 const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS"] as const;
 
@@ -148,6 +149,9 @@ export default function FeedContent() {
           );
         })}
       </div>
+
+      {/* Recommendation card — shown above posts, dismissible for the day */}
+      <RecommendationCard />
 
       {/* Posts */}
       {loading ? (
