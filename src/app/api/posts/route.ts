@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 import { createPostSchema } from "@/lib/validations";
+import { checkAndAwardAchievements } from "@/lib/achievements";
 
 // GET /api/posts — Feed with cursor-based pagination and filters
 export async function GET(req: NextRequest) {
@@ -308,6 +309,9 @@ export async function POST(req: NextRequest) {
         },
       });
     });
+
+    // Fire-and-forget: check and award achievements without blocking the response
+    checkAndAwardAchievements(userId, prisma).catch(() => {});
 
     return NextResponse.json(post, { status: 201 });
   } catch (error) {

@@ -235,29 +235,42 @@ export default function ProfilePage() {
 
       {/* Action buttons */}
       {isOwnProfile ? (
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-col gap-2 mb-6">
+          <div className="flex gap-2">
+            <Link
+              href="/profile/edit"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors"
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
+            >
+              <HiPencil className="w-4 h-4" />
+              Edit Profile
+            </Link>
+            <Link
+              href="/catalog"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors"
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
+            >
+              My Catalog
+            </Link>
+            <button
+              onClick={() => signOut({ callbackUrl: "/signin" })}
+              className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-colors"
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}
+            >
+              <HiLogout className="w-4 h-4" />
+            </button>
+          </div>
           <Link
-            href="/profile/edit"
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors"
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
+            href="/achievements"
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
+            style={{
+              background: "linear-gradient(135deg, rgba(109,106,245,0.15) 0%, rgba(139,136,248,0.15) 100%)",
+              border: "1px solid rgba(139,136,248,0.25)",
+              color: "#8b88f8",
+            }}
           >
-            <HiPencil className="w-4 h-4" />
-            Edit Profile
+            🏅 My Badges
           </Link>
-          <Link
-            href="/catalog"
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors"
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
-          >
-            My Catalog
-          </Link>
-          <button
-            onClick={() => signOut({ callbackUrl: "/signin" })}
-            className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-colors"
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}
-          >
-            <HiLogout className="w-4 h-4" />
-          </button>
         </div>
       ) : (
         <button

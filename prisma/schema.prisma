@@ -40,6 +40,7 @@ model User {
   savedWellness    SavedWellness[]
 
   stepsEntries   StepsEntry[]
+  achievements   UserAchievement[]
 
   notificationsReceived Notification[] @relation("notificationsReceived")
   notificationsActed    Notification[] @relation("notificationsActed")
@@ -386,6 +387,20 @@ model SavedWellness {
   notes           String?
   isPrivate       Boolean  @default(false)
   createdAt       DateTime @default(now())
+}
+
+// ─── ACHIEVEMENTS ────────────────────────────────────────────────
+
+model UserAchievement {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeKey  String
+  earnedAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeKey])
+  @@index([userId])
 }
 
 // ─── STEPS ───────────────────────────────────────────────────────
