@@ -236,6 +236,7 @@ export default function StatsPage() {
   const [period, setPeriod] = useState<"week" | "month" | "year">("week");
   const [stats, setStats] = useState<Stats | null>(null);
   const [leaderboard, setLeaderboard] = useState<Leaderboard | null>(null);
+  const [leaderboardError, setLeaderboardError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeBoard, setActiveBoard] = useState<"workoutCount" | "wellnessMinutes" | "mealsLogged">("workoutCount");
 
@@ -250,6 +251,8 @@ export default function StatsPage() {
   useEffect(() => {
     async function load() {
       setLoading(true);
+      setLeaderboard(null);
+      setLeaderboardError(false);
       try {
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const [statsRes, lbRes] = await Promise.all([
@@ -257,9 +260,13 @@ export default function StatsPage() {
           fetch(`/api/stats/leaderboard?period=${period}&tz=${encodeURIComponent(tz)}`),
         ]);
         if (statsRes.ok) setStats(await statsRes.json());
-        if (lbRes.ok) setLeaderboard(await lbRes.json());
+        if (lbRes.ok) {
+          setLeaderboard(await lbRes.json());
+        } else {
+          setLeaderboardError(true);
+        }
       } catch {
-        // silent
+        setLeaderboardError(true);
       } finally {
         setLoading(false);
       }
@@ -532,68 +539,83 @@ export default function StatsPage() {
           </div>
 
           {/* Leaderboard */}
-          {leaderboard && (
-            <>
-              <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
-                Friends Leaderboard
-              </h2>
+          <>
+            <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+              Friends Leaderboard · All Time
+            </h2>
 
-              <div className="flex gap-2 mb-3">
-                {([
-                  { key: "workoutCount" as const, label: "Workouts" },
-                  { key: "wellnessMinutes" as const, label: "Wellness" },
-                  { key: "mealsLogged" as const, label: "Meals" },
-                ]).map((b) => (
-                  <button
-                    key={b.key}
-                    onClick={() => setActiveBoard(b.key)}
-                    className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
-                    style={
-                      activeBoard === b.key
-                        ? { background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)", color: "#ffffff" }
-                        : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
-                    }
-                  >
-                    {b.label}
-                  </button>
-                ))}
-              </div>
-
-              {boardEntries.length === 0 ? (
-                <p className="text-center text-sm py-6" style={{ color: "rgba(255,255,255,0.3)" }}>
-                  Follow friends to see the leaderboard
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {boardEntries.map((entry, idx) => (
-                    <div
-                      key={entry.userId}
-                      className="flex items-center gap-3 p-3 rounded-xl"
-                      style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+            {leaderboardError ? (
+              <p className="text-center text-sm py-6" style={{ color: "rgba(255,255,255,0.3)" }}>
+                Could not load leaderboard
+              </p>
+            ) : leaderboard ? (
+              <>
+                <div className="flex gap-2 mb-3">
+                  {([
+                    { key: "workoutCount" as const, label: "Workouts" },
+                    { key: "wellnessMinutes" as const, label: "Wellness min" },
+                    { key: "mealsLogged" as const, label: "Meals" },
+                  ]).map((b) => (
+                    <button
+                      key={b.key}
+                      onClick={() => setActiveBoard(b.key)}
+                      className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+                      style={
+                        activeBoard === b.key
+                          ? { background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)", color: "#ffffff" }
+                          : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
+                      }
                     >
-                      <span
-                        className="w-6 text-center text-sm font-bold"
-                        style={{
-                          color: idx === 0 ? "#8b88f8" : idx === 1 ? "rgba(255,255,255,0.5)" : idx === 2 ? "#f59e0b" : "rgba(255,255,255,0.3)",
-                        }}
-                      >
-                        {idx + 1}
-                      </span>
-                      {entry.avatarUrl ? (
-                        <img src={entry.avatarUrl} alt={entry.username} className="w-8 h-8 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold btn-gradient">
-                          {initials(entry.name)}
-                        </div>
-                      )}
-                      <span className="flex-1 text-sm font-medium truncate">{entry.username}</span>
-                      <span className="text-sm font-bold">{entry.value}</span>
-                    </div>
+                      {b.label}
+                    </button>
                   ))}
                 </div>
-              )}
-            </>
-          )}
+
+                {boardEntries.length === 0 ? (
+                  <p className="text-center text-sm py-6" style={{ color: "rgba(255,255,255,0.3)" }}>
+                    Follow friends to see the leaderboard
+                  </p>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      {boardEntries.map((entry, idx) => (
+                        <div
+                          key={entry.userId}
+                          className="flex items-center gap-3 p-3 rounded-xl"
+                          style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+                        >
+                          <span
+                            className="w-6 text-center text-sm font-bold"
+                            style={{
+                              color: idx === 0 ? "#8b88f8" : idx === 1 ? "rgba(255,255,255,0.5)" : idx === 2 ? "#f59e0b" : "rgba(255,255,255,0.3)",
+                            }}
+                          >
+                            {idx + 1}
+                          </span>
+                          {entry.avatarUrl ? (
+                            <img src={entry.avatarUrl} alt={entry.username} className="w-8 h-8 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold btn-gradient">
+                              {initials(entry.name)}
+                            </div>
+                          )}
+                          <span className="flex-1 text-sm font-medium truncate">{entry.username}</span>
+                          <span className="text-sm font-bold" style={{ color: entry.value > 0 ? "#ffffff" : "rgba(255,255,255,0.3)" }}>
+                            {activeBoard === "wellnessMinutes" ? `${entry.value}m` : entry.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    {boardEntries.length === 1 && (
+                      <p className="text-center text-xs mt-3" style={{ color: "rgba(255,255,255,0.25)" }}>
+                        Follow friends to compare stats
+                      </p>
+                    )}
+                  </>
+                )}
+              </>
+            ) : null}
+          </>
         </>
       ) : (
         <p className="text-center text-sm py-12" style={{ color: "rgba(255,255,255,0.3)" }}>

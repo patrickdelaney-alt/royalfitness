@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
-import {
-  safeTimeZone,
-  getUserToday,
-  midnightInTzToUTC,
-  getMonday,
-  getMonthStart,
-} from "@/lib/timezone";
 
 interface UserProfile {
   id: string;
@@ -38,25 +31,6 @@ export async function GET(req: NextRequest) {
     }
 
     const currentUserId = session.user.id;
-    const { searchParams } = req.nextUrl;
-    const period = searchParams.get("period") ?? "week";
-    const tz = safeTimeZone(searchParams.get("tz"));
-
-    // Calculate period boundaries in user's timezone, converted to UTC
-    const todayStr = getUserToday(tz);
-    let periodStartStr: string;
-
-    switch (period) {
-      case "month":
-        periodStartStr = getMonthStart(todayStr);
-        break;
-      case "week":
-      default:
-        periodStartStr = getMonday(todayStr);
-        break;
-    }
-
-    const periodStart = midnightInTzToUTC(periodStartStr, tz);
 
     // Get all users the current user follows
     const followRecords = await prisma.follow.findMany({
@@ -65,21 +39,14 @@ export async function GET(req: NextRequest) {
     });
 
     // Include the current user + everyone they follow
-    const followingIds: string[] = [];
-    for (const record of followRecords) {
-      followingIds.push(record.followingId);
-    }
-    const uniqueUserIds = [...new Set([currentUserId, ...followingIds])];
+    const uniqueUserIds = [
+      ...new Set([currentUserId, ...followRecords.map((r) => r.followingId)]),
+    ];
 
     // Fetch user profile info for all participants
     const users = await prisma.user.findMany({
       where: { id: { in: uniqueUserIds } },
-      select: {
-        id: true,
-        username: true,
-        name: true,
-        avatarUrl: true,
-      },
+      select: { id: true, username: true, name: true, avatarUrl: true },
     });
 
     const userMap = new Map<string, UserProfile>();
@@ -87,26 +54,20 @@ export async function GET(req: NextRequest) {
       userMap.set(user.id, user);
     }
 
-    // Fetch all posts in the period for these users
+    // Fetch ALL posts ever for these users — leaderboard ranks all-time activity
     const posts = await prisma.post.findMany({
       where: {
         authorId: { in: uniqueUserIds },
-        createdAt: { gte: periodStart },
       },
       select: {
-        id: true,
         type: true,
         authorId: true,
-        wellnessDetail: {
-          select: { durationMinutes: true },
-        },
+        wellnessDetail: { select: { durationMinutes: true } },
       },
     });
 
     // Accumulate stats per user
     const statsMap = new Map<string, UserStats>();
-
-    // Initialize all users with zero stats
     for (const uid of uniqueUserIds) {
       statsMap.set(uid, { workoutCount: 0, wellnessMinutes: 0, mealsLogged: 0 });
     }
@@ -114,7 +75,6 @@ export async function GET(req: NextRequest) {
     for (const post of posts) {
       const stats = statsMap.get(post.authorId);
       if (!stats) continue;
-
       switch (post.type) {
         case "WORKOUT":
           stats.workoutCount++;
@@ -130,12 +90,9 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Build sorted leaderboard arrays
-    function buildLeaderboard(
-      metric: keyof UserStats
-    ): LeaderboardEntry[] {
+    function buildLeaderboard(metric: keyof UserStats): LeaderboardEntry[] {
       return uniqueUserIds
-        .map((uid: string) => {
+        .map((uid) => {
           const user = userMap.get(uid);
           const stats = statsMap.get(uid);
           return {
@@ -146,12 +103,11 @@ export async function GET(req: NextRequest) {
             value: stats?.[metric] ?? 0,
           };
         })
-        .sort((a: LeaderboardEntry, b: LeaderboardEntry) => b.value - a.value)
+        .sort((a, b) => b.value - a.value)
         .slice(0, 10);
     }
 
     return NextResponse.json({
-      period,
       workoutCount: buildLeaderboard("workoutCount"),
       wellnessMinutes: buildLeaderboard("wellnessMinutes"),
       mealsLogged: buildLeaderboard("mealsLogged"),
