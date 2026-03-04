@@ -112,11 +112,19 @@ export default function FollowListModal({
     return () => observer.disconnect();
   }, [hasMore, loadingMore, loading, fetchUsers]);
 
-  // Lock body scroll when open
+  // Lock body scroll when open — iOS-safe: use position:fixed trick
   useEffect(() => {
     if (!isOpen) return;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
+    const scrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    return () => {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      window.scrollTo(0, scrollY);
+    };
   }, [isOpen]);
 
   // Close on Escape
@@ -170,7 +178,7 @@ export default function FollowListModal({
         </div>
 
         {/* Scrollable list */}
-        <div className="flex-1 overflow-y-auto min-h-0" style={{ overscrollBehavior: "contain" }}>
+        <div className="flex-1 overflow-y-auto min-h-0" style={{ overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <div
