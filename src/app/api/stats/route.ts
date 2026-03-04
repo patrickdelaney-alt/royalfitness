@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
-import { startOfDay, subDays } from "date-fns";
+import { startOfDay, subDays, format } from "date-fns";
 
 export async function GET(req: NextRequest) {
   try {
@@ -167,6 +167,74 @@ export async function GET(req: NextRequest) {
     const currentStreak = calculateStreak(allDates);
     const workoutStreak = calculateStreak(workoutDates);
 
+    // Weekly workout breakdown (last 7 days, always, regardless of period)
+    const weeklyPosts = await prisma.post.findMany({
+      where: {
+        authorId: userId,
+        type: "WORKOUT",
+        createdAt: { gte: subDays(now, 6) },
+      },
+      select: {
+        createdAt: true,
+        workoutDetail: { select: { muscleGroups: true } },
+      },
+    });
+
+    // Build a map for last 7 days (day 0 = today, day 6 = 6 days ago)
+    const dayMap = new Map<
+      string,
+      { workoutCount: number; muscleGroups: string[] }
+    >();
+    for (let i = 6; i >= 0; i--) {
+      const day = startOfDay(subDays(now, i));
+      dayMap.set(day.toISOString(), { workoutCount: 0, muscleGroups: [] });
+    }
+
+    for (const post of weeklyPosts) {
+      const dayKey = startOfDay(post.createdAt).toISOString();
+      if (dayMap.has(dayKey)) {
+        const entry = dayMap.get(dayKey)!;
+        entry.workoutCount++;
+        if (post.workoutDetail?.muscleGroups) {
+          for (const mg of post.workoutDetail.muscleGroups) {
+            if (!entry.muscleGroups.includes(mg)) {
+              entry.muscleGroups.push(mg);
+            }
+          }
+        }
+      }
+    }
+
+    const weeklyWorkouts = Array.from(dayMap.entries()).map(
+      ([dateIso, data]) => ({
+        date: dateIso,
+        dayName: format(new Date(dateIso), "EEE"),
+        workoutCount: data.workoutCount,
+        muscleGroups: data.muscleGroups,
+      })
+    );
+
+    // Muscle group frequency for the selected period
+    const periodWorkoutPosts = await prisma.post.findMany({
+      where: {
+        authorId: userId,
+        type: "WORKOUT",
+        createdAt: { gte: periodStart },
+      },
+      select: {
+        workoutDetail: { select: { muscleGroups: true } },
+      },
+    });
+
+    const muscleGroupCounts: Record<string, number> = {};
+    for (const post of periodWorkoutPosts) {
+      if (post.workoutDetail?.muscleGroups) {
+        for (const mg of post.workoutDetail.muscleGroups) {
+          muscleGroupCounts[mg] = (muscleGroupCounts[mg] ?? 0) + 1;
+        }
+      }
+    }
+
     return NextResponse.json({
       workoutCount,
       totalSets,
@@ -179,6 +247,8 @@ export async function GET(req: NextRequest) {
           : null,
       currentStreak,
       workoutStreak,
+      weeklyWorkouts,
+      muscleGroupCounts,
       period,
       userId,
     });
