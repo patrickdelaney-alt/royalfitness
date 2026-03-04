@@ -251,6 +251,7 @@ export default function StatsPage() {
   useEffect(() => {
     async function load() {
       setLoading(true);
+      setLeaderboard(null);
       setLeaderboardError(false);
       try {
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -540,7 +541,7 @@ export default function StatsPage() {
           {/* Leaderboard */}
           <>
             <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
-              Friends Leaderboard · {periodLabel}
+              Friends Leaderboard · All Time
             </h2>
 
             {leaderboardError ? (
