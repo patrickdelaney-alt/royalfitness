@@ -112,6 +112,13 @@ export default function FollowListModal({
     return () => observer.disconnect();
   }, [hasMore, loadingMore, loading, fetchUsers]);
 
+  // Lock body scroll when open
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, [isOpen]);
+
   // Close on Escape
   useEffect(() => {
     if (!isOpen) return;
@@ -163,7 +170,7 @@ export default function FollowListModal({
         </div>
 
         {/* Scrollable list */}
-        <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="flex-1 overflow-y-auto min-h-0" style={{ overscrollBehavior: "contain" }}>
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <div
