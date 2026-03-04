@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
-import { startOfDay, subDays, format } from "date-fns";
+import { startOfDay, startOfWeek, startOfMonth, startOfYear, subDays, format } from "date-fns";
 
 export async function GET(req: NextRequest) {
   try {
@@ -20,14 +20,14 @@ export async function GET(req: NextRequest) {
 
     switch (period) {
       case "month":
-        periodStart = subDays(now, 30);
+        periodStart = startOfMonth(now);
         break;
       case "year":
-        periodStart = subDays(now, 365);
+        periodStart = startOfYear(now);
         break;
       case "week":
       default:
-        periodStart = subDays(now, 7);
+        periodStart = startOfWeek(now, { weekStartsOn: 1 });
         break;
     }
 
