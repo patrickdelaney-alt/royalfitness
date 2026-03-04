@@ -3,6 +3,33 @@
 import { useState, useEffect } from "react";
 import { HiFire, HiClock, HiTrendingUp, HiEmojiHappy } from "react-icons/hi";
 
+// Muscle group display config
+const MUSCLE_META: Record<string, { label: string; color: string }> = {
+  chest:     { label: "Chest",     color: "#6d6af5" },
+  back:      { label: "Back",      color: "#8b88f8" },
+  legs:      { label: "Legs",      color: "#a78bfa" },
+  shoulders: { label: "Shoulders", color: "#34d399" },
+  arms:      { label: "Arms",      color: "#fbbf24" },
+  core:      { label: "Core",      color: "#f87171" },
+  glutes:    { label: "Glutes",    color: "#fb923c" },
+  cardio:    { label: "Cardio",    color: "#38bdf8" },
+};
+
+function getMuscleColor(mg: string): string {
+  return MUSCLE_META[mg]?.color ?? "#8b88f8";
+}
+
+function getMuscleLabel(mg: string): string {
+  return MUSCLE_META[mg]?.label ?? mg.charAt(0).toUpperCase() + mg.slice(1);
+}
+
+interface WeeklyWorkoutDay {
+  date: string;
+  dayName: string;
+  workoutCount: number;
+  muscleGroups: string[];
+}
+
 interface Stats {
   workoutCount: number;
   totalSets: number;
@@ -12,6 +39,8 @@ interface Stats {
   avgMoodAfter: number | null;
   currentStreak: number;
   workoutStreak: number;
+  weeklyWorkouts: WeeklyWorkoutDay[];
+  muscleGroupCounts: Record<string, number>;
   period: string;
 }
 
@@ -50,6 +79,156 @@ function initials(name?: string | null): string {
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+// Weekly workout bar chart component
+function WeeklyWorkoutChart({ days }: { days: WeeklyWorkoutDay[] }) {
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const maxCount = Math.max(...days.map((d) => d.workoutCount), 1);
+  const todayStr = new Date().toDateString();
+
+  return (
+    <div>
+      {/* Bar chart */}
+      <div className="flex items-end justify-between gap-1 h-20 mb-2">
+        {days.map((day, i) => {
+          const isToday = new Date(day.date).toDateString() === todayStr;
+          const isSelected = selectedDay === i;
+          const heightPct = day.workoutCount > 0
+            ? Math.max((day.workoutCount / maxCount) * 100, 20)
+            : 0;
+
+          return (
+            <button
+              key={day.date}
+              onClick={() => setSelectedDay(isSelected ? null : i)}
+              className="flex-1 flex flex-col items-center gap-1 group"
+            >
+              <div className="w-full flex items-end justify-center" style={{ height: 64 }}>
+                {day.workoutCount > 0 ? (
+                  <div
+                    className="w-full rounded-t-md transition-all"
+                    style={{
+                      height: `${heightPct}%`,
+                      background: isSelected || isToday
+                        ? "linear-gradient(180deg, #8b88f8 0%, #6d6af5 100%)"
+                        : "linear-gradient(180deg, rgba(139,136,248,0.7) 0%, rgba(109,106,245,0.5) 100%)",
+                      boxShadow: isSelected ? "0 0 12px rgba(139,136,248,0.5)" : "none",
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="w-full rounded-t-sm"
+                    style={{ height: 4, background: "rgba(255,255,255,0.06)" }}
+                  />
+                )}
+              </div>
+              <span
+                className="text-xs font-medium"
+                style={{
+                  color: isToday
+                    ? "#8b88f8"
+                    : isSelected
+                    ? "rgba(255,255,255,0.9)"
+                    : "rgba(255,255,255,0.35)",
+                }}
+              >
+                {day.dayName}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Selected day detail */}
+      {selectedDay !== null && days[selectedDay] && (
+        <div
+          className="mt-3 p-3 rounded-xl text-sm"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <p className="text-xs mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+            {formatDate(days[selectedDay].date)} —{" "}
+            <span className="font-semibold" style={{ color: "#ffffff" }}>
+              {days[selectedDay].workoutCount}{" "}
+              {days[selectedDay].workoutCount === 1 ? "workout" : "workouts"}
+            </span>
+          </p>
+          {days[selectedDay].muscleGroups.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {days[selectedDay].muscleGroups.map((mg) => (
+                <span
+                  key={mg}
+                  className="px-2 py-0.5 rounded-full text-xs font-medium"
+                  style={{
+                    background: `${getMuscleColor(mg)}22`,
+                    color: getMuscleColor(mg),
+                    border: `1px solid ${getMuscleColor(mg)}44`,
+                  }}
+                >
+                  {getMuscleLabel(mg)}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
+              Rest day
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Muscle group breakdown bars
+function MuscleGroupBreakdown({
+  counts,
+}: {
+  counts: Record<string, number>;
+}) {
+  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  if (entries.length === 0) {
+    return (
+      <p className="text-xs text-center py-4" style={{ color: "rgba(255,255,255,0.25)" }}>
+        No muscle group data yet
+      </p>
+    );
+  }
+  const max = entries[0][1];
+
+  return (
+    <div className="space-y-2.5">
+      {entries.map(([mg, count]) => {
+        const pct = (count / max) * 100;
+        const color = getMuscleColor(mg);
+        return (
+          <div key={mg} className="flex items-center gap-3">
+            <span
+              className="text-xs font-medium w-20 flex-shrink-0"
+              style={{ color: "rgba(255,255,255,0.7)" }}
+            >
+              {getMuscleLabel(mg)}
+            </span>
+            <div
+              className="flex-1 h-2 rounded-full overflow-hidden"
+              style={{ background: "rgba(255,255,255,0.07)" }}
+            >
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${pct}%`, background: color }}
+              />
+            </div>
+            <span
+              className="text-xs font-bold w-5 text-right flex-shrink-0"
+              style={{ color }}
+            >
+              {count}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 export default function StatsPage() {
@@ -181,6 +360,38 @@ export default function StatsPage() {
               <HiTrendingUp className="w-6 h-6 mx-auto mb-1" style={{ color: "#8b88f8" }} />
               <p className="text-2xl font-bold">{stats.workoutStreak}</p>
               <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Workout Streak</p>
+            </div>
+          </div>
+
+          {/* Weekly Workout Tracker */}
+          <div className="mb-5">
+            <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+              Workouts This Week
+            </h2>
+            <div
+              className="rounded-xl p-4"
+              style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              {stats.weeklyWorkouts && stats.weeklyWorkouts.length > 0 ? (
+                <WeeklyWorkoutChart days={stats.weeklyWorkouts} />
+              ) : (
+                <p className="text-xs text-center py-4" style={{ color: "rgba(255,255,255,0.25)" }}>
+                  No workouts logged yet
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Muscle Group Breakdown */}
+          <div className="mb-5">
+            <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+              Muscle Groups · {periodLabel}
+            </h2>
+            <div
+              className="rounded-xl p-4"
+              style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <MuscleGroupBreakdown counts={stats.muscleGroupCounts ?? {}} />
             </div>
           </div>
 
