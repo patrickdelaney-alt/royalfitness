@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
+import {
+  safeTimeZone,
+  getUserToday,
+  midnightInTzToUTC,
+  getMonday,
+  getMonthStart,
+  getYearStart,
+} from "@/lib/timezone";
 
 interface UserProfile {
   id: string;
@@ -31,6 +39,30 @@ export async function GET(req: NextRequest) {
     }
 
     const currentUserId = session.user.id;
+    const { searchParams } = req.nextUrl;
+    // "all" means no date filter; "week"/"month"/"year" filter by period
+    const period = searchParams.get("period") ?? "all";
+    const tz = safeTimeZone(searchParams.get("tz"));
+
+    // Compute period start only when a specific period is requested
+    let periodStart: Date | null = null;
+    if (period !== "all") {
+      const todayStr = getUserToday(tz);
+      let periodStartStr: string;
+      switch (period) {
+        case "month":
+          periodStartStr = getMonthStart(todayStr);
+          break;
+        case "year":
+          periodStartStr = getYearStart(todayStr);
+          break;
+        case "week":
+        default:
+          periodStartStr = getMonday(todayStr);
+          break;
+      }
+      periodStart = midnightInTzToUTC(periodStartStr, tz);
+    }
 
     // Get all users the current user follows
     const followRecords = await prisma.follow.findMany({
@@ -38,7 +70,6 @@ export async function GET(req: NextRequest) {
       select: { followingId: true },
     });
 
-    // Include the current user + everyone they follow
     const uniqueUserIds = [
       ...new Set([currentUserId, ...followRecords.map((r) => r.followingId)]),
     ];
@@ -54,10 +85,11 @@ export async function GET(req: NextRequest) {
       userMap.set(user.id, user);
     }
 
-    // Fetch ALL posts ever for these users — leaderboard ranks all-time activity
+    // Fetch posts — all time when period="all", otherwise filtered by period start
     const posts = await prisma.post.findMany({
       where: {
         authorId: { in: uniqueUserIds },
+        ...(periodStart ? { createdAt: { gte: periodStart } } : {}),
       },
       select: {
         type: true,
@@ -108,6 +140,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({
+      period,
       workoutCount: buildLeaderboard("workoutCount"),
       wellnessMinutes: buildLeaderboard("wellnessMinutes"),
       mealsLogged: buildLeaderboard("mealsLogged"),

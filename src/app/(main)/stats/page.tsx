@@ -238,6 +238,7 @@ export default function StatsPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [leaderboard, setLeaderboard] = useState<Leaderboard | null>(null);
   const [leaderboardError, setLeaderboardError] = useState(false);
+  const [lbPeriod, setLbPeriod] = useState<"all" | "week" | "month" | "year">("all");
   const [loading, setLoading] = useState(true);
   const [activeBoard, setActiveBoard] = useState<"workoutCount" | "wellnessMinutes" | "mealsLogged">("workoutCount");
 
@@ -249,31 +250,44 @@ export default function StatsPage() {
   const [stepsError, setStepsError] = useState("");
   const [showStepsForm, setShowStepsForm] = useState(false);
 
+  // Load personal stats (responds to period selector)
   useEffect(() => {
     async function load() {
       setLoading(true);
-      setLeaderboard(null);
-      setLeaderboardError(false);
       try {
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const [statsRes, lbRes] = await Promise.all([
-          fetch(`/api/stats?period=${period}&tz=${encodeURIComponent(tz)}`),
-          fetch(`/api/stats/leaderboard?period=${period}&tz=${encodeURIComponent(tz)}`),
-        ]);
-        if (statsRes.ok) setStats(await statsRes.json());
-        if (lbRes.ok) {
-          setLeaderboard(await lbRes.json());
-        } else {
-          setLeaderboardError(true);
-        }
+        const res = await fetch(`/api/stats?period=${period}&tz=${encodeURIComponent(tz)}`);
+        if (res.ok) setStats(await res.json());
       } catch {
-        setLeaderboardError(true);
+        // silent
       } finally {
         setLoading(false);
       }
     }
     load();
   }, [period]);
+
+  // Load leaderboard independently (responds to its own lbPeriod selector)
+  useEffect(() => {
+    setLeaderboard(null);
+    setLeaderboardError(false);
+    async function loadLeaderboard() {
+      try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const res = await fetch(
+          `/api/stats/leaderboard?period=${lbPeriod}&tz=${encodeURIComponent(tz)}`
+        );
+        if (res.ok) {
+          setLeaderboard(await res.json());
+        } else {
+          setLeaderboardError(true);
+        }
+      } catch {
+        setLeaderboardError(true);
+      }
+    }
+    loadLeaderboard();
+  }, [lbPeriod]);
 
   useEffect(() => {
     fetch("/api/steps")
@@ -554,9 +568,33 @@ export default function StatsPage() {
 
           {/* Leaderboard */}
           <>
-            <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
-              Friends Leaderboard · All Time
-            </h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.35)" }}>
+                Friends Leaderboard
+              </h2>
+              {/* Leaderboard period selector */}
+              <div className="flex gap-1">
+                {([
+                  { key: "all" as const, label: "All" },
+                  { key: "week" as const, label: "Wk" },
+                  { key: "month" as const, label: "Mo" },
+                  { key: "year" as const, label: "Yr" },
+                ]).map((p) => (
+                  <button
+                    key={p.key}
+                    onClick={() => setLbPeriod(p.key)}
+                    className="px-2 py-1 rounded-lg text-xs font-semibold transition-all"
+                    style={
+                      lbPeriod === p.key
+                        ? { background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)", color: "#ffffff" }
+                        : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)" }
+                    }
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {leaderboardError ? (
               <p className="text-center text-sm py-6" style={{ color: "rgba(255,255,255,0.3)" }}>
