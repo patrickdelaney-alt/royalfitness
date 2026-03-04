@@ -7,6 +7,7 @@ import {
   midnightInTzToUTC,
   getMonday,
   getMonthStart,
+  getYearStart,
 } from "@/lib/timezone";
 
 interface UserProfile {
@@ -49,6 +50,9 @@ export async function GET(req: NextRequest) {
     switch (period) {
       case "month":
         periodStartStr = getMonthStart(todayStr);
+        break;
+      case "year":
+        periodStartStr = getYearStart(todayStr);
         break;
       case "week":
       default:
