@@ -431,7 +431,7 @@ export default function PostCard({
       });
       if (res.ok) {
         const newComment: Comment = await res.json();
-        setComments((prev) => [newComment, ...prev]);
+        setComments((prev) => [...prev, newComment]);
         setCommentCount((c) => c + 1);
         setCommentText("");
       }

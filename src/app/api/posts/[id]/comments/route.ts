@@ -71,7 +71,7 @@ export async function GET(
       where: { postId },
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "asc" },
       include: {
         author: {
           select: { id: true, name: true, username: true, avatarUrl: true },
