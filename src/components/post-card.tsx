@@ -146,7 +146,14 @@ function moodLabel(val: number | null): string | null {
 
 // ── sub-components ───────────────────────────────────────────────────────────
 
+const EXERCISE_PREVIEW = 3;
+
 function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
+  const [showAll, setShowAll] = useState(false);
+  const exercises = detail.exercises;
+  const visible = showAll ? exercises : exercises.slice(0, EXERCISE_PREVIEW);
+  const hasMore = exercises.length > EXERCISE_PREVIEW;
+
   return (
     <div className="mt-3 space-y-2 text-sm">
       <div className="flex items-center gap-3 flex-wrap">
@@ -168,9 +175,9 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
       </div>
 
       {/* Exercises */}
-      {detail.exercises.length > 0 && (
+      {exercises.length > 0 && (
         <div className="space-y-1.5">
-          {detail.exercises.map((ex) => (
+          {visible.map((ex) => (
             <div key={ex.id} className="bg-surface rounded-lg px-3 py-2 border border-surface">
               <p className="font-medium text-foreground">{ex.name}</p>
               {ex.sets.length > 0 && (
@@ -190,6 +197,14 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
               )}
             </div>
           ))}
+          {hasMore && (
+            <button
+              onClick={() => setShowAll((v) => !v)}
+              className="text-xs text-primary mt-1 hover:underline"
+            >
+              {showAll ? "Show less" : `Show all ${exercises.length} exercises`}
+            </button>
+          )}
         </div>
       )}
 
