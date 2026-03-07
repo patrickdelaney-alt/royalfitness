@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical } from "react-icons/hi";
+import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp } from "react-icons/hi";
 import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -200,9 +200,18 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
           {hasMore && (
             <button
               onClick={() => setShowAll((v) => !v)}
-              className="text-xs text-primary mt-1 hover:underline"
+              className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium mt-0.5 transition-all active:scale-[0.98]"
+              style={{
+                background: "rgba(109,106,245,0.08)",
+                border: "1px solid rgba(109,106,245,0.2)",
+                color: "#8b88f8",
+              }}
             >
-              {showAll ? "Show less" : `Show all ${exercises.length} exercises`}
+              {showAll ? (
+                <><HiChevronUp className="w-3.5 h-3.5" /> Show less</>
+              ) : (
+                <><HiChevronDown className="w-3.5 h-3.5" /> {exercises.length - EXERCISE_PREVIEW} more exercises</>
+              )}
             </button>
           )}
         </div>
