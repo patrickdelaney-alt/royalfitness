@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { HiLogout, HiPencil, HiCheck, HiX } from "react-icons/hi";
+import { HiLogout, HiPencil, HiCheck, HiX, HiSearch } from "react-icons/hi";
 import Link from "next/link";
 import FollowListModal from "@/components/follow-list-modal";
 import UserCatalogSection from "@/components/user-catalog-section";
@@ -179,6 +179,17 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>
+      {/* Top bar */}
+      <div className="flex items-center justify-end mb-4">
+        <Link
+          href="/explore"
+          className="flex items-center justify-center w-9 h-9 rounded-full transition-colors"
+          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <HiSearch className="w-5 h-5" style={{ color: "rgba(255,255,255,0.7)" }} />
+        </Link>
+      </div>
+
       {/* Profile header */}
       <div className="flex items-start gap-4 mb-5">
         {profile.avatarUrl ? (
