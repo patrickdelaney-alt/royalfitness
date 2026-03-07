@@ -82,7 +82,6 @@ export default function WorkoutSession() {
   const [session, setSession] = useState<ActiveWorkoutSession | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [showAbandon, setShowAbandon] = useState(false);
-  const newExerciseInputRef = useRef<HTMLInputElement | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ── Init: load or create session ─────────────────────────────────────────
@@ -440,7 +439,6 @@ export default function WorkoutSession() {
           {/* Add exercise button */}
           <button
             onClick={addExercise}
-            ref={newExerciseInputRef}
             className="mt-2 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
             style={{
               border: "1.5px dashed rgba(109,106,245,0.3)",
