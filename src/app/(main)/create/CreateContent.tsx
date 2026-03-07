@@ -1,45 +1,12 @@
 "use client";
 
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiSparkles, HiPlay, HiLightningBolt } from "react-icons/hi";
+import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiPlay, HiLightningBolt } from "react-icons/hi";
 import toast from "react-hot-toast";
 
 type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL";
 
-// Stock photo suggestions based on post type / workout keywords
-const STOCK_PHOTOS: Record<string, { url: string; label: string }[]> = {
-  WORKOUT: [
-    { url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&h=400&fit=crop", label: "Gym weights" },
-    { url: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&h=400&fit=crop", label: "Weight training" },
-    { url: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&h=400&fit=crop", label: "Barbell workout" },
-    { url: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&h=400&fit=crop", label: "Push ups" },
-    { url: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=600&h=400&fit=crop", label: "Gym floor" },
-    { url: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=600&h=400&fit=crop", label: "Running" },
-  ],
-  MEAL: [
-    { url: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&h=400&fit=crop", label: "Healthy meal" },
-    { url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=400&fit=crop", label: "Fresh salad" },
-    { url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=400&fit=crop", label: "Veggie bowl" },
-    { url: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&h=400&fit=crop", label: "Protein plate" },
-    { url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=400&fit=crop", label: "Grilled food" },
-    { url: "https://images.unsplash.com/photo-1505576399279-0d754687a2d8?w=600&h=400&fit=crop", label: "Smoothie bowl" },
-  ],
-  WELLNESS: [
-    { url: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&h=400&fit=crop", label: "Yoga" },
-    { url: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&h=400&fit=crop", label: "Meditation" },
-    { url: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=600&h=400&fit=crop", label: "Stretching" },
-    { url: "https://images.unsplash.com/photo-1600618528240-fb9fc964b853?w=600&h=400&fit=crop", label: "Recovery" },
-    { url: "https://images.unsplash.com/photo-1552196563-55cd4e45efb3?w=600&h=400&fit=crop", label: "Mindfulness" },
-    { url: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=600&h=400&fit=crop", label: "Nature walk" },
-  ],
-  GENERAL: [
-    { url: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=600&h=400&fit=crop", label: "Fitness" },
-    { url: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=400&fit=crop", label: "Active life" },
-    { url: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=600&h=400&fit=crop", label: "Gym" },
-    { url: "https://images.unsplash.com/photo-1594737625785-a6cbdabd333c?w=600&h=400&fit=crop", label: "Wellness" },
-  ],
-};
 
 interface ExerciseSet {
   reps: string;
@@ -332,16 +299,12 @@ function MoodSlider({ value, onChange }: { value: number; onChange: (v: number) 
 
 // ── Media Upload Block (shared across types) ─────────────────
 function MediaBlock({
-  mediaPreview, uploading, onRemove, onFileClick, showSuggestions, onToggleSuggestions, suggestions, onSelectStock, fileInputRef, onFileChange,
+  mediaPreview, uploading, onRemove, onFileClick, fileInputRef, onFileChange,
 }: {
   mediaPreview: string | null;
   uploading: boolean;
   onRemove: () => void;
   onFileClick: () => void;
-  showSuggestions: boolean;
-  onToggleSuggestions: () => void;
-  suggestions: { url: string; label: string }[];
-  onSelectStock: (url: string) => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
@@ -361,47 +324,18 @@ function MediaBlock({
           </button>
         </div>
       ) : (
-        <div className="space-y-2">
-          <button
-            type="button"
-            onClick={onFileClick}
-            className="w-full rounded-xl py-8 flex flex-col items-center gap-2 transition-colors"
-            style={{
-              border: "2px dashed rgba(255,255,255,0.12)",
-              color: "rgba(255,255,255,0.35)",
-            }}
-          >
-            <HiPhotograph className="w-8 h-8" />
-            <span className="text-sm">Add photo or video</span>
-          </button>
-          <button
-            type="button"
-            onClick={onToggleSuggestions}
-            className="flex items-center gap-1.5 text-xs font-medium"
-            style={{ color: "#8b88f8" }}
-          >
-            <HiSparkles className="w-3.5 h-3.5" />
-            {showSuggestions ? "Hide suggested photos" : "Browse stock photos"}
-          </button>
-          {showSuggestions && (
-            <div className="grid grid-cols-3 gap-2">
-              {suggestions.map((photo) => (
-                <button
-                  key={photo.url}
-                  type="button"
-                  onClick={() => onSelectStock(photo.url)}
-                  className="relative rounded-lg overflow-hidden transition-colors aspect-[3/2]"
-                  style={{ border: "1px solid rgba(255,255,255,0.08)" }}
-                >
-                  <img src={photo.url} alt={photo.label} className="w-full h-full object-cover" />
-                  <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] px-1 py-0.5 text-center truncate">
-                    {photo.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <button
+          type="button"
+          onClick={onFileClick}
+          className="w-full rounded-xl py-8 flex flex-col items-center gap-2 transition-colors"
+          style={{
+            border: "2px dashed rgba(255,255,255,0.12)",
+            color: "rgba(255,255,255,0.35)",
+          }}
+        >
+          <HiPhotograph className="w-8 h-8" />
+          <span className="text-sm">Add photo or video</span>
+        </button>
       )}
       <input
         ref={fileInputRef}
@@ -429,7 +363,6 @@ export default function CreatePostContent() {
 
   const [type, setType] = useState<PostType>(initialType);
   const [caption, setCaption] = useState("");
-  const [tags, setTags] = useState("");
   const [visibility, setVisibility] = useState<"PUBLIC" | "FOLLOWERS" | "PRIVATE">("PUBLIC");
   const [postDate, setPostDate] = useState("");
   const [showBackdate, setShowBackdate] = useState(false);
@@ -449,7 +382,6 @@ export default function CreatePostContent() {
   const [durationMinutes, setDurationMinutes] = useState("");
   const [perceivedExertion, setPerceivedExertion] = useState("");
   const [energy, setEnergy] = useState(7);
-  const [workoutNotes, setWorkoutNotes] = useState("");
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [postTiming, setPostTiming] = useState<"BEFORE" | "DURING" | "AFTER">("AFTER");
 
@@ -491,7 +423,7 @@ export default function CreatePostContent() {
         setWorkoutName(session.workoutName as string);
         setEditingName(true);
       }
-      if (session.notes) setWorkoutNotes(session.notes as string);
+      if (session.notes) setCaption(session.notes as string);
 
       const mins = Math.max(1, Math.round(elapsed / 60000));
       setDurationMinutes(String(mins));
@@ -558,22 +490,11 @@ export default function CreatePostContent() {
   const [fat, setFat] = useState("");
   const [saveToCatalog, setSaveToCatalog] = useState(false);
 
-  // Stock photo suggestions
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const suggestions = useMemo(() => STOCK_PHOTOS[type] || STOCK_PHOTOS.GENERAL, [type]);
-
-  const selectStockPhoto = (url: string) => {
-    setMediaUrl(url);
-    setMediaPreview(url);
-    setShowSuggestions(false);
-  };
-
   // Wellness fields
   const [activityType, setActivityType] = useState("");
   const [wellnessDuration, setWellnessDuration] = useState("");
   const [intensity, setIntensity] = useState("");
   const [wellnessMood, setWellnessMood] = useState(7);
-  const [wellnessNotes, setWellnessNotes] = useState("");
 
   // ── Muscle toggle with auto-name ──────────────────────────
   const toggleMuscle = (id: string) => {
@@ -660,7 +581,6 @@ export default function CreatePostContent() {
         type,
         caption: caption || undefined,
         visibility,
-        tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
         mediaUrl: mediaUrl || undefined,
         postDate: postDate || undefined,
       };
@@ -678,7 +598,6 @@ export default function CreatePostContent() {
           durationMinutes: durationMinutes ? parseInt(durationMinutes) : undefined,
           perceivedExertion: perceivedExertion ? parseInt(perceivedExertion) : undefined,
           moodAfter: energy,
-          notes: workoutNotes || undefined,
           postTiming,
           exercises: exercises
             .filter((ex) => ex.name.trim())
@@ -725,7 +644,6 @@ export default function CreatePostContent() {
           durationMinutes: wellnessDuration ? parseInt(wellnessDuration) : undefined,
           intensity: intensity ? parseInt(intensity) : undefined,
           moodAfter: wellnessMood,
-          notes: wellnessNotes || undefined,
         };
       }
 
@@ -754,10 +672,6 @@ export default function CreatePostContent() {
     uploading,
     onRemove: removeMedia,
     onFileClick: () => fileInputRef.current?.click(),
-    showSuggestions,
-    onToggleSuggestions: () => setShowSuggestions((v) => !v),
-    suggestions,
-    onSelectStock: selectStockPhoto,
     fileInputRef,
     onFileChange: handleFileChange,
   };
@@ -979,11 +893,6 @@ export default function CreatePostContent() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Notes</label>
-              <textarea value={workoutNotes} onChange={(e) => setWorkoutNotes(e.target.value)} rows={2} placeholder="Any notes about this workout..." className="textarea-dark w-full resize-none" />
-            </div>
-
             {/* Exercises */}
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -1156,10 +1065,6 @@ export default function CreatePostContent() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Notes</label>
-              <textarea value={wellnessNotes} onChange={(e) => setWellnessNotes(e.target.value)} rows={2} placeholder="Any notes..." className="textarea-dark w-full resize-none" />
-            </div>
           </>
         )}
 
@@ -1173,12 +1078,6 @@ export default function CreatePostContent() {
             </div>
           </>
         )}
-
-        {/* ─── Common fields ───────────────────────────────── */}
-        <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Tags (comma-separated)</label>
-          <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="gym, gains, health" className="input-dark w-full" />
-        </div>
 
         {/* Visibility */}
         <div>

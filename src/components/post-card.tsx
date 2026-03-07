@@ -300,9 +300,6 @@ function WellnessSection({ detail }: { detail: WellnessDetail }) {
         )}
       </div>
 
-      {detail.notes && (
-        <p className="text-sub italic">{detail.notes}</p>
-      )}
     </div>
   );
 }
@@ -548,20 +545,6 @@ export default function PostCard({
           <p className="text-sm text-foreground whitespace-pre-wrap mt-1 mb-1">
             {post.caption}
           </p>
-        )}
-
-        {post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-1 mb-2">
-            {post.tags.map((tag) => (
-              <span
-                key={tag}
-                className="text-xs rounded-full px-2 py-0.5 font-medium"
-                style={{ color: "#8b88f8", background: "rgba(109,106,245,0.12)" }}
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
         )}
 
         {post.mediaUrl ? (
