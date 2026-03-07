@@ -146,7 +146,17 @@ function moodLabel(val: number | null): string | null {
 
 // ── sub-components ───────────────────────────────────────────────────────────
 
+const EXERCISE_PREVIEW_COUNT = 4;
+
 function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
+  const [showAllExercises, setShowAllExercises] = useState(false);
+
+  const totalExercises = detail.exercises.length;
+  const hasMore = totalExercises > EXERCISE_PREVIEW_COUNT;
+  const visibleExercises = showAllExercises
+    ? detail.exercises
+    : detail.exercises.slice(0, EXERCISE_PREVIEW_COUNT);
+
   return (
     <div className="mt-3 space-y-2 text-sm">
       <div className="flex items-center gap-3 flex-wrap">
@@ -168,9 +178,9 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
       </div>
 
       {/* Exercises */}
-      {detail.exercises.length > 0 && (
+      {totalExercises > 0 && (
         <div className="space-y-1.5">
-          {detail.exercises.map((ex) => (
+          {visibleExercises.map((ex) => (
             <div key={ex.id} className="bg-surface rounded-lg px-3 py-2 border border-surface">
               <p className="font-medium text-foreground">{ex.name}</p>
               {ex.sets.length > 0 && (
@@ -190,6 +200,28 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
               )}
             </div>
           ))}
+
+          {hasMore && !showAllExercises && (
+            <button
+              type="button"
+              onClick={() => setShowAllExercises(true)}
+              className="w-full text-xs font-semibold py-2 rounded-lg transition-colors"
+              style={{ background: "rgba(109,106,245,0.08)", color: "#8b88f8", border: "1px solid rgba(109,106,245,0.15)" }}
+            >
+              Show all {totalExercises} exercises
+            </button>
+          )}
+
+          {showAllExercises && hasMore && (
+            <button
+              type="button"
+              onClick={() => setShowAllExercises(false)}
+              className="w-full text-xs font-semibold py-2 rounded-lg transition-colors"
+              style={{ background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.07)" }}
+            >
+              Show less
+            </button>
+          )}
         </div>
       )}
 
