@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { HiSearch } from "react-icons/hi";
 import PostCard, { Post } from "@/components/post-card";
 import RecommendationCard from "@/components/recommendation-card";
 
@@ -113,6 +115,13 @@ export default function FeedContent() {
           </h1>
           <span className="text-xs font-medium text-muted-dim">Beta</span>
         </div>
+        <Link
+          href="/explore"
+          className="p-2 rounded-xl transition-colors"
+          style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)" }}
+        >
+          <HiSearch className="w-5 h-5" />
+        </Link>
       </div>
 
       {/* Filter chips */}

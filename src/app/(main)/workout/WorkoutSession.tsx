@@ -342,9 +342,14 @@ export default function WorkoutSession() {
 
         {/* Caption */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-            Caption
-          </label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>
+              Caption
+            </label>
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ background: "rgba(109,106,245,0.12)", color: "#8b88f8" }}>
+              Shown on your post
+            </span>
+          </div>
           <textarea
             value={session.notes}
             onChange={(e) => update((s) => ({ ...s, notes: e.target.value }))}

@@ -853,23 +853,23 @@ export default function CreatePostContent() {
               />
             </div>
 
-            {/* 3. Media */}
-            <MediaBlock {...mediaProps} />
-
-            {/* 4. Energy slider */}
-            <EnergySlider value={energy} onChange={setEnergy} />
-
-            {/* 5. Caption */}
+            {/* 3. Caption — right after name so users see their post voice immediately */}
             <div>
               <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Caption</label>
               <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 rows={3}
-                placeholder="How did the workout go?"
+                placeholder="How did it feel? Share the energy, the grind, the win..."
                 className="textarea-dark w-full resize-none"
               />
             </div>
+
+            {/* 4. Media */}
+            <MediaBlock {...mediaProps} />
+
+            {/* 5. Energy slider */}
+            <EnergySlider value={energy} onChange={setEnergy} />
 
             {/* Group class toggle */}
             <label className="flex items-center gap-2 text-sm cursor-pointer">
@@ -1045,14 +1045,14 @@ export default function CreatePostContent() {
               <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="e.g. Yoga, Meditation, Sauna" className="input-dark w-full" />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Caption</label>
+              <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={3} placeholder="How did it feel? Mind, body, energy — share it..." className="textarea-dark w-full resize-none" />
+            </div>
+
             <MediaBlock {...mediaProps} />
 
             <MoodSlider value={wellnessMood} onChange={setWellnessMood} />
-
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Caption</label>
-              <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={3} placeholder="How did it go?" className="textarea-dark w-full resize-none" />
-            </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
