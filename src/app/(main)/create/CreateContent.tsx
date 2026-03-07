@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiPlay, HiLightningBolt } from "react-icons/hi";
+import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiPlay, HiLightningBolt, HiChevronDown, HiChevronRight } from "react-icons/hi";
 import toast from "react-hot-toast";
 
 type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL";
@@ -383,6 +383,7 @@ export default function CreatePostContent() {
   const [perceivedExertion, setPerceivedExertion] = useState("");
   const [energy, setEnergy] = useState(7);
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [collapsedExercises, setCollapsedExercises] = useState<Set<number>>(new Set());
   const [postTiming, setPostTiming] = useState<"BEFORE" | "DURING" | "AFTER">("AFTER");
 
   // ── Active session banner state ───────────────────────────────────────────
@@ -550,7 +551,20 @@ export default function CreatePostContent() {
 
   // ── Exercise helpers ──────────────────────────────────────
   const addExercise = () => setExercises((prev) => [...prev, emptyExercise()]);
-  const removeExercise = (idx: number) => setExercises((prev) => prev.filter((_, i) => i !== idx));
+  const removeExercise = (idx: number) => {
+    setExercises((prev) => prev.filter((_, i) => i !== idx));
+    setCollapsedExercises((prev) => {
+      const next = new Set<number>();
+      prev.forEach((i) => { if (i < idx) next.add(i); else if (i > idx) next.add(i - 1); });
+      return next;
+    });
+  };
+  const toggleCollapseExercise = (idx: number) =>
+    setCollapsedExercises((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx); else next.add(idx);
+      return next;
+    });
   const updateExerciseName = (idx: number, name: string) =>
     setExercises((prev) => prev.map((ex, i) => (i === idx ? { ...ex, name } : ex)));
   const addSet = (exIdx: number) =>
@@ -910,72 +924,96 @@ export default function CreatePostContent() {
               )}
 
               <div className="space-y-3">
-                {exercises.map((ex, exIdx) => (
-                  <div key={exIdx} className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                    <div className="flex gap-2 mb-2">
-                      <input
-                        value={ex.name}
-                        onChange={(e) => updateExerciseName(exIdx, e.target.value)}
-                        placeholder="Exercise name (e.g. Bench Press)"
-                        className="input-dark flex-1"
-                      />
-                      <button type="button" onClick={() => removeExercise(exIdx)} className="flex-shrink-0" style={{ color: "rgba(255,255,255,0.3)" }}>
-                        <HiTrash className="w-5 h-5" />
-                      </button>
-                    </div>
-
-                    <div className="space-y-2">
-                      {ex.sets.map((set, setIdx) => (
-                        <div key={setIdx} className="flex gap-1.5 items-center">
-                          <span className="text-xs w-8 flex-shrink-0 text-center font-medium" style={{ color: "rgba(255,255,255,0.3)" }}>
-                            S{setIdx + 1}
+                {exercises.map((ex, exIdx) => {
+                  const isCollapsed = collapsedExercises.has(exIdx);
+                  const filledSets = ex.sets.filter((s) => s.reps || s.weight).length;
+                  return (
+                    <div key={exIdx} className="rounded-xl overflow-hidden" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                      {/* Header row — always visible */}
+                      <div className="flex items-center gap-2 px-3 py-2.5">
+                        <button
+                          type="button"
+                          onClick={() => toggleCollapseExercise(exIdx)}
+                          className="flex-shrink-0 transition-transform duration-200"
+                          style={{ color: "rgba(255,255,255,0.35)" }}
+                        >
+                          {isCollapsed ? <HiChevronRight className="w-4 h-4" /> : <HiChevronDown className="w-4 h-4" />}
+                        </button>
+                        <input
+                          value={ex.name}
+                          onChange={(e) => updateExerciseName(exIdx, e.target.value)}
+                          placeholder="Exercise name (e.g. Bench Press)"
+                          className="input-dark flex-1 py-1.5"
+                          style={{ background: "transparent", border: "none", padding: "0" }}
+                        />
+                        {isCollapsed && (
+                          <span className="text-[11px] font-medium flex-shrink-0 px-2 py-0.5 rounded-full" style={{ background: "rgba(139,136,248,0.12)", color: "#8b88f8" }}>
+                            {ex.sets.length} {ex.sets.length === 1 ? "set" : "sets"}{filledSets > 0 ? ` · ${filledSets} logged` : ""}
                           </span>
-                          <input
-                            type="number"
-                            value={set.reps}
-                            onChange={(e) => updateSet(exIdx, setIdx, "reps", e.target.value)}
-                            placeholder="Reps"
-                            className="input-dark w-16 text-xs px-2 py-1"
-                          />
-                          <input
-                            type="number"
-                            value={set.weight}
-                            onChange={(e) => updateSet(exIdx, setIdx, "weight", e.target.value)}
-                            placeholder="Wt"
-                            className="input-dark w-20 text-xs px-2 py-1"
-                          />
-                          <select
-                            value={set.unit}
-                            onChange={(e) => updateSet(exIdx, setIdx, "unit", e.target.value)}
-                            className="select-dark w-14 text-xs px-1 py-1"
-                          >
-                            <option value="lbs">lbs</option>
-                            <option value="kg">kg</option>
-                          </select>
-                          <input
-                            type="number"
-                            min="1"
-                            max="10"
-                            value={set.rpe}
-                            onChange={(e) => updateSet(exIdx, setIdx, "rpe", e.target.value)}
-                            placeholder="RPE"
-                            className="input-dark w-14 text-xs px-2 py-1"
-                          />
-                          {ex.sets.length > 1 && (
-                            <button type="button" onClick={() => removeSet(exIdx, setIdx)} style={{ color: "rgba(255,255,255,0.25)" }}>
-                              <HiX className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                        )}
+                        <button type="button" onClick={() => removeExercise(exIdx)} className="flex-shrink-0 ml-1" style={{ color: "rgba(255,255,255,0.25)" }}>
+                          <HiTrash className="w-4 h-4" />
+                        </button>
+                      </div>
 
-                    <button type="button" onClick={() => addSet(exIdx)} className="mt-2 flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-                      <HiPlus className="w-3.5 h-3.5" />
-                      Add set
-                    </button>
-                  </div>
-                ))}
+                      {/* Expandable sets */}
+                      {!isCollapsed && (
+                        <div className="px-3 pb-3">
+                          <div className="space-y-2">
+                            {ex.sets.map((set, setIdx) => (
+                              <div key={setIdx} className="flex gap-1.5 items-center">
+                                <span className="text-xs w-8 flex-shrink-0 text-center font-medium" style={{ color: "rgba(255,255,255,0.3)" }}>
+                                  S{setIdx + 1}
+                                </span>
+                                <input
+                                  type="number"
+                                  value={set.reps}
+                                  onChange={(e) => updateSet(exIdx, setIdx, "reps", e.target.value)}
+                                  placeholder="Reps"
+                                  className="input-dark w-16 text-xs px-2 py-1"
+                                />
+                                <input
+                                  type="number"
+                                  value={set.weight}
+                                  onChange={(e) => updateSet(exIdx, setIdx, "weight", e.target.value)}
+                                  placeholder="Wt"
+                                  className="input-dark w-20 text-xs px-2 py-1"
+                                />
+                                <select
+                                  value={set.unit}
+                                  onChange={(e) => updateSet(exIdx, setIdx, "unit", e.target.value)}
+                                  className="select-dark w-14 text-xs px-1 py-1"
+                                >
+                                  <option value="lbs">lbs</option>
+                                  <option value="kg">kg</option>
+                                </select>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="10"
+                                  value={set.rpe}
+                                  onChange={(e) => updateSet(exIdx, setIdx, "rpe", e.target.value)}
+                                  placeholder="RPE"
+                                  className="input-dark w-14 text-xs px-2 py-1"
+                                />
+                                {ex.sets.length > 1 && (
+                                  <button type="button" onClick={() => removeSet(exIdx, setIdx)} style={{ color: "rgba(255,255,255,0.25)" }}>
+                                    <HiX className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+
+                          <button type="button" onClick={() => addSet(exIdx)} className="mt-2 flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                            <HiPlus className="w-3.5 h-3.5" />
+                            Add set
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </>
