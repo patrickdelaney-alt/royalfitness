@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { HiHome, HiChartBar, HiPlusCircle, HiUser } from "react-icons/hi";
+import { HiHome, HiChartBar, HiPlusCircle, HiUser, HiCompass } from "react-icons/hi";
 import { HiBell } from "react-icons/hi2";
 
 const tabs = [
   { href: "/feed", label: "Feed", icon: HiHome },
   { href: "/stats", label: "Stats", icon: HiChartBar },
+  { href: "/explore", label: "Explore", icon: HiCompass },
   { href: "/create", label: "Create", icon: HiPlusCircle },
   { href: "/notifications", label: "Alerts", icon: HiBell },
   { href: "/profile", label: "Profile", icon: HiUser },

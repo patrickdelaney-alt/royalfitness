@@ -57,9 +57,6 @@ function getNotificationText(notification: Notification): string {
 }
 
 function getNotificationLink(notification: Notification): string {
-  if (notification.post) {
-    return `/feed?post=${notification.post.id}`;
-  }
   return `/profile/${notification.actor.username}`;
 }
 
