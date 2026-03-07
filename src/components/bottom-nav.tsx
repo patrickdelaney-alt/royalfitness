@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { HiHome, HiChartBar, HiPlusCircle, HiUser } from "react-icons/hi";
+import { HiHome, HiSearch, HiChartBar, HiPlusCircle, HiUser } from "react-icons/hi";
 import { HiBell } from "react-icons/hi2";
 
 const tabs = [
   { href: "/feed", label: "Feed", icon: HiHome },
-  { href: "/stats", label: "Stats", icon: HiChartBar },
+  { href: "/explore", label: "Explore", icon: HiSearch },
   { href: "/create", label: "Create", icon: HiPlusCircle },
+  { href: "/stats", label: "Stats", icon: HiChartBar },
   { href: "/notifications", label: "Alerts", icon: HiBell },
   { href: "/profile", label: "Profile", icon: HiUser },
 ];
@@ -68,11 +69,11 @@ export function BottomNav() {
           <Link
             key={tab.href}
             href={href}
-            className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-xs font-semibold transition-colors"
+            className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-semibold transition-colors"
             style={{ color: isActive ? "#8b88f8" : "rgba(255,255,255,0.22)" }}
           >
             <div className="relative">
-              <tab.icon className="h-6 w-6" />
+              <tab.icon className="h-5 w-5" />
               {tab.href === "/notifications" && unreadCount > 0 && (
                 <span className="absolute -top-1.5 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                   {unreadCount > 99 ? "99+" : unreadCount}

@@ -183,21 +183,18 @@ export default function WorkoutSession() {
   const finishWorkout = () => {
     if (!session) return;
 
-    // Freeze the elapsed time
-    const finalElapsed = calcElapsed(session);
-    const finalMs = finalElapsed;
-    update((s) => ({ ...s, pausedAt: Date.now() }));
+    // Capture elapsed before any state changes
+    const finalMs = calcElapsed(session);
 
-    // Persist final elapsed so CreateContent can read it
-    const finalSession: ActiveWorkoutSession = {
+    // Write directly to localStorage — bypassing update() (which is async) so
+    // the state-updater callback never overwrites _finalElapsedMs before navigation.
+    const frozenSession: ActiveWorkoutSession = {
       ...session,
       pausedAt: session.pausedAt ?? Date.now(),
-      totalPausedMs: session.totalPausedMs,
     };
-    // Store final elapsed separately for easy reading
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ ...finalSession, _finalElapsedMs: finalMs })
+      JSON.stringify({ ...frozenSession, _finalElapsedMs: finalMs })
     );
 
     toast.success("Great workout! Logging your session...", {
@@ -322,7 +319,7 @@ export default function WorkoutSession() {
       </div>
 
       {/* ── Body ── */}
-      <div className="flex-1 overflow-y-auto px-4 pb-32 space-y-5">
+      <div className="flex-1 overflow-y-auto px-4 pb-40 space-y-5">
 
         {/* Workout Name */}
         <div>
@@ -479,9 +476,9 @@ export default function WorkoutSession() {
 
       {/* ── Sticky Finish Button ── */}
       <div
-        className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-4"
+        className="fixed bottom-16 left-0 right-0 px-4 pb-4 pt-4"
         style={{
-          background: "linear-gradient(to top, #0b0c14 60%, transparent)",
+          background: "linear-gradient(to top, #0b0c14 70%, transparent)",
         }}
       >
         <button
