@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { HiLogout, HiPencil, HiCheck, HiX } from "react-icons/hi";
+import { HiLogout, HiPencil, HiCheck, HiX, HiSearch, HiArrowLeft } from "react-icons/hi";
 import Link from "next/link";
 import FollowListModal from "@/components/follow-list-modal";
 import UserCatalogSection from "@/components/user-catalog-section";
@@ -179,6 +179,28 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>
+      {/* Top nav */}
+      <div className="flex items-center justify-between mb-5">
+        {!isOwnProfile ? (
+          <button
+            onClick={() => router.back()}
+            className="p-2 rounded-xl transition-colors"
+            style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)" }}
+          >
+            <HiArrowLeft className="w-5 h-5" />
+          </button>
+        ) : (
+          <h1 className="text-xl font-bold">Profile</h1>
+        )}
+        <Link
+          href="/explore"
+          className="p-2 rounded-xl transition-colors"
+          style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)" }}
+        >
+          <HiSearch className="w-5 h-5" />
+        </Link>
+      </div>
+
       {/* Profile header */}
       <div className="flex items-start gap-4 mb-5">
         {profile.avatarUrl ? (
