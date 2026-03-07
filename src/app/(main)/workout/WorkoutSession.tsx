@@ -340,15 +340,15 @@ export default function WorkoutSession() {
           />
         </div>
 
-        {/* Notes */}
+        {/* Caption */}
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-            Notes
+            Caption
           </label>
           <textarea
             value={session.notes}
             onChange={(e) => update((s) => ({ ...s, notes: e.target.value }))}
-            placeholder="How are you feeling? Any goals for today..."
+            placeholder="What's on your mind? Share your goals, energy, or what you crushed today..."
             rows={3}
             className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none transition-colors placeholder:text-white/20"
             style={{
