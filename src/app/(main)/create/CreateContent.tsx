@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiSparkles } from "react-icons/hi";
+import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiSparkles, HiPlay, HiLightningBolt } from "react-icons/hi";
+import toast from "react-hot-toast";
 
 type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL";
 
@@ -452,6 +453,101 @@ export default function CreatePostContent() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [postTiming, setPostTiming] = useState<"BEFORE" | "DURING" | "AFTER">("AFTER");
 
+  // ── Active session banner state ───────────────────────────────────────────
+  const [sessionElapsed, setSessionElapsed] = useState<number | null>(null);
+  const sessionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // On mount: pre-fill from workout session OR show live timer in banner
+  useEffect(() => {
+    const fromSession = searchParams.get("fromSession");
+    let raw: string | null = null;
+    try {
+      raw = localStorage.getItem("activeWorkout");
+    } catch {
+      return;
+    }
+    if (!raw) return;
+
+    let session: Record<string, unknown>;
+    try {
+      session = JSON.parse(raw);
+    } catch {
+      return;
+    }
+
+    if (fromSession === "1") {
+      // ── Pre-fill the create form from session data ──
+      const elapsed =
+        typeof session._finalElapsedMs === "number"
+          ? (session._finalElapsedMs as number)
+          : Math.max(
+              0,
+              Date.now() -
+                (session.startTime as number) -
+                (session.totalPausedMs as number)
+            );
+
+      if (session.workoutName) {
+        setWorkoutName(session.workoutName as string);
+        setEditingName(true);
+      }
+      if (session.notes) setWorkoutNotes(session.notes as string);
+
+      const mins = Math.max(1, Math.round(elapsed / 60000));
+      setDurationMinutes(String(mins));
+
+      const checkedExercises = (
+        session.exercises as Array<{ name: string; checked: boolean }>
+      ).filter((ex) => ex.checked && ex.name.trim());
+
+      if (checkedExercises.length > 0) {
+        setExercises(
+          checkedExercises.map((ex) => ({
+            name: ex.name.trim(),
+            sets: [emptySet()],
+          }))
+        );
+      }
+
+      try {
+        localStorage.removeItem("activeWorkout");
+      } catch {
+        // ignore
+      }
+
+      toast.success("Workout session loaded!", {
+        icon: "✓",
+        style: {
+          background: "#1a1b2e",
+          color: "#ffffff",
+          border: "1px solid rgba(109,106,245,0.4)",
+        },
+      });
+      return;
+    }
+
+    // ── Show live elapsed in the "Resume" banner ──
+    const startTime = session.startTime as number;
+    const totalPausedMs = session.totalPausedMs as number;
+    const pausedAt = session.pausedAt as number | null;
+
+    const computeElapsed = () =>
+      Math.max(0, (pausedAt ?? Date.now()) - startTime - totalPausedMs);
+
+    setSessionElapsed(computeElapsed());
+
+    if (!pausedAt) {
+      sessionIntervalRef.current = setInterval(() => {
+        setSessionElapsed(computeElapsed());
+      }, 1000);
+    }
+
+    return () => {
+      if (sessionIntervalRef.current) clearInterval(sessionIntervalRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Meal fields
   const [mealName, setMealName] = useState("");
   const [mealType, setMealType] = useState("snack");
@@ -715,6 +811,81 @@ export default function CreatePostContent() {
         {/* ─── WORKOUT ─────────────────────────────────────── */}
         {type === "WORKOUT" && (
           <>
+            {/* ── Start / Resume Workout Banner ── */}
+            {!searchParams.get("fromSession") && (
+              <button
+                type="button"
+                onClick={() => (window.location.href = "/workout")}
+                className="w-full flex items-center justify-between px-4 py-4 rounded-2xl transition-all active:scale-[0.98] mb-1"
+                style={{
+                  background:
+                    sessionElapsed !== null
+                      ? "rgba(34,197,94,0.07)"
+                      : "rgba(109,106,245,0.08)",
+                  border:
+                    sessionElapsed !== null
+                      ? "1px solid rgba(34,197,94,0.25)"
+                      : "1px solid rgba(109,106,245,0.25)",
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{
+                      background:
+                        sessionElapsed !== null
+                          ? "rgba(34,197,94,0.15)"
+                          : "rgba(109,106,245,0.15)",
+                    }}
+                  >
+                    {sessionElapsed !== null ? (
+                      <HiPlay className="w-5 h-5" style={{ color: "#4ade80" }} />
+                    ) : (
+                      <HiLightningBolt className="w-5 h-5" style={{ color: "#8b88f8" }} />
+                    )}
+                  </div>
+                  <div className="text-left">
+                    <p
+                      className="text-sm font-bold leading-tight"
+                      style={{
+                        color: sessionElapsed !== null ? "#4ade80" : "#8b88f8",
+                      }}
+                    >
+                      {sessionElapsed !== null ? "Workout In Progress" : "Start a Live Workout"}
+                    </p>
+                    <p
+                      className="text-xs mt-0.5"
+                      style={{ color: "rgba(255,255,255,0.4)" }}
+                    >
+                      {sessionElapsed !== null
+                        ? (() => {
+                            const totalSecs = Math.floor(sessionElapsed / 1000);
+                            const h = Math.floor(totalSecs / 3600);
+                            const m = Math.floor((totalSecs % 3600) / 60);
+                            const s = totalSecs % 60;
+                            return h > 0
+                              ? `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")} — tap to resume`
+                              : `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")} — tap to resume`;
+                          })()
+                        : "Timer + checklist — log it when you're done"}
+                    </p>
+                  </div>
+                </div>
+                <div
+                  className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl flex-shrink-0"
+                  style={{
+                    background:
+                      sessionElapsed !== null
+                        ? "rgba(34,197,94,0.15)"
+                        : "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)",
+                    color: sessionElapsed !== null ? "#4ade80" : "#ffffff",
+                  }}
+                >
+                  {sessionElapsed !== null ? "Resume →" : "Start →"}
+                </div>
+              </button>
+            )}
+
             {/* 1. Muscle group selector */}
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: "rgba(255,255,255,0.9)" }}>
