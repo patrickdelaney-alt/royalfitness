@@ -7,13 +7,6 @@ import RecommendationCard from "@/components/recommendation-card";
 
 const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS"] as const;
 
-const TYPE_EMOJI: Record<string, string> = {
-  ALL:     "🏠",
-  WORKOUT: "💪",
-  MEAL:    "🥗",
-  WELLNESS:"🧘",
-  GENERAL: "⭐",
-};
 
 export default function FeedContent() {
   const router = useRouter();
@@ -127,7 +120,7 @@ export default function FeedContent() {
                 const url = type === "ALL" ? "/feed" : `/feed?filter=${type}`;
                 router.replace(url, { scroll: false });
               }}
-              className="whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 flex-shrink-0"
+              className="whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center flex-shrink-0"
               style={
                 isActive
                   ? {
@@ -143,7 +136,6 @@ export default function FeedContent() {
                     }
               }
             >
-              <span>{TYPE_EMOJI[type]}</span>
               {type === "ALL" ? "All" : type === "WELLNESS" ? "Wellness" : type.charAt(0) + type.slice(1).toLowerCase() + "s"}
             </button>
           );
