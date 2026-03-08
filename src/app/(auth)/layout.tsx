@@ -34,7 +34,7 @@ export default function AuthLayout({
         style={{
           background: "#13141f",
           borderColor: "rgba(255,255,255,0.08)",
-          boxShadow: "0 40px 80px rgba(0,0,0,0.5), 0 0 60px rgba(109,106,245,0.07)",
+          boxShadow: "0 40px 80px rgba(0,0,0,0.5), 0 0 60px rgba(120,117,255,0.07)",
         }}
       >
         {children}

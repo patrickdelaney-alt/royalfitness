@@ -6,8 +6,8 @@ import Link from "next/link";
 
 // Muscle group display config
 const MUSCLE_META: Record<string, { label: string; color: string }> = {
-  chest:     { label: "Chest",     color: "#6d6af5" },
-  back:      { label: "Back",      color: "#8b88f8" },
+  chest:     { label: "Chest",     color: "#7875ff" },
+  back:      { label: "Back",      color: "#a8a6ff" },
   legs:      { label: "Legs",      color: "#a78bfa" },
   shoulders: { label: "Shoulders", color: "#34d399" },
   arms:      { label: "Arms",      color: "#fbbf24" },
@@ -17,7 +17,7 @@ const MUSCLE_META: Record<string, { label: string; color: string }> = {
 };
 
 function getMuscleColor(mg: string): string {
-  return MUSCLE_META[mg]?.color ?? "#8b88f8";
+  return MUSCLE_META[mg]?.color ?? "#a8a6ff";
 }
 
 function getMuscleLabel(mg: string): string {
@@ -113,9 +113,9 @@ function WeeklyWorkoutChart({ days }: { days: WeeklyWorkoutDay[] }) {
                     style={{
                       height: `${heightPct}%`,
                       background: isSelected || isToday
-                        ? "linear-gradient(180deg, #8b88f8 0%, #6d6af5 100%)"
-                        : "linear-gradient(180deg, rgba(139,136,248,0.7) 0%, rgba(109,106,245,0.5) 100%)",
-                      boxShadow: isSelected ? "0 0 12px rgba(139,136,248,0.5)" : "none",
+                        ? "linear-gradient(180deg, #a8a6ff 0%, #7875ff 100%)"
+                        : "linear-gradient(180deg, rgba(168,166,255,0.7) 0%, rgba(120,117,255,0.5) 100%)",
+                      boxShadow: isSelected ? "0 0 12px rgba(168,166,255,0.5)" : "none",
                     }}
                   />
                 ) : (
@@ -129,7 +129,7 @@ function WeeklyWorkoutChart({ days }: { days: WeeklyWorkoutDay[] }) {
                 className="text-xs font-medium"
                 style={{
                   color: isToday
-                    ? "#8b88f8"
+                    ? "#a8a6ff"
                     : isSelected
                     ? "rgba(255,255,255,0.9)"
                     : "rgba(255,255,255,0.35)",
@@ -351,9 +351,9 @@ export default function StatsPage() {
           href="/achievements"
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
           style={{
-            background: "linear-gradient(135deg, rgba(109,106,245,0.15) 0%, rgba(139,136,248,0.15) 100%)",
-            border: "1px solid rgba(139,136,248,0.25)",
-            color: "#8b88f8",
+            background: "linear-gradient(135deg, rgba(120,117,255,0.10) 0%, rgba(168,166,255,0.10) 100%)",
+            border: "1px solid rgba(168,166,255,0.25)",
+            color: "#a8a6ff",
           }}
         >
           🏅 Badges
@@ -369,7 +369,7 @@ export default function StatsPage() {
             className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
             style={
               period === p
-                ? { background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)", color: "#ffffff" }
+                ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
                 : { background: "transparent", color: "rgba(255,255,255,0.4)" }
             }
           >
@@ -389,12 +389,12 @@ export default function StatsPage() {
           {/* Streaks */}
           <div className="grid grid-cols-2 gap-3 mb-5">
             <div className="rounded-xl p-4 text-center" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <HiFire className="w-6 h-6 mx-auto mb-1" style={{ color: "#8b88f8" }} />
+              <HiFire className="w-6 h-6 mx-auto mb-1" style={{ color: "#a8a6ff" }} />
               <p className="text-2xl font-bold">{stats.currentStreak}</p>
               <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Day Streak</p>
             </div>
             <div className="rounded-xl p-4 text-center" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <HiTrendingUp className="w-6 h-6 mx-auto mb-1" style={{ color: "#8b88f8" }} />
+              <HiTrendingUp className="w-6 h-6 mx-auto mb-1" style={{ color: "#a8a6ff" }} />
               <p className="text-2xl font-bold">{stats.workoutStreak}</p>
               <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Workout Streak</p>
             </div>
@@ -439,7 +439,7 @@ export default function StatsPage() {
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="rounded-xl p-4" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
               <div className="flex items-center gap-2 mb-2">
-                <HiFire className="w-4 h-4" style={{ color: "#8b88f8" }} />
+                <HiFire className="w-4 h-4" style={{ color: "#a8a6ff" }} />
                 <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Workouts</span>
               </div>
               <p className="text-xl font-bold">{stats.workoutCount}</p>
@@ -494,7 +494,7 @@ export default function StatsPage() {
               <button
                 onClick={() => setShowStepsForm((v) => !v)}
                 className="text-xs font-medium"
-                style={{ color: "#8b88f8" }}
+                style={{ color: "#a8a6ff" }}
               >
                 {showStepsForm ? "Cancel" : "Log steps"}
               </button>
@@ -555,7 +555,7 @@ export default function StatsPage() {
                       <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
                         <div
                           className="h-full rounded-full"
-                          style={{ width: `${pct}%`, background: "linear-gradient(to right, #6d6af5, #8b88f8)" }}
+                          style={{ width: `${pct}%`, background: "linear-gradient(to right, #6360e8, #9b98ff)" }}
                         />
                       </div>
                       <span className="text-xs font-medium w-16 text-right">{e.count.toLocaleString()}</span>
@@ -586,7 +586,7 @@ export default function StatsPage() {
                     className="px-2 py-1 rounded-lg text-xs font-semibold transition-all"
                     style={
                       lbPeriod === p.key
-                        ? { background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)", color: "#ffffff" }
+                        ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
                         : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)" }
                     }
                   >
@@ -614,7 +614,7 @@ export default function StatsPage() {
                       className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
                       style={
                         activeBoard === b.key
-                          ? { background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)", color: "#ffffff" }
+                          ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
                           : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
                       }
                     >
@@ -639,7 +639,7 @@ export default function StatsPage() {
                           <span
                             className="w-6 text-center text-sm font-bold"
                             style={{
-                              color: idx === 0 ? "#8b88f8" : idx === 1 ? "rgba(255,255,255,0.5)" : idx === 2 ? "#f59e0b" : "rgba(255,255,255,0.3)",
+                              color: idx === 0 ? "#a8a6ff" : idx === 1 ? "rgba(255,255,255,0.5)" : idx === 2 ? "#f59e0b" : "rgba(255,255,255,0.3)",
                             }}
                           >
                             {idx + 1}

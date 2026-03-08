@@ -321,7 +321,7 @@ function ItemCard({ onDelete, children }: { onDelete: () => void; children: Reac
 
 function Pill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(109,106,245,0.15)", color: "#8b88f8" }}>
+    <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(120,117,255,0.10)", color: "#a8a6ff" }}>
       {children}
     </span>
   );
@@ -329,7 +329,7 @@ function Pill({ children }: { children: React.ReactNode }) {
 
 function ExternalLink({ href, label }: { href: string; label: string }) {
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs mt-1 hover:underline" style={{ color: "#8b88f8" }}>
+    <a href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs mt-1 hover:underline" style={{ color: "#a8a6ff" }}>
       <HiExternalLink className="w-3.5 h-3.5" />
       {label}
     </a>
@@ -409,7 +409,7 @@ export default function CatalogPage() {
         <button
           onClick={() => setShowForm((v) => !v)}
           className="flex items-center gap-1.5 text-sm font-medium"
-          style={{ color: "#8b88f8" }}
+          style={{ color: "#a8a6ff" }}
         >
           <HiPlus className="w-4 h-4" />
           Add
@@ -425,7 +425,7 @@ export default function CatalogPage() {
             className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all"
             style={
               tab === t.key
-                ? { background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)", color: "#ffffff" }
+                ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
                 : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
             }
           >

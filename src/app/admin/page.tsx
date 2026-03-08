@@ -34,7 +34,7 @@ function SignupBadge({ method }: { method: string }) {
       className="text-xs px-2 py-0.5 rounded-full font-medium"
       style={
         isEmail
-          ? { background: "rgba(109,106,245,0.15)", color: "#8b88f8" }
+          ? { background: "rgba(120,117,255,0.10)", color: "#a8a6ff" }
           : { background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.45)" }
       }
     >
@@ -131,7 +131,7 @@ export default function AdminPage() {
       >
         <div
           className="w-7 h-7 border-2 rounded-full animate-spin"
-          style={{ borderColor: "#8b88f8", borderTopColor: "transparent" }}
+          style={{ borderColor: "#a8a6ff", borderTopColor: "transparent" }}
         />
       </div>
     );
@@ -253,7 +253,7 @@ export default function AdminPage() {
         <div className="flex justify-center py-6">
           <div
             className="w-5 h-5 border-2 rounded-full animate-spin"
-            style={{ borderColor: "#8b88f8", borderTopColor: "transparent" }}
+            style={{ borderColor: "#a8a6ff", borderTopColor: "transparent" }}
           />
         </div>
       )}

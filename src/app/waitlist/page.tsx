@@ -34,7 +34,7 @@ export default function WaitlistPage() {
           background: "#13141f",
           border: "1px solid rgba(255,255,255,0.08)",
           boxShadow:
-            "0 40px 80px rgba(0,0,0,0.5), 0 0 60px rgba(109,106,245,0.07)",
+            "0 40px 80px rgba(0,0,0,0.5), 0 0 60px rgba(120,117,255,0.07)",
         }}
       >
         <div className="text-5xl mb-5">🏆</div>
@@ -52,14 +52,14 @@ export default function WaitlistPage() {
         <div
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold"
           style={{
-            background: "rgba(109,106,245,0.15)",
-            color: "#8b88f8",
-            border: "1px solid rgba(109,106,245,0.25)",
+            background: "rgba(120,117,255,0.10)",
+            color: "#a8a6ff",
+            border: "1px solid rgba(120,117,255,0.25)",
           }}
         >
           <span
             className="w-2 h-2 rounded-full animate-pulse"
-            style={{ background: "#6d6af5" }}
+            style={{ background: "#7875ff" }}
           />
           Launching soon
         </div>

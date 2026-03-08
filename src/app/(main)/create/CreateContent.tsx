@@ -35,8 +35,8 @@ const MUSCLES: MuscleGroup[] = [
     id: "chest",
     label: "Chest",
     icon: (active) => {
-      const f = active ? "#8b88f8" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(109,106,245,0.6)" : "rgba(0,0,0,0.25)";
+      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
+      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* left pec */}
@@ -58,8 +58,8 @@ const MUSCLES: MuscleGroup[] = [
     id: "back",
     label: "Back",
     icon: (active) => {
-      const f = active ? "#8b88f8" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(109,106,245,0.6)" : "rgba(0,0,0,0.25)";
+      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
+      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* lat spread V-taper */}
@@ -85,7 +85,7 @@ const MUSCLES: MuscleGroup[] = [
         style={{
           fontSize: "22px",
           lineHeight: 1,
-          filter: active ? "drop-shadow(0 0 6px rgba(139,136,248,0.9))" : "grayscale(0.2)",
+          filter: active ? "drop-shadow(0 0 6px rgba(168,166,255,0.9))" : "grayscale(0.2)",
           opacity: active ? 1 : 0.55,
         }}
       >
@@ -97,8 +97,8 @@ const MUSCLES: MuscleGroup[] = [
     id: "shoulders",
     label: "Shoulders",
     icon: (active) => {
-      const f = active ? "#8b88f8" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(109,106,245,0.6)" : "rgba(0,0,0,0.25)";
+      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
+      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* left delt cap */}
@@ -127,7 +127,7 @@ const MUSCLES: MuscleGroup[] = [
         style={{
           fontSize: "22px",
           lineHeight: 1,
-          filter: active ? "drop-shadow(0 0 6px rgba(139,136,248,0.9))" : "grayscale(0.2)",
+          filter: active ? "drop-shadow(0 0 6px rgba(168,166,255,0.9))" : "grayscale(0.2)",
           opacity: active ? 1 : 0.55,
         }}
       >
@@ -139,7 +139,7 @@ const MUSCLES: MuscleGroup[] = [
     id: "core",
     label: "Core",
     icon: (active) => {
-      const f = active ? "#8b88f8" : "rgba(255,255,255,0.28)";
+      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
       const gap = active ? "rgba(13,14,25,0.7)" : "rgba(0,0,0,0.35)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
@@ -165,7 +165,7 @@ const MUSCLES: MuscleGroup[] = [
         style={{
           fontSize: "22px",
           lineHeight: 1,
-          filter: active ? "drop-shadow(0 0 6px rgba(139,136,248,0.9))" : "grayscale(0.2)",
+          filter: active ? "drop-shadow(0 0 6px rgba(168,166,255,0.9))" : "grayscale(0.2)",
           opacity: active ? 1 : 0.55,
         }}
       >
@@ -216,9 +216,9 @@ function sliderTrackColor(value: number): string {
   const pct = ((value - 1) / 9) * 100;
   // purple(1) → amber(5) → red(10)
   if (value <= 5) {
-    return `linear-gradient(to right, #6d6af5 0%, #f59e0b ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`;
+    return `linear-gradient(to right, #7875ff 0%, #f59e0b ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`;
   }
-  return `linear-gradient(to right, #6d6af5 0%, #f59e0b 44%, #ef4444 ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`;
+  return `linear-gradient(to right, #7875ff 0%, #f59e0b 44%, #ef4444 ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`;
 }
 
 function EnergySlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -452,7 +452,7 @@ export default function CreatePostContent() {
         style: {
           background: "#1a1b2e",
           color: "#ffffff",
-          border: "1px solid rgba(109,106,245,0.4)",
+          border: "1px solid rgba(120,117,255,0.4)",
         },
       });
       return;
@@ -706,7 +706,7 @@ export default function CreatePostContent() {
             className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all"
             style={
               type === t
-                ? { background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)", color: "#ffffff" }
+                ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
                 : { background: "transparent", color: "rgba(255,255,255,0.4)" }
             }
           >
@@ -735,11 +735,11 @@ export default function CreatePostContent() {
                   background:
                     sessionElapsed !== null
                       ? "rgba(34,197,94,0.07)"
-                      : "rgba(109,106,245,0.08)",
+                      : "rgba(120,117,255,0.08)",
                   border:
                     sessionElapsed !== null
                       ? "1px solid rgba(34,197,94,0.25)"
-                      : "1px solid rgba(109,106,245,0.25)",
+                      : "1px solid rgba(120,117,255,0.25)",
                 }}
               >
                 <div className="flex items-center gap-3">
@@ -749,20 +749,20 @@ export default function CreatePostContent() {
                       background:
                         sessionElapsed !== null
                           ? "rgba(34,197,94,0.15)"
-                          : "rgba(109,106,245,0.15)",
+                          : "rgba(120,117,255,0.10)",
                     }}
                   >
                     {sessionElapsed !== null ? (
                       <HiPlay className="w-5 h-5" style={{ color: "#4ade80" }} />
                     ) : (
-                      <HiLightningBolt className="w-5 h-5" style={{ color: "#8b88f8" }} />
+                      <HiLightningBolt className="w-5 h-5" style={{ color: "#a8a6ff" }} />
                     )}
                   </div>
                   <div className="text-left">
                     <p
                       className="text-sm font-bold leading-tight"
                       style={{
-                        color: sessionElapsed !== null ? "#4ade80" : "#8b88f8",
+                        color: sessionElapsed !== null ? "#4ade80" : "#a8a6ff",
                       }}
                     >
                       {sessionElapsed !== null ? "Workout In Progress" : "Start a Live Workout"}
@@ -791,7 +791,7 @@ export default function CreatePostContent() {
                     background:
                       sessionElapsed !== null
                         ? "rgba(34,197,94,0.15)"
-                        : "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)",
+                        : "linear-gradient(135deg, #6360e8, #9b98ff)",
                     color: sessionElapsed !== null ? "#4ade80" : "#ffffff",
                   }}
                 >
@@ -817,9 +817,9 @@ export default function CreatePostContent() {
                       style={
                         active
                           ? {
-                              background: "rgba(109,106,245,0.2)",
-                              border: "1px solid rgba(139,136,248,0.5)",
-                              color: "#8b88f8",
+                              background: "rgba(120,117,255,0.10)",
+                              border: "1px solid rgba(168,166,255,0.5)",
+                              color: "#a8a6ff",
                             }
                           : {
                               background: "rgba(255,255,255,0.04)",
@@ -897,7 +897,7 @@ export default function CreatePostContent() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.9)" }}>Exercises</label>
-                <button type="button" onClick={addExercise} className="flex items-center gap-1 text-xs font-medium" style={{ color: "#8b88f8" }}>
+                <button type="button" onClick={addExercise} className="flex items-center gap-1 text-xs font-medium" style={{ color: "#a8a6ff" }}>
                   <HiPlus className="w-4 h-4" />
                   Add exercise
                 </button>
@@ -1093,7 +1093,7 @@ export default function CreatePostContent() {
                   className="flex-1 py-2 rounded-xl text-xs font-medium transition-all"
                   style={
                     visibility === v
-                      ? { background: "rgba(109,106,245,0.2)", border: "1px solid rgba(139,136,248,0.5)", color: "#8b88f8" }
+                      ? { background: "rgba(120,117,255,0.10)", border: "1px solid rgba(168,166,255,0.5)", color: "#a8a6ff" }
                       : { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)" }
                   }
                 >

@@ -202,7 +202,7 @@ export default function WorkoutSession() {
       style: {
         background: "#1a1b2e",
         color: "#ffffff",
-        border: "1px solid rgba(109,106,245,0.4)",
+        border: "1px solid rgba(120,117,255,0.4)",
       },
     });
 
@@ -284,7 +284,7 @@ export default function WorkoutSession() {
             letterSpacing: "-2px",
             background: isPaused
               ? "rgba(255,255,255,0.25)"
-              : "linear-gradient(135deg, #6d6af5 0%, #8b88f8 50%, #a78bfa 100%)",
+              : "linear-gradient(135deg, #6360e8 0%, #9b98ff 50%, #a78bfa 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
@@ -300,7 +300,7 @@ export default function WorkoutSession() {
           className="mt-6 flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95"
           style={{
             background: isPaused
-              ? "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)"
+              ? "linear-gradient(135deg, #6360e8, #9b98ff)"
               : "rgba(255,255,255,0.07)",
             color: isPaused ? "#ffffff" : "rgba(255,255,255,0.6)",
             border: isPaused ? "none" : "1px solid rgba(255,255,255,0.1)",
@@ -367,9 +367,9 @@ export default function WorkoutSession() {
             </label>
             {totalCount > 0 && (
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{
-                background: "rgba(109,106,245,0.15)",
-                color: "#8b88f8",
-                border: "1px solid rgba(109,106,245,0.2)",
+                background: "rgba(120,117,255,0.10)",
+                color: "#a8a6ff",
+                border: "1px solid rgba(120,117,255,0.2)",
               }}>
                 {checkedCount}/{totalCount} done
               </span>
@@ -383,10 +383,10 @@ export default function WorkoutSession() {
                 className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
                 style={{
                   background: ex.checked
-                    ? "rgba(109,106,245,0.08)"
+                    ? "rgba(120,117,255,0.08)"
                     : "rgba(255,255,255,0.04)",
                   border: ex.checked
-                    ? "1px solid rgba(109,106,245,0.25)"
+                    ? "1px solid rgba(120,117,255,0.25)"
                     : "1px solid rgba(255,255,255,0.07)",
                 }}
               >
@@ -396,7 +396,7 @@ export default function WorkoutSession() {
                   className="flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center transition-all active:scale-90"
                   style={{
                     background: ex.checked
-                      ? "linear-gradient(135deg, #6d6af5, #8b88f8)"
+                      ? "linear-gradient(135deg, #6360e8, #9b98ff)"
                       : "rgba(255,255,255,0.06)",
                     border: ex.checked ? "none" : "1.5px solid rgba(255,255,255,0.15)",
                   }}
@@ -438,9 +438,9 @@ export default function WorkoutSession() {
             onClick={addExercise}
             className="mt-2 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
             style={{
-              border: "1.5px dashed rgba(109,106,245,0.3)",
-              color: "#8b88f8",
-              background: "rgba(109,106,245,0.04)",
+              border: "1.5px dashed rgba(120,117,255,0.30)",
+              color: "#a8a6ff",
+              background: "rgba(120,117,255,0.04)",
             }}
           >
             <HiPlus className="w-4 h-4" />
@@ -461,7 +461,7 @@ export default function WorkoutSession() {
                   width: `${(checkedCount / totalCount) * 100}%`,
                   background: checkedCount === totalCount
                     ? "linear-gradient(90deg, #22c55e, #4ade80)"
-                    : "linear-gradient(90deg, #6d6af5, #8b88f8)",
+                    : "linear-gradient(90deg, #6360e8, #9b98ff)",
                 }}
               />
             </div>
@@ -485,9 +485,9 @@ export default function WorkoutSession() {
           onClick={finishWorkout}
           className="w-full flex items-center justify-center gap-2.5 py-4 rounded-2xl font-bold text-base transition-all active:scale-[0.97]"
           style={{
-            background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)",
+            background: "linear-gradient(135deg, #6360e8, #9b98ff)",
             color: "#ffffff",
-            boxShadow: "0 8px 32px rgba(109,106,245,0.4)",
+            boxShadow: "0 0 40px rgba(120,117,255,0.15), 0 8px 24px rgba(0,0,0,0.5)",
           }}
         >
           <HiFlag className="w-5 h-5" />

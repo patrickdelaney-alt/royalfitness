@@ -3,15 +3,15 @@
 :root {
   --background: #0b0c14;
   --foreground: #ffffff;
-  --primary: #6d6af5;
-  --primary-dark: #5956e8;
-  --primary-2: #8b88f8;
+  --primary: #7875ff;
+  --primary-dark: #6360e8;
+  --primary-2: #a8a6ff;
   --card: #13141f;
   --border: rgba(255,255,255,0.08);
   --muted: rgba(255,255,255,0.22);
   --sub: rgba(255,255,255,0.45);
-  --p3: rgba(109,106,245,0.15);
-  --p-glow: rgba(109,106,245,0.3);
+  --p3: rgba(120,117,255,0.10);
+  --p-glow: rgba(120,117,255,0.30);
 }
 
 @theme inline {
@@ -52,23 +52,23 @@ body {
 }
 
 .bg-p3 {
-  background: rgba(109,106,245,0.15);
+  background: rgba(120,117,255,0.10);
 }
 
 .border-primary-soft {
-  border-color: rgba(109,106,245,0.3);
+  border-color: rgba(120,117,255,0.30);
 }
 
 .btn-gradient {
-  background: linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%);
+  background: linear-gradient(135deg, #6360e8, #9b98ff);
 }
 
 .shadow-glow {
-  box-shadow: 0 8px 24px rgba(109,106,245,0.3);
+  box-shadow: 0 0 40px rgba(120,117,255,0.15), 0 8px 24px rgba(0,0,0,0.5);
 }
 
 .shadow-glow-sm {
-  box-shadow: 0 4px 16px rgba(109,106,245,0.25);
+  box-shadow: 0 0 20px rgba(120,117,255,0.12), 0 4px 16px rgba(0,0,0,0.4);
 }
 
 /* Dark glass input */
@@ -87,8 +87,8 @@ body {
   color: rgba(255,255,255,0.22);
 }
 .input-dark:focus {
-  border-color: rgba(109,106,245,0.6);
-  box-shadow: 0 0 0 2px rgba(109,106,245,0.15);
+  border-color: rgba(120,117,255,0.6);
+  box-shadow: 0 0 0 2px rgba(120,117,255,0.10);
 }
 
 /* Dark textarea */
@@ -110,8 +110,8 @@ body {
   color: rgba(255,255,255,0.22);
 }
 .textarea-dark:focus {
-  border-color: rgba(109,106,245,0.6);
-  box-shadow: 0 0 0 2px rgba(109,106,245,0.15);
+  border-color: rgba(120,117,255,0.6);
+  box-shadow: 0 0 0 2px rgba(120,117,255,0.10);
 }
 
 /* Dark select */
@@ -131,7 +131,7 @@ body {
   color: #ffffff;
 }
 .select-dark:focus {
-  border-color: rgba(109,106,245,0.6);
+  border-color: rgba(120,117,255,0.6);
 }
 
 /* Range slider overrides for energy slider */
@@ -150,9 +150,9 @@ body {
   width: 26px;
   height: 26px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #6d6af5, #8b88f8);
+  background: linear-gradient(135deg, #6360e8, #9b98ff);
   border: 2px solid rgba(255,255,255,0.4);
-  box-shadow: 0 2px 12px rgba(109,106,245,0.3);
+  box-shadow: 0 2px 12px rgba(120,117,255,0.30);
   cursor: pointer;
   transition: transform 0.1s;
 }
@@ -163,7 +163,7 @@ body {
   width: 26px;
   height: 26px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #6d6af5, #8b88f8);
+  background: linear-gradient(135deg, #6360e8, #9b98ff);
   border: 2px solid rgba(255,255,255,0.4);
   cursor: pointer;
 }
