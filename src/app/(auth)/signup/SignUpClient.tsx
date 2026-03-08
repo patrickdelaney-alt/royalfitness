@@ -259,7 +259,7 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
 
       <p className="mt-6 text-center text-sm text-sub">
         Already have an account?{" "}
-        <Link href="/signin" className="font-bold" style={{ color: "#8b88f8" }}>
+        <Link href="/signin" className="font-bold" style={{ color: "#a8a6ff" }}>
           Sign in
         </Link>
       </p>

@@ -45,7 +45,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     emoji: "🏋️",
     description: "Log your first workout",
     category: "workout",
-    gradient: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)",
+    gradient: "linear-gradient(135deg, #6360e8, #9b98ff)",
     check: (s) => s.workoutCount >= 1,
     progress: (s) => Math.min(s.workoutCount / 1, 1),
   },

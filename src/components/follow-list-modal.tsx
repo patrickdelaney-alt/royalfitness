@@ -168,7 +168,7 @@ export default function FollowListModal({
             <div className="flex justify-center items-center py-12">
               <div
                 className="w-6 h-6 border-2 rounded-full animate-spin"
-                style={{ borderColor: "#8b88f8", borderTopColor: "transparent" }}
+                style={{ borderColor: "#a8a6ff", borderTopColor: "transparent" }}
               />
             </div>
           ) : error ? (
@@ -223,7 +223,7 @@ export default function FollowListModal({
                 <div className="flex justify-center py-4">
                   <div
                     className="w-5 h-5 border-2 rounded-full animate-spin"
-                    style={{ borderColor: "#8b88f8", borderTopColor: "transparent" }}
+                    style={{ borderColor: "#a8a6ff", borderTopColor: "transparent" }}
                   />
                 </div>
               )}

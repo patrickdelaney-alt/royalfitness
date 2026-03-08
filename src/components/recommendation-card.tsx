@@ -13,9 +13,9 @@ interface Recommendation {
 const TYPE_CONFIG = {
   workout: {
     emoji: "💪",
-    color: "#8b88f8",
-    bg: "rgba(109,106,245,0.12)",
-    border: "rgba(139,136,248,0.2)",
+    color: "#a8a6ff",
+    bg: "rgba(120,117,255,0.10)",
+    border: "rgba(168,166,255,0.2)",
     createType: "WORKOUT",
   },
   meal: {

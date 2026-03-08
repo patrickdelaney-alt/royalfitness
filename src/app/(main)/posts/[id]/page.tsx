@@ -47,7 +47,7 @@ export default function PostDetailPage() {
       <div className="flex justify-center items-center py-20">
         <div
           className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
-          style={{ borderColor: "#8b88f8", borderTopColor: "transparent" }}
+          style={{ borderColor: "#a8a6ff", borderTopColor: "transparent" }}
         />
       </div>
     );
@@ -62,7 +62,7 @@ export default function PostDetailPage() {
         <button
           onClick={() => router.back()}
           className="mt-4 text-sm underline"
-          style={{ color: "#8b88f8" }}
+          style={{ color: "#a8a6ff" }}
         >
           Go back
         </button>

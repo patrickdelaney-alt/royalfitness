@@ -124,9 +124,9 @@ export default function FeedContent() {
               style={
                 isActive
                   ? {
-                      background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)",
+                      background: "linear-gradient(135deg, #6360e8, #9b98ff)",
                       color: "#ffffff",
-                      boxShadow: "0 8px 24px rgba(109,106,245,0.3)",
+                      boxShadow: "0 0 40px rgba(120,117,255,0.15), 0 8px 24px rgba(0,0,0,0.5)",
                       border: "none",
                     }
                   : {
@@ -162,7 +162,7 @@ export default function FeedContent() {
           <button
             onClick={() => fetchPosts(true)}
             className="mt-3 text-xs underline"
-            style={{ color: "#8b88f8" }}
+            style={{ color: "#a8a6ff" }}
           >
             Try again
           </button>
@@ -183,7 +183,7 @@ export default function FeedContent() {
             <div className="flex justify-center py-4">
               <div
                 className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
-                style={{ borderColor: "rgba(109,106,245,0.5)", borderTopColor: "transparent" }}
+                style={{ borderColor: "rgba(120,117,255,0.5)", borderTopColor: "transparent" }}
               />
             </div>
           )}

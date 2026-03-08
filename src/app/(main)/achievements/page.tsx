@@ -46,7 +46,7 @@ function ProgressRing({ progress, size = 48 }: { progress: number; size?: number
         cy={size / 2}
         r={r}
         fill="none"
-        stroke="rgba(139,136,248,0.6)"
+        stroke="rgba(168,166,255,0.6)"
         strokeWidth={3}
         strokeDasharray={`${dash} ${circ}`}
         strokeLinecap="round"
@@ -138,7 +138,7 @@ function AchievementCard({ achievement }: { achievement: AchievementResult }) {
             className="h-full rounded-full"
             style={{
               width: `${achievement.progress * 100}%`,
-              background: "linear-gradient(to right, #6d6af5, #8b88f8)",
+              background: "linear-gradient(to right, #6360e8, #9b98ff)",
             }}
           />
         </div>
@@ -208,7 +208,7 @@ export default function AchievementsPage() {
           <span
             className="text-xs font-semibold px-3 py-1 rounded-full"
             style={{
-              background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)",
+              background: "linear-gradient(135deg, #6360e8, #9b98ff)",
               color: "#fff",
             }}
           >
@@ -228,7 +228,7 @@ export default function AchievementsPage() {
               className="h-full rounded-full transition-all duration-500"
               style={{
                 width: `${(earnedCount / total) * 100}%`,
-                background: "linear-gradient(to right, #6d6af5, #8b88f8)",
+                background: "linear-gradient(to right, #6360e8, #9b98ff)",
               }}
             />
           </div>
@@ -253,7 +253,7 @@ export default function AchievementsPage() {
             activeCategory === "all"
               ? {
                   background:
-                    "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)",
+                    "linear-gradient(135deg, #6360e8, #9b98ff)",
                   color: "#fff",
                 }
               : {
@@ -280,7 +280,7 @@ export default function AchievementsPage() {
                 activeCategory === cat
                   ? {
                       background:
-                        "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)",
+                        "linear-gradient(135deg, #6360e8, #9b98ff)",
                       color: "#fff",
                     }
                   : {

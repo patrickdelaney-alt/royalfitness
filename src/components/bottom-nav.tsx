@@ -70,7 +70,7 @@ export function BottomNav() {
             key={tab.href}
             href={href}
             className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-semibold transition-colors"
-            style={{ color: isActive ? "#8b88f8" : "rgba(255,255,255,0.22)" }}
+            style={{ color: isActive ? "#a8a6ff" : "rgba(255,255,255,0.22)" }}
           >
             <div className="relative">
               <tab.icon className="h-5 w-5" />

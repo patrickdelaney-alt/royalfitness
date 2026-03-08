@@ -47,7 +47,7 @@ export default function GlobalError({
         <button
           onClick={reset}
           style={{
-            background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)",
+            background: "linear-gradient(135deg, #6360e8, #9b98ff)",
             color: "#ffffff",
             border: "none",
             borderRadius: "12px",
@@ -55,7 +55,7 @@ export default function GlobalError({
             fontSize: "14px",
             fontWeight: 600,
             cursor: "pointer",
-            boxShadow: "0 8px 24px rgba(109,106,245,0.3)",
+            boxShadow: "0 0 40px rgba(120,117,255,0.15), 0 8px 24px rgba(0,0,0,0.5)",
           }}
         >
           Try again

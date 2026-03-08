@@ -52,7 +52,7 @@ function initials(name?: string | null): string {
 }
 
 const TYPE_BADGE: Record<string, { bg: string; color: string; label: string }> = {
-  WORKOUT: { bg: "rgba(109,106,245,0.15)", color: "#8b88f8", label: "Workout" },
+  WORKOUT: { bg: "rgba(120,117,255,0.10)", color: "#a8a6ff", label: "Workout" },
   MEAL: { bg: "rgba(52,211,153,0.15)", color: "#34d399", label: "Meal" },
   WELLNESS: { bg: "rgba(167,139,250,0.15)", color: "#a78bfa", label: "Wellness" },
   GENERAL: { bg: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)", label: "General" },
@@ -162,7 +162,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
-        <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "#8b88f8", borderTopColor: "transparent" }} />
+        <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "#a8a6ff", borderTopColor: "transparent" }} />
       </div>
     );
   }
@@ -221,12 +221,12 @@ export default function ProfilePage() {
       {(profile.instagramUrl || profile.tiktokUrl) && (
         <div className="flex gap-3 mb-4">
           {profile.instagramUrl && (
-            <a href={profile.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "#8b88f8" }}>
+            <a href={profile.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "#a8a6ff" }}>
               Instagram
             </a>
           )}
           {profile.tiktokUrl && (
-            <a href={profile.tiktokUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "#8b88f8" }}>
+            <a href={profile.tiktokUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "#a8a6ff" }}>
               TikTok
             </a>
           )}
@@ -264,9 +264,9 @@ export default function ProfilePage() {
             href="/achievements"
             className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
             style={{
-              background: "linear-gradient(135deg, rgba(109,106,245,0.15) 0%, rgba(139,136,248,0.15) 100%)",
-              border: "1px solid rgba(139,136,248,0.25)",
-              color: "#8b88f8",
+              background: "linear-gradient(135deg, rgba(120,117,255,0.10) 0%, rgba(168,166,255,0.10) 100%)",
+              border: "1px solid rgba(168,166,255,0.25)",
+              color: "#a8a6ff",
             }}
           >
             🏅 My Badges
@@ -282,7 +282,7 @@ export default function ProfilePage() {
               ? { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)" }
               : hasRequested
               ? { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)" }
-              : { background: "linear-gradient(135deg, #6d6af5 0%, #8b88f8 100%)", boxShadow: "0 8px 24px rgba(109,106,245,0.3)", color: "#ffffff" }
+              : { background: "linear-gradient(135deg, #6360e8, #9b98ff)", boxShadow: "0 0 40px rgba(120,117,255,0.15), 0 8px 24px rgba(0,0,0,0.5)", color: "#ffffff" }
           }
         >
           {isFollowing ? "Following" : hasRequested ? "Requested" : "Follow"}

@@ -127,7 +127,7 @@ export interface Post {
 // ── badge colours (dark theme) ────────────────────────────────────────────────
 
 const TYPE_BADGE: Record<Post["type"], { bg: string; text: string; label: string; emoji: string }> = {
-  WORKOUT: { bg: "rgba(109,106,245,0.15)", text: "#8b88f8", label: "Workout", emoji: "💪" },
+  WORKOUT: { bg: "rgba(120,117,255,0.10)", text: "#a8a6ff", label: "Workout", emoji: "💪" },
   MEAL:    { bg: "rgba(34,197,94,0.12)",   text: "#4ade80", label: "Meal",    emoji: "🥗" },
   WELLNESS:{ bg: "rgba(168,85,247,0.12)",  text: "#c084fc", label: "Wellness",emoji: "🧘" },
   GENERAL: { bg: "rgba(255,255,255,0.08)", text: "rgba(255,255,255,0.45)", label: "General", emoji: "⭐" },
@@ -162,7 +162,7 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
         {detail.isClass && (
           <span
             className="text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(109,106,245,0.15)", color: "#8b88f8" }}
+            style={{ background: "rgba(120,117,255,0.10)", color: "#a8a6ff" }}
           >
             Class
           </span>
@@ -203,7 +203,7 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
             <button
               onClick={() => setShowAllExercises(true)}
               className="w-full flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg transition-colors"
-              style={{ color: "#8b88f8", background: "rgba(109,106,245,0.08)", border: "1px solid rgba(109,106,245,0.15)" }}
+              style={{ color: "#a8a6ff", background: "rgba(120,117,255,0.08)", border: "1px solid rgba(120,117,255,0.20)" }}
             >
               <HiChevronDown className="w-3.5 h-3.5" />
               Show all {detail.exercises.length} exercises
@@ -233,7 +233,7 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
                 className="h-full rounded-full"
                 style={{
                   width: `${detail.perceivedExertion * 10}%`,
-                  background: "linear-gradient(90deg, #6d6af5, #8b88f8)",
+                  background: "linear-gradient(90deg, #6360e8, #9b98ff)",
                 }}
               />
             </div>
