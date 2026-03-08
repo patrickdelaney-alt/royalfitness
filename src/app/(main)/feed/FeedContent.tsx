@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { HiSearch } from "react-icons/hi";
 import PostCard, { Post } from "@/components/post-card";
 import RecommendationCard from "@/components/recommendation-card";
 
@@ -106,6 +108,11 @@ export default function FeedContent() {
           </h1>
           <span className="text-xs font-medium text-muted-dim">Beta</span>
         </div>
+        {/* Search shortcut — always visible at top-right so Explore is reachable
+            even if the bottom nav is reshuffled in future changes. */}
+        <Link href="/explore" aria-label="Search people and gyms" className="p-1.5 -mr-1">
+          <HiSearch className="w-5 h-5" style={{ color: "rgba(255,255,255,0.45)" }} />
+        </Link>
       </div>
 
       {/* Filter chips */}

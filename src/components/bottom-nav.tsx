@@ -8,6 +8,8 @@ import { HiBell } from "react-icons/hi2";
 
 const tabs = [
   { href: "/feed", label: "Feed", icon: HiHome },
+  // KEEP: Explore must stay here. Primary nav path to /explore.
+  // A secondary shortcut also exists in the feed header (FeedContent.tsx).
   { href: "/explore", label: "Explore", icon: HiSearch },
   { href: "/create", label: "Create", icon: HiPlusCircle },
   { href: "/stats", label: "Stats", icon: HiChartBar },
