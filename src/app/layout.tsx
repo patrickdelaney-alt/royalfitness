@@ -38,6 +38,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      {/* Synchronously apply saved theme before first paint to prevent flash */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(function(){try{var t=localStorage.getItem('rf-theme');document.documentElement.dataset.theme=t||'dark';}catch(e){}})()`,
+        }}
+      />
       <body className={`${GeistSans.variable} antialiased bg-background`}>
         <Providers>
           {children}

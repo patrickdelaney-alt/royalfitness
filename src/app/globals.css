@@ -168,6 +168,48 @@ body {
   cursor: pointer;
 }
 
+/* ── Light theme overrides ───────────────────────────────────────────────── */
+
+[data-theme="light"] {
+  --background: #f0f0f5;
+  --foreground: #0b0c14;
+  --card: #ffffff;
+  --border: rgba(0,0,0,0.08);
+  --muted: rgba(0,0,0,0.30);
+  --sub: rgba(0,0,0,0.50);
+  --p3: rgba(109,106,245,0.10);
+  --p-glow: rgba(109,106,245,0.2);
+}
+
+[data-theme="light"] body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* ── Floating nav animations ─────────────────────────────────────────────── */
+
+@keyframes spin-ring {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes toggle-bounce {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); }
+  70%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+@keyframes icon-out {
+  from { opacity: 1; transform: rotate(0deg)   scale(1); }
+  to   { opacity: 0; transform: rotate(180deg) scale(0.4); }
+}
+
+@keyframes icon-in {
+  from { opacity: 0; transform: rotate(-180deg) scale(0.4); }
+  to   { opacity: 1; transform: rotate(0deg)    scale(1); }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
