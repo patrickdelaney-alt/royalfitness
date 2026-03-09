@@ -124,6 +124,7 @@ export const supplementSchema = z.object({
   notes: z.string().max(2000).optional(),
   photoUrl: z.string().optional(),
   link: z.string().optional(),
+  referralCode: z.string().max(100).optional(),
   tags: z.array(z.string()).default([]),
 });
 
@@ -132,6 +133,7 @@ export const wellnessAccessorySchema = z.object({
   type: z.string().max(100).optional(),
   link: z.string().optional(),
   photoUrl: z.string().optional(),
+  referralCode: z.string().max(100).optional(),
   tags: z.array(z.string()).default([]),
   notes: z.string().max(2000).optional(),
 });
@@ -142,6 +144,7 @@ export const catalogWellnessSchema = z.object({
   durationMinutes: z.number().int().positive().optional(),
   link: z.string().optional(),
   photoUrl: z.string().optional(),
+  referralCode: z.string().max(100).optional(),
   tags: z.array(z.string()).default([]),
   notes: z.string().max(2000).optional(),
 });

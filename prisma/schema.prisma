@@ -351,11 +351,12 @@ model Supplement {
   dose      String?
   schedule  String?
   notes     String?
-  photoUrl  String?
-  link      String?
-  tags      String[] @default([])
-  isPrivate Boolean  @default(false)
-  createdAt DateTime @default(now())
+  photoUrl     String?
+  link         String?
+  referralCode String?
+  tags         String[] @default([])
+  isPrivate    Boolean  @default(false)
+  createdAt    DateTime @default(now())
 }
 
 model WellnessAccessory {
@@ -365,12 +366,13 @@ model WellnessAccessory {
 
   name      String
   type      String?
-  link      String?
-  photoUrl  String?
-  tags      String[] @default([])
-  notes     String?
-  isPrivate Boolean  @default(false)
-  createdAt DateTime @default(now())
+  link         String?
+  photoUrl     String?
+  referralCode String?
+  tags         String[] @default([])
+  notes        String?
+  isPrivate    Boolean  @default(false)
+  createdAt    DateTime @default(now())
 }
 
 model SavedWellness {
@@ -383,6 +385,7 @@ model SavedWellness {
   durationMinutes Int?
   link            String?
   photoUrl        String?
+  referralCode    String?
   tags            String[] @default([])
   notes           String?
   isPrivate       Boolean  @default(false)

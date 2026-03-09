@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
         durationMinutes: data.durationMinutes,
         link: data.link,
         photoUrl: data.photoUrl,
+        referralCode: data.referralCode,
         tags: data.tags,
         notes: data.notes,
       },

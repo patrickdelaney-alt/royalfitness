@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
         notes: data.notes,
         photoUrl: data.photoUrl,
         link: data.link,
+        referralCode: data.referralCode,
         tags: data.tags,
       },
     });
