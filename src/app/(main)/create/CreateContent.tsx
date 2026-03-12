@@ -80,18 +80,23 @@ const MUSCLES: MuscleGroup[] = [
   {
     id: "legs",
     label: "Legs",
-    icon: (active) => (
-      <span
-        style={{
-          fontSize: "22px",
-          lineHeight: 1,
-          filter: active ? "drop-shadow(0 0 6px rgba(168,166,255,0.9))" : "grayscale(0.2)",
-          opacity: active ? 1 : 0.55,
-        }}
-      >
-        🦵
-      </span>
-    ),
+    icon: (active) => {
+      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
+      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
+      return (
+        <svg viewBox="0 0 32 32" className="w-7 h-7">
+          {/* upper leg / quad */}
+          <path d="M10 4 Q9 4 8 6 L7 18 Q7 22 10 24 L13 26 Q15 27 16 26 L17 24 Q18 22 17 18 L16 6 Q15 4 14 4 Z" fill={f}/>
+          {/* lower leg / calf */}
+          <path d="M10 24 L13 26 L14 30 Q13 31 12 30 L9 28 Q8 26 10 24 Z" fill={f}/>
+          <path d="M16 26 L17 24 Q19 26 18 28 L16 30 Q15 31 14 30 L14 30 Z" fill={f}/>
+          {/* quad highlight */}
+          <ellipse cx="12" cy="12" rx="2" ry="4" fill="rgba(255,255,255,0.18)" transform="rotate(-8,12,12)"/>
+          {/* knee definition */}
+          <path d="M9 20 Q13 23 17 20" stroke={s} strokeWidth="0.9" fill="none"/>
+        </svg>
+      );
+    },
   },
   {
     id: "shoulders",
@@ -122,18 +127,22 @@ const MUSCLES: MuscleGroup[] = [
   {
     id: "arms",
     label: "Arms",
-    icon: (active) => (
-      <span
-        style={{
-          fontSize: "22px",
-          lineHeight: 1,
-          filter: active ? "drop-shadow(0 0 6px rgba(168,166,255,0.9))" : "grayscale(0.2)",
-          opacity: active ? 1 : 0.55,
-        }}
-      >
-        💪
-      </span>
-    ),
+    icon: (active) => {
+      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
+      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
+      return (
+        <svg viewBox="0 0 32 32" className="w-7 h-7">
+          {/* upper arm */}
+          <path d="M8 6 Q6 8 6 12 Q6 17 10 19 L14 20 Q16 20 17 18 Q18 15 16 12 Q14 9 12 8 Z" fill={f}/>
+          {/* forearm */}
+          <path d="M10 19 L14 20 L16 26 Q15 28 13 28 L10 27 Q8 25 9 22 Z" fill={f}/>
+          {/* bicep peak */}
+          <ellipse cx="11" cy="12" rx="2.5" ry="4" fill="rgba(255,255,255,0.2)" transform="rotate(-15,11,12)"/>
+          {/* elbow curve */}
+          <path d="M8 18 Q12 22 16 18" stroke={s} strokeWidth="0.9" fill="none"/>
+        </svg>
+      );
+    },
   },
   {
     id: "core",
@@ -160,34 +169,41 @@ const MUSCLES: MuscleGroup[] = [
   {
     id: "glutes",
     label: "Glutes",
-    icon: (active) => (
-      <span
-        style={{
-          fontSize: "22px",
-          lineHeight: 1,
-          filter: active ? "drop-shadow(0 0 6px rgba(168,166,255,0.9))" : "grayscale(0.2)",
-          opacity: active ? 1 : 0.55,
-        }}
-      >
-        🍑
-      </span>
-    ),
+    icon: (active) => {
+      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
+      const s = active ? "rgba(120,117,255,0.5)" : "rgba(0,0,0,0.2)";
+      return (
+        <svg viewBox="0 0 32 32" className="w-7 h-7">
+          {/* left glute */}
+          <path d="M3 14 Q3 8 9 7 Q15 6 16 12 L16 24 Q12 28 8 26 Q3 23 3 18 Z" fill={f}/>
+          {/* right glute */}
+          <path d="M29 14 Q29 8 23 7 Q17 6 16 12 L16 24 Q20 28 24 26 Q29 23 29 18 Z" fill={f}/>
+          {/* glute divide */}
+          <line x1="16" y1="12" x2="16" y2="25" stroke={s} strokeWidth="1.2"/>
+          {/* highlights */}
+          <ellipse cx="9" cy="14" rx="3" ry="3.5" fill="rgba(255,255,255,0.14)"/>
+          <ellipse cx="23" cy="14" rx="3" ry="3.5" fill="rgba(255,255,255,0.14)"/>
+        </svg>
+      );
+    },
   },
   {
     id: "cardio",
     label: "Cardio",
-    icon: (active) => (
-      <span
-        style={{
-          fontSize: "22px",
-          lineHeight: 1,
-          filter: active ? "drop-shadow(0 0 6px rgba(239,68,68,0.8))" : "grayscale(0.2)",
-          opacity: active ? 1 : 0.55,
-        }}
-      >
-        ❤️‍🔥
-      </span>
-    ),
+    icon: (active) => {
+      const f = active ? "#f87171" : "rgba(255,255,255,0.28)";
+      const accent = active ? "#fbbf24" : "rgba(255,255,255,0.15)";
+      return (
+        <svg viewBox="0 0 32 32" className="w-7 h-7">
+          {/* heart shape */}
+          <path d="M16 27 Q6 19 6 12 Q6 6 11 5 Q14 5 16 8 Q18 5 21 5 Q26 6 26 12 Q26 19 16 27 Z" fill={f}/>
+          {/* flame inside heart */}
+          <path d="M16 22 Q13 18 14 15 Q15 13 16 14 Q17 13 18 15 Q19 18 16 22 Z" fill={accent}/>
+          {/* highlight */}
+          <ellipse cx="12" cy="10" rx="2" ry="1.5" fill="rgba(255,255,255,0.25)" transform="rotate(-20,12,10)"/>
+        </svg>
+      );
+    },
   },
 ];
 
@@ -205,9 +221,9 @@ const MUSCLE_NAMES: Record<string, string> = {
 // ── Energy Slider ────────────────────────────────────────────
 const ENERGY_STEPS = [
   { value: 1, emoji: "💀" },
-  { value: 3, emoji: "😮‍💨" },
+  { value: 3, emoji: "😮" },
   { value: 5, emoji: "😐" },
-  { value: 7, emoji: "💪" },
+  { value: 7, emoji: "😤" },
   { value: 9, emoji: "🔥" },
   { value: 10, emoji: "🔥" },
 ];
