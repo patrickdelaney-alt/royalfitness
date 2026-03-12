@@ -222,7 +222,7 @@ const WORKOUT_BADGES: Record<string, { names: string[]; emoji: string; gradient:
     ],
   },
   cardio: {
-    emoji: "❤️‍🔥",
+    emoji: "🏃",
     gradient: "linear-gradient(135deg, #dc2626, #db2777)",
     names: [
       "Cardio Crusher",
