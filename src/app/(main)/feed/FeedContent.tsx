@@ -104,7 +104,7 @@ export default function FeedContent() {
         <div className="flex items-center gap-2">
           <span className="text-xl">👑</span>
           <h1 className="text-xl font-bold text-foreground tracking-tight">
-            RoyalWellness
+            Royal
           </h1>
           <span className="text-xs font-medium text-muted-dim">Beta</span>
         </div>

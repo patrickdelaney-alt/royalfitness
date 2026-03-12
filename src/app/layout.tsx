@@ -16,7 +16,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "RoyalWellness Beta - Gym, Nutrition & Wellness",
+  title: "Royal Beta - Gym, Nutrition & Wellness",
   description: "Track your workouts. Track your nutrition. Track your wellness.",
   // --- PWA / Add to Home Screen ---
   appleWebApp: {
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     // "default" keeps the status bar visible with a light background;
     // use "black-translucent" for an immersive full-bleed look
     statusBarStyle: "default",
-    title: "RoyalWellness Beta",
+    title: "Royal Beta",
   },
   // Prevents iOS from auto-linking phone numbers as tappable links
   formatDetection: { telephone: false },

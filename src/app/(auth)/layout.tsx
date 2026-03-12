@@ -16,7 +16,7 @@ export default function AuthLayout({
           </div>
           <div className="text-left">
             <h1 className="text-2xl font-extrabold tracking-tight text-foreground leading-none">
-              RoyalWellness
+              Royal
             </h1>
             <span className="text-xs font-medium text-muted-dim tracking-widest uppercase">
               Beta

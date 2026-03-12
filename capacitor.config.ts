@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.royalwellness.app',
-  appName: 'RoyalWellness',
+  appName: 'Royal',
   // webDir is required by Capacitor CLI but unused when server.url is set.
   // The native app loads your live Vercel deployment instead.
   webDir: 'public',

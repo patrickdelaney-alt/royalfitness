@@ -16,7 +16,7 @@ function FeedSkeleton() {
     <div className="max-w-lg mx-auto px-4 pt-4">
       <div className="flex items-center gap-2 mb-4">
         <span className="text-xl">👑</span>
-        <h1 className="text-xl font-bold text-foreground tracking-tight">RoyalWellness</h1>
+        <h1 className="text-xl font-bold text-foreground tracking-tight">Royal</h1>
         <span className="text-xs font-medium text-muted-dim">Beta</span>
       </div>
       <div className="flex gap-2 pb-3 mb-2">
