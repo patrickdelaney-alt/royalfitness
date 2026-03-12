@@ -25,6 +25,7 @@ interface PostSummary {
   id: string;
   type: string;
   caption: string | null;
+  mediaUrl: string | null;
   visibility: string;
   createdAt: string;
   _count: { likes: number; comments: number };
@@ -74,6 +75,7 @@ export default function ProfilePage() {
   const [followRequests, setFollowRequests] = useState<FollowRequest[]>([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
   const [followModal, setFollowModal] = useState<"followers" | "following" | null>(null);
+  const [activeSection, setActiveSection] = useState<"activity" | "catalog">("activity");
 
   useEffect(() => {
     async function load() {
@@ -349,59 +351,69 @@ export default function ProfilePage() {
         onClose={() => setFollowModal(null)}
       />
 
-      {/* Posts */}
-      <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
-        Recent Posts
-      </h2>
+      {/* Section toggle */}
+      <div className="flex gap-1.5 mb-4 p-1 rounded-xl" style={{ background: "rgba(255,255,255,0.04)" }}>
+        {(["activity", "catalog"] as const).map((section) => (
+          <button
+            key={section}
+            onClick={() => setActiveSection(section)}
+            className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
+            style={
+              activeSection === section
+                ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
+                : { background: "transparent", color: "rgba(255,255,255,0.45)" }
+            }
+          >
+            {section === "activity" ? "Activity" : "Catalog"}
+          </button>
+        ))}
+      </div>
 
-      {posts.length === 0 ? (
-        <p className="text-center text-sm py-8" style={{ color: muted }}>No posts yet</p>
-      ) : (
-        <div className="space-y-2">
-          {posts.map((post) => {
-            const badge = TYPE_BADGE[post.type] ?? TYPE_BADGE.GENERAL;
-            return (
-              <Link
-                key={post.id}
-                href={`/posts/${post.id}`}
-                className="block p-3 rounded-xl transition-opacity active:opacity-70"
-                style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
-              >
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <span
-                    className="text-xs px-2 py-0.5 rounded-full font-medium"
-                    style={{ background: badge.bg, color: badge.color }}
-                  >
-                    {badge.label}
-                  </span>
-                  <span className="text-xs" style={{ color: muted }}>
-                    {new Date(post.createdAt).toLocaleDateString()}
-                  </span>
-                  <span
-                    className="text-xs px-1.5 py-0.5 rounded-full ml-auto"
-                    style={{
-                      background: post.visibility === "PUBLIC" ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.06)",
-                      color: post.visibility === "PUBLIC" ? "#34d399" : "rgba(255,255,255,0.3)",
-                    }}
-                  >
-                    {post.visibility === "PUBLIC" ? "🌍 Public" : post.visibility === "FOLLOWERS" ? "👥 Followers" : "🔒 Private"}
-                  </span>
-                </div>
-                {post.caption && (
-                  <p className="text-sm line-clamp-2" style={{ color: "rgba(255,255,255,0.8)" }}>{post.caption}</p>
-                )}
-                <div className="flex gap-3 mt-1.5 text-xs" style={{ color: muted }}>
-                  <span>{post._count.likes} likes</span>
-                  <span>{post._count.comments} comments</span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+      {/* Activity tab — Instagram-style post grid */}
+      {activeSection === "activity" && (
+        posts.length === 0 ? (
+          <p className="text-center text-sm py-12" style={{ color: muted }}>No posts yet</p>
+        ) : (
+          <div className="grid grid-cols-3 gap-0.5">
+            {posts.map((post) => {
+              const gradient =
+                post.type === "WORKOUT" ? "from-blue-600 to-indigo-700" :
+                post.type === "MEAL"    ? "from-orange-600 to-red-700" :
+                post.type === "WELLNESS"? "from-teal-600 to-cyan-700" :
+                                          "from-gray-700 to-gray-900";
+              const emoji =
+                post.type === "WORKOUT" ? "💪" :
+                post.type === "MEAL"    ? "🥗" :
+                post.type === "WELLNESS"? "🧘" : "⭐";
+              return (
+                <Link
+                  key={post.id}
+                  href={`/posts/${post.id}`}
+                  className="relative aspect-square overflow-hidden rounded-sm group block"
+                >
+                  {post.mediaUrl ? (
+                    <img
+                      src={post.mediaUrl}
+                      alt={post.caption ?? ""}
+                      className="w-full h-full object-cover transition-opacity group-active:opacity-75"
+                    />
+                  ) : (
+                    <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center text-2xl`}>
+                      {emoji}
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/0 group-active:bg-black/20 transition-colors" />
+                </Link>
+              );
+            })}
+          </div>
+        )
       )}
 
-      {/* User Catalog Section */}
-      <UserCatalogSection username={profile.username} isOwnProfile={isOwnProfile} />
+      {/* Catalog tab */}
+      {activeSection === "catalog" && (
+        <UserCatalogSection username={profile.username} isOwnProfile={isOwnProfile} />
+      )}
     </div>
   );
 }
