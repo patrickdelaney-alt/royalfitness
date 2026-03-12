@@ -43,7 +43,7 @@ platform :ios do
       configuration:         "Release",
       export_method:         "app-store",
       output_directory:      "build",
-      output_name:           "RoyalWellness.ipa",
+      output_name:           "Royal.ipa",
       clean:                 true,
       export_options: {
         provisioningProfiles: {
@@ -60,7 +60,7 @@ platform :ios do
     build
     upload_to_testflight(
       api_key:           api_key,
-      ipa:               "build/RoyalWellness.ipa",
+      ipa:               "build/Royal.ipa",
       skip_waiting_for_build_processing: true
     )
   end
