@@ -369,40 +369,62 @@ export default function ProfilePage() {
         ))}
       </div>
 
-      {/* Activity tab — Instagram-style post grid */}
+      {/* Activity tab — horizontal list cards with thumbnail */}
       {activeSection === "activity" && (
         posts.length === 0 ? (
           <p className="text-center text-sm py-12" style={{ color: muted }}>No posts yet</p>
         ) : (
-          <div className="grid grid-cols-3 gap-0.5">
+          <div className="space-y-2.5">
             {posts.map((post) => {
-              const gradient =
-                post.type === "WORKOUT" ? "from-blue-600 to-indigo-700" :
-                post.type === "MEAL"    ? "from-orange-600 to-red-700" :
-                post.type === "WELLNESS"? "from-teal-600 to-cyan-700" :
-                                          "from-gray-700 to-gray-900";
-              const emoji =
-                post.type === "WORKOUT" ? "💪" :
-                post.type === "MEAL"    ? "🥗" :
-                post.type === "WELLNESS"? "🧘" : "⭐";
+              const typeConfig: Record<string, { emoji: string; label: string; color: string; gradFrom: string; gradTo: string }> = {
+                WORKOUT:  { emoji: "💪", label: "Workout",  color: "#f97316", gradFrom: "#1e3a5f", gradTo: "#1a2744" },
+                MEAL:     { emoji: "🥗", label: "Meal",     color: "#22c55e", gradFrom: "#14532d", gradTo: "#122a1e" },
+                WELLNESS: { emoji: "🧘", label: "Wellness", color: "#a78bfa", gradFrom: "#2e1b5e", gradTo: "#1a1540" },
+                GENERAL:  { emoji: "⭐", label: "General",  color: "rgba(255,255,255,0.5)", gradFrom: "#1e1e30", gradTo: "#13141f" },
+              };
+              const cfg = typeConfig[post.type] ?? typeConfig.GENERAL;
+              const firstLine = post.caption?.split("\n")[0]?.trim() || `${cfg.label} post`;
+
               return (
                 <Link
                   key={post.id}
                   href={`/posts/${post.id}`}
-                  className="relative aspect-square overflow-hidden rounded-sm group block"
+                  className="flex items-center gap-3 rounded-2xl active:opacity-70 transition-opacity"
+                  style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.07)", padding: "10px 14px 10px 10px" }}
                 >
-                  {post.mediaUrl ? (
-                    <img
-                      src={post.mediaUrl}
-                      alt={post.caption ?? ""}
-                      className="w-full h-full object-cover transition-opacity group-active:opacity-75"
-                    />
-                  ) : (
-                    <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center text-2xl`}>
-                      {emoji}
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-black/0 group-active:bg-black/20 transition-colors" />
+                  {/* Square thumbnail */}
+                  <div className="flex-shrink-0 rounded-xl overflow-hidden" style={{ width: 64, height: 64 }}>
+                    {post.mediaUrl ? (
+                      <img src={post.mediaUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div
+                        className="w-full h-full flex items-center justify-center"
+                        style={{ background: `linear-gradient(135deg, ${cfg.gradFrom}, ${cfg.gradTo})`, fontSize: 26 }}
+                      >
+                        {cfg.emoji}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Text */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold mb-0.5" style={{ color: cfg.color }}>
+                      {cfg.emoji} {cfg.label}
+                    </p>
+                    <p className="text-sm font-semibold leading-snug line-clamp-1 mb-1" style={{ color: "#ffffff" }}>
+                      {firstLine}
+                    </p>
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                      {new Date(post.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                      {" · "}{post._count.likes} {post._count.likes === 1 ? "like" : "likes"}
+                      {" · "}{post._count.comments} {post._count.comments === 1 ? "comment" : "comments"}
+                    </p>
+                  </div>
+
+                  {/* Chevron */}
+                  <svg width="7" height="12" viewBox="0 0 7 12" fill="none" className="flex-shrink-0" style={{ opacity: 0.28 }}>
+                    <path d="M1 1l5 5-5 5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </Link>
               );
             })}
