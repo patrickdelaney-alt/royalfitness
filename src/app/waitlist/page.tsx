@@ -15,7 +15,7 @@ export default function WaitlistPage() {
           </div>
           <div className="text-left">
             <h1 className="text-2xl font-extrabold tracking-tight leading-none">
-              RoyalWellness
+              Royal
             </h1>
             <span
               className="text-xs font-medium tracking-widest uppercase"
