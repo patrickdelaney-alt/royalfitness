@@ -369,40 +369,72 @@ export default function ProfilePage() {
         ))}
       </div>
 
-      {/* Activity tab — Instagram-style post grid */}
+      {/* Activity tab — full-width post cards */}
       {activeSection === "activity" && (
         posts.length === 0 ? (
           <p className="text-center text-sm py-12" style={{ color: muted }}>No posts yet</p>
         ) : (
-          <div className="grid grid-cols-3 gap-0.5">
+          <div className="space-y-3">
             {posts.map((post) => {
-              const gradient =
-                post.type === "WORKOUT" ? "from-blue-600 to-indigo-700" :
-                post.type === "MEAL"    ? "from-orange-600 to-red-700" :
-                post.type === "WELLNESS"? "from-teal-600 to-cyan-700" :
-                                          "from-gray-700 to-gray-900";
-              const emoji =
-                post.type === "WORKOUT" ? "💪" :
-                post.type === "MEAL"    ? "🥗" :
-                post.type === "WELLNESS"? "🧘" : "⭐";
+              const badge = TYPE_BADGE[post.type] ?? TYPE_BADGE.GENERAL;
+              const accentColor =
+                post.type === "WORKOUT" ? "#6360e8" :
+                post.type === "MEAL"    ? "#f97316" :
+                post.type === "WELLNESS"? "#14b8a6" :
+                                          "rgba(255,255,255,0.15)";
               return (
                 <Link
                   key={post.id}
                   href={`/posts/${post.id}`}
-                  className="relative aspect-square overflow-hidden rounded-sm group block"
+                  className="block rounded-2xl overflow-hidden active:opacity-75 transition-opacity"
+                  style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.07)" }}
                 >
+                  {/* Media banner */}
                   {post.mediaUrl ? (
                     <img
                       src={post.mediaUrl}
                       alt={post.caption ?? ""}
-                      className="w-full h-full object-cover transition-opacity group-active:opacity-75"
+                      className="w-full object-cover"
+                      style={{ maxHeight: 200 }}
                     />
                   ) : (
-                    <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center text-2xl`}>
-                      {emoji}
+                    <div
+                      className="w-full flex items-center justify-center"
+                      style={{
+                        height: 72,
+                        background: `linear-gradient(135deg, ${accentColor}22, ${accentColor}08)`,
+                        borderBottom: `1px solid ${accentColor}18`,
+                      }}
+                    >
+                      <span style={{ fontSize: 28 }}>
+                        {post.type === "WORKOUT" ? "💪" : post.type === "MEAL" ? "🥗" : post.type === "WELLNESS" ? "🧘" : "⭐"}
+                      </span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black/0 group-active:bg-black/20 transition-colors" />
+
+                  {/* Card body */}
+                  <div className="px-4 py-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                        style={{ background: badge.bg, color: badge.color }}
+                      >
+                        {badge.label}
+                      </span>
+                      <span className="text-xs ml-auto" style={{ color: "rgba(255,255,255,0.3)" }}>
+                        {new Date(post.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                      </span>
+                    </div>
+                    {post.caption && (
+                      <p className="text-sm line-clamp-2 mb-2" style={{ color: "rgba(255,255,255,0.75)" }}>
+                        {post.caption}
+                      </p>
+                    )}
+                    <div className="flex gap-4 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      <span>♥ {post._count.likes}</span>
+                      <span>💬 {post._count.comments}</span>
+                    </div>
+                  </div>
                 </Link>
               );
             })}
