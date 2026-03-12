@@ -369,72 +369,62 @@ export default function ProfilePage() {
         ))}
       </div>
 
-      {/* Activity tab — full-width post cards */}
+      {/* Activity tab — horizontal list cards with thumbnail */}
       {activeSection === "activity" && (
         posts.length === 0 ? (
           <p className="text-center text-sm py-12" style={{ color: muted }}>No posts yet</p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {posts.map((post) => {
-              const badge = TYPE_BADGE[post.type] ?? TYPE_BADGE.GENERAL;
-              const accentColor =
-                post.type === "WORKOUT" ? "#6360e8" :
-                post.type === "MEAL"    ? "#f97316" :
-                post.type === "WELLNESS"? "#14b8a6" :
-                                          "rgba(255,255,255,0.15)";
+              const typeConfig: Record<string, { emoji: string; label: string; color: string; gradFrom: string; gradTo: string }> = {
+                WORKOUT:  { emoji: "💪", label: "Workout",  color: "#f97316", gradFrom: "#1e3a5f", gradTo: "#1a2744" },
+                MEAL:     { emoji: "🥗", label: "Meal",     color: "#22c55e", gradFrom: "#14532d", gradTo: "#122a1e" },
+                WELLNESS: { emoji: "🧘", label: "Wellness", color: "#a78bfa", gradFrom: "#2e1b5e", gradTo: "#1a1540" },
+                GENERAL:  { emoji: "⭐", label: "General",  color: "rgba(255,255,255,0.5)", gradFrom: "#1e1e30", gradTo: "#13141f" },
+              };
+              const cfg = typeConfig[post.type] ?? typeConfig.GENERAL;
+              const firstLine = post.caption?.split("\n")[0]?.trim() || `${cfg.label} post`;
+
               return (
                 <Link
                   key={post.id}
                   href={`/posts/${post.id}`}
-                  className="block rounded-2xl overflow-hidden active:opacity-75 transition-opacity"
-                  style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.07)" }}
+                  className="flex items-center gap-3 rounded-2xl active:opacity-70 transition-opacity"
+                  style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.07)", padding: "10px 14px 10px 10px" }}
                 >
-                  {/* Media banner */}
-                  {post.mediaUrl ? (
-                    <img
-                      src={post.mediaUrl}
-                      alt={post.caption ?? ""}
-                      className="w-full object-cover"
-                      style={{ maxHeight: 200 }}
-                    />
-                  ) : (
-                    <div
-                      className="w-full flex items-center justify-center"
-                      style={{
-                        height: 72,
-                        background: `linear-gradient(135deg, ${accentColor}22, ${accentColor}08)`,
-                        borderBottom: `1px solid ${accentColor}18`,
-                      }}
-                    >
-                      <span style={{ fontSize: 28 }}>
-                        {post.type === "WORKOUT" ? "💪" : post.type === "MEAL" ? "🥗" : post.type === "WELLNESS" ? "🧘" : "⭐"}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Card body */}
-                  <div className="px-4 py-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span
-                        className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                        style={{ background: badge.bg, color: badge.color }}
+                  {/* Square thumbnail */}
+                  <div className="flex-shrink-0 rounded-xl overflow-hidden" style={{ width: 64, height: 64 }}>
+                    {post.mediaUrl ? (
+                      <img src={post.mediaUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div
+                        className="w-full h-full flex items-center justify-center"
+                        style={{ background: `linear-gradient(135deg, ${cfg.gradFrom}, ${cfg.gradTo})`, fontSize: 26 }}
                       >
-                        {badge.label}
-                      </span>
-                      <span className="text-xs ml-auto" style={{ color: "rgba(255,255,255,0.3)" }}>
-                        {new Date(post.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                      </span>
-                    </div>
-                    {post.caption && (
-                      <p className="text-sm line-clamp-2 mb-2" style={{ color: "rgba(255,255,255,0.75)" }}>
-                        {post.caption}
-                      </p>
+                        {cfg.emoji}
+                      </div>
                     )}
-                    <div className="flex gap-4 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-                      <span>♥ {post._count.likes}</span>
-                      <span>💬 {post._count.comments}</span>
-                    </div>
                   </div>
+
+                  {/* Text */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold mb-0.5" style={{ color: cfg.color }}>
+                      {cfg.emoji} {cfg.label}
+                    </p>
+                    <p className="text-sm font-semibold leading-snug line-clamp-1 mb-1" style={{ color: "#ffffff" }}>
+                      {firstLine}
+                    </p>
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                      {new Date(post.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                      {" · "}{post._count.likes} {post._count.likes === 1 ? "like" : "likes"}
+                      {" · "}{post._count.comments} {post._count.comments === 1 ? "comment" : "comments"}
+                    </p>
+                  </div>
+
+                  {/* Chevron */}
+                  <svg width="7" height="12" viewBox="0 0 7 12" fill="none" className="flex-shrink-0" style={{ opacity: 0.28 }}>
+                    <path d="M1 1l5 5-5 5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </Link>
               );
             })}
