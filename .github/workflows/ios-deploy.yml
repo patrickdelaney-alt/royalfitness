@@ -4,7 +4,9 @@ name: iOS Build & Deploy
 on:
   workflow_dispatch:
   push:
-    branches: [master]
+    branches:
+      - master
+      - "claude/app-store-launch-D7A6U"
     paths:
       # Only rebuild when iOS-relevant code changes
       - "src/**"

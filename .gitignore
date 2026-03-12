@@ -43,3 +43,11 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# Capacitor / iOS
+ios/App/Pods/
+ios/App/build/
+ios/.DS_Store
+*.xcuserstate
+*.xcbkptlist
+xcuserdata/
