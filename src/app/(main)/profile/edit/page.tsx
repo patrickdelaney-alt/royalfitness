@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { HiArrowLeft, HiCamera } from "react-icons/hi";
+import { compressImage } from "@/lib/compress-image";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -58,8 +59,9 @@ export default function EditProfilePage() {
     setError("");
 
     try {
+      const fileToUpload = await compressImage(file, 800, 0.85);
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", fileToUpload);
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       if (!res.ok) {
         const d = await res.json();

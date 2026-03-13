@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiPlay, HiLightningBolt } from "react-icons/hi";
 import toast from "react-hot-toast";
+import { compressImage } from "@/lib/compress-image";
 
 type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL";
 
@@ -538,8 +539,9 @@ export default function CreatePostContent() {
     setUploading(true);
     setError("");
     try {
+      const fileToUpload = await compressImage(file);
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", fileToUpload);
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       if (!res.ok) {
         const data = await res.json();
