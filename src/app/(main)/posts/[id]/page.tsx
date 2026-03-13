@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import PostCard, { Post } from "@/components/post-card";
 
@@ -10,6 +10,20 @@ export default function PostDetailPage() {
   const id = params.id as string;
 
   const [post, setPost] = useState<Post | null>(null);
+
+  const handleEdit = useCallback((id: string, fields: { caption: string | null; visibility: string; workoutName?: string; mealName?: string; activityType?: string }) => {
+    setPost((p) => {
+      if (!p || p.id !== id) return p;
+      return {
+        ...p,
+        caption: fields.caption,
+        visibility: fields.visibility,
+        workoutDetail: fields.workoutName && p.workoutDetail ? { ...p.workoutDetail, workoutName: fields.workoutName } : p.workoutDetail,
+        mealDetail: fields.mealName && p.mealDetail ? { ...p.mealDetail, mealName: fields.mealName } : p.mealDetail,
+        wellnessDetail: fields.activityType && p.wellnessDetail ? { ...p.wellnessDetail, activityType: fields.activityType } : p.wellnessDetail,
+      };
+    });
+  }, []);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
@@ -83,6 +97,7 @@ export default function PostDetailPage() {
         post={post}
         currentUserId={currentUserId}
         onDelete={() => router.back()}
+        onEdit={handleEdit}
       />
     </div>
   );

@@ -7,6 +7,7 @@ import { HiLogout, HiPencil, HiCheck, HiX } from "react-icons/hi";
 import Link from "next/link";
 import FollowListModal from "@/components/follow-list-modal";
 import UserCatalogSection from "@/components/user-catalog-section";
+import { lightImpact } from "@/lib/haptics";
 
 interface UserProfile {
   id: string;
@@ -125,6 +126,7 @@ export default function ProfilePage() {
           setIsFollowing(false);
           setProfile((p) => p ? { ...p, followerCount: p.followerCount - 1 } : p);
         } else {
+          lightImpact();
           if (profile.isPrivate) {
             setHasRequested(true);
           } else {

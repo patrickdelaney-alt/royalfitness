@@ -98,6 +98,75 @@ export async function GET(
   }
 }
 
+// PATCH /api/posts/[id] — Edit a post (author only)
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const session = await safeAuth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
+
+    const body = await req.json();
+    const { caption, visibility, workoutName, mealName, activityType } = body;
+
+    if (
+      visibility !== undefined &&
+      !["PUBLIC", "FOLLOWERS", "PRIVATE"].includes(visibility)
+    ) {
+      return NextResponse.json({ error: "Invalid visibility" }, { status: 400 });
+    }
+
+    const post = await prisma.post.findUnique({
+      where: { id },
+      select: { authorId: true, type: true },
+    });
+
+    if (!post) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+    if (post.authorId !== userId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    await prisma.post.update({
+      where: { id },
+      data: {
+        ...(caption !== undefined ? { caption: caption || null } : {}),
+        ...(visibility !== undefined ? { visibility } : {}),
+      },
+    });
+
+    if (workoutName !== undefined && post.type === "WORKOUT") {
+      await prisma.workoutDetail.update({
+        where: { postId: id },
+        data: { workoutName },
+      });
+    }
+    if (mealName !== undefined && post.type === "MEAL") {
+      await prisma.mealDetail.update({
+        where: { postId: id },
+        data: { mealName },
+      });
+    }
+    if (activityType !== undefined && post.type === "WELLNESS") {
+      await prisma.wellnessDetail.update({
+        where: { postId: id },
+        data: { activityType },
+      });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("PATCH /api/posts/[id] error:", error);
+    return NextResponse.json({ error: "Failed to update post" }, { status: 500 });
+  }
+}
+
 // DELETE /api/posts/[id] — Delete a post (author only)
 export async function DELETE(
   req: NextRequest,

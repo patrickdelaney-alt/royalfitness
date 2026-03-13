@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare } from "react-icons/hi";
+import { lightImpact } from "@/lib/haptics";
 import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -368,10 +369,12 @@ export default function PostCard({
   post,
   currentUserId,
   onDelete,
+  onEdit,
 }: {
   post: Post;
   currentUserId?: string;
   onDelete?: (id: string) => void;
+  onEdit?: (id: string, fields: { caption: string | null; visibility: string; workoutName?: string; mealName?: string; activityType?: string }) => void;
 }) {
   const [liked, setLiked] = useState(post.likedByMe);
   const [likeCount, setLikeCount] = useState(post._count.likes);
@@ -386,6 +389,15 @@ export default function PostCard({
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  const [showOwnerMenu, setShowOwnerMenu] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editCaption, setEditCaption] = useState(post.caption ?? "");
+  const [editVisibility, setEditVisibility] = useState(post.visibility);
+  const [editDetailName, setEditDetailName] = useState(
+    post.workoutDetail?.workoutName ?? post.mealDetail?.mealName ?? post.wellnessDetail?.activityType ?? ""
+  );
 
   const [showModerationMenu, setShowModerationMenu] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -403,6 +415,7 @@ export default function PostCard({
 
     // Optimistic update
     const wasLiked = liked;
+    if (!wasLiked) lightImpact();
     setLiked(!wasLiked);
     setLikeCount((c) => c + (wasLiked ? -1 : 1));
 
@@ -492,6 +505,42 @@ export default function PostCard({
       setShowDeleteConfirm(false);
     }
   }, [deleting, post.id, onDelete]);
+
+  // ── edit post ──
+
+  const handleEdit = useCallback(async () => {
+    if (editSaving) return;
+    setEditSaving(true);
+    try {
+      const body: Record<string, string | null> = {
+        caption: editCaption.trim() || null,
+        visibility: editVisibility,
+      };
+      if (post.type === "WORKOUT") body.workoutName = editDetailName.trim();
+      if (post.type === "MEAL") body.mealName = editDetailName.trim();
+      if (post.type === "WELLNESS") body.activityType = editDetailName.trim();
+
+      const res = await fetch(`/api/posts/${post.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        setShowEditModal(false);
+        onEdit?.(post.id, {
+          caption: editCaption.trim() || null,
+          visibility: editVisibility,
+          workoutName: post.type === "WORKOUT" ? editDetailName.trim() : undefined,
+          mealName: post.type === "MEAL" ? editDetailName.trim() : undefined,
+          activityType: post.type === "WELLNESS" ? editDetailName.trim() : undefined,
+        });
+      }
+    } catch {
+      // silent
+    } finally {
+      setEditSaving(false);
+    }
+  }, [editSaving, editCaption, editVisibility, editDetailName, post.id, post.type, onEdit]);
 
   // ── report post ──
 
@@ -586,7 +635,7 @@ export default function PostCard({
           </div>
         </div>
 
-        {/* delete menu for post owner */}
+        {/* owner menu */}
         {isOwner && (
           <div className="relative">
             {showDeleteConfirm ? (
@@ -607,12 +656,37 @@ export default function PostCard({
               </div>
             ) : (
               <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="p-1.5 rounded-full text-muted-dim hover:text-red-400 transition-colors"
-                aria-label="Delete post"
+                onClick={() => setShowOwnerMenu((v) => !v)}
+                className="p-1.5 rounded-full transition-colors"
+                style={{ color: "rgba(255,255,255,0.25)" }}
+                aria-label="Post options"
               >
                 <HiDotsVertical className="w-4 h-4" />
               </button>
+            )}
+            {showOwnerMenu && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowOwnerMenu(false)} />
+                <div
+                  className="absolute right-0 top-8 z-20 w-36 rounded-xl overflow-hidden shadow-xl"
+                  style={{ background: "#1a1b2e", border: "1px solid rgba(255,255,255,0.10)" }}
+                >
+                  <button
+                    onClick={() => { setShowEditModal(true); setShowOwnerMenu(false); }}
+                    className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-white/5"
+                    style={{ color: "rgba(255,255,255,0.8)" }}
+                  >
+                    Edit post
+                  </button>
+                  <button
+                    onClick={() => { setShowDeleteConfirm(true); setShowOwnerMenu(false); }}
+                    className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-white/5"
+                    style={{ color: "#f87171" }}
+                  >
+                    Delete post
+                  </button>
+                </div>
+              </>
             )}
           </div>
         )}
@@ -729,6 +803,94 @@ export default function PostCard({
                 style={{ background: "#dc2626" }}
               >
                 {moderationLoading ? "Blocking…" : "Block"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── edit modal ── */}
+      {showEditModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+          style={{ background: "rgba(0,0,0,0.7)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false); }}
+        >
+          <div
+            className="w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-5 pb-8 space-y-4"
+            style={{ background: "#1a1b2e", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            <h3 className="text-base font-bold text-white">Edit post</h3>
+
+            {/* Type-specific name field */}
+            {post.type !== "GENERAL" && (
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+                  {post.type === "WORKOUT" ? "Workout name" : post.type === "MEAL" ? "Meal name" : "Activity"}
+                </label>
+                <input
+                  type="text"
+                  value={editDetailName}
+                  onChange={(e) => setEditDetailName(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" }}
+                />
+              </div>
+            )}
+
+            {/* Caption */}
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+                Caption
+              </label>
+              <textarea
+                value={editCaption}
+                onChange={(e) => setEditCaption(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" }}
+              />
+            </div>
+
+            {/* Visibility */}
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+                Visibility
+              </label>
+              <div className="flex gap-2">
+                {(["PUBLIC", "FOLLOWERS", "PRIVATE"] as const).map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setEditVisibility(v)}
+                    className="flex-1 py-2 rounded-lg text-xs font-semibold transition-colors"
+                    style={
+                      editVisibility === v
+                        ? { background: "linear-gradient(135deg,#6360e8,#9b98ff)", color: "#fff" }
+                        : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }
+                    }
+                  >
+                    {v === "PUBLIC" ? "Public" : v === "FOLLOWERS" ? "Followers" : "Private"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium"
+                style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEdit}
+                disabled={editSaving}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50"
+                style={{ background: "linear-gradient(135deg,#6360e8,#9b98ff)" }}
+              >
+                {editSaving ? "Saving…" : "Save"}
               </button>
             </div>
           </div>

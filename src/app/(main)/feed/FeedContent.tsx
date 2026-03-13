@@ -43,6 +43,20 @@ export default function FeedContent() {
     setPosts((prev) => prev.filter((p) => p.id !== id));
   }, []);
 
+  const handleEditPost = useCallback((id: string, fields: { caption: string | null; visibility: string; workoutName?: string; mealName?: string; activityType?: string }) => {
+    setPosts((prev) => prev.map((p) => {
+      if (p.id !== id) return p;
+      return {
+        ...p,
+        caption: fields.caption,
+        visibility: fields.visibility,
+        workoutDetail: fields.workoutName && p.workoutDetail ? { ...p.workoutDetail, workoutName: fields.workoutName } : p.workoutDetail,
+        mealDetail: fields.mealName && p.mealDetail ? { ...p.mealDetail, mealName: fields.mealName } : p.mealDetail,
+        wellnessDetail: fields.activityType && p.wellnessDetail ? { ...p.wellnessDetail, activityType: fields.activityType } : p.wellnessDetail,
+      };
+    }));
+  }, []);
+
   const fetchPosts = useCallback(
     async (reset = false) => {
       if (reset) {
@@ -214,7 +228,7 @@ export default function FeedContent() {
       ) : (
         <div className="space-y-4 pb-4">
           {posts.map((post) => (
-            <PostCard key={post.id} post={post} currentUserId={currentUserId} onDelete={handleDeletePost} />
+            <PostCard key={post.id} post={post} currentUserId={currentUserId} onDelete={handleDeletePost} onEdit={handleEditPost} />
           ))}
           {loadingMore && (
             <div className="flex justify-center py-4">

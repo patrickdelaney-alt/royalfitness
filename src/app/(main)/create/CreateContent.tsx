@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiPlay, HiLightningBolt } from "react-icons/hi";
 import toast from "react-hot-toast";
 import { compressImage } from "@/lib/compress-image";
+import { successNotification } from "@/lib/haptics";
 
 type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL";
 
@@ -679,6 +680,7 @@ export default function CreatePostContent() {
       }
 
       const created = await res.json();
+      successNotification();
       setSuccessPost({ id: created.id, type: created.type as PostType });
     } catch {
       setError("Something went wrong");

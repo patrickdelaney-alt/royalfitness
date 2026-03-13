@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { HiSearch } from "react-icons/hi";
 import Link from "next/link";
+import { lightImpact } from "@/lib/haptics";
 
 interface UserResult {
   id: string;
@@ -119,6 +120,7 @@ export default function ExplorePage() {
         body: JSON.stringify({ targetUserId: suggestion.id }),
       });
       if (res.ok) {
+        lightImpact();
         setFollowedIds((prev) => new Set([...prev, suggestion.id]));
       }
     } catch {
