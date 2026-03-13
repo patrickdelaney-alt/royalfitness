@@ -385,6 +385,7 @@ export default function CreatePostContent() {
   const [showBackdate, setShowBackdate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [successPost, setSuccessPost] = useState<{ id: string; type: PostType } | null>(null);
 
   // Media upload
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
@@ -677,7 +678,8 @@ export default function CreatePostContent() {
         return;
       }
 
-      router.push("/feed");
+      const created = await res.json();
+      setSuccessPost({ id: created.id, type: created.type as PostType });
     } catch {
       setError("Something went wrong");
     } finally {
@@ -700,6 +702,78 @@ export default function CreatePostContent() {
     WELLNESS: "Wellness",
     GENERAL: "General",
   };
+
+  const TYPE_EMOJI: Record<PostType, string> = {
+    WORKOUT: "💪",
+    MEAL: "🥗",
+    WELLNESS: "🧘",
+    GENERAL: "📝",
+  };
+
+  // ── Success overlay ────────────────────────────────────────
+  if (successPost) {
+    const shareUrl = `https://royalwellness.app/p/${successPost.id}`;
+    const copyLink = () => {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        toast.success("Link copied!");
+      });
+    };
+    return (
+      <div
+        className="fixed inset-0 z-50 flex flex-col items-center justify-center p-6"
+        style={{ background: "var(--background)" }}
+      >
+        <style>{`
+          @keyframes rf-pop { 0%{transform:scale(0.5);opacity:0} 65%{transform:scale(1.12)} 100%{transform:scale(1);opacity:1} }
+          @keyframes rf-fade-up { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
+          .rf-pop { animation: rf-pop 0.45s cubic-bezier(.34,1.56,.64,1) forwards; }
+          .rf-fade-up-1 { animation: rf-fade-up 0.4s ease 0.35s forwards; opacity:0; }
+          .rf-fade-up-2 { animation: rf-fade-up 0.4s ease 0.5s forwards; opacity:0; }
+          .rf-fade-up-3 { animation: rf-fade-up 0.4s ease 0.65s forwards; opacity:0; }
+        `}</style>
+
+        {/* Animated badge */}
+        <div className="rf-pop mb-6">
+          <div
+            className="w-28 h-28 rounded-full flex items-center justify-center text-6xl shadow-2xl"
+            style={{ background: "linear-gradient(135deg, #7875ff 0%, #a78bfa 100%)" }}
+          >
+            {TYPE_EMOJI[successPost.type]}
+          </div>
+        </div>
+
+        <h1
+          className="rf-fade-up-1 text-3xl font-bold mb-1"
+          style={{ color: "#ffffff" }}
+        >
+          Posted! 🎉
+        </h1>
+        <p
+          className="rf-fade-up-2 text-base mb-10"
+          style={{ color: "rgba(255,255,255,0.5)" }}
+        >
+          Your {TYPE_LABELS[successPost.type].toLowerCase()} is live
+        </p>
+
+        <div className="rf-fade-up-3 flex flex-col gap-3 w-full max-w-xs">
+          <button
+            onClick={copyLink}
+            className="w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2"
+            style={{ background: "linear-gradient(135deg, #7875ff 0%, #a78bfa 100%)", color: "#fff" }}
+          >
+            🔗 Share Post
+          </button>
+          <button
+            onClick={() => router.push("/feed")}
+            className="w-full py-3 rounded-2xl text-sm font-semibold"
+            style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
+          >
+            View Feed
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>

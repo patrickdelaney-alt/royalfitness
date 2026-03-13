@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp } from "react-icons/hi";
+import toast from "react-hot-toast";
+import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare } from "react-icons/hi";
 import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -788,6 +789,17 @@ export default function PostCard({
         >
           <HiChat className="w-5 h-5" />
           <span>{commentCount}</span>
+        </button>
+
+        <button
+          onClick={() => {
+            const url = `https://royalwellness.app/p/${post.id}`;
+            navigator.clipboard.writeText(url).then(() => toast.success("Link copied!"));
+          }}
+          className="ml-auto flex items-center gap-1.5 text-sm text-muted-dim hover:text-foreground transition-colors"
+          title="Copy share link"
+        >
+          <HiShare className="w-4 h-4" />
         </button>
       </div>
 
