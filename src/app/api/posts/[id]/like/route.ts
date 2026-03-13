@@ -61,17 +61,22 @@ export async function POST(
       data: { userId, postId },
     });
 
-    // Notify the post author (skip if liking own post)
+    // Notify the post author (skip if liking own post, skip if already notified)
     if (post.authorId !== userId) {
       try {
-        await prisma.notification.create({
-          data: {
-            type: "LIKE",
-            recipientId: post.authorId,
-            actorId: userId,
-            postId,
-          },
+        const existingNotification = await prisma.notification.findFirst({
+          where: { type: "LIKE", actorId: userId, postId },
         });
+        if (!existingNotification) {
+          await prisma.notification.create({
+            data: {
+              type: "LIKE",
+              recipientId: post.authorId,
+              actorId: userId,
+              postId,
+            },
+          });
+        }
       } catch (err) {
         console.error("Failed to create like notification:", err);
       }
