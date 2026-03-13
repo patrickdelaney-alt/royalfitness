@@ -45,6 +45,10 @@ model User {
   notificationsReceived Notification[] @relation("notificationsReceived")
   notificationsActed    Notification[] @relation("notificationsActed")
 
+  notifyOnLike    Boolean @default(true)
+  notifyOnComment Boolean @default(true)
+  notifyOnFollow  Boolean @default(true)
+
   reportsMade    Report[]      @relation("reporter")
   blockedUsers   BlockedUser[] @relation("blocker")
   blockedBy      BlockedUser[] @relation("blocked")

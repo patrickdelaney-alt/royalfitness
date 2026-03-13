@@ -76,38 +76,41 @@ export async function GET(req: NextRequest) {
       where.visibility = "PUBLIC";
     }
 
-    const posts = await prisma.post.findMany({
-      where,
-      take: limit + 1, // Fetch one extra to determine if there's a next page
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-      orderBy: { createdAt: "desc" },
-      include: {
-        author: {
-          select: { id: true, name: true, username: true, avatarUrl: true },
-        },
-        workoutDetail: {
-          include: {
-            exercises: {
-              include: { sets: true },
-              orderBy: { sortOrder: "asc" },
-            },
+    const includeFields = {
+      author: {
+        select: { id: true, name: true, username: true, avatarUrl: true },
+      },
+      workoutDetail: {
+        include: {
+          exercises: {
+            include: { sets: true },
+            orderBy: { sortOrder: "asc" as const },
           },
         },
-        mealDetail: true,
-        wellnessDetail: true,
-        gym: { select: { id: true, name: true } },
-        _count: { select: { likes: true, comments: true } },
-        ...(userId
-          ? { likes: { where: { userId }, select: { id: true } } }
-          : {}),
       },
+      mealDetail: true,
+      wellnessDetail: true,
+      gym: { select: { id: true, name: true } },
+      _count: { select: { likes: true, comments: true } },
+      ...(userId
+        ? { likes: { where: { userId }, select: { id: true } } }
+        : {}),
+    };
+
+    const rawPosts = await prisma.post.findMany({
+      where,
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      orderBy: { createdAt: "desc" },
+      include: includeFields,
     });
 
     let nextCursor: string | undefined;
-    if (posts.length > limit) {
-      const nextItem = posts.pop();
+    if (rawPosts.length > limit) {
+      const nextItem = rawPosts.pop();
       nextCursor = nextItem?.id;
     }
+    const posts = rawPosts;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const formattedPosts = posts.map((post: any) => ({

@@ -10,6 +10,9 @@ const updateProfileSchema = z.object({
   isPrivate: z.boolean().optional(),
   instagramUrl: z.string().url().optional().or(z.literal("")),
   tiktokUrl: z.string().url().optional().or(z.literal("")),
+  notifyOnLike: z.boolean().optional(),
+  notifyOnComment: z.boolean().optional(),
+  notifyOnFollow: z.boolean().optional(),
 });
 
 export async function PATCH(req: NextRequest) {
@@ -39,6 +42,9 @@ export async function PATCH(req: NextRequest) {
         ...(data.isPrivate !== undefined && { isPrivate: data.isPrivate }),
         ...(data.instagramUrl !== undefined && { instagramUrl: data.instagramUrl || null }),
         ...(data.tiktokUrl !== undefined && { tiktokUrl: data.tiktokUrl || null }),
+        ...(data.notifyOnLike !== undefined && { notifyOnLike: data.notifyOnLike }),
+        ...(data.notifyOnComment !== undefined && { notifyOnComment: data.notifyOnComment }),
+        ...(data.notifyOnFollow !== undefined && { notifyOnFollow: data.notifyOnFollow }),
       },
       select: {
         id: true,
@@ -49,6 +55,9 @@ export async function PATCH(req: NextRequest) {
         isPrivate: true,
         instagramUrl: true,
         tiktokUrl: true,
+        notifyOnLike: true,
+        notifyOnComment: true,
+        notifyOnFollow: true,
       },
     });
 

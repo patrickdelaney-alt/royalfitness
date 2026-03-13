@@ -17,6 +17,9 @@ export default function EditProfilePage() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [instagramUrl, setInstagramUrl] = useState("");
   const [tiktokUrl, setTiktokUrl] = useState("");
+  const [notifyOnLike, setNotifyOnLike] = useState(true);
+  const [notifyOnComment, setNotifyOnComment] = useState(true);
+  const [notifyOnFollow, setNotifyOnFollow] = useState(true);
 
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -38,6 +41,9 @@ export default function EditProfilePage() {
         setIsPrivate(u.isPrivate ?? false);
         setInstagramUrl(u.instagramUrl ?? "");
         setTiktokUrl(u.tiktokUrl ?? "");
+        setNotifyOnLike(u.notifyOnLike ?? true);
+        setNotifyOnComment(u.notifyOnComment ?? true);
+        setNotifyOnFollow(u.notifyOnFollow ?? true);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -87,6 +93,9 @@ export default function EditProfilePage() {
           isPrivate,
           instagramUrl: instagramUrl.trim(),
           tiktokUrl: tiktokUrl.trim(),
+          notifyOnLike,
+          notifyOnComment,
+          notifyOnFollow,
         }),
       });
 
@@ -239,6 +248,38 @@ export default function EditProfilePage() {
             type="url"
             className={inputClass}
           />
+        </div>
+
+        {/* Notification Preferences */}
+        <div className="space-y-2 pt-2">
+          <p className="text-sm font-semibold text-foreground">Notification Preferences</p>
+          <p className="text-xs mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+            Choose what activity sends you a notification.
+          </p>
+          {[
+            { label: "Likes on my posts", key: "like" as const, value: notifyOnLike, setter: setNotifyOnLike },
+            { label: "Comments on my posts", key: "comment" as const, value: notifyOnComment, setter: setNotifyOnComment },
+            { label: "New followers", key: "follow" as const, value: notifyOnFollow, setter: setNotifyOnFollow },
+          ].map(({ label, value, setter }) => (
+            <div
+              key={label}
+              className="flex items-center justify-between p-3 rounded-lg border border-border bg-background"
+            >
+              <p className="text-sm text-foreground">{label}</p>
+              <button
+                type="button"
+                onClick={() => setter((v) => !v)}
+                className={`relative w-11 h-6 rounded-full transition-colors ${value ? "bg-primary" : "bg-gray-200"}`}
+                aria-pressed={value}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                    value ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+          ))}
         </div>
 
         <button

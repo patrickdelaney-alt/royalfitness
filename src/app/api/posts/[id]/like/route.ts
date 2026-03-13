@@ -15,10 +15,15 @@ export async function POST(
     }
     const userId = session.user.id;
 
-    // Verify the post exists
+    // Verify the post exists (include author's notification preference)
     const post = await prisma.post.findUnique({
       where: { id: postId },
-      select: { id: true, authorId: true, visibility: true },
+      select: {
+        id: true,
+        authorId: true,
+        visibility: true,
+        author: { select: { notifyOnLike: true } },
+      },
     });
 
     if (!post) {
@@ -61,8 +66,8 @@ export async function POST(
       data: { userId, postId },
     });
 
-    // Notify the post author (skip if liking own post, skip if already notified)
-    if (post.authorId !== userId) {
+    // Notify the post author (skip if liking own post, skip if preference off, skip if already notified)
+    if (post.authorId !== userId && post.author.notifyOnLike) {
       try {
         const existingNotification = await prisma.notification.findFirst({
           where: { type: "LIKE", actorId: userId, postId },
