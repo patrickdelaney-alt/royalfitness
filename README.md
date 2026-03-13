@@ -29,8 +29,48 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Web App (Next.js)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This application is deployed on Vercel with the following configuration:
+
+- **Vercel Project**: `royalfitness`
+- **Production Domain**: `royalwellness.app`
+- **Vercel URL**: `royalwellness.vercel.app`
+- **Deployment Method**: Automatic GitHub integration (on push to main)
+
+**Setup Instructions:**
+1. Connect this repository to Vercel via GitHub integration at [vercel.com](https://vercel.com)
+2. Ensure the project is named `royalfitness`
+3. Configure these environment variables in Vercel project settings:
+   - `DATABASE_URL` - PostgreSQL connection string (from Neon)
+   - `AUTH_SECRET` - Session encryption key
+   - `ADMIN_EMAIL` - Admin dashboard access
+   - `BLOB_READ_WRITE_TOKEN` - Vercel Blob storage token
+   - `APPLE_CLIENT_ID` & `APPLE_CLIENT_SECRET` - Apple Sign In (optional)
+   - `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` - Google Sign In (optional)
+
+See `.env.example` for detailed instructions on obtaining each secret.
+
+**Note:** Do NOT confuse this project with any other Vercel projects (e.g., old test projects). Only the `royalfitness` project is actively maintained and deployed.
+
+### Mobile App (iOS)
+
+The iOS app is built using Capacitor and deployed via GitHub Actions to Apple TestFlight:
+
+- **App ID**: `com.royalwellness.app`
+- **Deployment**: GitHub Actions workflow (`.github/workflows/ios-deploy.yml`)
+- **Web Component**: Loads from `royalwellness.vercel.app`
+
+For more details on iOS deployment, see the fastlane configuration in `fastlane/` directory.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Vercel Deployment Documentation](https://nextjs.org/docs/app/building-your-application/deploying)
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
