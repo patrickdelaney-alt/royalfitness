@@ -539,7 +539,7 @@ export default function PostCard({
 
   return (
     <article
-      className="rounded-xl overflow-hidden border"
+      className="rounded-xl border"
       style={{ background: "#13141f", borderColor: "rgba(255,255,255,0.08)" }}
     >
       {/* ── header ── */}
