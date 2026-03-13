@@ -6,6 +6,7 @@ import Link from "next/link";
 import { HiSearch } from "react-icons/hi";
 import PostCard, { Post } from "@/components/post-card";
 import RecommendationCard from "@/components/recommendation-card";
+import OnboardingModal, { shouldShowOnboarding } from "@/components/onboarding-modal";
 
 const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS"] as const;
 
@@ -21,6 +22,7 @@ export default function FeedContent() {
   const [hasMore, setHasMore] = useState(true);
   const [filter, setFilter] = useState<string>(searchParams.get("filter") || "ALL");
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,6 +31,13 @@ export default function FeedContent() {
       .then((s) => setCurrentUserId(s?.user?.id ?? undefined))
       .catch(() => {});
   }, []);
+
+  // Show onboarding modal for new users arriving via ?welcome=1
+  useEffect(() => {
+    if (searchParams.get("welcome") === "1" && shouldShowOnboarding()) {
+      setShowOnboarding(true);
+    }
+  }, [searchParams]);
 
   const handleDeletePost = useCallback((id: string) => {
     setPosts((prev) => prev.filter((p) => p.id !== id));
@@ -98,6 +107,10 @@ export default function FeedContent() {
   }, [hasMore, loadingMore, fetchPosts]);
 
   return (
+    <>
+    {showOnboarding && (
+      <OnboardingModal onClose={() => setShowOnboarding(false)} />
+    )}
     <div className="max-w-lg mx-auto px-4 pt-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
@@ -175,11 +188,28 @@ export default function FeedContent() {
           </button>
         </div>
       ) : posts.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-sub text-sm">No public posts yet.</p>
-          <p className="text-muted-dim text-xs mt-1">
-            Create a post set to <span style={{ color: "#34d399" }}>Public</span> to see it here.
+        <div className="text-center py-16 px-4">
+          <p className="text-3xl mb-3">👑</p>
+          <p className="font-semibold text-white text-base mb-1">Your feed is quiet</p>
+          <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.45)" }}>
+            Log a workout, meal, or wellness activity to get started.
           </p>
+          <div className="flex gap-3 justify-center flex-wrap">
+            <Link
+              href="/create"
+              className="px-5 py-2.5 rounded-full text-sm font-bold text-white"
+              style={{ background: "linear-gradient(135deg, #6360e8, #9b98ff)", boxShadow: "0 4px 20px rgba(120,117,255,0.3)" }}
+            >
+              Log Activity →
+            </Link>
+            <Link
+              href="/explore"
+              className="px-5 py-2.5 rounded-full text-sm font-semibold"
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}
+            >
+              Find People →
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="space-y-4 pb-4">
@@ -198,5 +228,6 @@ export default function FeedContent() {
         </div>
       )}
     </div>
+    </>
   );
 }

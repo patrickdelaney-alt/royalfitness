@@ -386,6 +386,11 @@ export default function PostCard({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const [showModerationMenu, setShowModerationMenu] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
+  const [moderationLoading, setModerationLoading] = useState(false);
+
   const badge = TYPE_BADGE[post.type];
   const isOwner = !!currentUserId && currentUserId === post.author.id;
 
@@ -487,6 +492,49 @@ export default function PostCard({
     }
   }, [deleting, post.id, onDelete]);
 
+  // ── report post ──
+
+  const handleReport = useCallback(async (reason: string) => {
+    if (moderationLoading) return;
+    setModerationLoading(true);
+    try {
+      await fetch(`/api/posts/${post.id}/report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
+    } catch {
+      // silent
+    } finally {
+      setModerationLoading(false);
+      setShowReportModal(false);
+      setShowModerationMenu(false);
+    }
+  }, [moderationLoading, post.id]);
+
+  // ── block user ──
+
+  const handleBlock = useCallback(async () => {
+    if (moderationLoading) return;
+    setModerationLoading(true);
+    try {
+      const res = await fetch("/api/social/block", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUserId: post.author.id }),
+      });
+      if (res.ok) {
+        onDelete?.(post.id);
+      }
+    } catch {
+      // silent
+    } finally {
+      setModerationLoading(false);
+      setShowBlockConfirm(false);
+      setShowModerationMenu(false);
+    }
+  }, [moderationLoading, post.author.id, post.id, onDelete]);
+
   // ── render ──
 
   return (
@@ -567,7 +615,124 @@ export default function PostCard({
             )}
           </div>
         )}
+
+        {/* moderation menu for non-owners */}
+        {!isOwner && !!currentUserId && (
+          <div className="relative">
+            <button
+              onClick={() => setShowModerationMenu((v) => !v)}
+              className="p-1.5 rounded-full transition-colors"
+              style={{ color: "rgba(255,255,255,0.25)" }}
+              aria-label="Post options"
+            >
+              <HiDotsVertical className="w-4 h-4" />
+            </button>
+            {showModerationMenu && (
+              <>
+                {/* backdrop */}
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowModerationMenu(false)}
+                />
+                <div
+                  className="absolute right-0 top-8 z-20 w-44 rounded-xl overflow-hidden shadow-xl"
+                  style={{ background: "#1a1b2e", border: "1px solid rgba(255,255,255,0.10)" }}
+                >
+                  <button
+                    onClick={() => { setShowReportModal(true); setShowModerationMenu(false); }}
+                    className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-white/5"
+                    style={{ color: "rgba(255,255,255,0.8)" }}
+                  >
+                    Report post
+                  </button>
+                  <button
+                    onClick={() => { setShowBlockConfirm(true); setShowModerationMenu(false); }}
+                    className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-white/5"
+                    style={{ color: "#f87171" }}
+                  >
+                    Block @{post.author.username}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* ── report modal ── */}
+      {showReportModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+          style={{ background: "rgba(0,0,0,0.7)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowReportModal(false); }}
+        >
+          <div
+            className="w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-5 pb-8"
+            style={{ background: "#1a1b2e", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            <h3 className="text-base font-bold text-white mb-1">Report this post</h3>
+            <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Why are you reporting this post?
+            </p>
+            <div className="space-y-2">
+              {["Spam or fake", "Inappropriate content", "Harassment or bullying", "False health information", "Other"].map((reason) => (
+                <button
+                  key={reason}
+                  onClick={() => handleReport(reason)}
+                  disabled={moderationLoading}
+                  className="w-full text-left px-4 py-3 rounded-xl text-sm transition-colors disabled:opacity-50"
+                  style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.8)", border: "1px solid rgba(255,255,255,0.08)" }}
+                >
+                  {reason}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowReportModal(false)}
+              className="mt-4 w-full py-2 rounded-xl text-sm font-medium"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── block confirm ── */}
+      {showBlockConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+          style={{ background: "rgba(0,0,0,0.7)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowBlockConfirm(false); }}
+        >
+          <div
+            className="w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-5 pb-8 text-center"
+            style={{ background: "#1a1b2e", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            <p className="text-base font-bold text-white mb-2">Block @{post.author.username}?</p>
+            <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Their posts won&apos;t appear in your feed. You can unblock from their profile.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowBlockConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBlock}
+                disabled={moderationLoading}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50"
+                style={{ background: "#dc2626" }}
+              >
+                {moderationLoading ? "Blocking…" : "Block"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── body ── */}
       <div className="px-4 pb-3">

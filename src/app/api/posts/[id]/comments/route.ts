@@ -120,10 +120,15 @@ export async function POST(
       );
     }
 
-    // Verify the post exists
+    // Verify the post exists (include author notification preference)
     const post = await prisma.post.findUnique({
       where: { id: postId },
-      select: { id: true, authorId: true, visibility: true },
+      select: {
+        id: true,
+        authorId: true,
+        visibility: true,
+        author: { select: { notifyOnComment: true } },
+      },
     });
 
     if (!post) {
@@ -177,8 +182,8 @@ export async function POST(
       },
     });
 
-    // Notify the post author (skip if commenting on own post)
-    if (post.authorId !== userId) {
+    // Notify the post author (skip if own comment, skip if preference off)
+    if (post.authorId !== userId && post.author.notifyOnComment) {
       try {
         await prisma.notification.create({
           data: {

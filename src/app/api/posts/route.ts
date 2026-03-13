@@ -76,37 +76,69 @@ export async function GET(req: NextRequest) {
       where.visibility = "PUBLIC";
     }
 
-    const posts = await prisma.post.findMany({
-      where,
-      take: limit + 1, // Fetch one extra to determine if there's a next page
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-      orderBy: { createdAt: "desc" },
-      include: {
-        author: {
-          select: { id: true, name: true, username: true, avatarUrl: true },
-        },
-        workoutDetail: {
-          include: {
-            exercises: {
-              include: { sets: true },
-              orderBy: { sortOrder: "asc" },
-            },
+    const includeFields = {
+      author: {
+        select: { id: true, name: true, username: true, avatarUrl: true },
+      },
+      workoutDetail: {
+        include: {
+          exercises: {
+            include: { sets: true },
+            orderBy: { sortOrder: "asc" as const },
           },
         },
-        mealDetail: true,
-        wellnessDetail: true,
-        gym: { select: { id: true, name: true } },
-        _count: { select: { likes: true, comments: true } },
-        ...(userId
-          ? { likes: { where: { userId }, select: { id: true } } }
-          : {}),
       },
-    });
+      mealDetail: true,
+      wellnessDetail: true,
+      gym: { select: { id: true, name: true } },
+      _count: { select: { likes: true, comments: true } },
+      ...(userId
+        ? { likes: { where: { userId }, select: { id: true } } }
+        : {}),
+    };
 
+    // Ranked first page: when no cursor, fetch recent posts and score by engagement
+    let posts;
     let nextCursor: string | undefined;
-    if (posts.length > limit) {
-      const nextItem = posts.pop();
-      nextCursor = nextItem?.id;
+
+    if (!cursor) {
+      const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+      const rankedWhere = { ...where, createdAt: { gte: fourteenDaysAgo } };
+      const candidates = await prisma.post.findMany({
+        where: rankedWhere,
+        take: 100,
+        orderBy: { createdAt: "desc" },
+        include: includeFields,
+      });
+
+      const now = Date.now();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const scored = candidates.map((p: any) => {
+        const hoursAgo = (now - new Date(p.createdAt).getTime()) / 3_600_000;
+        const score =
+          (p._count.likes * 2) +
+          (p._count.comments * 3) +
+          Math.max(0, 14 - hoursAgo / 24);
+        return { ...p, _score: score };
+      });
+      scored.sort((a: { _score: number }, b: { _score: number }) => b._score - a._score);
+      posts = scored.slice(0, limit);
+      // No nextCursor for ranked page — infinite scroll falls back to chronological
+    } else {
+      const rawPosts = await prisma.post.findMany({
+        where,
+        take: limit + 1,
+        cursor: { id: cursor },
+        skip: 1,
+        orderBy: { createdAt: "desc" },
+        include: includeFields,
+      });
+
+      if (rawPosts.length > limit) {
+        const nextItem = rawPosts.pop();
+        nextCursor = nextItem?.id;
+      }
+      posts = rawPosts;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

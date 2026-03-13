@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
 import { HiHome, HiChartBar, HiPlusCircle, HiUser } from "react-icons/hi";
 import { HiBell } from "react-icons/hi2";
 
@@ -21,6 +22,7 @@ export function BottomNav() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [unreadCount, setUnreadCount] = useState(0);
+  const prevCountRef = useRef(0);
 
   const feedFilter = searchParams.get("filter");
 
@@ -32,7 +34,20 @@ export function BottomNav() {
         const res = await fetch("/api/notifications/unread-count");
         if (res.ok) {
           const data = await res.json();
-          if (!cancelled) setUnreadCount(data.count);
+          if (!cancelled) {
+            if (data.count > prevCountRef.current && prevCountRef.current > 0) {
+              toast("You have new notifications", {
+                icon: "🔔",
+                style: {
+                  background: "#1a1b2e",
+                  color: "#fff",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                },
+              });
+            }
+            prevCountRef.current = data.count;
+            setUnreadCount(data.count);
+          }
         }
       } catch {
         // silent

@@ -25,6 +25,9 @@ export async function GET(
         instagramUrl: true,
         tiktokUrl: true,
         createdAt: true,
+        notifyOnLike: true,
+        notifyOnComment: true,
+        notifyOnFollow: true,
         _count: {
           select: {
             followers: true,
@@ -110,6 +113,12 @@ export async function GET(
         followerCount: user._count.followers,
         followingCount: user._count.following,
         _count: undefined,
+        // Only expose notification prefs on own profile
+        ...(!isOwnProfile && {
+          notifyOnLike: undefined,
+          notifyOnComment: undefined,
+          notifyOnFollow: undefined,
+        }),
       },
       isFollowing,
       hasRequestedFollow,

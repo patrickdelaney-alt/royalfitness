@@ -40,7 +40,7 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
 
   async function handleOAuth(provider: "apple" | "google") {
     setOauthLoading(provider);
-    await signIn(provider, { callbackUrl: "/feed" });
+    await signIn(provider, { callbackUrl: "/feed?welcome=1" });
   }
 
   function validate(): boolean {
@@ -100,7 +100,7 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
       const session = await sessionRes.json();
 
       if (session?.user?.id) {
-        window.location.href = "/feed";
+        window.location.href = "/feed?welcome=1";
       } else {
         window.location.href = "/signin";
       }

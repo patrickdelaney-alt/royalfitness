@@ -76,6 +76,8 @@ export default function ProfilePage() {
   const [requestsLoading, setRequestsLoading] = useState(false);
   const [followModal, setFollowModal] = useState<"followers" | "following" | null>(null);
   const [activeSection, setActiveSection] = useState<"activity" | "catalog">("activity");
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockLoading, setBlockLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -160,6 +162,29 @@ export default function ProfilePage() {
       setFollowRequests((prev) => prev.filter((r) => r.id !== requestId));
     }
   };
+
+  const handleBlock = useCallback(async () => {
+    if (!profile || blockLoading) return;
+    setBlockLoading(true);
+    try {
+      const method = isBlocked ? "DELETE" : "POST";
+      const res = await fetch("/api/social/block", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUserId: profile.id }),
+      });
+      if (res.ok) {
+        setIsBlocked((v) => !v);
+        if (!isBlocked) {
+          setIsFollowing(false);
+        }
+      }
+    } catch {
+      // silent
+    } finally {
+      setBlockLoading(false);
+    }
+  }, [profile, isBlocked, blockLoading]);
 
   if (loading) {
     return (
@@ -275,20 +300,32 @@ export default function ProfilePage() {
           </Link>
         </div>
       ) : (
-        <button
-          onClick={handleFollow}
-          disabled={followLoading || hasRequested}
-          className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all mb-6 disabled:opacity-60"
-          style={
-            isFollowing
-              ? { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)" }
-              : hasRequested
-              ? { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)" }
-              : { background: "linear-gradient(135deg, #6360e8, #9b98ff)", boxShadow: "0 0 40px rgba(120,117,255,0.15), 0 8px 24px rgba(0,0,0,0.5)", color: "#ffffff" }
-          }
-        >
-          {isFollowing ? "Following" : hasRequested ? "Requested" : "Follow"}
-        </button>
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={handleFollow}
+            disabled={followLoading || hasRequested || isBlocked}
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-60"
+            style={
+              isBlocked
+                ? { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)" }
+                : isFollowing
+                ? { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)" }
+                : hasRequested
+                ? { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)" }
+                : { background: "linear-gradient(135deg, #6360e8, #9b98ff)", boxShadow: "0 0 40px rgba(120,117,255,0.15), 0 8px 24px rgba(0,0,0,0.5)", color: "#ffffff" }
+            }
+          >
+            {isFollowing ? "Following" : hasRequested ? "Requested" : "Follow"}
+          </button>
+          <button
+            onClick={handleBlock}
+            disabled={blockLoading}
+            className="py-2.5 px-4 rounded-xl text-sm font-semibold transition-all disabled:opacity-60"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: isBlocked ? "#f87171" : "rgba(255,255,255,0.5)" }}
+          >
+            {isBlocked ? "Unblock" : "Block"}
+          </button>
+        </div>
       )}
 
       {/* Follow requests (own profile only) */}
