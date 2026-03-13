@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare } from "react-icons/hi";
+import { lightImpact } from "@/lib/haptics";
 import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -403,6 +404,7 @@ export default function PostCard({
 
     // Optimistic update
     const wasLiked = liked;
+    if (!wasLiked) lightImpact();
     setLiked(!wasLiked);
     setLikeCount((c) => c + (wasLiked ? -1 : 1));
 
