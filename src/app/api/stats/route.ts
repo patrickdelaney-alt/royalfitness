@@ -282,7 +282,8 @@ export async function GET(req: NextRequest) {
 
 /**
  * Calculate consecutive days with at least one post, counting back from today
- * in the user's timezone. If there is no post today, the streak is 0.
+ * in the user's timezone. If there is no post today or yesterday, the streak is 0.
+ * If there is no post today but one yesterday, the streak counts from yesterday.
  */
 function calculateStreak(dates: Date[], timeZone: string): number {
   if (dates.length === 0) return 0;
@@ -294,13 +295,19 @@ function calculateStreak(dates: Date[], timeZone: string): number {
   }
 
   const todayStr = getUserToday(timeZone);
+  const yesterdayStr = addDaysToDateStr(todayStr, -1);
 
-  if (!uniqueDays.has(todayStr)) {
-    return 0;
-  }
+  // Start from today if posted today, or yesterday if not yet posted today
+  const startStr = uniqueDays.has(todayStr)
+    ? todayStr
+    : uniqueDays.has(yesterdayStr)
+    ? yesterdayStr
+    : null;
+
+  if (!startStr) return 0;
 
   let streak = 1;
-  let checkDate = new Date(todayStr + "T12:00:00Z");
+  let checkDate = new Date(startStr + "T12:00:00Z");
 
   while (true) {
     checkDate = new Date(checkDate.getTime() - 86400000);
