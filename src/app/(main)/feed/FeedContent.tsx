@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { HiSearch } from "react-icons/hi";
 import PostCard, { Post } from "@/components/post-card";
 import RecommendationCard from "@/components/recommendation-card";
@@ -84,8 +85,13 @@ export default function FeedContent() {
         }
         setCursor(data.nextCursor);
         setHasMore(!!data.nextCursor);
-      } catch {
-        if (reset) setError(true);
+      } catch (err) {
+        if (reset) {
+          setError(true);
+          toast.error("Failed to load posts. Please try again.");
+        } else {
+          toast.error("Failed to load more posts.");
+        }
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -154,7 +160,7 @@ export default function FeedContent() {
                 const url = type === "ALL" ? "/feed" : `/feed?filter=${type}`;
                 router.replace(url, { scroll: false });
               }}
-              className="whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center flex-shrink-0"
+              className="whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center flex-shrink-0 hover:scale-105 active:scale-95"
               style={
                 isActive
                   ? {
