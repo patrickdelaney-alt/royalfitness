@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import toast from "react-hot-toast";
 import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare, HiX } from "react-icons/hi";
 import { lightImpact } from "@/lib/haptics";
@@ -607,11 +606,9 @@ export default function PostCard({
         {/* avatar */}
         <Link href={`/profile/${post.author.username}`} className="flex-shrink-0">
           {post.author.avatarUrl ? (
-            <Image
+            <img
               src={post.author.avatarUrl}
               alt={post.author.username}
-              width={40}
-              height={40}
               loading="lazy"
               className="w-10 h-10 rounded-full object-cover"
             />
@@ -948,11 +945,9 @@ export default function PostCard({
             {post.mediaUrl.match(/\.(mp4|mov|webm)($|\?)/i) ? (
               <video src={post.mediaUrl} controls className="w-full max-h-96 object-cover" />
             ) : (
-              <Image
+              <img
                 src={post.mediaUrl}
                 alt="Post media"
-                width={500}
-                height={500}
                 loading="lazy"
                 className="w-full max-h-96 object-cover"
                 style={{ maxHeight: "384px" }}
@@ -1060,11 +1055,9 @@ export default function PostCard({
             <div key={c.id} className="flex gap-2">
               <Link href={`/profile/${c.author.username}`} className="flex-shrink-0">
                 {c.author.avatarUrl ? (
-                  <Image
+                  <img
                     src={c.author.avatarUrl}
                     alt={c.author.username}
-                    width={28}
-                    height={28}
                     loading="lazy"
                     className="w-7 h-7 rounded-full object-cover mt-0.5"
                   />
