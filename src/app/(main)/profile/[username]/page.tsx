@@ -448,7 +448,7 @@ export default function ProfilePage() {
                   {/* Text */}
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold mb-0.5" style={{ color: cfg.color }}>
-                      {cfg.emoji} {cfg.label}
+                      {cfg.label}
                     </p>
                     <p className="text-sm font-semibold leading-snug line-clamp-1 mb-1" style={{ color: "#ffffff" }}>
                       {firstLine}
