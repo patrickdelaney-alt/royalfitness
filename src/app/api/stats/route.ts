@@ -304,7 +304,7 @@ function calculateStreak(dates: Date[], timeZone: string): number {
 
   while (true) {
     checkDate = new Date(checkDate.getTime() - 86400000);
-    const checkStr = checkDate.toISOString().slice(0, 10);
+    const checkStr = utcToLocalDateStr(checkDate, timeZone);
     if (uniqueDays.has(checkStr)) {
       streak++;
     } else {
