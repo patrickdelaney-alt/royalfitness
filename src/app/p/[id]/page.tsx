@@ -195,7 +195,7 @@ export default async function PublicPostPage({
             className="text-xs font-semibold px-2 py-0.5 rounded-full"
             style={{ background: `${badge.color}22`, color: badge.color }}
           >
-            {badge.emoji} {badge.label}
+            {badge.label}
           </span>
         </div>
 

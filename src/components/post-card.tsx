@@ -627,10 +627,9 @@ export default function PostCard({
               {post.author.username}
             </Link>
             <span
-              className="text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1"
+              className="text-xs px-2 py-0.5 rounded-full font-medium"
               style={{ background: badge.bg, color: badge.text }}
             >
-              <span>{badge.emoji}</span>
               {badge.label}
             </span>
           </div>
