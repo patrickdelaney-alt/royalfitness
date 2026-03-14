@@ -109,7 +109,7 @@ function WeeklyWorkoutChart({ days }: { days: WeeklyWorkoutDay[] }) {
               <div className="w-full flex items-end justify-center" style={{ height: 64 }}>
                 {day.workoutCount > 0 ? (
                   <div
-                    className="w-full rounded-t-md transition-all"
+                    className="w-full rounded-t-md transition-all duration-300"
                     style={{
                       height: `${heightPct}%`,
                       background: isSelected || isToday
@@ -216,7 +216,7 @@ function MuscleGroupBreakdown({
               style={{ background: "rgba(255,255,255,0.07)" }}
             >
               <div
-                className="h-full rounded-full transition-all"
+                className="h-full rounded-full transition-all duration-300"
                 style={{ width: `${pct}%`, background: color }}
               />
             </div>
@@ -344,9 +344,9 @@ export default function StatsPage() {
   const boardEntries = leaderboard?.[activeBoard] ?? [];
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>
+    <div className="max-w-lg mx-auto px-4 pt-6 md:pt-4 pb-8" style={{ color: "#ffffff" }}>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold">Stats</h1>
+        <h1 className="text-2xl md:text-xl font-bold">Stats</h1>
         <Link
           href="/achievements"
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
@@ -361,12 +361,12 @@ export default function StatsPage() {
       </div>
 
       {/* Period selector */}
-      <div className="flex gap-2 mb-5 p-1 rounded-xl" style={{ background: "rgba(255,255,255,0.04)" }}>
+      <div className="flex gap-2 mb-6 md:mb-5 p-1 rounded-xl transition-all duration-300" style={{ background: "rgba(255,255,255,0.04)" }}>
         {(["week", "month", "year"] as const).map((p) => (
           <button
             key={p}
             onClick={() => setPeriod(p)}
-            className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
+            className="flex-1 py-2.5 md:py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:shadow-md"
             style={
               period === p
                 ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
@@ -387,27 +387,27 @@ export default function StatsPage() {
       ) : stats ? (
         <>
           {/* Streaks */}
-          <div className="grid grid-cols-2 gap-3 mb-5">
-            <div className="rounded-xl p-4 text-center" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-5">
+            <div className="rounded-xl p-4 text-center transition-all duration-300 hover:shadow-lg" style={{ background: "linear-gradient(135deg, #13141f 0%, #1a1b2e 100%)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}>
               <HiFire className="w-6 h-6 mx-auto mb-1" style={{ color: "#a8a6ff" }} />
-              <p className="text-2xl font-bold">{stats.currentStreak}</p>
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Day Streak</p>
+              <p className="text-3xl md:text-2xl font-bold">{stats.currentStreak}</p>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Day Streak</p>
             </div>
-            <div className="rounded-xl p-4 text-center" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="rounded-xl p-4 text-center transition-all duration-300 hover:shadow-lg" style={{ background: "linear-gradient(135deg, #13141f 0%, #1a1b2e 100%)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}>
               <HiTrendingUp className="w-6 h-6 mx-auto mb-1" style={{ color: "#a8a6ff" }} />
-              <p className="text-2xl font-bold">{stats.workoutStreak}</p>
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Workout Streak</p>
+              <p className="text-3xl md:text-2xl font-bold">{stats.workoutStreak}</p>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Workout Streak</p>
             </div>
           </div>
 
           {/* Weekly Workout Tracker */}
-          <div className="mb-5">
+          <div className="mb-6 md:mb-5">
             <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
               Workouts This Week
             </h2>
             <div
-              className="rounded-xl p-4"
-              style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+              className="rounded-xl p-4 transition-all duration-300"
+              style={{ background: "linear-gradient(135deg, #13141f 0%, #1a1b2e 100%)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}
             >
               {stats.weeklyWorkouts && stats.weeklyWorkouts.length > 0 ? (
                 <WeeklyWorkoutChart days={stats.weeklyWorkouts} />
@@ -420,13 +420,13 @@ export default function StatsPage() {
           </div>
 
           {/* Muscle Group Breakdown */}
-          <div className="mb-5">
+          <div className="mb-6 md:mb-5">
             <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
               Muscle Groups · {periodLabel}
             </h2>
             <div
-              className="rounded-xl p-4"
-              style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+              className="rounded-xl p-4 transition-all duration-300"
+              style={{ background: "linear-gradient(135deg, #13141f 0%, #1a1b2e 100%)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}
             >
               <MuscleGroupBreakdown counts={stats.muscleGroupCounts ?? {}} />
             </div>
@@ -436,52 +436,52 @@ export default function StatsPage() {
           <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
             {periodLabel}
           </h2>
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="rounded-xl p-4" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-4">
+            <div className="rounded-xl p-4 transition-all duration-300 hover:shadow-lg" style={{ background: "linear-gradient(135deg, #13141f 0%, #1a1b2e 100%)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}>
               <div className="flex items-center gap-2 mb-2">
                 <HiFire className="w-4 h-4" style={{ color: "#a8a6ff" }} />
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Workouts</span>
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Workouts</span>
               </div>
-              <p className="text-xl font-bold">{stats.workoutCount}</p>
+              <p className="text-2xl md:text-xl font-bold">{stats.workoutCount}</p>
             </div>
-            <div className="rounded-xl p-4" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="rounded-xl p-4 transition-all duration-300 hover:shadow-lg" style={{ background: "linear-gradient(135deg, #13141f 0%, #1a1b2e 100%)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}>
               <div className="flex items-center gap-2 mb-2">
                 <HiClock className="w-4 h-4" style={{ color: "#a78bfa" }} />
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Wellness Min</span>
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Wellness Min</span>
               </div>
-              <p className="text-xl font-bold">{stats.wellnessMinutes}</p>
+              <p className="text-2xl md:text-xl font-bold">{stats.wellnessMinutes}</p>
             </div>
-            <div className="rounded-xl p-4" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="rounded-xl p-4 transition-all duration-300 hover:shadow-lg" style={{ background: "linear-gradient(135deg, #13141f 0%, #1a1b2e 100%)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}>
               <div className="flex items-center gap-2 mb-2">
                 <HiTrendingUp className="w-4 h-4" style={{ color: "#34d399" }} />
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Total Volume</span>
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Total Volume</span>
               </div>
-              <p className="text-xl font-bold">
+              <p className="text-2xl md:text-xl font-bold">
                 {stats.totalVolume > 999
                   ? `${(stats.totalVolume / 1000).toFixed(1)}k`
                   : stats.totalVolume}{" "}
                 <span className="text-xs font-normal" style={{ color: "rgba(255,255,255,0.4)" }}>lbs</span>
               </p>
             </div>
-            <div className="rounded-xl p-4" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="rounded-xl p-4 transition-all duration-300 hover:shadow-lg" style={{ background: "linear-gradient(135deg, #13141f 0%, #1a1b2e 100%)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}>
               <div className="flex items-center gap-2 mb-2">
                 <HiEmojiHappy className="w-4 h-4" style={{ color: "#fbbf24" }} />
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Avg Mood</span>
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Avg Mood</span>
               </div>
-              <p className="text-xl font-bold">
+              <p className="text-2xl md:text-xl font-bold">
                 {stats.avgMoodAfter !== null ? `${stats.avgMoodAfter}/10` : "--"}
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className="rounded-xl p-4" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Total Sets</p>
-              <p className="text-xl font-bold">{stats.totalSets}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-6">
+            <div className="rounded-xl p-4 transition-all duration-300 hover:shadow-lg" style={{ background: "linear-gradient(135deg, #13141f 0%, #1a1b2e 100%)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}>
+              <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.5)" }}>Total Sets</p>
+              <p className="text-2xl md:text-xl font-bold">{stats.totalSets}</p>
             </div>
-            <div className="rounded-xl p-4" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Meals Logged</p>
-              <p className="text-xl font-bold">{stats.mealsPosted}</p>
+            <div className="rounded-xl p-4 transition-all duration-300 hover:shadow-lg" style={{ background: "linear-gradient(135deg, #13141f 0%, #1a1b2e 100%)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}>
+              <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.5)" }}>Meals Logged</p>
+              <p className="text-2xl md:text-xl font-bold">{stats.mealsPosted}</p>
             </div>
           </div>
 
@@ -493,17 +493,17 @@ export default function StatsPage() {
               </h2>
               <button
                 onClick={() => setShowStepsForm((v) => !v)}
-                className="text-xs font-medium"
+                className="text-xs font-medium transition-all duration-300 hover:scale-105"
                 style={{ color: "#a8a6ff" }}
               >
                 {showStepsForm ? "Cancel" : "Log steps"}
               </button>
             </div>
 
-            <div className="rounded-xl p-4 mb-3" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Last 7 days</p>
-              <p className="text-2xl font-bold">{totalStepsWeek.toLocaleString()}</p>
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>steps</p>
+            <div className="rounded-xl p-4 mb-3 transition-all duration-300 hover:shadow-lg" style={{ background: "linear-gradient(135deg, #13141f 0%, #1a1b2e 100%)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}>
+              <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.5)" }}>Last 7 days</p>
+              <p className="text-3xl md:text-2xl font-bold">{totalStepsWeek.toLocaleString()}</p>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>steps</p>
             </div>
 
             {showStepsForm && (
@@ -535,10 +535,17 @@ export default function StatsPage() {
                 <button
                   onClick={handleLogSteps}
                   disabled={stepsSubmitting}
-                  className="w-full py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
+                  className="w-full py-3 md:py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-60 transition-all duration-300 flex items-center justify-center gap-2"
                   style={{ color: "#ffffff" }}
                 >
-                  {stepsSubmitting ? "Logging..." : "Log Steps"}
+                  {stepsSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-transparent border-t-current rounded-full animate-spin" />
+                      <span>Logging</span>
+                    </>
+                  ) : (
+                    "Log Steps"
+                  )}
                 </button>
               </div>
             )}
@@ -548,13 +555,13 @@ export default function StatsPage() {
                 {stepsEntries.map((e) => {
                   const pct = Math.min((e.count / 10000) * 100, 100);
                   return (
-                    <div key={e.id} className="flex items-center gap-3">
-                      <span className="text-xs w-16 flex-shrink-0" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    <div key={e.id} className="flex items-center gap-3 transition-all duration-300">
+                      <span className="text-xs w-16 flex-shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>
                         {formatDate(e.date)}
                       </span>
                       <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
                         <div
-                          className="h-full rounded-full"
+                          className="h-full rounded-full transition-all duration-300"
                           style={{ width: `${pct}%`, background: "linear-gradient(to right, #6360e8, #9b98ff)" }}
                         />
                       </div>
@@ -583,7 +590,7 @@ export default function StatsPage() {
                   <button
                     key={p.key}
                     onClick={() => setLbPeriod(p.key)}
-                    className="px-2 py-1 rounded-lg text-xs font-semibold transition-all"
+                    className="px-2 py-1.5 md:py-1 rounded-lg text-xs font-semibold transition-all duration-300 hover:shadow-md"
                     style={
                       lbPeriod === p.key
                         ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
@@ -611,7 +618,7 @@ export default function StatsPage() {
                     <button
                       key={b.key}
                       onClick={() => setActiveBoard(b.key)}
-                      className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+                      className="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 hover:shadow-md"
                       style={
                         activeBoard === b.key
                           ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
@@ -633,8 +640,8 @@ export default function StatsPage() {
                       {boardEntries.map((entry, idx) => (
                         <div
                           key={entry.userId}
-                          className="flex items-center gap-3 p-3 rounded-xl"
-                          style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+                          className="flex items-center gap-3 p-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:bg-white/[0.02]"
+                          style={{ background: "linear-gradient(135deg, #13141f 0%, #1a1b2e 100%)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}
                         >
                           <span
                             className="w-6 text-center text-sm font-bold"
@@ -645,9 +652,9 @@ export default function StatsPage() {
                             {idx + 1}
                           </span>
                           {entry.avatarUrl ? (
-                            <img src={entry.avatarUrl} alt={entry.username} className="w-8 h-8 rounded-full object-cover" />
+                            <img src={entry.avatarUrl} alt={entry.username} className="w-10 h-10 sm:w-8 sm:h-8 rounded-full object-cover transition-all duration-300" />
                           ) : (
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold btn-gradient">
+                            <div className="w-10 h-10 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white text-xs font-bold btn-gradient transition-all duration-300">
                               {initials(entry.name)}
                             </div>
                           )}
