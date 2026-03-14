@@ -2,12 +2,22 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import toast from "react-hot-toast";
-import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare } from "react-icons/hi";
+import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare, HiX } from "react-icons/hi";
 import { lightImpact } from "@/lib/haptics";
 import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
+
+function LoadingSpinner() {
+  return (
+    <div
+      className="w-4 h-4 border-2 border-transparent border-t-current rounded-full animate-spin"
+      style={{ animation: "spin 0.8s linear infinite" }}
+    />
+  );
+}
 
 function timeAgo(date: string): string {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
@@ -597,9 +607,12 @@ export default function PostCard({
         {/* avatar */}
         <Link href={`/profile/${post.author.username}`} className="flex-shrink-0">
           {post.author.avatarUrl ? (
-            <img
+            <Image
               src={post.author.avatarUrl}
               alt={post.author.username}
+              width={40}
+              height={40}
+              loading="lazy"
               className="w-10 h-10 rounded-full object-cover"
             />
           ) : (
@@ -642,16 +655,24 @@ export default function PostCard({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="text-xs text-muted-dim hover:text-foreground px-2 py-1 rounded transition-colors"
+                  disabled={deleting}
+                  className="text-xs text-muted-dim hover:text-foreground px-2 py-1 rounded transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDelete}
                   disabled={deleting}
-                  className="text-xs font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 px-2 py-1 rounded transition-colors"
+                  className="text-xs font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-60 px-2 py-1 rounded transition-all duration-200 flex items-center justify-center gap-1.5"
                 >
-                  {deleting ? "Deleting…" : "Delete"}
+                  {deleting ? (
+                    <>
+                      <LoadingSpinner />
+                      <span>Deleting</span>
+                    </>
+                  ) : (
+                    "Delete"
+                  )}
                 </button>
               </div>
             ) : (
@@ -755,10 +776,11 @@ export default function PostCard({
                   key={reason}
                   onClick={() => handleReport(reason)}
                   disabled={moderationLoading}
-                  className="w-full text-left px-4 py-3 rounded-xl text-sm transition-colors disabled:opacity-50"
+                  className="w-full text-left px-4 py-3 rounded-xl text-sm transition-all duration-200 disabled:opacity-60 flex items-center justify-between"
                   style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.8)", border: "1px solid rgba(255,255,255,0.08)" }}
                 >
                   {reason}
+                  {moderationLoading && <LoadingSpinner />}
                 </button>
               ))}
             </div>
@@ -791,7 +813,8 @@ export default function PostCard({
             <div className="flex gap-3">
               <button
                 onClick={() => setShowBlockConfirm(false)}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                disabled={moderationLoading}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 disabled:opacity-50"
                 style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)" }}
               >
                 Cancel
@@ -799,10 +822,17 @@ export default function PostCard({
               <button
                 onClick={handleBlock}
                 disabled={moderationLoading}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-60 transition-all duration-200 flex items-center justify-center gap-2"
                 style={{ background: "#dc2626" }}
               >
-                {moderationLoading ? "Blocking…" : "Block"}
+                {moderationLoading ? (
+                  <>
+                    <LoadingSpinner />
+                    <span>Blocking</span>
+                  </>
+                ) : (
+                  "Block"
+                )}
               </button>
             </div>
           </div>
@@ -879,7 +909,8 @@ export default function PostCard({
             <div className="flex gap-2 pt-1">
               <button
                 onClick={() => setShowEditModal(false)}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium"
+                disabled={editSaving}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 disabled:opacity-50"
                 style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)" }}
               >
                 Cancel
@@ -887,10 +918,17 @@ export default function PostCard({
               <button
                 onClick={handleEdit}
                 disabled={editSaving}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-60 transition-all duration-200 flex items-center justify-center gap-2"
                 style={{ background: "linear-gradient(135deg,#6360e8,#9b98ff)" }}
               >
-                {editSaving ? "Saving…" : "Save"}
+                {editSaving ? (
+                  <>
+                    <LoadingSpinner />
+                    <span>Saving</span>
+                  </>
+                ) : (
+                  "Save"
+                )}
               </button>
             </div>
           </div>
@@ -910,7 +948,15 @@ export default function PostCard({
             {post.mediaUrl.match(/\.(mp4|mov|webm)($|\?)/i) ? (
               <video src={post.mediaUrl} controls className="w-full max-h-96 object-cover" />
             ) : (
-              <img src={post.mediaUrl} alt="Post media" className="w-full max-h-96 object-cover" />
+              <Image
+                src={post.mediaUrl}
+                alt="Post media"
+                width={500}
+                height={500}
+                loading="lazy"
+                className="w-full max-h-96 object-cover"
+                style={{ maxHeight: "384px" }}
+              />
             )}
           </div>
         ) : (
@@ -933,21 +979,25 @@ export default function PostCard({
         <button
           onClick={toggleLike}
           disabled={likeLoading}
-          className="flex items-center gap-1.5 text-sm transition-colors"
+          className="flex items-center gap-1.5 text-sm transition-all duration-200 disabled:opacity-70"
         >
-          {liked ? (
-            <HiHeart className="w-5 h-5 text-red-500" />
+          {likeLoading ? (
+            <div className="w-5 h-5 flex items-center justify-center">
+              <LoadingSpinner />
+            </div>
+          ) : liked ? (
+            <HiHeart className="w-5 h-5 text-red-500 transition-transform duration-300" style={{ transform: "scale(1.1)" }} />
           ) : (
-            <HiOutlineHeart className="w-5 h-5 text-muted-dim" />
+            <HiOutlineHeart className="w-5 h-5 text-muted-dim hover:text-foreground transition-colors duration-200" />
           )}
-          <span className={liked ? "text-red-500 font-medium" : "text-muted-dim"}>
+          <span className={`transition-colors duration-200 ${liked ? "text-red-500 font-medium" : "text-muted-dim"}`}>
             {likeCount}
           </span>
         </button>
 
         <button
           onClick={handleToggleComments}
-          className="flex items-center gap-1.5 text-sm text-muted-dim hover:text-foreground transition-colors"
+          className="flex items-center gap-1.5 text-sm text-muted-dim hover:text-foreground transition-colors duration-200"
         >
           <HiChat className="w-5 h-5" />
           <span>{commentCount}</span>
@@ -984,14 +1034,19 @@ export default function PostCard({
                 }
               }}
               placeholder="Add a comment..."
-              className="input-dark flex-1"
+              disabled={commentSubmitting}
+              className="input-dark flex-1 disabled:opacity-50"
             />
             <button
               onClick={handleAddComment}
               disabled={commentSubmitting || !commentText.trim()}
-              className="text-sm font-medium text-white btn-gradient disabled:opacity-50 disabled:cursor-not-allowed rounded-lg px-3 py-2 transition-opacity"
+              className="text-sm font-medium text-white btn-gradient disabled:opacity-60 disabled:cursor-not-allowed rounded-lg px-3 py-2 transition-all duration-200 flex items-center justify-center gap-1.5 min-w-[60px]"
             >
-              Post
+              {commentSubmitting ? (
+                <LoadingSpinner />
+              ) : (
+                "Post"
+              )}
             </button>
           </div>
 
@@ -1005,9 +1060,12 @@ export default function PostCard({
             <div key={c.id} className="flex gap-2">
               <Link href={`/profile/${c.author.username}`} className="flex-shrink-0">
                 {c.author.avatarUrl ? (
-                  <img
+                  <Image
                     src={c.author.avatarUrl}
                     alt={c.author.username}
+                    width={28}
+                    height={28}
+                    loading="lazy"
                     className="w-7 h-7 rounded-full object-cover mt-0.5"
                   />
                 ) : (
