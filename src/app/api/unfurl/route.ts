@@ -31,6 +31,21 @@ function extractMetaTag(html: string, property: string): string | null {
   return null;
 }
 
+function isPrivateHost(hostname: string): boolean {
+  const privatePatterns = [
+    /^localhost$/i,
+    /^127\./,
+    /^10\./,
+    /^172\.(1[6-9]|2[0-9]|3[01])\./,
+    /^192\.168\./,
+    /^169\.254\./, // link-local (AWS metadata endpoint)
+    /^::1$/, // IPv6 loopback
+    /^fc00:/i, // IPv6 private
+    /^fe80:/i, // IPv6 link-local
+  ];
+  return privatePatterns.some((p) => p.test(hostname));
+}
+
 function extractTitle(html: string): string | null {
   const match = html.match(/<title[^>]*>([^<]*)<\/title>/i);
   return match?.[1]?.trim() || null;
@@ -66,6 +81,10 @@ export async function POST(req: NextRequest) {
         { error: "Only HTTP and HTTPS URLs are supported" },
         { status: 400 }
       );
+    }
+
+    if (isPrivateHost(parsedUrl.hostname)) {
+      return NextResponse.json({ error: "URL not allowed" }, { status: 400 });
     }
 
     // Fetch with timeout

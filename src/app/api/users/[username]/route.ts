@@ -84,6 +84,10 @@ export async function GET(
       recentPosts = await prisma.post.findMany({
         where: {
           authorId: user.id,
+          ...(isOwnProfile
+            ? {}
+            : { visibility: { in: ["PUBLIC", "FOLLOWERS"] } }
+          ),
         },
         orderBy: {
           createdAt: "desc",

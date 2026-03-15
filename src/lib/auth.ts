@@ -49,17 +49,33 @@ if (!process.env.AUTH_URL && !process.env.NEXTAUTH_URL) {
 // across local (http) and production (https) environments.
 const COOKIE_NAME = "authjs.session-token";
 
-/** Derive a unique @username from an OAuth email address. */
-async function generateUniqueUsername(email: string): Promise<string> {
+/**
+ * Create a DB user for an OAuth sign-in, deriving a unique username from their email.
+ * Uses optimistic insert with P2002 retry to avoid the TOCTOU race condition that
+ * occurs when two users with the same email prefix sign up concurrently.
+ */
+async function createOAuthUser(
+  email: string,
+  name: string,
+  avatarUrl: string | null
+) {
   const base =
     email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "").toLowerCase() || "user";
-  let username = base;
   let n = 0;
-  while (await prisma.user.findUnique({ where: { username } })) {
-    n++;
-    username = `${base}${n}`;
+  while (true) {
+    const username = n === 0 ? base : `${base}${n}`;
+    try {
+      return await prisma.user.create({
+        data: { email, name, username, avatarUrl, passwordHash: null },
+      });
+    } catch (err: unknown) {
+      if ((err as { code?: string }).code === "P2002") {
+        n++;
+        continue;
+      }
+      throw err;
+    }
   }
-  return username;
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -151,16 +167,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { email: user.email },
         });
         if (!existing) {
-          const username = await generateUniqueUsername(user.email);
-          await prisma.user.create({
-            data: {
-              email: user.email,
-              name: user.name ?? "User",
-              username,
-              avatarUrl: user.image ?? null,
-              passwordHash: null,
-            },
-          });
+          await createOAuthUser(
+            user.email,
+            user.name ?? "User",
+            user.image ?? null
+          );
         }
         return true;
       } catch (err) {

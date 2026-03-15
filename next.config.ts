@@ -11,6 +11,14 @@ const nextConfig: NextConfig = {
     "@prisma/adapter-pg",
     "@neondatabase/serverless",
   ],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

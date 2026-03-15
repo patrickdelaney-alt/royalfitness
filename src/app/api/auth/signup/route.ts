@@ -4,9 +4,22 @@ import { prisma } from "@/lib/prisma";
 import { signUpSchema } from "@/lib/validations";
 
 export async function POST(req: NextRequest) {
+  let body: unknown;
   try {
-    const body = await req.json();
-    const data = signUpSchema.parse(body);
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  try {
+    const parsed = signUpSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+    const data = parsed.data;
 
     const existingEmail = await prisma.user.findUnique({
       where: { email: data.email },
@@ -44,12 +57,7 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    if (error instanceof Error && error.name === "ZodError") {
-      return NextResponse.json(
-        { error: "Invalid input", details: error },
-        { status: 400 }
-      );
-    }
+    console.error("POST /api/auth/signup error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

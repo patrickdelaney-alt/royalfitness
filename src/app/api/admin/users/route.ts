@@ -30,9 +30,9 @@ export async function GET(req: NextRequest) {
           email: true,
           avatarUrl: true,
           createdAt: true,
-          passwordHash: true,
-          // Include account to detect OAuth provider
+          // Include account to detect OAuth provider; _count used to detect email signup
           accounts: { select: { provider: true }, take: 1 },
+          _count: { select: { accounts: true } },
         },
       }),
       prisma.user.count(),
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
       email: u.email,
       avatarUrl: u.avatarUrl,
       createdAt: u.createdAt,
-      signupMethod: u.accounts[0]?.provider ?? (u.passwordHash ? "email" : "unknown"),
+      signupMethod: u.accounts[0]?.provider ?? (u._count.accounts === 0 ? "email" : "unknown"),
     }));
 
     return NextResponse.json({ users: result, nextCursor, totalCount });

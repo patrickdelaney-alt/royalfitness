@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// DELETE /api/social/follow - Unfollow a user
+// DELETE /api/social/follow?targetUserId=xxx - Unfollow a user
 export async function DELETE(req: NextRequest) {
   try {
     const session = await safeAuth();
@@ -139,7 +139,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { targetUserId } = await req.json();
+    const targetUserId = req.nextUrl.searchParams.get("targetUserId");
 
     if (!targetUserId || typeof targetUserId !== "string") {
       return NextResponse.json(

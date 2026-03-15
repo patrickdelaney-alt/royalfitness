@@ -3,6 +3,43 @@ import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
+export async function GET() {
+  try {
+    const session = await safeAuth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true,
+        bio: true,
+        avatarUrl: true,
+        isPrivate: true,
+        instagramUrl: true,
+        tiktokUrl: true,
+        notifyOnLike: true,
+        notifyOnComment: true,
+        notifyOnFollow: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error("GET /api/users/me error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
 const updateProfileSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   bio: z.string().max(500).optional(),

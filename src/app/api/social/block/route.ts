@@ -45,6 +45,16 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Remove any pending follow requests between the two users
+    await prisma.followRequest.deleteMany({
+      where: {
+        OR: [
+          { senderId: blockerId, targetId: targetUserId },
+          { senderId: targetUserId, targetId: blockerId },
+        ],
+      },
+    });
+
     return NextResponse.json({ blocked: true }, { status: 201 });
   } catch (error) {
     console.error("POST /api/social/block error:", error);
@@ -52,7 +62,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// DELETE /api/social/block — Unblock a user
+// DELETE /api/social/block?targetUserId=xxx — Unblock a user
 export async function DELETE(req: NextRequest) {
   try {
     const session = await safeAuth();
@@ -61,7 +71,7 @@ export async function DELETE(req: NextRequest) {
     }
     const blockerId = session.user.id;
 
-    const { targetUserId } = await req.json();
+    const targetUserId = req.nextUrl.searchParams.get("targetUserId");
     if (!targetUserId || typeof targetUserId !== "string") {
       return NextResponse.json({ error: "targetUserId is required" }, { status: 400 });
     }

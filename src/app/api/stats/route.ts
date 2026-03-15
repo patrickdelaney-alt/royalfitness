@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = req.nextUrl;
     const period = searchParams.get("period") ?? "week";
-    const userId = searchParams.get("userId") ?? session.user.id;
+    const userId = session.user.id;
     const tz = safeTimeZone(searchParams.get("tz"));
 
     // Calculate period boundaries in user's timezone, converted to UTC

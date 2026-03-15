@@ -8,7 +8,7 @@ export const signUpSchema = z.object({
     .max(30)
     .regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers, and underscores"),
   email: z.string().email(),
-  password: z.string().min(6).max(100),
+  password: z.string().min(8).max(100),
 });
 
 export const signInSchema = z.object({

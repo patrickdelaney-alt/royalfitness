@@ -427,9 +427,13 @@ export async function checkAndAwardAchievements(
       select: { type: true },
       distinct: ["type"],
     }),
-    prisma.exerciseSet.aggregate({
-      where: { exercise: { workoutDetail: { post: { authorId: userId } } } },
-      _sum: { weight: true },
+    prisma.exerciseSet.findMany({
+      where: {
+        exercise: { workoutDetail: { post: { authorId: userId } } },
+        weight: { not: null },
+        reps: { not: null },
+      },
+      select: { weight: true, reps: true },
     }),
     prisma.exerciseSet.count({
       where: { exercise: { workoutDetail: { post: { authorId: userId } } } },
@@ -464,8 +468,10 @@ export async function checkAndAwardAchievements(
     postedTypes.has("WELLNESS") &&
     postedTypes.has("GENERAL");
 
-  // Compute total volume (weight × reps)
-  const totalVolumeLbs = Math.round(volumeResult._sum.weight ?? 0);
+  // Compute total volume (weight × reps per set, summed)
+  const totalVolumeLbs = Math.round(
+    volumeResult.reduce((sum, s) => sum + (s.weight ?? 0) * (s.reps ?? 0), 0)
+  );
 
   // Compute streak (days with at least one post, consecutive back from today)
   const { longestStreak, currentStreak } = computeStreaks(
