@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     console.error("POST /api/upload error:", error);
     const errorMessage = error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json(
-      { error: errorMessage || "Internal server error" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
