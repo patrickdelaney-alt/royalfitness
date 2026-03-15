@@ -1,5 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { GeistSans } from "geist/font/sans";
+import { Montserrat } from "next/font/google";
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  variable: "--font-montserrat",
+  display: "swap",
+});
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "react-hot-toast";
@@ -38,7 +44,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${GeistSans.variable} antialiased bg-background`}>
+      <body className={`${montserrat.variable} antialiased bg-background`}>
         <Providers>
           {children}
           <Toaster position="bottom-center" />
