@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { HiSearch } from "react-icons/hi";
+import { useState, useEffect, useCallback } from "react";
+import { HiSearch, HiLocationMarker } from "react-icons/hi";
 import Link from "next/link";
 import { lightImpact } from "@/lib/haptics";
 
@@ -16,7 +16,9 @@ interface GymResult {
   id: string;
   name: string;
   address: string | null;
-  _count: { members: number };
+  latitude: number | null;
+  longitude: number | null;
+  _count: { members: number; posts: number };
 }
 
 interface Suggestion {
@@ -66,6 +68,31 @@ export default function ExplorePage() {
   const [followedIds, setFollowedIds] = useState<Set<string>>(new Set());
   const [followingId, setFollowingId] = useState<string | null>(null);
 
+  // Load all gyms whenever the gyms tab is active (empty query = browse all)
+  const loadAllGyms = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/gyms");
+      if (res.ok) {
+        const data: GymResult[] = await res.json();
+        setGyms(data ?? []);
+      }
+    } catch {
+      // silent
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Auto-load gyms when switching to the Gyms tab with no query
+  useEffect(() => {
+    if (tab !== "gyms") return;
+    if (query.trim().length === 0) {
+      loadAllGyms();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
   // Fetch suggestions when on People tab with empty query
   useEffect(() => {
     if (tab !== "people") return;
@@ -77,11 +104,11 @@ export default function ExplorePage() {
       .finally(() => setSuggestionsLoading(false));
   }, [tab]);
 
-  // Search effect
+  // Debounced search — only runs when there is a query
   useEffect(() => {
     if (query.trim().length === 0) {
       setUsers([]);
-      setGyms([]);
+      if (tab === "gyms") loadAllGyms();
       return;
     }
 
@@ -97,8 +124,9 @@ export default function ExplorePage() {
         } else {
           const res = await fetch(`/api/gyms?q=${encodeURIComponent(query.trim())}`);
           if (res.ok) {
-            const data = await res.json();
-            setGyms(data.gyms ?? []);
+            // API returns a bare array
+            const data: GymResult[] = await res.json();
+            setGyms(data ?? []);
           }
         }
       } catch {
@@ -109,6 +137,7 @@ export default function ExplorePage() {
     }, 300);
 
     return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, tab]);
 
   async function handleFollow(suggestion: Suggestion) {
@@ -284,27 +313,59 @@ export default function ExplorePage() {
             ))}
           </div>
         )
-      ) : gyms.length === 0 ? (
-        <p className="text-center text-muted text-sm py-12">No gyms found</p>
+      ) : /* ── Gyms tab ── */ gyms.length === 0 ? (
+        <div className="text-center py-16 px-4">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+            style={{ background: "rgba(56,189,248,0.10)", border: "1px solid rgba(103,232,249,0.2)" }}
+          >
+            <HiLocationMarker className="w-7 h-7" style={{ color: "#67e8f9" }} />
+          </div>
+          <p className="font-semibold text-white text-base mb-1">No gyms yet</p>
+          <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
+            Be the first to add your gym. Use Quick Check-in when posting to tag your location.
+          </p>
+          <Link
+            href="/create?type=CHECKIN"
+            className="inline-block px-5 py-2.5 rounded-full text-sm font-bold text-white"
+            style={{ background: "linear-gradient(135deg, #6360e8, #9b98ff)", boxShadow: "0 4px 20px rgba(120,117,255,0.3)" }}
+          >
+            Check in at a gym →
+          </Link>
+        </div>
       ) : (
         <div className="space-y-2">
+          {query.trim().length === 0 && (
+            <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+              📍 All gyms
+            </p>
+          )}
           {gyms.map((gym) => (
             <div
               key={gym.id}
-              className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border"
+              className="flex items-center gap-3 p-3 rounded-xl border"
+              style={{ background: "#13141f", borderColor: "rgba(255,255,255,0.08)" }}
             >
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-muted text-lg font-bold">
-                G
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: "rgba(56,189,248,0.10)", border: "1px solid rgba(103,232,249,0.15)" }}
+              >
+                <HiLocationMarker className="w-5 h-5" style={{ color: "#67e8f9" }} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm text-foreground truncate">
                   {gym.name}
                 </p>
                 {gym.address && (
-                  <p className="text-xs text-muted truncate">{gym.address}</p>
+                  <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    {gym.address}
+                  </p>
                 )}
-                <p className="text-xs text-muted">
+                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>
                   {gym._count.members} member{gym._count.members !== 1 ? "s" : ""}
+                  {gym._count.posts > 0 && (
+                    <> · {gym._count.posts} post{gym._count.posts !== 1 ? "s" : ""}</>
+                  )}
                 </p>
               </div>
             </div>
