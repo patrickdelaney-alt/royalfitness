@@ -44,6 +44,23 @@ export async function GET(
       );
     }
 
+
+    // Respect blocking relationship in either direction
+    if (currentUserId && currentUserId !== user.id) {
+      const blocked = await prisma.blockedUser.findFirst({
+        where: {
+          OR: [
+            { blockerId: currentUserId, blockedId: user.id },
+            { blockerId: user.id, blockedId: currentUserId },
+          ],
+        },
+      });
+
+      if (blocked) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+    }
+
     // Check if current user follows this user
     let isFollowing = false;
     let hasRequestedFollow = false;
@@ -81,9 +98,16 @@ export async function GET(
     let recentPosts: unknown[] = [];
 
     if (canViewPosts) {
+      const postVisibilityFilter = isOwnProfile
+        ? undefined
+        : isFollowing
+          ? { in: ["PUBLIC", "FOLLOWERS"] as const }
+          : "PUBLIC";
+
       recentPosts = await prisma.post.findMany({
         where: {
           authorId: user.id,
+          ...(postVisibilityFilter ? { visibility: postVisibilityFilter } : {}),
         },
         orderBy: {
           createdAt: "desc",

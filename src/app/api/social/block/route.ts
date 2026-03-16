@@ -45,6 +45,16 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Remove any pending follow requests in either direction
+    await prisma.followRequest.deleteMany({
+      where: {
+        OR: [
+          { senderId: blockerId, targetId: targetUserId },
+          { senderId: targetUserId, targetId: blockerId },
+        ],
+      },
+    });
+
     return NextResponse.json({ blocked: true }, { status: 201 });
   } catch (error) {
     console.error("POST /api/social/block error:", error);
