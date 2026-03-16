@@ -214,7 +214,7 @@ export default function WorkoutSession() {
   // ── Abandon ──────────────────────────────────────────────────────────────
   const abandonWorkout = () => {
     clearSession();
-    router.push("/create");
+    router.replace("/feed");
   };
 
   if (!session) return null;
@@ -498,12 +498,12 @@ export default function WorkoutSession() {
       {/* ── Abandon Confirm Modal ── */}
       {showAbandon && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center p-4"
+          className="fixed inset-0 z-[70] flex items-end justify-center p-4 pb-[calc(4rem+env(safe-area-inset-bottom))]"
           style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
           onClick={() => setShowAbandon(false)}
         >
           <div
-            className="w-full max-w-sm rounded-2xl p-6 space-y-4"
+            className="w-full max-w-sm rounded-2xl p-6 space-y-4 max-h-[85vh] overflow-y-auto"
             style={{
               background: "#13141f",
               border: "1px solid rgba(255,255,255,0.1)",
