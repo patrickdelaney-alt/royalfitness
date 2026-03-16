@@ -234,7 +234,7 @@ export default function WorkoutSession() {
         style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
       >
         <button
-          onClick={() => router.push("/create")}
+          onClick={() => setShowAbandon(true)}
           className="p-2 rounded-xl transition-colors"
           style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)" }}
         >
