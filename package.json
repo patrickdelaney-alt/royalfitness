@@ -14,6 +14,7 @@
     "cap:open": "npx cap open ios"
   },
   "dependencies": {
+    "@auth/core": "0.41.0",
     "@capacitor/haptics": "^8.0.1",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/adapter-neon": "^7.4.1",
