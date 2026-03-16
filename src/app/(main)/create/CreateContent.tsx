@@ -45,21 +45,37 @@ const MUSCLES: MuscleGroup[] = [
     id: "chest",
     label: "Chest",
     icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
+      const base   = active ? "#c2c2d4" : "rgba(255,255,255,0.22)";
+      const mid    = active ? "#a0a0b8" : "rgba(255,255,255,0.14)";
+      const shadow = active ? "rgba(40,40,60,0.38)" : "rgba(0,0,0,0.20)";
+      const hilit  = active ? "#dcdce8" : "rgba(255,255,255,0.38)";
+      const spec   = active ? "rgba(255,255,255,0.80)" : "rgba(255,255,255,0.50)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
-          {/* left pec */}
-          <path d="M4 10 Q4 5 9 5 Q14 5 15.5 10 L15.5 19 Q11 22 7 20 Q3 17 4 13 Z" fill={f}/>
-          {/* right pec */}
-          <path d="M28 10 Q28 5 23 5 Q18 5 16.5 10 L16.5 19 Q21 22 25 20 Q29 17 28 13 Z" fill={f}/>
-          {/* collarbone */}
-          <path d="M9 6 Q16 4 23 6" stroke={s} strokeWidth="1.4" fill="none" strokeLinecap="round"/>
-          {/* center groove */}
-          <line x1="16" y1="10" x2="16" y2="20" stroke={s} strokeWidth="1.2"/>
-          {/* muscle highlight */}
-          <ellipse cx="10.5" cy="10" rx="2.5" ry="1.5" fill="rgba(255,255,255,0.15)" transform="rotate(-15,10.5,10)"/>
-          <ellipse cx="21.5" cy="10" rx="2.5" ry="1.5" fill="rgba(255,255,255,0.15)" transform="rotate(15,21.5,10)"/>
+          {/* torso base */}
+          <path d="M6 8 Q6 5 10 5 L22 5 Q26 5 26 8 L25 24 Q22 27 16 27 Q10 27 7 24 Z" fill={mid}/>
+          {/* left pec — main mass */}
+          <path d="M6 9 Q5 6 10 5.5 Q14.5 5 15.5 9 L15.5 18 Q12 21.5 8 19.5 Q4.5 17 5.5 13 Z" fill={base}/>
+          {/* right pec — main mass */}
+          <path d="M26 9 Q27 6 22 5.5 Q17.5 5 16.5 9 L16.5 18 Q20 21.5 24 19.5 Q27.5 17 26.5 13 Z" fill={base}/>
+          {/* left pec lower shadow */}
+          <path d="M7 17 Q10 21 15.5 18.5 L15.5 18 Q12 21.5 8 19.5 Z" fill={shadow}/>
+          {/* right pec lower shadow */}
+          <path d="M25 17 Q22 21 16.5 18.5 L16.5 18 Q20 21.5 24 19.5 Z" fill={shadow}/>
+          {/* clavicle arc left */}
+          <path d="M8 6.5 Q12 5 15.5 6.5" stroke={shadow} strokeWidth="1.1" fill="none" strokeLinecap="round"/>
+          {/* clavicle arc right */}
+          <path d="M16.5 6.5 Q20 5 24 6.5" stroke={shadow} strokeWidth="1.1" fill="none" strokeLinecap="round"/>
+          {/* sternum groove */}
+          <line x1="16" y1="9" x2="16" y2="20" stroke={shadow} strokeWidth="1.0"/>
+          {/* left pec highlight sweep */}
+          <ellipse cx="10" cy="11" rx="3.5" ry="2" fill={hilit} transform="rotate(-20,10,11)"/>
+          {/* right pec highlight sweep */}
+          <ellipse cx="22" cy="11" rx="3.5" ry="2" fill={hilit} transform="rotate(20,22,11)"/>
+          {/* left specular */}
+          <ellipse cx="9.5" cy="9.5" rx="1.4" ry="0.8" fill={spec} transform="rotate(-25,9.5,9.5)"/>
+          {/* right specular */}
+          <ellipse cx="22.5" cy="9.5" rx="1.4" ry="0.8" fill={spec} transform="rotate(25,22.5,9.5)"/>
         </svg>
       );
     },
@@ -68,21 +84,37 @@ const MUSCLES: MuscleGroup[] = [
     id: "back",
     label: "Back",
     icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
+      const base   = active ? "#c2c2d4" : "rgba(255,255,255,0.22)";
+      const mid    = active ? "#a0a0b8" : "rgba(255,255,255,0.14)";
+      const shadow = active ? "rgba(40,40,60,0.38)" : "rgba(0,0,0,0.20)";
+      const hilit  = active ? "#dcdce8" : "rgba(255,255,255,0.38)";
+      const spec   = active ? "rgba(255,255,255,0.80)" : "rgba(255,255,255,0.50)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
-          {/* lat spread V-taper */}
-          <path d="M16 27 L3 19 L3 11 L9 7 L16 10 L23 7 L29 11 L29 19 Z" fill={f}/>
+          {/* torso silhouette */}
+          <path d="M16 28 L5 21 L4 12 L9 7 L16 9.5 L23 7 L28 12 L27 21 Z" fill={mid}/>
+          {/* left lat wing */}
+          <path d="M16 9.5 L9 7 L4 12 L4.5 19 L10 23 L16 24 Z" fill={base}/>
+          {/* right lat wing */}
+          <path d="M16 9.5 L23 7 L28 12 L27.5 19 L22 23 L16 24 Z" fill={base}/>
+          {/* left lat lower shadow */}
+          <path d="M5.5 17 L10 23 L16 24 L16 22 L11 20 L6 15 Z" fill={shadow}/>
+          {/* right lat lower shadow */}
+          <path d="M26.5 17 L22 23 L16 24 L16 22 L21 20 L26 15 Z" fill={shadow}/>
+          {/* trap mass at top */}
+          <path d="M9 7 Q16 5.5 23 7 Q20 10 16 10.5 Q12 10 9 7 Z" fill={base}/>
+          {/* rhomboid shadow between scapulae */}
+          <path d="M13 10 Q16 12 19 10 Q16 14 13 10 Z" fill={shadow}/>
           {/* spine */}
-          <line x1="16" y1="10" x2="16" y2="27" stroke={s} strokeWidth="1.5"/>
-          {/* trap shoulder line */}
-          <path d="M9 7 Q16 9 23 7" stroke={s} strokeWidth="1.2" fill="none"/>
-          {/* lat definition */}
-          <path d="M7 16 Q16 18 25 16" stroke={s} strokeWidth="0.9" fill="none"/>
-          {/* highlight */}
-          <ellipse cx="10" cy="13" rx="3" ry="2" fill="rgba(255,255,255,0.12)" transform="rotate(20,10,13)"/>
-          <ellipse cx="22" cy="13" rx="3" ry="2" fill="rgba(255,255,255,0.12)" transform="rotate(-20,22,13)"/>
+          <line x1="16" y1="10" x2="16" y2="26" stroke={shadow} strokeWidth="1.1"/>
+          {/* lat highlight left */}
+          <ellipse cx="8.5" cy="15" rx="2.5" ry="4" fill={hilit} transform="rotate(15,8.5,15)"/>
+          {/* lat highlight right */}
+          <ellipse cx="23.5" cy="15" rx="2.5" ry="4" fill={hilit} transform="rotate(-15,23.5,15)"/>
+          {/* specular left */}
+          <ellipse cx="7.5" cy="13" rx="1.2" ry="0.7" fill={spec} transform="rotate(10,7.5,13)"/>
+          {/* specular right */}
+          <ellipse cx="24.5" cy="13" rx="1.2" ry="0.7" fill={spec} transform="rotate(-10,24.5,13)"/>
         </svg>
       );
     },
@@ -91,19 +123,41 @@ const MUSCLES: MuscleGroup[] = [
     id: "legs",
     label: "Legs",
     icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
+      const base   = active ? "#c2c2d4" : "rgba(255,255,255,0.22)";
+      const mid    = active ? "#a8a8bc" : "rgba(255,255,255,0.16)";
+      const shadow = active ? "rgba(40,40,60,0.38)" : "rgba(0,0,0,0.20)";
+      const hilit  = active ? "#dcdce8" : "rgba(255,255,255,0.38)";
+      const spec   = active ? "rgba(255,255,255,0.80)" : "rgba(255,255,255,0.50)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
-          {/* upper leg / quad */}
-          <path d="M10 4 Q9 4 8 6 L7 18 Q7 22 10 24 L13 26 Q15 27 16 26 L17 24 Q18 22 17 18 L16 6 Q15 4 14 4 Z" fill={f}/>
-          {/* lower leg / calf */}
-          <path d="M10 24 L13 26 L14 30 Q13 31 12 30 L9 28 Q8 26 10 24 Z" fill={f}/>
-          <path d="M16 26 L17 24 Q19 26 18 28 L16 30 Q15 31 14 30 L14 30 Z" fill={f}/>
-          {/* quad highlight */}
-          <ellipse cx="12" cy="12" rx="2" ry="4" fill="rgba(255,255,255,0.18)" transform="rotate(-8,12,12)"/>
-          {/* knee definition */}
-          <path d="M9 20 Q13 23 17 20" stroke={s} strokeWidth="0.9" fill="none"/>
+          {/* left quad */}
+          <path d="M5 4 Q4 4 3.5 6 L3 17 Q3 21 5.5 23 L8 25 Q10 26 11 24.5 L11.5 22 Q12.5 19 12 15 L11.5 6 Q11 4 9 4 Z" fill={base}/>
+          {/* right quad */}
+          <path d="M27 4 Q28 4 28.5 6 L29 17 Q29 21 26.5 23 L24 25 Q22 26 21 24.5 L20.5 22 Q19.5 19 20 15 L20.5 6 Q21 4 23 4 Z" fill={base}/>
+          {/* left quad inner shadow */}
+          <path d="M11 4 Q12 4 12 6 L12 15 Q12.5 19 11.5 22 L11 24.5 Q10.5 24 10 23 L10 6 Q10.5 4 11 4 Z" fill={mid}/>
+          {/* right quad inner shadow */}
+          <path d="M21 4 Q20 4 20 6 L20 15 Q19.5 19 20.5 22 L21 24.5 Q21.5 24 22 23 L22 6 Q21.5 4 21 4 Z" fill={mid}/>
+          {/* left vastus medialis teardrop */}
+          <ellipse cx="9.5" cy="21" rx="2.2" ry="1.5" fill={hilit}/>
+          {/* right vastus medialis teardrop */}
+          <ellipse cx="22.5" cy="21" rx="2.2" ry="1.5" fill={hilit}/>
+          {/* left knee */}
+          <path d="M4 21.5 Q7.5 24.5 11.5 21.5" stroke={shadow} strokeWidth="0.9" fill="none" strokeLinecap="round"/>
+          {/* right knee */}
+          <path d="M20.5 21.5 Q24.5 24.5 28 21.5" stroke={shadow} strokeWidth="0.9" fill="none" strokeLinecap="round"/>
+          {/* left calf */}
+          <path d="M5 23 L8 25 L9 29 Q8 30 7 29 L5 27 Q4 25 5 23 Z" fill={base}/>
+          {/* right calf */}
+          <path d="M27 23 L24 25 L23 29 Q24 30 25 29 L27 27 Q28 25 27 23 Z" fill={base}/>
+          {/* left quad highlight */}
+          <ellipse cx="6.5" cy="11" rx="1.5" ry="4" fill={hilit} transform="rotate(-6,6.5,11)"/>
+          {/* right quad highlight */}
+          <ellipse cx="25.5" cy="11" rx="1.5" ry="4" fill={hilit} transform="rotate(6,25.5,11)"/>
+          {/* specular left */}
+          <ellipse cx="6" cy="8.5" rx="1.0" ry="0.6" fill={spec}/>
+          {/* specular right */}
+          <ellipse cx="26" cy="8.5" rx="1.0" ry="0.6" fill={spec}/>
         </svg>
       );
     },
@@ -112,24 +166,39 @@ const MUSCLES: MuscleGroup[] = [
     id: "shoulders",
     label: "Shoulders",
     icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
+      const base   = active ? "#c2c2d4" : "rgba(255,255,255,0.22)";
+      const mid    = active ? "#a0a0b8" : "rgba(255,255,255,0.14)";
+      const shadow = active ? "rgba(40,40,60,0.38)" : "rgba(0,0,0,0.20)";
+      const hilit  = active ? "#dcdce8" : "rgba(255,255,255,0.38)";
+      const spec   = active ? "rgba(255,255,255,0.80)" : "rgba(255,255,255,0.50)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
-          {/* left delt cap */}
-          <circle cx="6.5" cy="15" r="5.5" fill={f}/>
-          {/* right delt cap */}
-          <circle cx="25.5" cy="15" r="5.5" fill={f}/>
-          {/* trap/neck body */}
-          <path d="M12 15 Q16 10 20 15 L20 22 Q16 25 12 22 Z" fill={f}/>
+          {/* left delt — main sphere */}
+          <circle cx="6" cy="17" r="5.5" fill={base}/>
+          {/* right delt — main sphere */}
+          <circle cx="26" cy="17" r="5.5" fill={base}/>
+          {/* left delt shadow (lower half) */}
+          <path d="M1 17 Q1 22 6 22.5 Q11 22 11 17 Z" fill={shadow}/>
+          {/* right delt shadow (lower half) */}
+          <path d="M31 17 Q31 22 26 22.5 Q21 22 21 17 Z" fill={shadow}/>
+          {/* trap body */}
+          <path d="M11 17 Q11 12 16 11 Q21 12 21 17 L21 24 Q16 26.5 11 24 Z" fill={mid}/>
+          {/* trap top / upper trap */}
+          <path d="M9 9 Q16 7 23 9 Q20 13 16 13.5 Q12 13 9 9 Z" fill={base}/>
           {/* neck */}
-          <rect x="13.5" y="7" width="5" height="6" rx="2.5" fill={f}/>
-          {/* delt highlight */}
-          <ellipse cx="5" cy="13" rx="2" ry="1.5" fill="rgba(255,255,255,0.2)" transform="rotate(-20,5,13)"/>
-          <ellipse cx="27" cy="13" rx="2" ry="1.5" fill="rgba(255,255,255,0.2)" transform="rotate(20,27,13)"/>
-          {/* seam lines */}
-          <path d="M12 15 Q9 14 6.5 15" stroke={s} strokeWidth="0.8" fill="none"/>
-          <path d="M20 15 Q23 14 25.5 15" stroke={s} strokeWidth="0.8" fill="none"/>
+          <path d="M13 7 Q13 4 16 4 Q19 4 19 7 L19 10 Q16 11 13 10 Z" fill={mid}/>
+          {/* delt–trap seam left */}
+          <path d="M11 17 Q8.5 15.5 6 17" stroke={shadow} strokeWidth="0.8" fill="none"/>
+          {/* delt–trap seam right */}
+          <path d="M21 17 Q23.5 15.5 26 17" stroke={shadow} strokeWidth="0.8" fill="none"/>
+          {/* left delt highlight */}
+          <ellipse cx="4.5" cy="14.5" rx="2.2" ry="1.5" fill={hilit} transform="rotate(-25,4.5,14.5)"/>
+          {/* right delt highlight */}
+          <ellipse cx="27.5" cy="14.5" rx="2.2" ry="1.5" fill={hilit} transform="rotate(25,27.5,14.5)"/>
+          {/* specular left */}
+          <ellipse cx="4" cy="13.5" rx="1.0" ry="0.6" fill={spec} transform="rotate(-20,4,13.5)"/>
+          {/* specular right */}
+          <ellipse cx="28" cy="13.5" rx="1.0" ry="0.6" fill={spec} transform="rotate(20,28,13.5)"/>
         </svg>
       );
     },
@@ -138,18 +207,31 @@ const MUSCLES: MuscleGroup[] = [
     id: "arms",
     label: "Arms",
     icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
+      const base   = active ? "#c2c2d4" : "rgba(255,255,255,0.22)";
+      const mid    = active ? "#a0a0b8" : "rgba(255,255,255,0.14)";
+      const shadow = active ? "rgba(40,40,60,0.38)" : "rgba(0,0,0,0.20)";
+      const hilit  = active ? "#dcdce8" : "rgba(255,255,255,0.38)";
+      const spec   = active ? "rgba(255,255,255,0.80)" : "rgba(255,255,255,0.50)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
-          {/* upper arm */}
-          <path d="M8 6 Q6 8 6 12 Q6 17 10 19 L14 20 Q16 20 17 18 Q18 15 16 12 Q14 9 12 8 Z" fill={f}/>
+          {/* upper arm body */}
+          <path d="M9 5 Q7 7 7 11 Q7 17 11 19.5 L16 21 Q18.5 21 20 19 Q21.5 16 20 13 Q18 9 15 7 Q12 5 9 5 Z" fill={base}/>
+          {/* bicep peak bulge */}
+          <path d="M9 7 Q7.5 10 8 14 Q9 17.5 12.5 18.5 Q15.5 19 17.5 17 Q10 16 9.5 11 Q9 8 10 7 Z" fill={hilit}/>
+          {/* tricep back shadow */}
+          <path d="M18 8 Q20 11 20 14 Q20 18 17 20 L16 21 Q18.5 21 20 19 Q21.5 16 20 13 Q18.5 9.5 18 8 Z" fill={shadow}/>
           {/* forearm */}
-          <path d="M10 19 L14 20 L16 26 Q15 28 13 28 L10 27 Q8 25 9 22 Z" fill={f}/>
-          {/* bicep peak */}
-          <ellipse cx="11" cy="12" rx="2.5" ry="4" fill="rgba(255,255,255,0.2)" transform="rotate(-15,11,12)"/>
-          {/* elbow curve */}
-          <path d="M8 18 Q12 22 16 18" stroke={s} strokeWidth="0.9" fill="none"/>
+          <path d="M11 19.5 L16 21 L18 27 Q17 29.5 15 29 L12 28 Q9.5 26.5 10 23 Z" fill={base}/>
+          {/* forearm inner taper shadow */}
+          <path d="M15 21 L16 21 L18 27 Q17 29.5 15.5 29 L15 28 Q14 26 14.5 23 Z" fill={mid}/>
+          {/* elbow crease */}
+          <path d="M8.5 18.5 Q13 22.5 18.5 18.5" stroke={shadow} strokeWidth="1.0" fill="none" strokeLinecap="round"/>
+          {/* bicep main highlight */}
+          <ellipse cx="12" cy="12" rx="3" ry="5" fill={hilit} transform="rotate(-12,12,12)" opacity="0.6"/>
+          {/* bicep specular glint */}
+          <ellipse cx="11" cy="9.5" rx="1.5" ry="0.9" fill={spec} transform="rotate(-18,11,9.5)"/>
+          {/* secondary specular */}
+          <ellipse cx="13" cy="7.5" rx="0.9" ry="0.5" fill={spec} transform="rotate(-10,13,7.5)"/>
         </svg>
       );
     },
@@ -158,20 +240,47 @@ const MUSCLES: MuscleGroup[] = [
     id: "core",
     label: "Core",
     icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const gap = active ? "rgba(13,14,25,0.7)" : "rgba(0,0,0,0.35)";
+      const base   = active ? "#c2c2d4" : "rgba(255,255,255,0.22)";
+      const shadow = active ? "rgba(40,40,60,0.45)" : "rgba(0,0,0,0.28)";
+      const hilit  = active ? "#dcdce8" : "rgba(255,255,255,0.38)";
+      const spec   = active ? "rgba(255,255,255,0.80)" : "rgba(255,255,255,0.50)";
+      const groove = active ? "rgba(30,30,50,0.50)" : "rgba(0,0,0,0.32)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
-          {/* 6-pack: 2 columns × 3 rows */}
-          <rect x="7"  y="5"  width="7" height="6" rx="2" fill={f}/>
-          <rect x="18" y="5"  width="7" height="6" rx="2" fill={f}/>
-          <rect x="7"  y="13" width="7" height="6" rx="2" fill={f}/>
-          <rect x="18" y="13" width="7" height="6" rx="2" fill={f}/>
-          <rect x="7"  y="21" width="7" height="6" rx="2" fill={f}/>
-          <rect x="18" y="21" width="7" height="6" rx="2" fill={f}/>
-          {/* highlights */}
-          <rect x="8"  y="6"  width="3" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
-          <rect x="19" y="6"  width="3" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+          {/* torso outline */}
+          <path d="M10 3 Q8 4 7.5 6 L7 26 Q8.5 29 16 29 Q23.5 29 25 26 L24.5 6 Q24 4 22 3 Z" fill="rgba(255,255,255,0.06)"/>
+          {/* ab block row 1 left */}
+          <rect x="8"  y="5"  width="6.5" height="5.5" rx="1.8" fill={base}/>
+          {/* ab block row 1 right */}
+          <rect x="17.5" y="5"  width="6.5" height="5.5" rx="1.8" fill={base}/>
+          {/* ab block row 2 left */}
+          <rect x="8"  y="12" width="6.5" height="5.5" rx="1.8" fill={base}/>
+          {/* ab block row 2 right */}
+          <rect x="17.5" y="12" width="6.5" height="5.5" rx="1.8" fill={base}/>
+          {/* ab block row 3 left */}
+          <rect x="8"  y="19" width="6.5" height="5.5" rx="1.8" fill={base}/>
+          {/* ab block row 3 right */}
+          <rect x="17.5" y="19" width="6.5" height="5.5" rx="1.8" fill={base}/>
+          {/* inner shadow bottom of each block row 1 */}
+          <rect x="8"   y="8.5" width="6.5" height="2" rx="0" fill={shadow}/>
+          <rect x="17.5" y="8.5" width="6.5" height="2" rx="0" fill={shadow}/>
+          {/* inner shadow row 2 */}
+          <rect x="8"   y="15.5" width="6.5" height="2" rx="0" fill={shadow}/>
+          <rect x="17.5" y="15.5" width="6.5" height="2" rx="0" fill={shadow}/>
+          {/* inner shadow row 3 */}
+          <rect x="8"   y="22.5" width="6.5" height="2" rx="0" fill={shadow}/>
+          <rect x="17.5" y="22.5" width="6.5" height="2" rx="0" fill={shadow}/>
+          {/* highlight top row 1 */}
+          <rect x="9"   y="5.8" width="3.5" height="1.8" rx="0.9" fill={hilit}/>
+          <rect x="18.5" y="5.8" width="3.5" height="1.8" rx="0.9" fill={hilit}/>
+          {/* specular row 1 */}
+          <ellipse cx="10.2" cy="6.2" rx="1.0" ry="0.5" fill={spec}/>
+          <ellipse cx="19.7" cy="6.2" rx="1.0" ry="0.5" fill={spec}/>
+          {/* linea alba center groove */}
+          <line x1="16" y1="5" x2="16" y2="25" stroke={groove} strokeWidth="1.0"/>
+          {/* oblique curves */}
+          <path d="M8 6 Q6 16 7.5 25" stroke={groove} strokeWidth="0.7" fill="none" strokeLinecap="round"/>
+          <path d="M24 6 Q26 16 24.5 25" stroke={groove} strokeWidth="0.7" fill="none" strokeLinecap="round"/>
         </svg>
       );
     },
@@ -180,19 +289,37 @@ const MUSCLES: MuscleGroup[] = [
     id: "glutes",
     label: "Glutes",
     icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(120,117,255,0.5)" : "rgba(0,0,0,0.2)";
+      const base   = active ? "#c2c2d4" : "rgba(255,255,255,0.22)";
+      const shadow = active ? "rgba(40,40,60,0.38)" : "rgba(0,0,0,0.20)";
+      const hilit  = active ? "#dcdce8" : "rgba(255,255,255,0.38)";
+      const spec   = active ? "rgba(255,255,255,0.80)" : "rgba(255,255,255,0.50)";
+      const crease = active ? "rgba(30,30,50,0.55)" : "rgba(0,0,0,0.28)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
-          {/* left glute */}
-          <path d="M3 14 Q3 8 9 7 Q15 6 16 12 L16 24 Q12 28 8 26 Q3 23 3 18 Z" fill={f}/>
-          {/* right glute */}
-          <path d="M29 14 Q29 8 23 7 Q17 6 16 12 L16 24 Q20 28 24 26 Q29 23 29 18 Z" fill={f}/>
-          {/* glute divide */}
-          <line x1="16" y1="12" x2="16" y2="25" stroke={s} strokeWidth="1.2"/>
-          {/* highlights */}
-          <ellipse cx="9" cy="14" rx="3" ry="3.5" fill="rgba(255,255,255,0.14)"/>
-          <ellipse cx="23" cy="14" rx="3" ry="3.5" fill="rgba(255,255,255,0.14)"/>
+          {/* hip band at top */}
+          <path d="M5 9 Q16 7 27 9 L27 13 Q16 11 5 13 Z" fill={base}/>
+          {/* left glute mound */}
+          <path d="M3.5 13 Q3 9 8 8 Q13.5 7 15.5 12.5 L15.5 24 Q12 28.5 8 26.5 Q3 23.5 3.5 18.5 Z" fill={base}/>
+          {/* right glute mound */}
+          <path d="M28.5 13 Q29 9 24 8 Q18.5 7 16.5 12.5 L16.5 24 Q20 28.5 24 26.5 Q29 23.5 28.5 18.5 Z" fill={base}/>
+          {/* left glute lower shadow */}
+          <path d="M4 20 Q5 25 9 26.5 Q13 27.5 15.5 24 L15.5 22 Q12 26 8.5 24 Q5 22 4.5 19 Z" fill={shadow}/>
+          {/* right glute lower shadow */}
+          <path d="M28 20 Q27 25 23 26.5 Q19 27.5 16.5 24 L16.5 22 Q20 26 23.5 24 Q27 22 27.5 19 Z" fill={shadow}/>
+          {/* gluteal crease */}
+          <path d="M16 12 Q15.5 18 16 25" stroke={crease} strokeWidth="1.4" fill="none" strokeLinecap="round"/>
+          {/* under-curve shadow left */}
+          <path d="M5 23 Q9 28.5 15.5 25" stroke={shadow} strokeWidth="1.0" fill="none" strokeLinecap="round"/>
+          {/* under-curve shadow right */}
+          <path d="M27 23 Q23 28.5 16.5 25" stroke={shadow} strokeWidth="1.0" fill="none" strokeLinecap="round"/>
+          {/* left highlight arc */}
+          <ellipse cx="8.5" cy="15" rx="3.5" ry="4" fill={hilit}/>
+          {/* right highlight arc */}
+          <ellipse cx="23.5" cy="15" rx="3.5" ry="4" fill={hilit}/>
+          {/* specular left */}
+          <ellipse cx="7.5" cy="12.5" rx="1.5" ry="1.0" fill={spec}/>
+          {/* specular right */}
+          <ellipse cx="24.5" cy="12.5" rx="1.5" ry="1.0" fill={spec}/>
         </svg>
       );
     },
@@ -201,16 +328,30 @@ const MUSCLES: MuscleGroup[] = [
     id: "cardio",
     label: "Cardio",
     icon: (active) => {
-      const f = active ? "#f87171" : "rgba(255,255,255,0.28)";
-      const accent = active ? "#fbbf24" : "rgba(255,255,255,0.15)";
+      const base   = active ? "#c8a0a0" : "rgba(255,255,255,0.22)";
+      const shadow = active ? "rgba(80,20,20,0.38)" : "rgba(0,0,0,0.20)";
+      const hilit  = active ? "#e8c8c8" : "rgba(255,255,255,0.38)";
+      const spec   = active ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.50)";
+      const flame1 = active ? "#f59e8a" : "rgba(255,255,255,0.22)";
+      const flame2 = active ? "#fcd97a" : "rgba(255,255,255,0.12)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
-          {/* heart shape */}
-          <path d="M16 27 Q6 19 6 12 Q6 6 11 5 Q14 5 16 8 Q18 5 21 5 Q26 6 26 12 Q26 19 16 27 Z" fill={f}/>
-          {/* flame inside heart */}
-          <path d="M16 22 Q13 18 14 15 Q15 13 16 14 Q17 13 18 15 Q19 18 16 22 Z" fill={accent}/>
-          {/* highlight */}
-          <ellipse cx="12" cy="10" rx="2" ry="1.5" fill="rgba(255,255,255,0.25)" transform="rotate(-20,12,10)"/>
+          {/* heart base shape */}
+          <path d="M16 27.5 Q5 19.5 5 12.5 Q5 6 11 5 Q14 5 16 8.5 Q18 5 21 5 Q27 6 27 12.5 Q27 19.5 16 27.5 Z" fill={base}/>
+          {/* right lobe shadow */}
+          <path d="M20 6 Q27 7 27 13 Q27 20 16 27.5 Q22 22 23.5 16 Q25 10 20 6 Z" fill={shadow}/>
+          {/* left lobe lower crease shadow */}
+          <path d="M5 16 Q6 21 10 24 Q13 26 16 27.5 Q10 23 8 18 Q6 14 5 12.5 Z" fill={shadow}/>
+          {/* left lobe highlight */}
+          <ellipse cx="11" cy="11" rx="4" ry="3" fill={hilit} transform="rotate(-20,11,11)"/>
+          {/* specular left lobe */}
+          <ellipse cx="10" cy="9" rx="2" ry="1.2" fill={spec} transform="rotate(-25,10,9)"/>
+          {/* secondary specular */}
+          <ellipse cx="13" cy="7.5" rx="1" ry="0.6" fill={spec} transform="rotate(-10,13,7.5)"/>
+          {/* flame outer */}
+          <path d="M16 23.5 Q12.5 19 13.5 15.5 Q14.5 13 16 14.5 Q17.5 13 18.5 15.5 Q19.5 19 16 23.5 Z" fill={flame1}/>
+          {/* flame inner core */}
+          <path d="M16 21 Q14.5 18.5 15.2 16.5 Q15.8 15.2 16 16 Q16.2 15.2 16.8 16.5 Q17.5 18.5 16 21 Z" fill={flame2}/>
         </svg>
       );
     },
