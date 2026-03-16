@@ -67,3 +67,19 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function DELETE(_req: NextRequest) {
+  try {
+    const session = await safeAuth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    await prisma.user.delete({ where: { id: session.user.id } });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("DELETE /api/users/me error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

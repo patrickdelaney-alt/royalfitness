@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { HiArrowLeft, HiCamera } from "react-icons/hi";
 import { compressImage } from "@/lib/compress-image";
 
@@ -27,6 +27,10 @@ export default function EditProfilePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   const username = (session?.user as { username?: string })?.username ?? "";
 
@@ -113,6 +117,23 @@ export default function EditProfilePage() {
       setError("Something went wrong");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== "DELETE") return;
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/users/me", { method: "DELETE" });
+      if (!res.ok) {
+        setError("Failed to delete account");
+        return;
+      }
+      await signOut({ callbackUrl: "/signin" });
+    } catch {
+      setError("Something went wrong");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -291,7 +312,54 @@ export default function EditProfilePage() {
         >
           {saving ? "Saving..." : "Save Changes"}
         </button>
+
+        <div className="pt-4 text-center">
+          <button
+            type="button"
+            onClick={() => setShowDeleteModal(true)}
+            className="text-xs text-muted hover:text-red-500 underline transition-colors"
+          >
+            Delete Account
+          </button>
+        </div>
       </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-sm rounded-xl bg-background border border-border p-6 space-y-4">
+            <h2 className="text-base font-bold text-foreground">Delete Account</h2>
+            <p className="text-sm text-muted">
+              This will permanently delete your account and all your data. This action cannot be undone.
+            </p>
+            <p className="text-sm text-foreground">
+              Type <strong>DELETE</strong> to confirm:
+            </p>
+            <input
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              placeholder="DELETE"
+              className={inputClass}
+            />
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => { setShowDeleteModal(false); setDeleteConfirm(""); }}
+                className="flex-1 py-2 rounded-lg border border-border text-sm text-foreground hover:bg-gray-100/10 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirm !== "DELETE" || deleting}
+                className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {deleting ? "Deleting..." : "Delete Forever"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
