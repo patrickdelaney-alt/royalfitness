@@ -126,6 +126,7 @@ enum PostType {
   MEAL
   WELLNESS
   GENERAL
+  CHECKIN
 }
 
 enum Visibility {

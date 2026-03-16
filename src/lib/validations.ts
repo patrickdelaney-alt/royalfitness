@@ -17,7 +17,7 @@ export const signInSchema = z.object({
 });
 
 export const createPostSchema = z.object({
-  type: z.enum(["WORKOUT", "MEAL", "WELLNESS", "GENERAL"]),
+  type: z.enum(["WORKOUT", "MEAL", "WELLNESS", "GENERAL", "CHECKIN"]),
   caption: z.string().max(2000).optional(),
   visibility: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]).default("PUBLIC"),
   tags: z.array(z.string().max(50)).max(10).default([]),
@@ -93,6 +93,8 @@ export const commentSchema = z.object({
 export const createGymSchema = z.object({
   name: z.string().min(1).max(200),
   address: z.string().max(500).optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 });
 
 export const catalogMealSchema = z.object({

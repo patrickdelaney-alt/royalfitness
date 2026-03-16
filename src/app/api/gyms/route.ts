@@ -12,6 +12,8 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const q = searchParams.get("q")?.trim();
+    const lat = parseFloat(searchParams.get("lat") || "");
+    const lng = parseFloat(searchParams.get("lng") || "");
 
     const gyms = await prisma.gym.findMany({
       where: q
@@ -23,6 +25,27 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
       take: 50,
     });
+
+    // If lat/lng provided, sort results by proximity (nearest first)
+    if (!isNaN(lat) && !isNaN(lng)) {
+      gyms.sort((a, b) => {
+        const distA =
+          a.latitude != null && a.longitude != null
+            ? Math.sqrt(
+                Math.pow(a.latitude - lat, 2) +
+                  Math.pow(a.longitude - lng, 2)
+              )
+            : Infinity;
+        const distB =
+          b.latitude != null && b.longitude != null
+            ? Math.sqrt(
+                Math.pow(b.latitude - lat, 2) +
+                  Math.pow(b.longitude - lng, 2)
+              )
+            : Infinity;
+        return distA - distB;
+      });
+    }
 
     return NextResponse.json(gyms);
   } catch (error) {
@@ -48,6 +71,8 @@ export async function POST(req: NextRequest) {
       data: {
         name: data.name,
         address: data.address,
+        latitude: data.latitude,
+        longitude: data.longitude,
         members: {
           create: {
             userId: session.user.id,

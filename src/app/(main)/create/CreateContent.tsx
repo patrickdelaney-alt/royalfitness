@@ -1,13 +1,21 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiPlay, HiLightningBolt } from "react-icons/hi";
+import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiPlay, HiLightningBolt, HiLocationMarker, HiSearch } from "react-icons/hi";
 import toast from "react-hot-toast";
 import { compressImage } from "@/lib/compress-image";
 import { successNotification } from "@/lib/haptics";
 
-type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL";
+type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN";
+
+interface GymResult {
+  id: string;
+  name: string;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+}
 
 
 interface ExerciseSet {
@@ -373,7 +381,7 @@ export default function CreatePostContent() {
 
   const initialType = ((): PostType => {
     const param = searchParams.get("type")?.toUpperCase();
-    if (param && ["WORKOUT", "MEAL", "WELLNESS", "GENERAL"].includes(param)) {
+    if (param && ["WORKOUT", "MEAL", "WELLNESS", "GENERAL", "CHECKIN"].includes(param)) {
       return param as PostType;
     }
     return "WORKOUT";
@@ -514,6 +522,96 @@ export default function CreatePostContent() {
   const [wellnessDuration, setWellnessDuration] = useState("");
   const [intensity, setIntensity] = useState("");
   const [wellnessMood, setWellnessMood] = useState(7);
+
+  // ── Check-in fields ───────────────────────────────────────
+  const [checkInGymId, setCheckInGymId] = useState<string | null>(null);
+  const [checkInGymName, setCheckInGymName] = useState("");
+  const [gymSearchQuery, setGymSearchQuery] = useState("");
+  const [gymSearchResults, setGymSearchResults] = useState<GymResult[]>([]);
+  const [gymSearchLoading, setGymSearchLoading] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [showAddGym, setShowAddGym] = useState(false);
+  const [newGymName, setNewGymName] = useState("");
+  const [newGymAddress, setNewGymAddress] = useState("");
+  const [newGymLat, setNewGymLat] = useState<number | null>(null);
+  const [newGymLng, setNewGymLng] = useState<number | null>(null);
+  const [addingGym, setAddingGym] = useState(false);
+
+  const searchGyms = useCallback(async (query: string, lat?: number, lng?: number) => {
+    setGymSearchLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (query.trim()) params.set("q", query.trim());
+      if (lat != null && lng != null) {
+        params.set("lat", String(lat));
+        params.set("lng", String(lng));
+      }
+      const res = await fetch(`/api/gyms?${params.toString()}`);
+      if (res.ok) {
+        const data: GymResult[] = await res.json();
+        setGymSearchResults(data);
+      }
+    } catch {
+      // silent
+    } finally {
+      setGymSearchLoading(false);
+    }
+  }, []);
+
+  const requestLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+    setLocationLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setNewGymLat(latitude);
+        setNewGymLng(longitude);
+        setLocationLoading(false);
+        searchGyms("", latitude, longitude);
+        toast.success("Location found — showing nearby gyms");
+      },
+      () => {
+        setLocationLoading(false);
+        toast.error("Could not get your location");
+      },
+      { timeout: 10000 }
+    );
+  }, [searchGyms]);
+
+  const handleAddGym = useCallback(async () => {
+    if (!newGymName.trim()) return;
+    setAddingGym(true);
+    try {
+      const res = await fetch("/api/gyms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newGymName.trim(),
+          address: newGymAddress.trim() || undefined,
+          latitude: newGymLat ?? undefined,
+          longitude: newGymLng ?? undefined,
+        }),
+      });
+      if (res.ok) {
+        const gym: GymResult = await res.json();
+        setCheckInGymId(gym.id);
+        setCheckInGymName(gym.name);
+        setShowAddGym(false);
+        setNewGymName("");
+        setNewGymAddress("");
+        toast.success(`"${gym.name}" added!`);
+      } else {
+        toast.error("Failed to add gym");
+      }
+    } catch {
+      toast.error("Failed to add gym");
+    } finally {
+      setAddingGym(false);
+    }
+  }, [newGymName, newGymAddress, newGymLat, newGymLng]);
 
   // ── Muscle toggle with auto-name ──────────────────────────
   const toggleMuscle = (id: string) => {
@@ -667,6 +765,15 @@ export default function CreatePostContent() {
         };
       }
 
+      if (type === "CHECKIN") {
+        if (!checkInGymId) {
+          setError("Please select a gym for your check-in");
+          setSubmitting(false);
+          return;
+        }
+        body.gymId = checkInGymId;
+      }
+
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -703,6 +810,7 @@ export default function CreatePostContent() {
     MEAL: "Meal",
     WELLNESS: "Wellness",
     GENERAL: "General",
+    CHECKIN: "Check-in",
   };
 
   const TYPE_EMOJI: Record<PostType, string> = {
@@ -710,6 +818,7 @@ export default function CreatePostContent() {
     MEAL: "🥗",
     WELLNESS: "🧘",
     GENERAL: "📝",
+    CHECKIN: "📍",
   };
 
   // ── Success overlay ────────────────────────────────────────
@@ -791,8 +900,72 @@ export default function CreatePostContent() {
         <h1 className="text-lg font-bold">New Post</h1>
       </div>
 
-      {/* Post type selector */}
-      <div className="flex gap-2 mb-5 p-1 rounded-xl" style={{ background: "rgba(255,255,255,0.04)" }}>
+      {/* Quick Check-in button */}
+      <button
+        onClick={() => {
+          setType("CHECKIN");
+          if (gymSearchResults.length === 0) searchGyms("");
+        }}
+        className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl mb-3 transition-all active:scale-[0.98]"
+        style={
+          type === "CHECKIN"
+            ? {
+                background: "rgba(56,189,248,0.10)",
+                border: "1px solid rgba(103,232,249,0.4)",
+              }
+            : {
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }
+        }
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{
+              background:
+                type === "CHECKIN"
+                  ? "rgba(56,189,248,0.15)"
+                  : "rgba(255,255,255,0.06)",
+            }}
+          >
+            <HiLocationMarker
+              className="w-5 h-5"
+              style={{ color: type === "CHECKIN" ? "#67e8f9" : "rgba(255,255,255,0.4)" }}
+            />
+          </div>
+          <div className="text-left">
+            <p
+              className="text-sm font-bold leading-tight"
+              style={{ color: type === "CHECKIN" ? "#67e8f9" : "rgba(255,255,255,0.8)" }}
+            >
+              Quick Check-in
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+              Tap to post you went to the gym
+            </p>
+          </div>
+        </div>
+        <span
+          className="text-xs font-bold px-3 py-1.5 rounded-xl flex-shrink-0"
+          style={
+            type === "CHECKIN"
+              ? { background: "rgba(56,189,248,0.15)", color: "#67e8f9" }
+              : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
+          }
+        >
+          {type === "CHECKIN" ? "Selected ✓" : "Tap →"}
+        </span>
+      </button>
+
+      {/* Post type selector (detailed posts) */}
+      <div
+        className="flex gap-2 mb-5 p-1 rounded-xl transition-opacity"
+        style={{
+          background: "rgba(255,255,255,0.04)",
+          opacity: type === "CHECKIN" ? 0.45 : 1,
+        }}
+      >
         {(["WORKOUT", "MEAL", "WELLNESS", "GENERAL"] as PostType[]).map((t) => (
           <button
             key={t}
@@ -816,6 +989,174 @@ export default function CreatePostContent() {
       )}
 
       <div className="space-y-4">
+        {/* ─── CHECKIN ─────────────────────────────────────── */}
+        {type === "CHECKIN" && (
+          <>
+            {/* Selected gym display */}
+            {checkInGymId ? (
+              <div
+                className="flex items-center justify-between px-4 py-3.5 rounded-2xl"
+                style={{ background: "rgba(56,189,248,0.08)", border: "1px solid rgba(103,232,249,0.3)" }}
+              >
+                <div className="flex items-center gap-3">
+                  <HiLocationMarker className="w-5 h-5 flex-shrink-0" style={{ color: "#67e8f9" }} />
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: "#67e8f9" }}>{checkInGymName}</p>
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Gym selected</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setCheckInGymId(null); setCheckInGymName(""); }}
+                  className="text-xs px-3 py-1.5 rounded-lg transition-colors"
+                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}
+                >
+                  Change
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Location + Search row */}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={requestLocation}
+                    disabled={locationLoading}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-60 flex-shrink-0"
+                    style={{ background: "rgba(56,189,248,0.10)", border: "1px solid rgba(103,232,249,0.25)", color: "#67e8f9" }}
+                  >
+                    <HiLocationMarker className="w-4 h-4 flex-shrink-0" />
+                    {locationLoading ? "Locating..." : "Near me"}
+                  </button>
+                  <div className="relative flex-1">
+                    <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />
+                    <input
+                      type="text"
+                      value={gymSearchQuery}
+                      onChange={(e) => {
+                        setGymSearchQuery(e.target.value);
+                        searchGyms(e.target.value);
+                      }}
+                      placeholder="Search gyms..."
+                      className="input-dark w-full pl-9"
+                    />
+                  </div>
+                </div>
+
+                {/* Gym results */}
+                {gymSearchLoading ? (
+                  <p className="text-xs text-center py-3" style={{ color: "rgba(255,255,255,0.3)" }}>
+                    Searching...
+                  </p>
+                ) : gymSearchResults.length > 0 ? (
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                    {gymSearchResults.map((gym) => (
+                      <button
+                        key={gym.id}
+                        type="button"
+                        onClick={() => { setCheckInGymId(gym.id); setCheckInGymName(gym.name); }}
+                        className="w-full text-left px-3.5 py-3 rounded-xl transition-all"
+                        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.85)" }}
+                      >
+                        <p className="text-sm font-medium leading-tight">{gym.name}</p>
+                        {gym.address && (
+                          <p className="text-xs mt-0.5 truncate" style={{ color: "rgba(255,255,255,0.35)" }}>{gym.address}</p>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                ) : gymSearchQuery.trim() ? (
+                  <p className="text-xs text-center py-3" style={{ color: "rgba(255,255,255,0.3)" }}>
+                    No gyms found for &ldquo;{gymSearchQuery}&rdquo;
+                  </p>
+                ) : null}
+
+                {/* Add new gym toggle */}
+                <button
+                  type="button"
+                  onClick={() => setShowAddGym((v) => !v)}
+                  className="flex items-center gap-1.5 text-xs font-medium transition-colors"
+                  style={{ color: "rgba(255,255,255,0.4)" }}
+                >
+                  <HiPlus className="w-3.5 h-3.5" />
+                  {showAddGym ? "Cancel" : "Add a new gym"}
+                </button>
+
+                {/* Add gym form */}
+                {showAddGym && (
+                  <div
+                    className="space-y-2.5 p-3.5 rounded-xl"
+                    style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+                  >
+                    <input
+                      type="text"
+                      value={newGymName}
+                      onChange={(e) => setNewGymName(e.target.value)}
+                      placeholder="Gym name (e.g. Tribeca Equinox)"
+                      className="input-dark w-full"
+                    />
+                    <input
+                      type="text"
+                      value={newGymAddress}
+                      onChange={(e) => setNewGymAddress(e.target.value)}
+                      placeholder="Address (optional)"
+                      className="input-dark w-full"
+                    />
+                    {newGymLat == null ? (
+                      <button
+                        type="button"
+                        onClick={requestLocation}
+                        disabled={locationLoading}
+                        className="flex items-center gap-1.5 text-xs transition-colors disabled:opacity-60"
+                        style={{ color: "#67e8f9" }}
+                      >
+                        <HiLocationMarker className="w-3.5 h-3.5" />
+                        {locationLoading ? "Getting location..." : "Tag location (optional)"}
+                      </button>
+                    ) : (
+                      <p className="text-xs flex items-center gap-1" style={{ color: "#67e8f9" }}>
+                        <HiLocationMarker className="w-3.5 h-3.5" />
+                        Location tagged
+                        <button
+                          type="button"
+                          onClick={() => { setNewGymLat(null); setNewGymLng(null); }}
+                          className="ml-1"
+                          style={{ color: "rgba(255,255,255,0.3)" }}
+                        >
+                          <HiX className="w-3 h-3" />
+                        </button>
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleAddGym}
+                      disabled={addingGym || !newGymName.trim()}
+                      className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all btn-gradient disabled:opacity-50"
+                      style={{ color: "#fff" }}
+                    >
+                      {addingGym ? "Adding..." : "Add Gym"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Optional caption */}
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>
+                Note <span style={{ color: "rgba(255,255,255,0.35)" }}>(optional)</span>
+              </label>
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                rows={2}
+                placeholder={checkInGymName ? `e.g. Great session at ${checkInGymName}!` : "Add a note..."}
+                className="textarea-dark w-full resize-none"
+              />
+            </div>
+          </>
+        )}
+
         {/* ─── WORKOUT ─────────────────────────────────────── */}
         {type === "WORKOUT" && (
           <>
@@ -1229,11 +1570,19 @@ export default function CreatePostContent() {
         {/* Submit */}
         <button
           onClick={handleSubmit}
-          disabled={submitting || uploading}
+          disabled={submitting || uploading || (type === "CHECKIN" && !checkInGymId)}
           className="w-full py-3 rounded-xl font-semibold transition-all btn-gradient shadow-glow disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ color: "#ffffff" }}
         >
-          {uploading ? "Uploading media..." : submitting ? "Posting..." : "Post"}
+          {uploading
+            ? "Uploading media..."
+            : submitting
+            ? "Posting..."
+            : type === "CHECKIN"
+            ? checkInGymId
+              ? `Post: I was at ${checkInGymName}`
+              : "Select a gym to check in"
+            : "Post"}
         </button>
       </div>
     </div>
