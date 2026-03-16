@@ -378,6 +378,7 @@ export default function CreatePostContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isFromSession = searchParams.get("fromSession") === "1";
 
   const initialType = ((): PostType => {
     const param = searchParams.get("type")?.toUpperCase();
@@ -388,6 +389,7 @@ export default function CreatePostContent() {
   })();
 
   const [type, setType] = useState<PostType>(initialType);
+  const [showWorkoutAdvanced, setShowWorkoutAdvanced] = useState(!isFromSession);
   const [caption, setCaption] = useState("");
   const [visibility, setVisibility] = useState<"PUBLIC" | "FOLLOWERS" | "PRIVATE">("PUBLIC");
   const [postDate, setPostDate] = useState("");
@@ -821,6 +823,18 @@ export default function CreatePostContent() {
     CHECKIN: "📍",
   };
 
+  const sourceMode: "LIVE_COMPLETED" | "LIVE_ACTIVE" | "MANUAL" = isFromSession
+    ? "LIVE_COMPLETED"
+    : sessionElapsed !== null
+    ? "LIVE_ACTIVE"
+    : "MANUAL";
+
+  const sourceModeLabel: Record<typeof sourceMode, string> = {
+    LIVE_COMPLETED: "Live workout complete",
+    LIVE_ACTIVE: "Live workout in progress",
+    MANUAL: "Manual post",
+  };
+
   // ── Success overlay ────────────────────────────────────────
   if (successPost) {
     const shareUrl = `https://royalwellness.app/p/${successPost.id}`;
@@ -900,7 +914,43 @@ export default function CreatePostContent() {
         <h1 className="text-lg font-bold">New Post</h1>
       </div>
 
+      {sourceMode !== "MANUAL" && (
+        <div className="mb-4">
+          <span
+            className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold"
+            style={{
+              background: "rgba(120,117,255,0.12)",
+              color: "#c4bfff",
+              border: "1px solid rgba(168,166,255,0.35)",
+            }}
+          >
+            {sourceModeLabel[sourceMode]}
+          </span>
+        </div>
+      )}
+
+      {isFromSession && type === "WORKOUT" && (
+        <div
+          className="mb-4 p-4 rounded-2xl"
+          style={{ background: "rgba(120,117,255,0.08)", border: "1px solid rgba(168,166,255,0.25)" }}
+        >
+          <p className="text-sm font-semibold" style={{ color: "#d4d3ff" }}>Review workout before posting</p>
+          <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.55)" }}>
+            {workoutName || "Workout"} • {durationMinutes || "--"} min • {exercises.length} exercises logged
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowWorkoutAdvanced((prev) => !prev)}
+            className="mt-3 text-xs font-semibold px-3 py-1.5 rounded-lg"
+            style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
+          >
+            {showWorkoutAdvanced ? "Hide details" : "Edit details"}
+          </button>
+        </div>
+      )}
+
       {/* Quick Check-in button */}
+      {!isFromSession && (
       <button
         onClick={() => {
           setType("CHECKIN");
@@ -957,6 +1007,7 @@ export default function CreatePostContent() {
           {type === "CHECKIN" ? "Selected ✓" : "Tap →"}
         </span>
       </button>
+      )}
 
       {/* Post type selector (detailed posts) */}
       <div
@@ -1161,7 +1212,7 @@ export default function CreatePostContent() {
         {type === "WORKOUT" && (
           <>
             {/* ── Start / Resume Workout Banner ── */}
-            {!searchParams.get("fromSession") && (
+            {!isFromSession && (
               <button
                 type="button"
                 onClick={() => (window.location.href = "/workout")}
@@ -1235,6 +1286,8 @@ export default function CreatePostContent() {
               </button>
             )}
 
+            {(showWorkoutAdvanced || !isFromSession) && (
+              <>
             {/* 1. Muscle group selector */}
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: "rgba(255,255,255,0.9)" }}>
@@ -1413,6 +1466,14 @@ export default function CreatePostContent() {
                 ))}
               </div>
             </div>
+              </>
+            )}
+
+            {isFromSession && !showWorkoutAdvanced && (
+              <div className="text-xs px-3 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.45)", border: "1px dashed rgba(255,255,255,0.12)" }}>
+                Posting now uses your live session summary. Tap &ldquo;Edit details&rdquo; above to add muscles, media, and exercise sets.
+              </div>
+            )}
           </>
         )}
 
@@ -1515,6 +1576,7 @@ export default function CreatePostContent() {
         )}
 
         {/* Visibility */}
+        {(!isFromSession || type !== "WORKOUT" || showWorkoutAdvanced) && (
         <div>
           <label className="block text-sm font-medium mb-2" style={{ color: "rgba(255,255,255,0.9)" }}>Visibility</label>
           <div className="flex gap-2">
@@ -1538,8 +1600,10 @@ export default function CreatePostContent() {
             })}
           </div>
         </div>
+        )}
 
         {/* Backdate */}
+        {(!isFromSession || type !== "WORKOUT" || showWorkoutAdvanced) && (
         <div>
           <button
             type="button"
@@ -1566,6 +1630,7 @@ export default function CreatePostContent() {
             </div>
           )}
         </div>
+        )}
 
         {/* Submit */}
         <button
