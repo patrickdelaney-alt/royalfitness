@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 
@@ -98,17 +99,18 @@ export async function GET(
     let recentPosts: unknown[] = [];
 
     if (canViewPosts) {
-      const postVisibilityFilter = isOwnProfile
-        ? undefined
-        : isFollowing
-          ? { in: ["PUBLIC", "FOLLOWERS"] as const }
+      const postWhere: Prisma.PostWhereInput = {
+        authorId: user.id,
+      };
+
+      if (!isOwnProfile) {
+        postWhere.visibility = isFollowing
+          ? { in: ["PUBLIC", "FOLLOWERS"] }
           : "PUBLIC";
+      }
 
       recentPosts = await prisma.post.findMany({
-        where: {
-          authorId: user.id,
-          ...(postVisibilityFilter ? { visibility: postVisibilityFilter } : {}),
-        },
+        where: postWhere,
         orderBy: {
           createdAt: "desc",
         },
