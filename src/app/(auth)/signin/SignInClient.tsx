@@ -214,9 +214,9 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
             className="input-dark"
           />
           <div className="mt-1 text-right">
-            <span className="text-xs font-semibold" style={{ color: "#a8a6ff" }}>
+            <Link href="/forgot-password" className="text-xs font-semibold" style={{ color: "#a8a6ff" }}>
               Forgot password?
-            </span>
+            </Link>
           </div>
         </div>
 
