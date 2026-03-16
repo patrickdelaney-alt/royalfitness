@@ -6,6 +6,7 @@ import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiPlay, HiLightningBol
 import toast from "react-hot-toast";
 import { compressImage } from "@/lib/compress-image";
 import { successNotification } from "@/lib/haptics";
+import { ArmsMuscleIcon, BackMuscleIcon, ChestMuscleIcon } from "@/components/muscle-icons";
 
 type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN";
 
@@ -44,48 +45,12 @@ const MUSCLES: MuscleGroup[] = [
   {
     id: "chest",
     label: "Chest",
-    icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
-      return (
-        <svg viewBox="0 0 32 32" className="w-7 h-7">
-          {/* left pec */}
-          <path d="M4 10 Q4 5 9 5 Q14 5 15.5 10 L15.5 19 Q11 22 7 20 Q3 17 4 13 Z" fill={f}/>
-          {/* right pec */}
-          <path d="M28 10 Q28 5 23 5 Q18 5 16.5 10 L16.5 19 Q21 22 25 20 Q29 17 28 13 Z" fill={f}/>
-          {/* collarbone */}
-          <path d="M9 6 Q16 4 23 6" stroke={s} strokeWidth="1.4" fill="none" strokeLinecap="round"/>
-          {/* center groove */}
-          <line x1="16" y1="10" x2="16" y2="20" stroke={s} strokeWidth="1.2"/>
-          {/* muscle highlight */}
-          <ellipse cx="10.5" cy="10" rx="2.5" ry="1.5" fill="rgba(255,255,255,0.15)" transform="rotate(-15,10.5,10)"/>
-          <ellipse cx="21.5" cy="10" rx="2.5" ry="1.5" fill="rgba(255,255,255,0.15)" transform="rotate(15,21.5,10)"/>
-        </svg>
-      );
-    },
+    icon: (active) => <ChestMuscleIcon active={active} />,
   },
   {
     id: "back",
     label: "Back",
-    icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
-      return (
-        <svg viewBox="0 0 32 32" className="w-7 h-7">
-          {/* lat spread V-taper */}
-          <path d="M16 27 L3 19 L3 11 L9 7 L16 10 L23 7 L29 11 L29 19 Z" fill={f}/>
-          {/* spine */}
-          <line x1="16" y1="10" x2="16" y2="27" stroke={s} strokeWidth="1.5"/>
-          {/* trap shoulder line */}
-          <path d="M9 7 Q16 9 23 7" stroke={s} strokeWidth="1.2" fill="none"/>
-          {/* lat definition */}
-          <path d="M7 16 Q16 18 25 16" stroke={s} strokeWidth="0.9" fill="none"/>
-          {/* highlight */}
-          <ellipse cx="10" cy="13" rx="3" ry="2" fill="rgba(255,255,255,0.12)" transform="rotate(20,10,13)"/>
-          <ellipse cx="22" cy="13" rx="3" ry="2" fill="rgba(255,255,255,0.12)" transform="rotate(-20,22,13)"/>
-        </svg>
-      );
-    },
+    icon: (active) => <BackMuscleIcon active={active} />,
   },
   {
     id: "legs",
@@ -137,22 +102,7 @@ const MUSCLES: MuscleGroup[] = [
   {
     id: "arms",
     label: "Arms",
-    icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
-      return (
-        <svg viewBox="0 0 32 32" className="w-7 h-7">
-          {/* upper arm */}
-          <path d="M8 6 Q6 8 6 12 Q6 17 10 19 L14 20 Q16 20 17 18 Q18 15 16 12 Q14 9 12 8 Z" fill={f}/>
-          {/* forearm */}
-          <path d="M10 19 L14 20 L16 26 Q15 28 13 28 L10 27 Q8 25 9 22 Z" fill={f}/>
-          {/* bicep peak */}
-          <ellipse cx="11" cy="12" rx="2.5" ry="4" fill="rgba(255,255,255,0.2)" transform="rotate(-15,11,12)"/>
-          {/* elbow curve */}
-          <path d="M8 18 Q12 22 16 18" stroke={s} strokeWidth="0.9" fill="none"/>
-        </svg>
-      );
-    },
+    icon: (active) => <ArmsMuscleIcon active={active} />,
   },
   {
     id: "core",
