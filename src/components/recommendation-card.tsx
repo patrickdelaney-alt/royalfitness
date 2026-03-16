@@ -47,24 +47,24 @@ function getTodayKey(): string {
   return new Date().toISOString().split("T")[0];
 }
 
+function isDismissedToday(): boolean {
+  if (typeof window === "undefined") return false;
+
+  try {
+    return localStorage.getItem(DISMISS_KEY) === getTodayKey();
+  } catch {
+    return false;
+  }
+}
+
 export default function RecommendationCard() {
   const router = useRouter();
   const [rec, setRec] = useState<Recommendation | null>(null);
-  const [dismissed, setDismissed] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [dismissed, setDismissed] = useState(isDismissedToday);
+  const [loading, setLoading] = useState(() => !isDismissedToday());
 
   useEffect(() => {
-    // Check if dismissed today
-    try {
-      const stored = localStorage.getItem(DISMISS_KEY);
-      if (stored === getTodayKey()) {
-        setDismissed(true);
-        setLoading(false);
-        return;
-      }
-    } catch {
-      // localStorage may not be available
-    }
+    if (dismissed) return;
 
     fetch("/api/recommendations")
       .then((r) => r.json())
@@ -74,7 +74,7 @@ export default function RecommendationCard() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [dismissed]);
 
   const handleDismiss = () => {
     try {
