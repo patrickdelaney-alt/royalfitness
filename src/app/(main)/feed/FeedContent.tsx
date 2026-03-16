@@ -168,6 +168,7 @@ export default function FeedContent() {
                       color: "#ffffff",
                       boxShadow: "0 0 40px rgba(120,117,255,0.15), 0 8px 24px rgba(0,0,0,0.5)",
                       border: "none",
+                      transform: "scale(1.04)",
                     }
                   : {
                       background: "rgba(255,255,255,0.045)",
@@ -176,7 +177,13 @@ export default function FeedContent() {
                     }
               }
             >
-              {type === "ALL" ? "All" : type === "WELLNESS" ? "Wellness" : type.charAt(0) + type.slice(1).toLowerCase() + "s"}
+              {type === "ALL"
+                ? "All"
+                : type === "WORKOUT"
+                ? "💪 Workouts"
+                : type === "MEAL"
+                ? "🥗 Meals"
+                : "🧘 Wellness"}
             </button>
           );
         })}
@@ -191,9 +198,26 @@ export default function FeedContent() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="rounded-xl border h-48 animate-pulse"
-              style={{ background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.08)" }}
-            />
+              className="rounded-xl border overflow-hidden"
+              style={{ background: "#13141f", borderColor: "rgba(255,255,255,0.08)" }}
+            >
+              <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+                <div className="w-10 h-10 rounded-full skeleton-shimmer flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 w-28 rounded-full skeleton-shimmer" />
+                  <div className="h-2.5 w-16 rounded-full skeleton-shimmer" />
+                </div>
+              </div>
+              <div className="px-4 pb-4 space-y-2.5">
+                <div className="h-3 w-full rounded-full skeleton-shimmer" />
+                <div className="h-3 w-4/5 rounded-full skeleton-shimmer" />
+                <div className="h-24 w-full rounded-xl skeleton-shimmer mt-3" />
+              </div>
+              <div className="flex gap-4 px-4 py-3 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                <div className="h-4 w-12 rounded-full skeleton-shimmer" />
+                <div className="h-4 w-12 rounded-full skeleton-shimmer" />
+              </div>
+            </div>
           ))}
         </div>
       ) : error ? (
