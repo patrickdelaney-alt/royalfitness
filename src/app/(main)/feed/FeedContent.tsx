@@ -180,10 +180,10 @@ export default function FeedContent() {
               {type === "ALL"
                 ? "All"
                 : type === "WORKOUT"
-                ? "💪 Workouts"
+                ? "Workouts"
                 : type === "MEAL"
-                ? "🥗 Meals"
-                : "🧘 Wellness"}
+                ? "Meals"
+                : "Wellness"}
             </button>
           );
         })}
