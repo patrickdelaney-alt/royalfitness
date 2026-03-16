@@ -177,13 +177,7 @@ export default function FeedContent() {
                     }
               }
             >
-              {type === "ALL"
-                ? "All"
-                : type === "WORKOUT"
-                ? "💪 Workouts"
-                : type === "MEAL"
-                ? "🥗 Meals"
-                : "🧘 Wellness"}
+              {type === "ALL" ? "All" : type === "WORKOUT" ? "Workouts" : type === "MEAL" ? "Meals" : "Wellness"}
             </button>
           );
         })}
