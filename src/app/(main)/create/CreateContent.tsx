@@ -379,7 +379,6 @@ export default function CreatePostContent() {
   const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isFromSession = searchParams.get("fromSession") === "1";
-  const hasTypeParam = Boolean(searchParams.get("type"));
 
   const initialType = ((): PostType => {
     const param = searchParams.get("type")?.toUpperCase();
@@ -390,7 +389,6 @@ export default function CreatePostContent() {
   })();
 
   const [type, setType] = useState<PostType>(initialType);
-  const [showIntentLauncher, setShowIntentLauncher] = useState(!isFromSession && !hasTypeParam);
   const [showWorkoutAdvanced, setShowWorkoutAdvanced] = useState(!isFromSession);
   const [caption, setCaption] = useState("");
   const [visibility, setVisibility] = useState<"PUBLIC" | "FOLLOWERS" | "PRIVATE">("PUBLIC");
@@ -916,18 +914,20 @@ export default function CreatePostContent() {
         <h1 className="text-lg font-bold">New Post</h1>
       </div>
 
-      <div className="mb-4">
-        <span
-          className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold"
-          style={{
-            background: "rgba(120,117,255,0.12)",
-            color: "#c4bfff",
-            border: "1px solid rgba(168,166,255,0.35)",
-          }}
-        >
-          {sourceModeLabel[sourceMode]}
-        </span>
-      </div>
+      {sourceMode !== "MANUAL" && (
+        <div className="mb-4">
+          <span
+            className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold"
+            style={{
+              background: "rgba(120,117,255,0.12)",
+              color: "#c4bfff",
+              border: "1px solid rgba(168,166,255,0.35)",
+            }}
+          >
+            {sourceModeLabel[sourceMode]}
+          </span>
+        </div>
+      )}
 
       {isFromSession && type === "WORKOUT" && (
         <div
@@ -949,58 +949,8 @@ export default function CreatePostContent() {
         </div>
       )}
 
-      {showIntentLauncher && (
-        <div className="space-y-3 mb-5">
-          <button
-            type="button"
-            onClick={() => {
-              setType("CHECKIN");
-              setShowIntentLauncher(false);
-              if (gymSearchResults.length === 0) searchGyms("");
-            }}
-            className="w-full text-left rounded-2xl px-4 py-3.5"
-            style={{ background: "rgba(56,189,248,0.08)", border: "1px solid rgba(103,232,249,0.3)" }}
-          >
-            <p className="text-sm font-bold" style={{ color: "#67e8f9" }}>Quick Check-in</p>
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>One tap post that you trained at your gym.</p>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => (window.location.href = "/workout")}
-            className="w-full text-left rounded-2xl px-4 py-3.5"
-            style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(74,222,128,0.3)" }}
-          >
-            <p className="text-sm font-bold" style={{ color: "#4ade80" }}>Start Live Workout</p>
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>Launch timer + checklist, then post when done.</p>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setType("WORKOUT");
-              setShowIntentLauncher(false);
-            }}
-            className="w-full text-left rounded-2xl px-4 py-3.5"
-            style={{ background: "rgba(120,117,255,0.08)", border: "1px solid rgba(168,166,255,0.28)" }}
-          >
-            <p className="text-sm font-bold" style={{ color: "#a8a6ff" }}>Log Workout Manually</p>
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>Add your workout details without the timer.</p>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setShowIntentLauncher(false)}
-            className="text-xs font-medium"
-            style={{ color: "rgba(255,255,255,0.5)" }}
-          >
-            More post types →
-          </button>
-        </div>
-      )}
-
       {/* Quick Check-in button */}
-      {!isFromSession && !showIntentLauncher && (
+      {!isFromSession && (
       <button
         onClick={() => {
           setType("CHECKIN");
@@ -1060,7 +1010,6 @@ export default function CreatePostContent() {
       )}
 
       {/* Post type selector (detailed posts) */}
-      {!showIntentLauncher && (
       <div
         className="flex gap-2 mb-5 p-1 rounded-xl transition-opacity"
         style={{
@@ -1083,7 +1032,6 @@ export default function CreatePostContent() {
           </button>
         ))}
       </div>
-      )}
 
       {error && (
         <div className="mb-4 p-3 rounded-xl text-sm" style={{ background: "rgba(239,68,68,0.15)", color: "#f87171", border: "1px solid rgba(239,68,68,0.3)" }}>
