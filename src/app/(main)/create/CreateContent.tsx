@@ -414,6 +414,14 @@ export default function CreatePostContent() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [postTiming, setPostTiming] = useState<"BEFORE" | "DURING" | "AFTER">("AFTER");
 
+  const handleBack = useCallback(() => {
+    if (isFromSession) {
+      router.replace("/feed");
+      return;
+    }
+    router.back();
+  }, [isFromSession, router]);
+
   // ── Active session banner state ───────────────────────────────────────────
   const [sessionElapsed, setSessionElapsed] = useState<number | null>(null);
   const sessionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -905,7 +913,7 @@ export default function CreatePostContent() {
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button
-          onClick={() => router.back()}
+          onClick={handleBack}
           className="p-2 rounded-xl transition-colors"
           style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)" }}
         >
