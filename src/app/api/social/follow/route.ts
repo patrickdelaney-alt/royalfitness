@@ -39,6 +39,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Prevent follow actions when either user blocked the other
+    const existingBlock = await prisma.blockedUser.findFirst({
+      where: {
+        OR: [
+          { blockerId: session.user.id, blockedId: targetUserId },
+          { blockerId: targetUserId, blockedId: session.user.id },
+        ],
+      },
+      select: { id: true },
+    });
+
+    if (existingBlock) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
     // Check if already following
     const existingFollow = await prisma.follow.findUnique({
       where: {

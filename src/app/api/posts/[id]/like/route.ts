@@ -30,6 +30,26 @@ export async function POST(
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
+    // Check visibility permissions
+    if (post.visibility === "PRIVATE" && post.authorId !== userId) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    if (post.visibility === "FOLLOWERS" && post.authorId !== userId) {
+      const isFollowing = await prisma.follow.findUnique({
+        where: {
+          followerId_followingId: {
+            followerId: userId,
+            followingId: post.authorId,
+          },
+        },
+      });
+
+      if (!isFollowing) {
+        return NextResponse.json({ error: "Post not found" }, { status: 404 });
+      }
+    }
+
     // Check if blocked
     if (userId !== post.authorId) {
       const blocked = await prisma.blockedUser.findFirst({

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 
@@ -44,6 +45,23 @@ export async function GET(
       );
     }
 
+
+    // Respect blocking relationship in either direction
+    if (currentUserId && currentUserId !== user.id) {
+      const blocked = await prisma.blockedUser.findFirst({
+        where: {
+          OR: [
+            { blockerId: currentUserId, blockedId: user.id },
+            { blockerId: user.id, blockedId: currentUserId },
+          ],
+        },
+      });
+
+      if (blocked) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+    }
+
     // Check if current user follows this user
     let isFollowing = false;
     let hasRequestedFollow = false;
@@ -81,10 +99,18 @@ export async function GET(
     let recentPosts: unknown[] = [];
 
     if (canViewPosts) {
+      const postWhere: Prisma.PostWhereInput = {
+        authorId: user.id,
+      };
+
+      if (!isOwnProfile) {
+        postWhere.visibility = isFollowing
+          ? { in: ["PUBLIC", "FOLLOWERS"] }
+          : "PUBLIC";
+      }
+
       recentPosts = await prisma.post.findMany({
-        where: {
-          authorId: user.id,
-        },
+        where: postWhere,
         orderBy: {
           createdAt: "desc",
         },
