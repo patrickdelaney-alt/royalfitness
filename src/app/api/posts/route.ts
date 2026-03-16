@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = req.nextUrl;
     const cursor = searchParams.get("cursor") || undefined;
     const limit = Math.min(Math.max(parseInt(searchParams.get("limit") || "20", 10), 1), 50);
-    const type = searchParams.get("type") as "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | null;
+    const type = searchParams.get("type") as "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN" | null;
     const gymId = searchParams.get("gymId") || undefined;
 
     // Build where clause
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     const where: Record<string, any> = {};
 
     // Filter by post type
-    if (type && ["WORKOUT", "MEAL", "WELLNESS", "GENERAL"].includes(type)) {
+    if (type && ["WORKOUT", "MEAL", "WELLNESS", "GENERAL", "CHECKIN"].includes(type)) {
       where.type = type;
     }
 
@@ -171,6 +171,13 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    // CHECKIN posts require a gymId
+    if (data.type === "CHECKIN" && !data.gymId) {
+      return NextResponse.json(
+        { error: "A gym is required for check-in posts" },
+        { status: 400 }
+      );
+    }
 
     // Verify gym exists if gymId is provided
     if (data.gymId) {
@@ -313,8 +320,10 @@ export async function POST(req: NextRequest) {
       });
     });
 
-    // Fire-and-forget: check and award achievements without blocking the response
-    checkAndAwardAchievements(userId, prisma).catch(() => {});
+    // Fire-and-forget: check and award achievements (check-ins don't earn badges)
+    if (data.type !== "CHECKIN") {
+      checkAndAwardAchievements(userId, prisma).catch(() => {});
+    }
 
     return NextResponse.json(post, { status: 201 });
   } catch (error) {

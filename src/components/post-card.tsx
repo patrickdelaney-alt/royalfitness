@@ -117,7 +117,7 @@ interface Gym {
 
 export interface Post {
   id: string;
-  type: "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL";
+  type: "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN";
   caption: string | null;
   mediaUrl: string | null;
   visibility: string;
@@ -138,10 +138,11 @@ export interface Post {
 // ── badge colours (dark theme) ────────────────────────────────────────────────
 
 const TYPE_BADGE: Record<Post["type"], { bg: string; text: string; label: string; emoji: string }> = {
-  WORKOUT: { bg: "rgba(120,117,255,0.10)", text: "#a8a6ff", label: "Workout", emoji: "💪" },
-  MEAL:    { bg: "rgba(34,197,94,0.12)",   text: "#4ade80", label: "Meal",    emoji: "🥗" },
-  WELLNESS:{ bg: "rgba(168,85,247,0.12)",  text: "#c084fc", label: "Wellness",emoji: "🧘" },
+  WORKOUT: { bg: "rgba(120,117,255,0.10)", text: "#a8a6ff", label: "Workout",  emoji: "💪" },
+  MEAL:    { bg: "rgba(34,197,94,0.12)",   text: "#4ade80", label: "Meal",     emoji: "🥗" },
+  WELLNESS:{ bg: "rgba(168,85,247,0.12)",  text: "#c084fc", label: "Wellness", emoji: "🧘" },
   GENERAL: { bg: "rgba(255,255,255,0.08)", text: "rgba(255,255,255,0.45)", label: "General", emoji: "⭐" },
+  CHECKIN: { bg: "rgba(56,189,248,0.10)",  text: "#67e8f9", label: "Check-in", emoji: "📍" },
 };
 
 // ── mood label ────────────────────────────────────────────────────────────────
@@ -372,9 +373,176 @@ function WorkoutBadgeCard({ badge }: { badge: BadgeData }) {
   );
 }
 
-// ── main PostCard ────────────────────────────────────────────────────────────
+// ── CheckInPostCard (compact — 1/4 the size of a full post) ──────────────────
 
-export default function PostCard({
+function CheckInPostCard({
+  post,
+  currentUserId,
+  onDelete,
+}: {
+  post: Post;
+  currentUserId?: string;
+  onDelete?: (id: string) => void;
+}) {
+  const [liked, setLiked] = useState(post.likedByMe);
+  const [likeCount, setLikeCount] = useState(post._count.likes);
+  const [likeLoading, setLikeLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const isOwner = !!currentUserId && currentUserId === post.author.id;
+
+  const toggleLike = useCallback(async () => {
+    if (likeLoading) return;
+    setLikeLoading(true);
+    const wasLiked = liked;
+    if (!wasLiked) lightImpact();
+    setLiked(!wasLiked);
+    setLikeCount((c) => c + (wasLiked ? -1 : 1));
+    try {
+      const res = await fetch(`/api/posts/${post.id}/like`, {
+        method: wasLiked ? "DELETE" : "POST",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLiked(data.liked);
+        setLikeCount(data.likesCount);
+      } else {
+        setLiked(wasLiked);
+        setLikeCount((c) => c + (wasLiked ? 1 : -1));
+      }
+    } catch {
+      setLiked(wasLiked);
+      setLikeCount((c) => c + (wasLiked ? 1 : -1));
+    } finally {
+      setLikeLoading(false);
+    }
+  }, [liked, likeLoading, post.id]);
+
+  const handleDelete = useCallback(async () => {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
+      if (res.ok) onDelete?.(post.id);
+    } catch {
+      // silent
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  }, [deleting, post.id, onDelete]);
+
+  return (
+    <article
+      className="rounded-xl border card-hover"
+      style={{ background: "#13141f", borderColor: "rgba(255,255,255,0.07)" }}
+    >
+      <div className="flex items-center gap-2.5 px-3 py-3">
+        {/* Small avatar */}
+        <Link href={`/profile/${post.author.username}`} className="flex-shrink-0">
+          {post.author.avatarUrl ? (
+            <img
+              src={post.author.avatarUrl}
+              alt={post.author.username}
+              loading="lazy"
+              className="w-7 h-7 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-7 h-7 rounded-full btn-gradient flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+              {initials(post.author.name)}
+            </div>
+          )}
+        </Link>
+
+        {/* Text: "username was at Gym Name 📍" */}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm leading-snug truncate">
+            <Link
+              href={`/profile/${post.author.username}`}
+              className="font-semibold text-foreground hover:underline"
+            >
+              {post.author.username}
+            </Link>
+            <span style={{ color: "rgba(255,255,255,0.5)" }}> was at </span>
+            {post.gym ? (
+              <span className="font-medium" style={{ color: "#67e8f9" }}>
+                {post.gym.name}
+              </span>
+            ) : (
+              <span style={{ color: "rgba(255,255,255,0.35)" }}>the gym</span>
+            )}
+            <span className="ml-1 text-xs">📍</span>
+          </p>
+          {post.caption && (
+            <p
+              className="text-xs mt-0.5 truncate"
+              style={{ color: "rgba(255,255,255,0.35)" }}
+            >
+              {post.caption}
+            </p>
+          )}
+        </div>
+
+        {/* Right side: like + time + optional delete */}
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          <button
+            onClick={toggleLike}
+            disabled={likeLoading}
+            className="flex items-center gap-1 transition-colors disabled:opacity-60"
+            style={{ color: liked ? "#ef4444" : "rgba(255,255,255,0.3)" }}
+          >
+            {liked ? (
+              <HiHeart className="w-3.5 h-3.5" />
+            ) : (
+              <HiOutlineHeart className="w-3.5 h-3.5" />
+            )}
+            <span className="text-xs">{likeCount}</span>
+          </button>
+
+          <span className="text-xs" style={{ color: "rgba(255,255,255,0.22)" }}>
+            {timeAgo(post.createdAt)}
+          </span>
+
+          {isOwner && (
+            showDeleteConfirm ? (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                  className="text-xs px-1.5 py-0.5 rounded transition-colors"
+                  style={{ color: "rgba(255,255,255,0.4)" }}
+                >
+                  <HiX className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="text-xs font-medium text-white bg-red-600 px-2 py-0.5 rounded disabled:opacity-60 transition-colors"
+                >
+                  {deleting ? "..." : "Del"}
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="transition-colors"
+                style={{ color: "rgba(255,255,255,0.2)" }}
+                aria-label="Delete post"
+              >
+                <HiTrash className="w-3.5 h-3.5" />
+              </button>
+            )
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+// ── FullPostCard (internal — used for WORKOUT / MEAL / WELLNESS / GENERAL) ───
+
+function FullPostCard({
   post,
   currentUserId,
   onDelete,
@@ -1103,5 +1271,37 @@ export default function PostCard({
         </div>
       )}
     </article>
+  );
+}
+
+// ── PostCard (public export) — routes to compact or full card ─────────────────
+
+export default function PostCard({
+  post,
+  currentUserId,
+  onDelete,
+  onEdit,
+}: {
+  post: Post;
+  currentUserId?: string;
+  onDelete?: (id: string) => void;
+  onEdit?: (id: string, fields: { caption: string | null; visibility: string; workoutName?: string; mealName?: string; activityType?: string }) => void;
+}) {
+  if (post.type === "CHECKIN") {
+    return (
+      <CheckInPostCard
+        post={post}
+        currentUserId={currentUserId}
+        onDelete={onDelete}
+      />
+    );
+  }
+  return (
+    <FullPostCard
+      post={post}
+      currentUserId={currentUserId}
+      onDelete={onDelete}
+      onEdit={onEdit}
+    />
   );
 }
