@@ -598,27 +598,46 @@ export default function PostCard({
 
   return (
     <article
-      className="rounded-xl border"
+      className={`rounded-xl border card-hover ${
+        post.type === "WORKOUT"  ? "type-border-workout"  :
+        post.type === "MEAL"     ? "type-border-meal"     :
+        post.type === "WELLNESS" ? "type-border-wellness" :
+                                   "type-border-general"
+      }`}
       style={{ background: "#13141f", borderColor: "rgba(255,255,255,0.08)" }}
     >
       {/* ── header ── */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
         {/* avatar */}
         <Link href={`/profile/${post.author.username}`} className="flex-shrink-0">
-          {post.author.avatarUrl ? (
-            <img
-              src={post.author.avatarUrl}
-              alt={post.author.username}
-              loading="lazy"
-              className="w-10 h-10 rounded-full object-cover"
-            />
-          ) : (
-            <div
-              className="w-10 h-10 rounded-full btn-gradient flex items-center justify-center text-white text-sm font-bold"
-            >
-              {initials(post.author.name)}
-            </div>
-          )}
+          <div
+            className="p-[2px] rounded-full"
+            style={{
+              background: post.type === "WORKOUT"
+                ? "linear-gradient(135deg, rgba(120,117,255,0.6), rgba(168,166,255,0.3))"
+                : post.type === "MEAL"
+                ? "linear-gradient(135deg, rgba(74,222,128,0.6), rgba(52,211,153,0.3))"
+                : post.type === "WELLNESS"
+                ? "linear-gradient(135deg, rgba(192,132,252,0.6), rgba(168,85,247,0.3))"
+                : "transparent",
+            }}
+          >
+            {post.author.avatarUrl ? (
+              <img
+                src={post.author.avatarUrl}
+                alt={post.author.username}
+                loading="lazy"
+                className="w-10 h-10 rounded-full object-cover block"
+                style={{ display: "block" }}
+              />
+            ) : (
+              <div
+                className="w-10 h-10 rounded-full btn-gradient flex items-center justify-center text-white text-sm font-bold"
+              >
+                {initials(post.author.name)}
+              </div>
+            )}
+          </div>
         </Link>
 
         <div className="flex-1 min-w-0">
@@ -967,13 +986,13 @@ export default function PostCard({
 
       {/* ── actions ── */}
       <div
-        className="flex items-center gap-4 px-4 py-3 border-t"
+        className="flex items-center gap-5 px-4 py-3.5 border-t"
         style={{ borderColor: "rgba(255,255,255,0.06)" }}
       >
         <button
           onClick={toggleLike}
           disabled={likeLoading}
-          className="flex items-center gap-1.5 text-sm transition-all duration-200 disabled:opacity-70"
+          className="flex items-center gap-1.5 text-sm transition-all duration-200 disabled:opacity-70 hover:scale-105 active:scale-95"
         >
           {likeLoading ? (
             <div className="w-5 h-5 flex items-center justify-center">

@@ -193,3 +193,62 @@ body {
 html {
   scrollbar-gutter: stable;
 }
+
+/* ── Skeleton shimmer ──────────────────────────────────────────────────────── */
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    105deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(255,255,255,0.04) 40%,
+    rgba(120,117,255,0.10) 50%,
+    rgba(255,255,255,0.04) 60%,
+    rgba(255,255,255,0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* ── Card hover lift ──────────────────────────────────────────────────────── */
+
+.card-hover {
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.card-hover:hover {
+  border-color: rgba(120,117,255,0.22) !important;
+  box-shadow: 0 0 0 1px rgba(120,117,255,0.08), 0 8px 32px rgba(0,0,0,0.45);
+  transform: translateY(-1px);
+}
+
+/* ── Post type left-border accents ───────────────────────────────────────── */
+
+.type-border-workout  { border-left: 2.5px solid rgba(120,117,255,0.55) !important; }
+.type-border-meal     { border-left: 2.5px solid rgba(74,222,128,0.55) !important; }
+.type-border-wellness { border-left: 2.5px solid rgba(192,132,252,0.55) !important; }
+.type-border-general  { border-left: 2.5px solid rgba(255,255,255,0.10) !important; }
+
+/* ── Glassmorphism card ───────────────────────────────────────────────────── */
+
+.glass-card {
+  background: rgba(19,20,31,0.72);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255,255,255,0.09);
+}
+
+/* ── Bottom nav active pill ───────────────────────────────────────────────── */
+
+.nav-tab-pill {
+  position: absolute;
+  inset: 4px 6px;
+  border-radius: 12px;
+  background: rgba(120,117,255,0.13);
+  transition: opacity 150ms ease;
+  pointer-events: none;
+}

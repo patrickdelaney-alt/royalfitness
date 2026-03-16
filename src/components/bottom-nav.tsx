@@ -104,7 +104,11 @@ export function BottomNav() {
             className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-semibold transition-colors"
             style={{ color: isActive ? "#a8a6ff" : "rgba(255,255,255,0.28)" }}
           >
-            <div className="relative">
+            {isActive && <div className="nav-tab-pill" />}
+            <div
+              className="relative transition-transform duration-150"
+              style={{ transform: isActive ? "scale(1.12)" : "scale(1)" }}
+            >
               <tab.icon className="h-[22px] w-[22px]" />
               {tab.href === "/notifications" && unreadCount > 0 && (
                 <span className="absolute -top-1.5 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
@@ -113,9 +117,6 @@ export function BottomNav() {
               )}
             </div>
             <span>{tab.label}</span>
-            {isActive && (
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full btn-gradient" />
-            )}
           </Link>
         );
       })}
