@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
         ? { name: { contains: q, mode: "insensitive" } }
         : undefined,
       include: {
-        _count: { select: { members: true } },
+        _count: { select: { members: true, posts: true } },
       },
       orderBy: { createdAt: "desc" },
       take: 50,
