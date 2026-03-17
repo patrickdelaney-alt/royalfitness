@@ -36,12 +36,12 @@ interface UserCatalogSectionProps {
 
 type CatalogType = "meals" | "workouts" | "supplements" | "accessories" | "wellness";
 
-const CATALOG_TYPES: { type: CatalogType; label: string; emoji: string }[] = [
-  { type: "meals", label: "Meals", emoji: "🍽️" },
-  { type: "workouts", label: "Workouts", emoji: "💪" },
-  { type: "supplements", label: "Supps", emoji: "💊" },
-  { type: "accessories", label: "Gear", emoji: "⚡" },
-  { type: "wellness", label: "Wellness", emoji: "🧘" },
+const CATALOG_TYPES: { type: CatalogType; label: string }[] = [
+  { type: "meals", label: "Meals" },
+  { type: "workouts", label: "Workouts" },
+  { type: "supplements", label: "Supps" },
+  { type: "accessories", label: "Gear" },
+  { type: "wellness", label: "Wellness" },
 ];
 
 const CATEGORY_GRADIENTS: Record<CatalogType, string> = {
@@ -119,7 +119,7 @@ function DetailModal({
           <div
             className={`w-full aspect-[4/3] bg-gradient-to-br ${CATEGORY_GRADIENTS[type]} flex items-center justify-center rounded-t-2xl sm:rounded-t-2xl`}
           >
-            <span className="text-6xl">{categoryInfo?.emoji}</span>
+            <span className="text-6xl">{categoryInfo?.label}</span>
           </div>
         )}
 
@@ -133,7 +133,7 @@ function DetailModal({
                 className="text-xs px-2.5 py-0.5 rounded-full"
                 style={{ background: "rgba(120,117,255,0.12)", color: "#a8a6ff" }}
               >
-                {categoryInfo?.emoji} {categoryInfo?.label}
+                {categoryInfo?.label}
               </span>
               {item.brand && (
                 <span
@@ -391,7 +391,7 @@ export default function UserCatalogSection({
 
       {/* Tabs */}
       <div className="flex gap-1.5 mb-4 overflow-x-auto pb-2">
-        {CATALOG_TYPES.map(({ type, label, emoji }) => (
+        {CATALOG_TYPES.map(({ type, label }) => (
           <button
             key={type}
             onClick={() => setActiveTab(type)}
@@ -402,7 +402,7 @@ export default function UserCatalogSection({
                 : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
             }
           >
-            {emoji} {label}
+            {label}
           </button>
         ))}
       </div>
@@ -432,9 +432,6 @@ export default function UserCatalogSection({
         </div>
       ) : items.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-3xl mb-2">
-            {CATALOG_TYPES.find((c) => c.type === activeTab)?.emoji}
-          </p>
           <p className="text-sm text-muted">
             No {activeTab} saved yet.
           </p>
@@ -458,11 +455,7 @@ export default function UserCatalogSection({
                 ) : (
                   <div
                     className={`w-full h-full bg-gradient-to-br ${CATEGORY_GRADIENTS[activeTab]} flex items-center justify-center`}
-                  >
-                    <span className="text-3xl opacity-80">
-                      {CATALOG_TYPES.find((c) => c.type === activeTab)?.emoji}
-                    </span>
-                  </div>
+                  />
                 )}
 
                 {/* Bottom gradient overlay with name */}
