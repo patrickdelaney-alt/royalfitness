@@ -1142,7 +1142,7 @@ function FullPostCard({
               />
             )}
           </div>
-        ) : (
+        ) : post.externalContent?.[0] ? null : (
           (() => {
             const badge = getPostBadge(post);
             return badge ? <WorkoutBadgeCard badge={badge} /> : null;
