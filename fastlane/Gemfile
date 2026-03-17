@@ -1,3 +1,4 @@
 source "https://rubygems.org"
 
-gem "fastlane"
+# Pin to a stable Fastlane minor line for repeatable CI builds.
+gem "fastlane", "~> 2.228.0"

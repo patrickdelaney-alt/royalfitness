@@ -29,16 +29,23 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version-file: ".nvmrc"
           cache: "npm"
 
       - name: Install npm dependencies
         run: npm ci
 
-      # ── 3. Capacitor sync ────────────────────────────────────────────────────
-      # Syncs the Capacitor configuration into the ios/ Xcode project.
-      # The ios/ folder must be committed to the repo (run `npx cap add ios`
-      # locally once, then commit the generated ios/ directory).
+      # ── 3. Ensure iOS platform exists + sync Capacitor ──────────────────────
+      # This keeps releases repeatable even if a branch is missing ios/.
+      - name: Ensure Capacitor iOS platform exists
+        run: |
+          if [ -d "ios/App" ]; then
+            echo "ios/App already exists; skipping bootstrap."
+          else
+            echo "ios/App not found; bootstrapping with npx cap add ios"
+            npx cap add ios
+          fi
+
       - name: Capacitor sync
         run: npx cap sync ios
 
@@ -50,9 +57,31 @@ jobs:
           bundler-cache: true
           working-directory: fastlane
 
-      # ── 5. Code signing ──────────────────────────────────────────────────────
+      # ── 5. Preflight + code signing ─────────────────────────────────────────
+      - name: Validate required iOS secrets
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+          ASC_API_KEY_BASE64: ${{ secrets.ASC_API_KEY_BASE64 }}
+          CERTIFICATE_P12_BASE64: ${{ secrets.CERTIFICATE_P12_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+          PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
+          PROVISIONING_PROFILE_NAME: ${{ secrets.PROVISIONING_PROFILE_NAME }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          missing=0
+          for var in ASC_API_KEY_ID ASC_API_KEY_ISSUER_ID ASC_API_KEY_BASE64 CERTIFICATE_P12_BASE64 CERTIFICATE_PASSWORD PROVISIONING_PROFILE_BASE64 PROVISIONING_PROFILE_NAME APPLE_TEAM_ID; do
+            if [ -z "${!var}" ]; then
+              echo "::error::Missing required secret: $var"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "One or more required iOS secrets are missing."
+            exit 1
+          fi
+
       # Decode the distribution certificate and provisioning profile from secrets.
-      # See README / docs for how to export these from Xcode / Apple Developer.
       - name: Decode signing assets
         env:
           CERTIFICATE_P12_BASE64: ${{ secrets.CERTIFICATE_P12_BASE64 }}
