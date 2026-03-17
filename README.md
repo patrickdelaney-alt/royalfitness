@@ -65,6 +65,24 @@ The iOS app is built using Capacitor and deployed via GitHub Actions to Apple Te
 
 For more details on iOS deployment, see the fastlane configuration in `fastlane/` directory.
 
+### Release Repeatability (iOS)
+
+To keep App Store releases repeatable across branches and machines:
+
+1. Use Node `20` (repo `.nvmrc`) before running any Capacitor commands.
+2. Configure all required GitHub secrets used by `.github/workflows/ios-deploy.yml`:
+   - `ASC_API_KEY_ID`
+   - `ASC_API_KEY_ISSUER_ID`
+   - `ASC_API_KEY_BASE64`
+   - `CERTIFICATE_P12_BASE64`
+   - `CERTIFICATE_PASSWORD`
+   - `PROVISIONING_PROFILE_BASE64`
+   - `PROVISIONING_PROFILE_NAME`
+   - `APPLE_TEAM_ID`
+3. The deploy workflow now bootstraps `ios/` automatically when missing, then runs `npx cap sync ios`.
+
+This does not change product behavior; it only makes the iOS delivery pipeline more resilient.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
