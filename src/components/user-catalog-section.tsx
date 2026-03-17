@@ -63,6 +63,15 @@ function DetailModal({
 }) {
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
   const copyCode = () => {
     if (item.referralCode) {
       navigator.clipboard.writeText(item.referralCode);
@@ -80,8 +89,12 @@ function DetailModal({
     >
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div
-        className="relative w-full sm:max-w-md max-h-[85vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl"
-        style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+        className="relative w-full sm:max-w-md max-h-[85vh] overflow-y-auto overscroll-y-contain rounded-t-2xl sm:rounded-2xl"
+        style={{
+          background: "#13141f",
+          border: "1px solid rgba(255,255,255,0.08)",
+          WebkitOverflowScrolling: "touch",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
@@ -111,7 +124,7 @@ function DetailModal({
         )}
 
         {/* Content */}
-        <div className="p-5 space-y-4">
+        <div className="p-5 pb-8 space-y-4" style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}>
           {/* Title + category */}
           <div>
             <h3 className="text-xl font-bold text-white">{item.name}</h3>
