@@ -3,6 +3,7 @@ import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 import { createPostSchema } from "@/lib/validations";
 import { checkAndAwardAchievements } from "@/lib/achievements";
+import { parseEmbedUrl } from "@/lib/embed-parser";
 
 // GET /api/posts — Feed with cursor-based pagination and filters
 export async function GET(req: NextRequest) {
@@ -91,6 +92,7 @@ export async function GET(req: NextRequest) {
       mealDetail: true,
       wellnessDetail: true,
       gym: { select: { id: true, name: true } },
+      externalContent: true,
       _count: { select: { likes: true, comments: true } },
       ...(userId
         ? { likes: { where: { userId }, select: { id: true } } }
@@ -151,6 +153,21 @@ export async function POST(req: NextRequest) {
     }
 
     const data = parsed.data;
+    const parsedEmbed = data.embed ? parseEmbedUrl(data.embed.url) : null;
+
+    if (data.embed && !parsedEmbed) {
+      return NextResponse.json(
+        { error: "Unsupported or invalid embed URL" },
+        { status: 400 }
+      );
+    }
+
+    if (data.embed && parsedEmbed && data.embed.provider !== parsedEmbed.provider) {
+      return NextResponse.json(
+        { error: "Embed provider does not match URL" },
+        { status: 400 }
+      );
+    }
 
     // Validate that the correct detail object is provided for the post type
     if (data.type === "WORKOUT" && !data.workout) {
@@ -287,7 +304,23 @@ export async function POST(req: NextRequest) {
       }
 
       // Create external content if URL is provided
-      if (data.externalUrl && data.externalUrl !== "") {
+      if (data.embed && parsedEmbed) {
+        await tx.externalContent.create({
+          data: {
+            postId: newPost.id,
+            url: parsedEmbed.url,
+            title: data.embed.title,
+            imageUrl: data.embed.thumbnailUrl,
+            siteName:
+              parsedEmbed.provider === "youtube"
+                ? "YouTube"
+                : parsedEmbed.provider === "instagram"
+                ? "Instagram"
+                : "TikTok",
+            description: `embed:${parsedEmbed.provider}:${parsedEmbed.contentId}`,
+          },
+        });
+      } else if (data.externalUrl && data.externalUrl !== "") {
         await tx.externalContent.create({
           data: {
             postId: newPost.id,

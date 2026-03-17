@@ -6,6 +6,7 @@ import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiPlay, HiLightningBol
 import toast from "react-hot-toast";
 import { compressImage } from "@/lib/compress-image";
 import { successNotification } from "@/lib/haptics";
+import { parseEmbedUrl, type EmbedProvider } from "@/lib/embed-parser";
 
 type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN";
 
@@ -15,6 +16,14 @@ interface GymResult {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+}
+
+interface EmbedPreview {
+  provider: EmbedProvider;
+  url: string;
+  contentId: string;
+  title?: string;
+  thumbnailUrl?: string;
 }
 
 
@@ -402,6 +411,9 @@ export default function CreatePostContent() {
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [embedInput, setEmbedInput] = useState("");
+  const [embedPreview, setEmbedPreview] = useState<EmbedPreview | null>(null);
+  const [embedLoading, setEmbedLoading] = useState(false);
 
   // Workout fields
   const [workoutName, setWorkoutName] = useState("");
@@ -676,6 +688,57 @@ export default function CreatePostContent() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const handleEmbedAdd = useCallback(async () => {
+    if (!embedInput.trim()) {
+      setEmbedPreview(null);
+      return;
+    }
+    const parsed = parseEmbedUrl(embedInput);
+    if (!parsed) {
+      setError("Unsupported embed URL. Try Instagram, TikTok, or YouTube.");
+      return;
+    }
+
+    setEmbedLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/unfurl", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: parsed.url }),
+      });
+
+      let title: string | undefined;
+      let thumbnailUrl: string | undefined;
+      if (res.ok) {
+        const unfurl = await res.json();
+        title = unfurl.title || undefined;
+        thumbnailUrl = unfurl.imageUrl || undefined;
+      }
+
+      setEmbedPreview({
+        provider: parsed.provider,
+        url: parsed.url,
+        contentId: parsed.contentId,
+        title,
+        thumbnailUrl,
+      });
+    } catch {
+      setEmbedPreview({
+        provider: parsed.provider,
+        url: parsed.url,
+        contentId: parsed.contentId,
+      });
+    } finally {
+      setEmbedLoading(false);
+    }
+  }, [embedInput]);
+
+  const clearEmbed = () => {
+    setEmbedInput("");
+    setEmbedPreview(null);
+  };
+
   // ── Exercise helpers ──────────────────────────────────────
   const addExercise = () => setExercises((prev) => [...prev, emptyExercise()]);
   const removeExercise = (idx: number) => setExercises((prev) => prev.filter((_, i) => i !== idx));
@@ -711,6 +774,16 @@ export default function CreatePostContent() {
         visibility,
         mediaUrl: mediaUrl || undefined,
         postDate: postDate || undefined,
+        externalUrl: embedPreview?.url,
+        embed: embedPreview
+          ? {
+              provider: embedPreview.provider,
+              url: embedPreview.url,
+              contentId: embedPreview.contentId,
+              title: embedPreview.title,
+              thumbnailUrl: embedPreview.thumbnailUrl,
+            }
+          : undefined,
       };
 
       if (type === "WORKOUT") {
@@ -1582,6 +1655,51 @@ export default function CreatePostContent() {
             </div>
           </>
         )}
+
+        <div>
+          <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>
+            Add embed <span style={{ color: "rgba(255,255,255,0.35)" }}>(optional)</span>
+          </label>
+          <div className="flex gap-2">
+            <input
+              value={embedInput}
+              onChange={(e) => setEmbedInput(e.target.value)}
+              placeholder="Paste Instagram, TikTok, or YouTube URL"
+              className="input-dark w-full"
+            />
+            <button
+              type="button"
+              onClick={handleEmbedAdd}
+              disabled={embedLoading || !embedInput.trim()}
+              className="px-3 py-2 rounded-xl text-sm font-semibold disabled:opacity-50"
+              style={{ background: "rgba(120,117,255,0.15)", color: "#c4bfff", border: "1px solid rgba(168,166,255,0.35)" }}
+            >
+              {embedLoading ? "Adding..." : "Add"}
+            </button>
+          </div>
+          {embedPreview && (
+            <div className="mt-2 rounded-xl p-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase" style={{ color: "#a8a6ff" }}>
+                    {embedPreview.provider}
+                  </p>
+                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.85)" }}>
+                    {embedPreview.title || embedPreview.url}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={clearEmbed}
+                  className="text-xs px-2 py-1 rounded-md"
+                  style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)" }}
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Visibility */}
         {(!isFromSession || type !== "WORKOUT" || showWorkoutAdvanced) && (

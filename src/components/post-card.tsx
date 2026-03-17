@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare, HiX } from "react-icons/hi";
 import { lightImpact } from "@/lib/haptics";
 import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
+import EmbedMedia, { type ExternalContentItem } from "@/components/embed-media";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -127,6 +128,7 @@ export interface Post {
   workoutDetail: WorkoutDetail | null;
   mealDetail: MealDetail | null;
   wellnessDetail: WellnessDetail | null;
+  externalContent?: ExternalContentItem[];
   gym: Gym | null;
   likedByMe: boolean;
   _count: {
@@ -1146,6 +1148,8 @@ function FullPostCard({
             return badge ? <WorkoutBadgeCard badge={badge} /> : null;
           })()
         )}
+
+        {post.externalContent?.[0] && <EmbedMedia item={post.externalContent[0]} />}
 
         {post.type === "WORKOUT"  && post.workoutDetail  && <WorkoutSection  detail={post.workoutDetail}  />}
         {post.type === "MEAL"     && post.mealDetail      && <MealSection     detail={post.mealDetail}      />}
