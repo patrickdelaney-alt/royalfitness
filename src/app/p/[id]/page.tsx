@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import EmbedMedia from "@/components/embed-media";
 
 // ── data fetching ─────────────────────────────────────────────────────────────
 
@@ -17,6 +18,7 @@ async function getPublicPost(id: string) {
       },
       mealDetail: true,
       wellnessDetail: true,
+      externalContent: true,
       gym: { select: { id: true, name: true } },
       _count: { select: { likes: true, comments: true } },
     },
@@ -218,6 +220,8 @@ export default async function PublicPostPage({
             )}
           </div>
         )}
+
+        {post.externalContent[0] && <EmbedMedia item={post.externalContent[0]} />}
 
         {/* Caption */}
         {post.caption && (

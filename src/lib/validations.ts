@@ -84,6 +84,15 @@ export const createPostSchema = z.object({
 
   // External content
   externalUrl: z.string().url().optional().or(z.literal("")),
+  embed: z
+    .object({
+      provider: z.enum(["instagram", "tiktok", "youtube"]),
+      url: z.string().url(),
+      contentId: z.string().min(1).max(200),
+      title: z.string().max(300).optional(),
+      thumbnailUrl: z.string().url().optional(),
+    })
+    .optional(),
 });
 
 export const commentSchema = z.object({
