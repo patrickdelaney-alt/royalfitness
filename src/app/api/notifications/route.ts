@@ -60,10 +60,18 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { ids } = body as { ids?: string[] };
+    let ids: string[] | undefined;
+    const rawBody = await req.text();
+    if (rawBody.trim()) {
+      const parsed = JSON.parse(rawBody) as { ids?: string[] };
+      if (Array.isArray(parsed.ids)) {
+        ids = parsed.ids.filter(
+          (id): id is string => typeof id === "string" && id.length > 0
+        );
+      }
+    }
 
-    if (ids && Array.isArray(ids)) {
+    if (ids && ids.length > 0) {
       // Mark specific notifications as read
       await prisma.notification.updateMany({
         where: {

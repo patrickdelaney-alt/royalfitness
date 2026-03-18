@@ -84,18 +84,8 @@ export default function NotificationsPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [cursor, setCursor] = useState<string | undefined>();
   const [hasMore, setHasMore] = useState(true);
+  const [markingAllRead, setMarkingAllRead] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
-
-  // Mark all as read on mount
-  useEffect(() => {
-    fetch("/api/notifications", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
-    }).catch((err) => {
-      console.error("Failed to mark notifications as read:", err);
-    });
-  }, []);
 
   const fetchNotifications = useCallback(
     async (reset = false) => {
@@ -160,10 +150,75 @@ export default function NotificationsPage() {
     return () => observer.disconnect();
   }, [hasMore, loadingMore, fetchNotifications]);
 
+  const markAllAsRead = useCallback(async () => {
+    const hasUnread = notifications.some((notification) => !notification.read);
+    if (markingAllRead || !hasUnread) return;
+
+    const previousNotifications = notifications;
+    setMarkingAllRead(true);
+    setNotifications((prev) =>
+      prev.map((notification) => ({ ...notification, read: true }))
+    );
+
+    try {
+      const res = await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) {
+        throw new Error(`API returned ${res.status}`);
+      }
+    } catch (error) {
+      console.error("Failed to mark all notifications as read:", error);
+      setNotifications(previousNotifications);
+    } finally {
+      setMarkingAllRead(false);
+    }
+  }, [markingAllRead, notifications]);
+
+  const markNotificationAsRead = useCallback(async (id: string) => {
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification
+      )
+    );
+
+    try {
+      const res = await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [id] }),
+      });
+      if (!res.ok) {
+        throw new Error(`API returned ${res.status}`);
+      }
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === id
+            ? { ...notification, read: false }
+            : notification
+        )
+      );
+    }
+  }, []);
+
+  const unreadCount = notifications.filter((notification) => !notification.read).length;
+
   return (
     <div className="max-w-lg mx-auto px-4 pt-4">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold text-foreground">Notifications</h1>
+        <button
+          type="button"
+          onClick={markAllAsRead}
+          disabled={markingAllRead || unreadCount === 0}
+          className="text-sm font-semibold text-primary disabled:text-muted disabled:cursor-not-allowed"
+        >
+          {markingAllRead ? "Marking..." : "Mark all as read"}
+        </button>
       </div>
 
       {loading ? (
@@ -193,6 +248,11 @@ export default function NotificationsPage() {
               <Link
                 key={notification.id}
                 href={getNotificationLink(notification)}
+                onClick={() => {
+                  if (!notification.read) {
+                    void markNotificationAsRead(notification.id);
+                  }
+                }}
                 className={`flex items-start gap-3 p-3 rounded-xl transition-colors hover:bg-white/5 ${
                   !notification.read ? "bg-primary/5" : ""
                 }`}
