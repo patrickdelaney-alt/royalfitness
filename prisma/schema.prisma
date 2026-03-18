@@ -475,3 +475,25 @@ model BlockedUser {
 
   @@unique([blockerId, blockedId])
 }
+
+// ─── WAITLIST ─────────────────────────────────────────────────────
+
+enum WaitlistStatus {
+  PENDING
+  APPROVED
+  INVITED
+  ACTIVATED
+}
+
+model WaitlistUser {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  firstName    String?
+  status       WaitlistStatus @default(PENDING)
+  createdAt    DateTime       @default(now())
+  approvedAt   DateTime?
+  inviteSentAt DateTime?
+
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+}

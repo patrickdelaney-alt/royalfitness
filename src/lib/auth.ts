@@ -150,6 +150,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const existing = await prisma.user.findUnique({
           where: { email: user.email },
         });
+
+        // Waitlist gate — only block NEW OAuth users (existing accounts can always sign in).
+        // Controlled by WAITLIST_GATE_ENABLED env var (set to "true" to enable).
+        if (process.env.WAITLIST_GATE_ENABLED === "true" && !existing) {
+          const approved = await prisma.waitlistUser.findFirst({
+            where: {
+              email: user.email.toLowerCase(),
+              status: { in: ["APPROVED", "INVITED", "ACTIVATED"] },
+            },
+          });
+          if (!approved) {
+            // Redirect to /waitlist with ?gated=1 so the page can show the right message
+            return "/waitlist?gated=1";
+          }
+        }
+
         if (!existing) {
           const username = await generateUniqueUsername(user.email);
           await prisma.user.create({
