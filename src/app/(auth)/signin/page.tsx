@@ -9,7 +9,7 @@ function SignInSkeleton() {
     <div className="flex justify-center py-12">
       <div
         className="w-6 h-6 border-2 rounded-full animate-spin"
-        style={{ borderColor: "#a8a6ff", borderTopColor: "transparent" }}
+        style={{ borderColor: "rgba(36,63,22,0.35)", borderTopColor: "transparent" }}
       />
     </div>
   );

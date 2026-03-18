@@ -44,7 +44,7 @@ export default function EmbedMedia({ item }: { item: ExternalContentItem }) {
 
   if (meta.provider === "youtube" && meta.contentId) {
     return (
-      <div className="mt-2 rounded-lg overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
+      <div className="mt-2 rounded-lg overflow-hidden" style={{ border: "1px solid var(--border)" }}>
         <div className="relative" style={{ paddingBottom: "56.25%", height: 0 }}>
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${meta.contentId}`}
@@ -66,10 +66,10 @@ export default function EmbedMedia({ item }: { item: ExternalContentItem }) {
       target="_blank"
       rel="noreferrer"
       className="mt-2 block rounded-lg p-3"
-      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}
+      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid var(--border)" }}
     >
-      <p className="text-xs uppercase" style={{ color: "#a8a6ff" }}>{label}</p>
-      <p className="text-sm" style={{ color: "rgba(255,255,255,0.9)" }}>
+      <p className="text-xs uppercase" style={{ color: "var(--brand)" }}>{label}</p>
+      <p className="text-sm" style={{ color: "var(--text)" }}>
         {item.title || item.url}
       </p>
     </a>

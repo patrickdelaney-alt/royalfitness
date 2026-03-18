@@ -137,14 +137,14 @@ export interface Post {
   };
 }
 
-// ── badge colours (dark theme) ────────────────────────────────────────────────
+// ── badge colours (warm light theme) ──────────────────────────────────────────
 
 const TYPE_BADGE: Record<Post["type"], { bg: string; text: string; label: string; emoji: string }> = {
-  WORKOUT: { bg: "rgba(120,117,255,0.10)", text: "#a8a6ff", label: "Workout",  emoji: "💪" },
-  MEAL:    { bg: "rgba(34,197,94,0.12)",   text: "#4ade80", label: "Meal",     emoji: "🥗" },
-  WELLNESS:{ bg: "rgba(168,85,247,0.12)",  text: "#c084fc", label: "Wellness", emoji: "🧘" },
-  GENERAL: { bg: "rgba(255,255,255,0.08)", text: "rgba(255,255,255,0.45)", label: "General", emoji: "⭐" },
-  CHECKIN: { bg: "rgba(56,189,248,0.10)",  text: "#67e8f9", label: "Check-in", emoji: "📍" },
+  WORKOUT: { bg: "rgba(36,63,22,0.10)", text: "#528531", label: "Workout",  emoji: "💪" },
+  MEAL:    { bg: "rgba(154,123,46,0.12)",   text: "#9A7B2E", label: "Meal",     emoji: "🥗" },
+  WELLNESS:{ bg: "rgba(82,133,49,0.12)",  text: "#528531", label: "Wellness", emoji: "🧘" },
+  GENERAL: { bg: "rgba(36,63,22,0.10)", text: "#7A7560", label: "General", emoji: "⭐" },
+  CHECKIN: { bg: "rgba(154,123,46,0.10)",  text: "#9A7B2E", label: "Check-in", emoji: "📍" },
 };
 
 // ── mood label ────────────────────────────────────────────────────────────────
@@ -176,7 +176,7 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
         {detail.isClass && (
           <span
             className="text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(120,117,255,0.10)", color: "#a8a6ff" }}
+            style={{ background: "rgba(36,63,22,0.10)", color: "#528531" }}
           >
             Class
           </span>
@@ -201,7 +201,7 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
                     <span
                       key={s.id}
                       className="text-xs text-muted-dim rounded px-1.5 py-0.5"
-                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
                     >
                       Set {idx + 1}
                       {s.reps != null ? `: ${s.reps} reps` : ""}
@@ -217,7 +217,7 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
             <button
               onClick={() => setShowAllExercises(true)}
               className="w-full flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg transition-colors"
-              style={{ color: "#a8a6ff", background: "rgba(120,117,255,0.08)", border: "1px solid rgba(120,117,255,0.20)" }}
+              style={{ color: "#528531", background: "rgba(36,63,22,0.08)", border: "1px solid rgba(36,63,22,0.20)" }}
             >
               <HiChevronDown className="w-3.5 h-3.5" />
               Show all {detail.exercises.length} exercises
@@ -228,7 +228,7 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
             <button
               onClick={() => setShowAllExercises(false)}
               className="w-full flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg transition-colors"
-              style={{ color: "rgba(255,255,255,0.35)", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+              style={{ color: "#7A7560", background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
             >
               <HiChevronUp className="w-3.5 h-3.5" />
               Show less
@@ -242,12 +242,12 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
         {detail.perceivedExertion != null && (
           <div className="flex items-center gap-2">
             <HiFire className="w-4 h-4 text-primary" />
-            <div className="w-24 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+            <div className="w-24 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(36,63,22,0.10)" }}>
               <div
                 className="h-full rounded-full"
                 style={{
                   width: `${detail.perceivedExertion * 10}%`,
-                  background: "linear-gradient(90deg, #6360e8, #9b98ff)",
+                  background: "linear-gradient(90deg, #243F16, #528531)",
                 }}
               />
             </div>
@@ -271,7 +271,7 @@ function MealSection({ detail }: { detail: MealDetail }) {
         <span className="font-semibold text-foreground">{detail.mealName}</span>
         <span
           className="text-xs px-2 py-0.5 rounded-full capitalize"
-          style={{ background: "rgba(34,197,94,0.1)", color: "#4ade80" }}
+          style={{ background: "rgba(154,123,46,0.1)", color: "#9A7B2E" }}
         >
           {detail.mealType}
         </span>
@@ -292,7 +292,7 @@ function MealSection({ detail }: { detail: MealDetail }) {
             <div
               key={m.label}
               className="text-center rounded-lg py-2 px-1"
-              style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.12)" }}
+              style={{ background: "rgba(154,123,46,0.08)", border: "1px solid rgba(154,123,46,0.12)" }}
             >
               <p className="text-xs text-muted-dim">{m.label}</p>
               <p className="font-semibold text-foreground text-sm">
@@ -325,12 +325,12 @@ function WellnessSection({ detail }: { detail: WellnessDetail }) {
         {detail.intensity != null && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-dim">Intensity:</span>
-            <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+            <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(36,63,22,0.10)" }}>
               <div
                 className="h-full rounded-full"
                 style={{
                   width: `${detail.intensity * 10}%`,
-                  background: "linear-gradient(90deg, #a855f7, #c084fc)",
+                  background: "linear-gradient(90deg, #243F16, #528531)",
                 }}
               />
             </div>
@@ -356,18 +356,18 @@ function WorkoutBadgeCard({ badge }: { badge: BadgeData }) {
       className="mt-2 rounded-xl overflow-hidden flex flex-col items-center justify-center py-8 px-4 gap-2"
       style={{ background: badge.gradient, minHeight: "180px" }}
     >
-      <span style={{ fontSize: "64px", lineHeight: 1, filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.4))" }}>
+      <span style={{ fontSize: "64px", lineHeight: 1, filter: "drop-shadow(0 2px 8px rgba(24,25,15,0.09))" }}>
         {badge.emoji}
       </span>
       <p
         className="font-bold tracking-wide text-center mt-2"
-        style={{ color: "#fff", fontSize: "20px", textShadow: "0 1px 4px rgba(0,0,0,0.4)", letterSpacing: "0.04em" }}
+        style={{ color: "#FDFAF5", fontSize: "20px", textShadow: "0 1px 4px rgba(24,25,15,0.09)", letterSpacing: "0.04em" }}
       >
         {badge.name.toUpperCase()}
       </p>
       <p
         className="text-center"
-        style={{ color: "rgba(255,255,255,0.7)", fontSize: "13px" }}
+        style={{ color: "rgba(253,250,245,0.8)", fontSize: "13px" }}
       >
         {badge.subtitle}
       </p>
@@ -438,7 +438,7 @@ function CheckInPostCard({
   return (
     <article
       className="rounded-xl border card-hover"
-      style={{ background: "#13141f", borderColor: "rgba(255,255,255,0.07)" }}
+      style={{ background: "#FDFAF5", borderColor: "rgba(36,63,22,0.10)" }}
     >
       <div className="flex items-center gap-2.5 px-3 py-3">
         {/* Small avatar */}
@@ -466,20 +466,20 @@ function CheckInPostCard({
             >
               {post.author.username}
             </Link>
-            <span style={{ color: "rgba(255,255,255,0.5)" }}> was at </span>
+            <span style={{ color: "#7A7560" }}> was at </span>
             {post.gym ? (
-              <span className="font-medium" style={{ color: "#67e8f9" }}>
+              <span className="font-medium" style={{ color: "#9A7B2E" }}>
                 {post.gym.name}
               </span>
             ) : (
-              <span style={{ color: "rgba(255,255,255,0.35)" }}>the gym</span>
+              <span style={{ color: "#7A7560" }}>the gym</span>
             )}
             <span className="ml-1 text-xs">📍</span>
           </p>
           {post.caption && (
             <p
               className="text-xs mt-0.5 truncate"
-              style={{ color: "rgba(255,255,255,0.35)" }}
+              style={{ color: "#7A7560" }}
             >
               {post.caption}
             </p>
@@ -492,7 +492,7 @@ function CheckInPostCard({
             onClick={toggleLike}
             disabled={likeLoading}
             className="flex items-center gap-1 transition-colors disabled:opacity-60"
-            style={{ color: liked ? "#ef4444" : "rgba(255,255,255,0.3)" }}
+            style={{ color: liked ? "#ef4444" : "#7A7560" }}
           >
             {liked ? (
               <HiHeart className="w-3.5 h-3.5" />
@@ -502,7 +502,7 @@ function CheckInPostCard({
             <span className="text-xs">{likeCount}</span>
           </button>
 
-          <span className="text-xs" style={{ color: "rgba(255,255,255,0.22)" }}>
+          <span className="text-xs" style={{ color: "#7A7560" }}>
             {timeAgo(post.createdAt)}
           </span>
 
@@ -513,7 +513,7 @@ function CheckInPostCard({
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={deleting}
                   className="text-xs px-1.5 py-0.5 rounded transition-colors"
-                  style={{ color: "rgba(255,255,255,0.4)" }}
+                  style={{ color: "#7A7560" }}
                 >
                   <HiX className="w-3 h-3" />
                 </button>
@@ -529,7 +529,7 @@ function CheckInPostCard({
               <button
                 onClick={() => setShowDeleteConfirm(true)}
                 className="transition-colors"
-                style={{ color: "rgba(255,255,255,0.2)" }}
+                style={{ color: "#7A7560" }}
                 aria-label="Delete post"
               >
                 <HiTrash className="w-3.5 h-3.5" />
@@ -774,7 +774,7 @@ function FullPostCard({
         post.type === "WELLNESS" ? "type-border-wellness" :
                                    "type-border-general"
       }`}
-      style={{ background: "#13141f", borderColor: "rgba(255,255,255,0.08)" }}
+      style={{ background: "#FDFAF5", borderColor: "rgba(36,63,22,0.10)" }}
     >
       {/* ── header ── */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
@@ -784,11 +784,11 @@ function FullPostCard({
             className="p-[2px] rounded-full"
             style={{
               background: post.type === "WORKOUT"
-                ? "linear-gradient(135deg, rgba(120,117,255,0.6), rgba(168,166,255,0.3))"
+                ? "linear-gradient(135deg, rgba(36,63,22,0.6), rgba(168,166,255,0.3))"
                 : post.type === "MEAL"
-                ? "linear-gradient(135deg, rgba(74,222,128,0.6), rgba(52,211,153,0.3))"
+                ? "linear-gradient(135deg, rgba(154,123,46,0.6), rgba(201,168,76,0.3))"
                 : post.type === "WELLNESS"
-                ? "linear-gradient(135deg, rgba(192,132,252,0.6), rgba(168,85,247,0.3))"
+                ? "linear-gradient(135deg, rgba(82,133,49,0.6), rgba(36,63,22,0.3))"
                 : "transparent",
             }}
           >
@@ -864,7 +864,7 @@ function FullPostCard({
               <button
                 onClick={() => setShowOwnerMenu((v) => !v)}
                 className="p-1.5 rounded-full transition-colors"
-                style={{ color: "rgba(255,255,255,0.25)" }}
+                style={{ color: "#7A7560" }}
                 aria-label="Post options"
               >
                 <HiDotsVertical className="w-4 h-4" />
@@ -875,12 +875,12 @@ function FullPostCard({
                 <div className="fixed inset-0 z-10" onClick={() => setShowOwnerMenu(false)} />
                 <div
                   className="absolute right-0 top-8 z-20 w-36 rounded-xl overflow-hidden shadow-xl"
-                  style={{ background: "#1a1b2e", border: "1px solid rgba(255,255,255,0.10)" }}
+                  style={{ background: "#FDFAF5", border: "1px solid rgba(36,63,22,0.10)" }}
                 >
                   <button
                     onClick={() => { setShowEditModal(true); setShowOwnerMenu(false); }}
                     className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-white/5"
-                    style={{ color: "rgba(255,255,255,0.8)" }}
+                    style={{ color: "#18190F" }}
                   >
                     Edit post
                   </button>
@@ -903,7 +903,7 @@ function FullPostCard({
             <button
               onClick={() => setShowModerationMenu((v) => !v)}
               className="p-1.5 rounded-full transition-colors"
-              style={{ color: "rgba(255,255,255,0.25)" }}
+              style={{ color: "#7A7560" }}
               aria-label="Post options"
             >
               <HiDotsVertical className="w-4 h-4" />
@@ -917,12 +917,12 @@ function FullPostCard({
                 />
                 <div
                   className="absolute right-0 top-8 z-20 w-44 rounded-xl overflow-hidden shadow-xl"
-                  style={{ background: "#1a1b2e", border: "1px solid rgba(255,255,255,0.10)" }}
+                  style={{ background: "#FDFAF5", border: "1px solid rgba(36,63,22,0.10)" }}
                 >
                   <button
                     onClick={() => { setShowReportModal(true); setShowModerationMenu(false); }}
                     className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-white/5"
-                    style={{ color: "rgba(255,255,255,0.8)" }}
+                    style={{ color: "#18190F" }}
                   >
                     Report post
                   </button>
@@ -944,15 +944,15 @@ function FullPostCard({
       {showReportModal && (
         <div
           className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
-          style={{ background: "rgba(0,0,0,0.7)" }}
+          style={{ background: "rgba(24,25,15,0.5)" }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowReportModal(false); }}
         >
           <div
             className="w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-5 pb-8"
-            style={{ background: "#1a1b2e", border: "1px solid rgba(255,255,255,0.08)" }}
+            style={{ background: "#FDFAF5", border: "1px solid rgba(36,63,22,0.10)" }}
           >
-            <h3 className="text-base font-bold text-white mb-1">Report this post</h3>
-            <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>
+            <h3 className="text-base font-bold mb-1" style={{ color: "#18190F" }}>Report this post</h3>
+            <p className="text-xs mb-4" style={{ color: "#7A7560" }}>
               Why are you reporting this post?
             </p>
             <div className="space-y-2">
@@ -962,7 +962,7 @@ function FullPostCard({
                   onClick={() => handleReport(reason)}
                   disabled={moderationLoading}
                   className="w-full text-left px-4 py-3 rounded-xl text-sm transition-all duration-200 disabled:opacity-60 flex items-center justify-between"
-                  style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.8)", border: "1px solid rgba(255,255,255,0.08)" }}
+                  style={{ background: "rgba(36,63,22,0.04)", color: "#18190F", border: "1px solid rgba(36,63,22,0.10)" }}
                 >
                   {reason}
                   {moderationLoading && <LoadingSpinner />}
@@ -972,7 +972,7 @@ function FullPostCard({
             <button
               onClick={() => setShowReportModal(false)}
               className="mt-4 w-full py-2 rounded-xl text-sm font-medium"
-              style={{ color: "rgba(255,255,255,0.4)" }}
+              style={{ color: "#7A7560" }}
             >
               Cancel
             </button>
@@ -984,15 +984,15 @@ function FullPostCard({
       {showBlockConfirm && (
         <div
           className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
-          style={{ background: "rgba(0,0,0,0.7)" }}
+          style={{ background: "rgba(24,25,15,0.5)" }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowBlockConfirm(false); }}
         >
           <div
             className="w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-5 pb-8 text-center"
-            style={{ background: "#1a1b2e", border: "1px solid rgba(255,255,255,0.08)" }}
+            style={{ background: "#FDFAF5", border: "1px solid rgba(36,63,22,0.10)" }}
           >
-            <p className="text-base font-bold text-white mb-2">Block @{post.author.username}?</p>
-            <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.45)" }}>
+            <p className="text-base font-bold mb-2" style={{ color: "#18190F" }}>Block @{post.author.username}?</p>
+            <p className="text-sm mb-5" style={{ color: "#7A7560" }}>
               Their posts won&apos;t appear in your feed. You can unblock from their profile.
             </p>
             <div className="flex gap-3">
@@ -1000,7 +1000,7 @@ function FullPostCard({
                 onClick={() => setShowBlockConfirm(false)}
                 disabled={moderationLoading}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 disabled:opacity-50"
-                style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)" }}
+                style={{ background: "rgba(36,63,22,0.04)", color: "#7A7560" }}
               >
                 Cancel
               </button>
@@ -1028,19 +1028,19 @@ function FullPostCard({
       {showEditModal && (
         <div
           className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
-          style={{ background: "rgba(0,0,0,0.7)" }}
+          style={{ background: "rgba(24,25,15,0.5)" }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false); }}
         >
           <div
             className="w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-5 pb-8 space-y-4"
-            style={{ background: "#1a1b2e", border: "1px solid rgba(255,255,255,0.08)" }}
+            style={{ background: "#FDFAF5", border: "1px solid rgba(36,63,22,0.10)" }}
           >
-            <h3 className="text-base font-bold text-white">Edit post</h3>
+            <h3 className="text-base font-bold" style={{ color: "#18190F" }}>Edit post</h3>
 
             {/* Type-specific name field */}
             {post.type !== "GENERAL" && (
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: "#7A7560" }}>
                   {post.type === "WORKOUT" ? "Workout name" : post.type === "MEAL" ? "Meal name" : "Activity"}
                 </label>
                 <input
@@ -1048,14 +1048,14 @@ function FullPostCard({
                   value={editDetailName}
                   onChange={(e) => setEditDetailName(e.target.value)}
                   className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" }}
+                  style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)", color: "#18190F" }}
                 />
               </div>
             )}
 
             {/* Caption */}
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "#7A7560" }}>
                 Caption
               </label>
               <textarea
@@ -1063,13 +1063,13 @@ function FullPostCard({
                 onChange={(e) => setEditCaption(e.target.value)}
                 rows={3}
                 className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
-                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" }}
+                style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)", color: "#18190F" }}
               />
             </div>
 
             {/* Visibility */}
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "#7A7560" }}>
                 Visibility
               </label>
               <div className="flex gap-2">
@@ -1080,8 +1080,8 @@ function FullPostCard({
                     className="flex-1 py-2 rounded-lg text-xs font-semibold transition-colors"
                     style={
                       editVisibility === v
-                        ? { background: "linear-gradient(135deg,#6360e8,#9b98ff)", color: "#fff" }
-                        : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }
+                        ? { background: "#243F16", color: "#FDFAF5" }
+                        : { background: "rgba(36,63,22,0.04)", color: "#7A7560" }
                     }
                   >
                     {v === "PUBLIC" ? "Public" : v === "FOLLOWERS" ? "Followers" : "Private"}
@@ -1096,7 +1096,7 @@ function FullPostCard({
                 onClick={() => setShowEditModal(false)}
                 disabled={editSaving}
                 className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 disabled:opacity-50"
-                style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)" }}
+                style={{ background: "rgba(36,63,22,0.04)", color: "#7A7560" }}
               >
                 Cancel
               </button>
@@ -1104,7 +1104,7 @@ function FullPostCard({
                 onClick={handleEdit}
                 disabled={editSaving}
                 className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-60 transition-all duration-200 flex items-center justify-center gap-2"
-                style={{ background: "linear-gradient(135deg,#6360e8,#9b98ff)" }}
+                style={{ background: "#243F16" }}
               >
                 {editSaving ? (
                   <>
@@ -1159,7 +1159,7 @@ function FullPostCard({
       {/* ── actions ── */}
       <div
         className="flex items-center gap-5 px-4 py-3.5 border-t"
-        style={{ borderColor: "rgba(255,255,255,0.06)" }}
+        style={{ borderColor: "rgba(36,63,22,0.08)" }}
       >
         <button
           onClick={toggleLike}
@@ -1204,7 +1204,7 @@ function FullPostCard({
       {showComments && (
         <div
           className="border-t px-4 py-3 space-y-3"
-          style={{ borderColor: "rgba(255,255,255,0.06)" }}
+          style={{ borderColor: "rgba(36,63,22,0.08)" }}
         >
           {/* comment input */}
           <div className="flex gap-2">

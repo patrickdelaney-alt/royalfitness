@@ -45,11 +45,11 @@ const CATALOG_TYPES: { type: CatalogType; label: string }[] = [
 ];
 
 const CATEGORY_GRADIENTS: Record<CatalogType, string> = {
-  meals: "from-orange-600/80 to-red-700/80",
-  workouts: "from-blue-600/80 to-indigo-700/80",
-  supplements: "from-green-600/80 to-emerald-700/80",
-  accessories: "from-purple-600/80 to-pink-700/80",
-  wellness: "from-teal-600/80 to-cyan-700/80",
+  meals: "from-amber-700/70 to-amber-900/70",
+  workouts: "from-green-800/70 to-green-950/70",
+  supplements: "from-emerald-700/70 to-emerald-900/70",
+  accessories: "from-stone-600/70 to-stone-800/70",
+  wellness: "from-lime-700/70 to-lime-900/70",
 };
 
 function DetailModal({
@@ -87,13 +87,14 @@ function DetailModal({
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div className="absolute inset-0 backdrop-blur-sm" style={{ background: "rgba(24,25,15,0.5)" }} />
       <div
         className="relative w-full sm:max-w-md max-h-[85vh] overflow-y-auto overscroll-y-contain rounded-t-2xl sm:rounded-2xl"
         style={{
-          background: "#13141f",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
           WebkitOverflowScrolling: "touch",
+          boxShadow: "var(--shadow-lg)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -101,7 +102,7 @@ function DetailModal({
         <button
           onClick={onClose}
           className="absolute top-3 right-3 z-10 p-1.5 rounded-full"
-          style={{ background: "rgba(0,0,0,0.5)", color: "rgba(255,255,255,0.8)" }}
+          style={{ background: "rgba(24,25,15,0.1)", color: "var(--text-muted)" }}
         >
           <HiX className="w-5 h-5" />
         </button>
@@ -127,18 +128,18 @@ function DetailModal({
         <div className="p-5 pb-8 space-y-4" style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}>
           {/* Title + category */}
           <div>
-            <h3 className="text-xl font-bold text-white">{item.name}</h3>
+            <h3 className="text-xl font-normal" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>{item.name}</h3>
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
               <span
                 className="text-xs px-2.5 py-0.5 rounded-full"
-                style={{ background: "rgba(120,117,255,0.12)", color: "#a8a6ff" }}
+                style={{ background: "rgba(36,63,22,0.08)", color: "var(--brand)" }}
               >
                 {categoryInfo?.label}
               </span>
               {item.brand && (
                 <span
                   className="text-xs px-2.5 py-0.5 rounded-full"
-                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}
+                  style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}
                 >
                   {item.brand}
                 </span>
@@ -146,7 +147,7 @@ function DetailModal({
               {item.type && (
                 <span
                   className="text-xs px-2.5 py-0.5 rounded-full"
-                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}
+                  style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}
                 >
                   {item.type}
                 </span>
@@ -154,7 +155,7 @@ function DetailModal({
               {item.activityType && (
                 <span
                   className="text-xs px-2.5 py-0.5 rounded-full"
-                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}
+                  style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}
                 >
                   {item.activityType}
                 </span>
@@ -164,7 +165,7 @@ function DetailModal({
 
           {/* Supplement details */}
           {(item.dose || item.schedule) && (
-            <div className="flex gap-4 text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+            <div className="flex gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
               {item.dose && <span>Dose: {item.dose}</span>}
               {item.schedule && <span>Schedule: {item.schedule}</span>}
             </div>
@@ -172,7 +173,7 @@ function DetailModal({
 
           {/* Meal macros */}
           {(item.calories || item.protein || item.carbs || item.fat) && (
-            <div className="flex gap-3 text-xs flex-wrap" style={{ color: "rgba(255,255,255,0.5)" }}>
+            <div className="flex gap-3 text-xs flex-wrap" style={{ color: "var(--text-muted)" }}>
               {item.calories != null && <span>{item.calories} cal</span>}
               {item.protein != null && <span>{item.protein}g protein</span>}
               {item.carbs != null && <span>{item.carbs}g carbs</span>}
@@ -182,14 +183,14 @@ function DetailModal({
 
           {/* Ingredients */}
           {item.ingredients && item.ingredients.length > 0 && (
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
               {item.ingredients.join(", ")}
             </p>
           )}
 
           {/* Duration */}
           {item.durationMinutes != null && (
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
               {item.durationMinutes} minutes
             </p>
           )}
@@ -200,7 +201,7 @@ function DetailModal({
               const exercises = JSON.parse(item.exercisesJson);
               if (Array.isArray(exercises) && exercises.length > 0) {
                 return (
-                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                     {exercises.map((e: { name: string }) => e.name).join(", ")}
                   </p>
                 );
@@ -211,7 +212,7 @@ function DetailModal({
 
           {/* Notes */}
           {item.notes && (
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
               {item.notes}
             </p>
           )}
@@ -220,13 +221,13 @@ function DetailModal({
           {item.referralCode && (
             <div
               className="flex items-center justify-between p-3 rounded-xl"
-              style={{ background: "rgba(120,117,255,0.08)", border: "1px solid rgba(120,117,255,0.2)" }}
+              style={{ background: "var(--gold-subtle)", border: "1px solid var(--border-gold)" }}
             >
               <div>
-                <p className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
+                <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
                   Referral Code
                 </p>
-                <p className="text-base font-bold tracking-wider" style={{ color: "#a8a6ff" }}>
+                <p className="text-base font-bold tracking-wider" style={{ color: "var(--gold)" }}>
                   {item.referralCode}
                 </p>
               </div>
@@ -234,8 +235,8 @@ function DetailModal({
                 onClick={copyCode}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
                 style={{
-                  background: copied ? "rgba(34,197,94,0.2)" : "rgba(120,117,255,0.15)",
-                  color: copied ? "#22c55e" : "#a8a6ff",
+                  background: copied ? "rgba(34,197,94,0.12)" : "rgba(36,63,22,0.08)",
+                  color: copied ? "#16a34a" : "var(--brand)",
                 }}
               >
                 <HiClipboardCopy className="w-3.5 h-3.5" />
@@ -251,7 +252,7 @@ function DetailModal({
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold btn-gradient transition-all"
-              style={{ color: "#ffffff" }}
+              style={{ color: "#FDFAF5" }}
             >
               <HiExternalLink className="w-4 h-4" />
               {item.link ? "Shop Now" : item.videoUrl ? "Watch Video" : "View Source"}
@@ -265,7 +266,7 @@ function DetailModal({
                 <span
                   key={i}
                   className="text-xs px-2 py-0.5 rounded-full"
-                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}
+                  style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}
                 >
                   #{tag}
                 </span>
@@ -378,11 +379,11 @@ export default function UserCatalogSection({
   return (
     <div className="mt-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-foreground">Catalog</h2>
+        <h2 className="text-lg font-normal text-foreground" style={{ fontFamily: "var(--font-display)" }}>Catalog</h2>
         {linkedCount > 0 && (
           <span
             className="text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(120,117,255,0.12)", color: "#a8a6ff" }}
+            style={{ background: "var(--gold-subtle)", color: "var(--gold)" }}
           >
             {linkedCount} product {linkedCount === 1 ? "link" : "links"}
           </span>
@@ -398,8 +399,8 @@ export default function UserCatalogSection({
             className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all flex-shrink-0"
             style={
               activeTab === type
-                ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
-                : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
+                ? { background: "var(--brand)", color: "#FDFAF5" }
+                : { background: "var(--surface-2)", color: "var(--text-muted)" }
             }
           >
             {label}
@@ -414,7 +415,7 @@ export default function UserCatalogSection({
             <div
               key={i}
               className="aspect-square rounded-sm animate-pulse"
-              style={{ background: "rgba(255,255,255,0.06)" }}
+              style={{ background: "var(--surface-2)" }}
             />
           ))}
         </div>
@@ -469,7 +470,7 @@ export default function UserCatalogSection({
                 {(item.link || item.referralCode) && (
                   <div
                     className="absolute top-1.5 right-1.5 p-1 rounded-full"
-                    style={{ background: "rgba(120,117,255,0.85)" }}
+                    style={{ background: "rgba(36,63,22,0.75)" }}
                   >
                     <HiLink className="w-2.5 h-2.5 text-white" />
                   </div>

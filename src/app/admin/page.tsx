@@ -34,8 +34,8 @@ function SignupBadge({ method }: { method: string }) {
       className="text-xs px-2 py-0.5 rounded-full font-medium"
       style={
         isEmail
-          ? { background: "rgba(120,117,255,0.10)", color: "#a8a6ff" }
-          : { background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.45)" }
+          ? { background: "rgba(36,63,22,0.10)", color: "#528531" }
+          : { background: "rgba(36,63,22,0.07)", color: "var(--text-muted)" }
       }
     >
       {isEmail ? "Email" : method.charAt(0).toUpperCase() + method.slice(1)}
@@ -127,11 +127,11 @@ export default function AdminPage() {
     return (
       <div
         className="flex min-h-screen items-center justify-center"
-        style={{ background: "#0b0c14" }}
+        style={{ background: "var(--bg)" }}
       >
         <div
           className="w-7 h-7 border-2 rounded-full animate-spin"
-          style={{ borderColor: "#a8a6ff", borderTopColor: "transparent" }}
+          style={{ borderColor: "#528531", borderTopColor: "transparent" }}
         />
       </div>
     );
@@ -141,9 +141,9 @@ export default function AdminPage() {
     return (
       <div
         className="flex min-h-screen items-center justify-center"
-        style={{ background: "#0b0c14", color: "#fff" }}
+        style={{ background: "var(--bg)", color: "var(--text)" }}
       >
-        <p style={{ color: "rgba(255,255,255,0.4)" }}>Access denied.</p>
+        <p style={{ color: "var(--text-muted)" }}>Access denied.</p>
       </div>
     );
   }
@@ -154,16 +154,16 @@ export default function AdminPage() {
   return (
     <div
       className="min-h-screen px-4 py-8 max-w-3xl mx-auto"
-      style={{ background: "#0b0c14", color: "#ffffff" }}
+      style={{ background: "var(--bg)", color: "var(--text)" }}
     >
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 rounded-xl btn-gradient flex items-center justify-center text-xl">
-          👑
+        <div className="w-10 h-10 rounded-xl btn-gradient flex items-center justify-center text-sm font-bold text-white">
+          RF
         </div>
         <div>
           <h1 className="text-xl font-bold">Admin Dashboard</h1>
-          <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
             {session?.user?.email}
           </p>
         </div>
@@ -179,10 +179,10 @@ export default function AdminPage() {
           <div
             key={s.label}
             className="rounded-xl p-4 text-center"
-            style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+            style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
           >
             <p className="text-2xl font-bold">{s.value}</p>
-            <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
+            <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
               {s.label}
             </p>
           </div>
@@ -192,23 +192,23 @@ export default function AdminPage() {
       {/* User list */}
       <h2
         className="text-xs font-semibold uppercase tracking-wide mb-3"
-        style={{ color: "rgba(255,255,255,0.35)" }}
+        style={{ color: "var(--text-muted)" }}
       >
         Recent Signups
       </h2>
 
       <div
         className="rounded-2xl overflow-hidden"
-        style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+        style={{ border: "1px solid rgba(36,63,22,0.10)" }}
       >
         {users.map((user, i) => (
           <div
             key={user.id}
             className="flex items-center gap-3 px-4 py-3"
             style={{
-              background: "#13141f",
+              background: "var(--surface)",
               borderBottom:
-                i < users.length - 1 ? "1px solid rgba(255,255,255,0.05)" : undefined,
+                i < users.length - 1 ? "1px solid rgba(36,63,22,0.05)" : undefined,
             }}
           >
             {/* Avatar */}
@@ -221,7 +221,7 @@ export default function AdminPage() {
             ) : (
               <HiUserCircle
                 className="w-9 h-9 flex-shrink-0"
-                style={{ color: "rgba(255,255,255,0.2)" }}
+                style={{ color: "var(--text-muted)" }}
               />
             )}
 
@@ -233,7 +233,7 @@ export default function AdminPage() {
                 </p>
                 <SignupBadge method={user.signupMethod} />
               </div>
-              <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.4)" }}>
+              <p className="text-xs truncate" style={{ color: "var(--text-muted)" }}>
                 {user.email}
               </p>
             </div>
@@ -241,7 +241,7 @@ export default function AdminPage() {
             {/* Time */}
             <p
               className="text-xs flex-shrink-0"
-              style={{ color: "rgba(255,255,255,0.3)" }}
+              style={{ color: "var(--text-muted)" }}
             >
               {timeAgo(user.createdAt)}
             </p>
@@ -253,7 +253,7 @@ export default function AdminPage() {
         <div className="flex justify-center py-6">
           <div
             className="w-5 h-5 border-2 rounded-full animate-spin"
-            style={{ borderColor: "#a8a6ff", borderTopColor: "transparent" }}
+            style={{ borderColor: "#528531", borderTopColor: "transparent" }}
           />
         </div>
       )}

@@ -129,7 +129,7 @@ export default function FollowListModal({
       {/* Backdrop */}
       <div
         className="fixed inset-0 z-40"
-        style={{ background: "rgba(0,0,0,0.7)" }}
+        style={{ background: "rgba(24,25,15,0.5)" }}
         onClick={onClose}
       />
 
@@ -137,25 +137,23 @@ export default function FollowListModal({
       <div
         className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl"
         style={{
-          background: "#13141f",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
           maxHeight: "75vh",
+          boxShadow: "var(--shadow-lg)",
         }}
       >
         {/* Handle + header */}
         <div className="flex-shrink-0">
           <div className="flex justify-center pt-3 pb-1">
-            <div
-              className="w-10 h-1 rounded-full"
-              style={{ background: "rgba(255,255,255,0.15)" }}
-            />
+            <div className="sheet-handle" />
           </div>
-          <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-            <h2 className="font-semibold text-base text-white">{title}</h2>
+          <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "var(--border)" }}>
+            <h2 className="font-normal text-base" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>{title}</h2>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-full transition-colors hover:bg-white/10"
-              style={{ color: "rgba(255,255,255,0.5)" }}
+              className="p-1.5 rounded-full"
+              style={{ color: "var(--text-muted)", transition: "background 0.3s cubic-bezier(0.32, 0.72, 0, 1)" }}
             >
               <HiXMark className="w-5 h-5" />
             </button>
@@ -168,18 +166,18 @@ export default function FollowListModal({
             <div className="flex justify-center items-center py-12">
               <div
                 className="w-6 h-6 border-2 rounded-full animate-spin"
-                style={{ borderColor: "#a8a6ff", borderTopColor: "transparent" }}
+                style={{ borderColor: "rgba(36,63,22,0.35)", borderTopColor: "transparent" }}
               />
             </div>
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                 {error}
               </p>
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                 {type === "followers" ? "No followers yet." : "Not following anyone yet."}
               </p>
             </div>
@@ -190,7 +188,8 @@ export default function FollowListModal({
                   key={user.id}
                   href={`/profile/${user.username}`}
                   onClick={onClose}
-                  className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white/5"
+                  className="flex items-center gap-3 px-4 py-3"
+                  style={{ transition: "background 0.3s cubic-bezier(0.32, 0.72, 0, 1)" }}
                 >
                   {user.avatarUrl ? (
                     <img
@@ -200,19 +199,20 @@ export default function FollowListModal({
                     />
                   ) : user.name ? (
                     <div
-                      className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold btn-gradient"
+                      className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold btn-gradient"
+                      style={{ color: "#FDFAF5" }}
                     >
                       {initials(user.name)}
                     </div>
                   ) : (
-                    <HiUserCircle className="w-10 h-10 flex-shrink-0" style={{ color: "rgba(255,255,255,0.2)" }} />
+                    <HiUserCircle className="w-10 h-10 flex-shrink-0" style={{ color: "var(--text-muted)" }} />
                   )}
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-white truncate">
+                    <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>
                       {user.username}
                     </p>
                     {user.name && (
-                      <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      <p className="text-xs truncate" style={{ color: "var(--text-muted)" }}>
                         {user.name}
                       </p>
                     )}
@@ -223,7 +223,7 @@ export default function FollowListModal({
                 <div className="flex justify-center py-4">
                   <div
                     className="w-5 h-5 border-2 rounded-full animate-spin"
-                    style={{ borderColor: "#a8a6ff", borderTopColor: "transparent" }}
+                    style={{ borderColor: "rgba(36,63,22,0.35)", borderTopColor: "transparent" }}
                   />
                 </div>
               )}

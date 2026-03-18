@@ -19,7 +19,7 @@ export default function GlobalError({
       <h2 className="mb-2 text-lg font-bold text-foreground">
         Something went wrong
       </h2>
-      <p className="mb-6 text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+      <p className="mb-6 text-sm" style={{ color: "var(--text-muted)" }}>
         An unexpected error occurred. Please try again.
       </p>
       <button

@@ -135,16 +135,15 @@ export default function FeedContent() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <span className="text-xl">👑</span>
-          <h1 className="text-xl font-bold text-foreground tracking-tight">
+          <h1 className="text-xl font-light tracking-tight" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>
             Royal
           </h1>
-          <span className="text-xs font-medium text-muted-dim">Beta</span>
+          <span className="eyebrow" style={{ fontSize: "8px", padding: "3px 8px" }}>Beta</span>
         </div>
         {/* Search shortcut — always visible at top-right so Explore is reachable
             even if the bottom nav is reshuffled in future changes. */}
         <Link href="/explore" aria-label="Search people and gyms" className="p-1.5 -mr-1">
-          <HiSearch className="w-5 h-5" style={{ color: "rgba(255,255,255,0.45)" }} />
+          <HiSearch className="w-5 h-5" style={{ color: "var(--text-muted)" }} />
         </Link>
       </div>
 
@@ -160,22 +159,23 @@ export default function FeedContent() {
                 const url = type === "ALL" ? "/feed" : `/feed?filter=${type}`;
                 router.replace(url, { scroll: false });
               }}
-              className="whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center flex-shrink-0 hover:scale-105 active:scale-95"
-              style={
-                isActive
+              className="whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium flex items-center flex-shrink-0"
+              style={{
+                ...(isActive
                   ? {
-                      background: "linear-gradient(135deg, #6360e8, #9b98ff)",
-                      color: "#ffffff",
-                      boxShadow: "0 0 40px rgba(120,117,255,0.15), 0 8px 24px rgba(0,0,0,0.5)",
+                      background: "var(--brand)",
+                      color: "#FDFAF5",
+                      boxShadow: "0 2px 10px rgba(36,63,22,0.22)",
                       border: "none",
                       transform: "scale(1.04)",
                     }
                   : {
-                      background: "rgba(255,255,255,0.045)",
-                      color: "rgba(255,255,255,0.45)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                    }
-              }
+                      background: "var(--surface-2)",
+                      color: "var(--text-muted)",
+                      border: "1px solid var(--border)",
+                    }),
+                transition: "all 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
+              }}
             >
               {type === "ALL"
                 ? "All"
@@ -199,7 +199,7 @@ export default function FeedContent() {
             <div
               key={i}
               className="rounded-xl border overflow-hidden"
-              style={{ background: "#13141f", borderColor: "rgba(255,255,255,0.08)" }}
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
             >
               <div className="flex items-center gap-3 px-4 pt-4 pb-3">
                 <div className="w-10 h-10 rounded-full skeleton-shimmer flex-shrink-0" />
@@ -213,7 +213,7 @@ export default function FeedContent() {
                 <div className="h-3 w-4/5 rounded-full skeleton-shimmer" />
                 <div className="h-24 w-full rounded-xl skeleton-shimmer mt-3" />
               </div>
-              <div className="flex gap-4 px-4 py-3 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+              <div className="flex gap-4 px-4 py-3 border-t" style={{ borderColor: "var(--border)" }}>
                 <div className="h-4 w-12 rounded-full skeleton-shimmer" />
                 <div className="h-4 w-12 rounded-full skeleton-shimmer" />
               </div>
@@ -222,36 +222,33 @@ export default function FeedContent() {
         </div>
       ) : error ? (
         <div className="text-center py-16">
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>Failed to load posts.</p>
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>Failed to load posts.</p>
           <button
             onClick={() => fetchPosts(true)}
             className="mt-3 text-xs underline"
-            style={{ color: "#a8a6ff" }}
+            style={{ color: "var(--brand)" }}
           >
             Try again
           </button>
         </div>
       ) : posts.length === 0 ? (
         <div className="text-center py-16 px-4">
-          <p className="text-3xl mb-3">👑</p>
-          <p className="font-semibold text-white text-base mb-1">Your feed is quiet</p>
-          <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.45)" }}>
+          <p className="text-2xl mb-3" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>Your feed is quiet</p>
+          <p className="text-sm mb-5" style={{ color: "var(--text-muted)", lineHeight: 1.65 }}>
             Log a workout, meal, or wellness activity to get started.
           </p>
           <div className="flex gap-3 justify-center flex-wrap">
             <Link
               href="/create"
-              className="px-5 py-2.5 rounded-full text-sm font-bold text-white"
-              style={{ background: "linear-gradient(135deg, #6360e8, #9b98ff)", boxShadow: "0 4px 20px rgba(120,117,255,0.3)" }}
+              className="btn-primary px-5 py-2.5 rounded-full text-sm font-medium"
             >
-              Log Activity →
+              Log Activity &rarr;
             </Link>
             <Link
               href="/explore"
-              className="px-5 py-2.5 rounded-full text-sm font-semibold"
-              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}
+              className="btn-secondary px-5 py-2.5 rounded-full text-sm font-medium"
             >
-              Find People →
+              Find People &rarr;
             </Link>
           </div>
         </div>
@@ -264,7 +261,7 @@ export default function FeedContent() {
             <div className="flex justify-center py-4">
               <div
                 className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
-                style={{ borderColor: "rgba(120,117,255,0.5)", borderTopColor: "transparent" }}
+                style={{ borderColor: "rgba(36,63,22,0.35)", borderTopColor: "transparent" }}
               />
             </div>
           )}

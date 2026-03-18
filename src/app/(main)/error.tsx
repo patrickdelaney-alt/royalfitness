@@ -22,7 +22,7 @@ export default function MainError({
       </h2>
       <p
         className="mb-6 text-sm"
-        style={{ color: "rgba(255,255,255,0.45)" }}
+        style={{ color: "var(--text-muted)" }}
       >
         We couldn&apos;t load this page. Please try again.
       </p>
@@ -37,9 +37,9 @@ export default function MainError({
           href="/feed"
           className="rounded-xl px-6 py-2.5 text-sm font-semibold transition-colors"
           style={{
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            color: "rgba(255,255,255,0.7)",
+            background: "rgba(36,63,22,0.04)",
+            border: "1px solid rgba(36,63,22,0.10)",
+            color: "var(--text)",
           }}
         >
           Go to Feed

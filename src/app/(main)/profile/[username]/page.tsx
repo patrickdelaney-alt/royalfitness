@@ -54,10 +54,10 @@ function initials(name?: string | null): string {
 }
 
 const TYPE_BADGE: Record<string, { bg: string; color: string; label: string }> = {
-  WORKOUT: { bg: "rgba(120,117,255,0.10)", color: "#a8a6ff", label: "Workout" },
-  MEAL: { bg: "rgba(52,211,153,0.15)", color: "#34d399", label: "Meal" },
-  WELLNESS: { bg: "rgba(167,139,250,0.15)", color: "#a78bfa", label: "Wellness" },
-  GENERAL: { bg: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)", label: "General" },
+  WORKOUT: { bg: "rgba(36,63,22,0.10)", color: "#528531", label: "Workout" },
+  MEAL: { bg: "rgba(154,123,46,0.15)", color: "#9A7B2E", label: "Meal" },
+  WELLNESS: { bg: "rgba(82,133,49,0.15)", color: "#528531", label: "Wellness" },
+  GENERAL: { bg: "rgba(36,63,22,0.10)", color: "var(--text-muted)", label: "General" },
 };
 
 export default function ProfilePage() {
@@ -191,7 +191,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
-        <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "#a8a6ff", borderTopColor: "transparent" }} />
+        <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "#528531", borderTopColor: "transparent" }} />
       </div>
     );
   }
@@ -199,15 +199,15 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="text-center py-20">
-        <p style={{ color: "rgba(255,255,255,0.3)" }}>User not found</p>
+        <p style={{ color: "var(--text-muted)" }}>User not found</p>
       </div>
     );
   }
 
-  const muted = "rgba(255,255,255,0.4)";
+  const muted = "var(--text-muted)";
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>
+    <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "var(--text)" }}>
       {/* Profile header */}
       <div className="flex items-start gap-4 mb-5">
         {profile.avatarUrl ? (
@@ -243,19 +243,19 @@ export default function ProfilePage() {
 
       {/* Bio */}
       {profile.bio && (
-        <p className="text-sm mb-4 whitespace-pre-wrap" style={{ color: "rgba(255,255,255,0.8)" }}>{profile.bio}</p>
+        <p className="text-sm mb-4 whitespace-pre-wrap" style={{ color: "var(--text)" }}>{profile.bio}</p>
       )}
 
       {/* Social links */}
       {(profile.instagramUrl || profile.tiktokUrl) && (
         <div className="flex gap-3 mb-4">
           {profile.instagramUrl && (
-            <a href={profile.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "#a8a6ff" }}>
+            <a href={profile.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "var(--brand-light)" }}>
               Instagram
             </a>
           )}
           {profile.tiktokUrl && (
-            <a href={profile.tiktokUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "#a8a6ff" }}>
+            <a href={profile.tiktokUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "var(--brand-light)" }}>
               TikTok
             </a>
           )}
@@ -269,7 +269,7 @@ export default function ProfilePage() {
             <Link
               href="/profile/edit"
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors"
-              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
+              style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)", color: "var(--text)" }}
             >
               <HiPencil className="w-4 h-4" />
               Edit Profile
@@ -277,14 +277,14 @@ export default function ProfilePage() {
             <Link
               href="/catalog"
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors"
-              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
+              style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)", color: "var(--text)" }}
             >
               My Catalog
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: "/signin" })}
               className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-colors"
-              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}
+              style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)", color: "var(--text-muted)" }}
             >
               <HiLogout className="w-4 h-4" />
             </button>
@@ -293,9 +293,9 @@ export default function ProfilePage() {
             href="/achievements"
             className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
             style={{
-              background: "linear-gradient(135deg, rgba(120,117,255,0.10) 0%, rgba(168,166,255,0.10) 100%)",
-              border: "1px solid rgba(168,166,255,0.25)",
-              color: "#a8a6ff",
+              background: "linear-gradient(135deg, rgba(36,63,22,0.10) 0%, rgba(82,133,49,0.10) 100%)",
+              border: "1px solid rgba(82,133,49,0.25)",
+              color: "var(--brand)",
             }}
           >
             🏅 My Badges
@@ -309,12 +309,12 @@ export default function ProfilePage() {
             className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-60"
             style={
               isBlocked
-                ? { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)" }
+                ? { background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.06)", color: "var(--text-muted)" }
                 : isFollowing
-                ? { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)" }
+                ? { background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)", color: "var(--text)" }
                 : hasRequested
-                ? { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)" }
-                : { background: "linear-gradient(135deg, #6360e8, #9b98ff)", boxShadow: "0 0 40px rgba(120,117,255,0.15), 0 8px 24px rgba(0,0,0,0.5)", color: "#ffffff" }
+                ? { background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.06)", color: "var(--text-muted)" }
+                : { background: "var(--brand)", boxShadow: "0 0 40px rgba(36,63,22,0.15), 0 8px 24px rgba(24,25,15,0.09)", color: "#ffffff" }
             }
           >
             {isFollowing ? "Following" : hasRequested ? "Requested" : "Follow"}
@@ -323,7 +323,7 @@ export default function ProfilePage() {
             onClick={handleBlock}
             disabled={blockLoading}
             className="py-2.5 px-4 rounded-xl text-sm font-semibold transition-all disabled:opacity-60"
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: isBlocked ? "#f87171" : "rgba(255,255,255,0.5)" }}
+            style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)", color: isBlocked ? "#f87171" : "var(--text-muted)" }}
           >
             {isBlocked ? "Unblock" : "Block"}
           </button>
@@ -333,7 +333,7 @@ export default function ProfilePage() {
       {/* Follow requests (own profile only) */}
       {isOwnProfile && !requestsLoading && followRequests.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+          <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "var(--text-muted)" }}>
             Follow Requests ({followRequests.length})
           </h2>
           <div className="space-y-2">
@@ -341,7 +341,7 @@ export default function ProfilePage() {
               <div
                 key={req.id}
                 className="flex items-center gap-3 p-3 rounded-xl"
-                style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+                style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
               >
                 {req.sender.avatarUrl ? (
                   <img src={req.sender.avatarUrl} alt={req.sender.username} className="w-10 h-10 rounded-full object-cover" />
@@ -370,7 +370,7 @@ export default function ProfilePage() {
                   <button
                     onClick={() => handleDeclineRequest(req.id)}
                     className="p-1.5 rounded-full"
-                    style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}
+                    style={{ background: "rgba(36,63,22,0.10)", color: "var(--text-muted)" }}
                     title="Decline"
                   >
                     <HiX className="w-4 h-4" />
@@ -391,7 +391,7 @@ export default function ProfilePage() {
       />
 
       {/* Section toggle */}
-      <div className="flex gap-1.5 mb-4 p-1 rounded-xl" style={{ background: "rgba(255,255,255,0.04)" }}>
+      <div className="flex gap-1.5 mb-4 p-1 rounded-xl" style={{ background: "rgba(36,63,22,0.04)" }}>
         {(["activity", "catalog"] as const).map((section) => (
           <button
             key={section}
@@ -399,8 +399,8 @@ export default function ProfilePage() {
             className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
             style={
               activeSection === section
-                ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
-                : { background: "transparent", color: "rgba(255,255,255,0.45)" }
+                ? { background: "var(--brand)", color: "#ffffff" }
+                : { background: "transparent", color: "var(--text-muted)" }
             }
           >
             {section === "activity" ? "Activity" : "Catalog"}
@@ -418,8 +418,8 @@ export default function ProfilePage() {
               const typeConfig: Record<string, { emoji: string; label: string; color: string; gradFrom: string; gradTo: string }> = {
                 WORKOUT:  { emoji: "💪", label: "Workout",  color: "#f97316", gradFrom: "#1e3a5f", gradTo: "#1a2744" },
                 MEAL:     { emoji: "🥗", label: "Meal",     color: "#22c55e", gradFrom: "#14532d", gradTo: "#122a1e" },
-                WELLNESS: { emoji: "🧘", label: "Wellness", color: "#a78bfa", gradFrom: "#2e1b5e", gradTo: "#1a1540" },
-                GENERAL:  { emoji: "⭐", label: "General",  color: "rgba(255,255,255,0.5)", gradFrom: "#1e1e30", gradTo: "#13141f" },
+                WELLNESS: { emoji: "🧘", label: "Wellness", color: "#528531", gradFrom: "#2e1b5e", gradTo: "#1a1540" },
+                GENERAL:  { emoji: "⭐", label: "General",  color: "var(--text-muted)", gradFrom: "#EFE9DE", gradTo: "#FDFAF5" },
               };
               const cfg = typeConfig[post.type] ?? typeConfig.GENERAL;
               const firstLine = post.caption?.split("\n")[0]?.trim() || `${cfg.label} post`;
@@ -429,7 +429,7 @@ export default function ProfilePage() {
                   key={post.id}
                   href={`/posts/${post.id}`}
                   className="flex items-center gap-3 rounded-2xl active:opacity-70 transition-opacity"
-                  style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.07)", padding: "10px 14px 10px 10px" }}
+                  style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.07)", padding: "10px 14px 10px 10px" }}
                 >
                   {/* Square thumbnail */}
                   <div className="flex-shrink-0 rounded-xl overflow-hidden" style={{ width: 64, height: 64 }}>
@@ -450,10 +450,10 @@ export default function ProfilePage() {
                     <p className="text-xs font-semibold mb-0.5" style={{ color: cfg.color }}>
                       {cfg.label}
                     </p>
-                    <p className="text-sm font-semibold leading-snug line-clamp-1 mb-1" style={{ color: "#ffffff" }}>
+                    <p className="text-sm font-semibold leading-snug line-clamp-1 mb-1" style={{ color: "var(--text)" }}>
                       {firstLine}
                     </p>
-                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                       {new Date(post.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                       {" · "}{post._count.likes} {post._count.likes === 1 ? "like" : "likes"}
                       {" · "}{post._count.comments} {post._count.comments === 1 ? "comment" : "comments"}

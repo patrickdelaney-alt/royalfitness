@@ -54,8 +54,8 @@ const MUSCLES: MuscleGroup[] = [
     id: "chest",
     label: "Chest",
     icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
+      const f = active ? "#528531" : "var(--text-muted)";
+      const s = active ? "rgba(36,63,22,0.6)" : "rgba(24,25,15,0.09)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* left pec */}
@@ -67,8 +67,8 @@ const MUSCLES: MuscleGroup[] = [
           {/* center groove */}
           <line x1="16" y1="10" x2="16" y2="20" stroke={s} strokeWidth="1.2"/>
           {/* muscle highlight */}
-          <ellipse cx="10.5" cy="10" rx="2.5" ry="1.5" fill="rgba(255,255,255,0.15)" transform="rotate(-15,10.5,10)"/>
-          <ellipse cx="21.5" cy="10" rx="2.5" ry="1.5" fill="rgba(255,255,255,0.15)" transform="rotate(15,21.5,10)"/>
+          <ellipse cx="10.5" cy="10" rx="2.5" ry="1.5" fill="rgba(36,63,22,0.15)" transform="rotate(-15,10.5,10)"/>
+          <ellipse cx="21.5" cy="10" rx="2.5" ry="1.5" fill="rgba(36,63,22,0.15)" transform="rotate(15,21.5,10)"/>
         </svg>
       );
     },
@@ -77,8 +77,8 @@ const MUSCLES: MuscleGroup[] = [
     id: "back",
     label: "Back",
     icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
+      const f = active ? "#528531" : "var(--text-muted)";
+      const s = active ? "rgba(36,63,22,0.6)" : "rgba(24,25,15,0.09)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* lat spread V-taper */}
@@ -90,8 +90,8 @@ const MUSCLES: MuscleGroup[] = [
           {/* lat definition */}
           <path d="M7 16 Q16 18 25 16" stroke={s} strokeWidth="0.9" fill="none"/>
           {/* highlight */}
-          <ellipse cx="10" cy="13" rx="3" ry="2" fill="rgba(255,255,255,0.12)" transform="rotate(20,10,13)"/>
-          <ellipse cx="22" cy="13" rx="3" ry="2" fill="rgba(255,255,255,0.12)" transform="rotate(-20,22,13)"/>
+          <ellipse cx="10" cy="13" rx="3" ry="2" fill="rgba(36,63,22,0.12)" transform="rotate(20,10,13)"/>
+          <ellipse cx="22" cy="13" rx="3" ry="2" fill="rgba(36,63,22,0.12)" transform="rotate(-20,22,13)"/>
         </svg>
       );
     },
@@ -100,8 +100,8 @@ const MUSCLES: MuscleGroup[] = [
     id: "legs",
     label: "Legs",
     icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
+      const f = active ? "#528531" : "var(--text-muted)";
+      const s = active ? "rgba(36,63,22,0.6)" : "rgba(24,25,15,0.09)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* upper leg / quad */}
@@ -121,8 +121,8 @@ const MUSCLES: MuscleGroup[] = [
     id: "shoulders",
     label: "Shoulders",
     icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
+      const f = active ? "#528531" : "var(--text-muted)";
+      const s = active ? "rgba(36,63,22,0.6)" : "rgba(24,25,15,0.09)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* left delt cap */}
@@ -147,8 +147,8 @@ const MUSCLES: MuscleGroup[] = [
     id: "arms",
     label: "Arms",
     icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(120,117,255,0.6)" : "rgba(0,0,0,0.25)";
+      const f = active ? "#528531" : "var(--text-muted)";
+      const s = active ? "rgba(36,63,22,0.6)" : "rgba(24,25,15,0.09)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* upper arm */}
@@ -167,8 +167,8 @@ const MUSCLES: MuscleGroup[] = [
     id: "core",
     label: "Core",
     icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const gap = active ? "rgba(13,14,25,0.7)" : "rgba(0,0,0,0.35)";
+      const f = active ? "#528531" : "var(--text-muted)";
+      const gap = active ? "rgba(13,14,25,0.7)" : "rgba(24,25,15,0.09)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* 6-pack: 2 columns × 3 rows */}
@@ -189,8 +189,8 @@ const MUSCLES: MuscleGroup[] = [
     id: "glutes",
     label: "Glutes",
     icon: (active) => {
-      const f = active ? "#a8a6ff" : "rgba(255,255,255,0.28)";
-      const s = active ? "rgba(120,117,255,0.5)" : "rgba(0,0,0,0.2)";
+      const f = active ? "#528531" : "var(--text-muted)";
+      const s = active ? "rgba(36,63,22,0.5)" : "rgba(0,0,0,0.2)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* left glute */}
@@ -210,8 +210,8 @@ const MUSCLES: MuscleGroup[] = [
     id: "cardio",
     label: "Cardio",
     icon: (active) => {
-      const f = active ? "#f87171" : "rgba(255,255,255,0.28)";
-      const accent = active ? "#fbbf24" : "rgba(255,255,255,0.15)";
+      const f = active ? "#f87171" : "var(--text-muted)";
+      const accent = active ? "#C9A84C" : "rgba(36,63,22,0.15)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* heart shape */}
@@ -219,7 +219,7 @@ const MUSCLES: MuscleGroup[] = [
           {/* flame inside heart */}
           <path d="M16 22 Q13 18 14 15 Q15 13 16 14 Q17 13 18 15 Q19 18 16 22 Z" fill={accent}/>
           {/* highlight */}
-          <ellipse cx="12" cy="10" rx="2" ry="1.5" fill="rgba(255,255,255,0.25)" transform="rotate(-20,12,10)"/>
+          <ellipse cx="12" cy="10" rx="2" ry="1.5" fill="var(--text-muted)" transform="rotate(-20,12,10)"/>
         </svg>
       );
     },
@@ -251,9 +251,9 @@ function sliderTrackColor(value: number): string {
   const pct = ((value - 1) / 9) * 100;
   // purple(1) → amber(5) → red(10)
   if (value <= 5) {
-    return `linear-gradient(to right, #7875ff 0%, #f59e0b ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`;
+    return `linear-gradient(to right, #243F16 0%, #f59e0b ${pct}%, rgba(36,63,22,0.10) ${pct}%, rgba(36,63,22,0.10) 100%)`;
   }
-  return `linear-gradient(to right, #7875ff 0%, #f59e0b 44%, #ef4444 ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`;
+  return `linear-gradient(to right, #243F16 0%, #f59e0b 44%, #ef4444 ${pct}%, rgba(36,63,22,0.10) ${pct}%, rgba(36,63,22,0.10) 100%)`;
 }
 
 function EnergySlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -261,7 +261,7 @@ function EnergySlider({ value, onChange }: { value: number; onChange: (v: number
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <label className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.9)" }}>
+        <label className="text-sm font-medium" style={{ color: "var(--text)" }}>
           Energy Level
         </label>
         <span className="text-xl">{currentEmoji}</span>
@@ -299,7 +299,7 @@ function MoodSlider({ value, onChange }: { value: number; onChange: (v: number) 
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <label className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.9)" }}>Mood After</label>
+        <label className="text-sm font-medium" style={{ color: "var(--text)" }}>Mood After</label>
         <span
           className="text-sm font-semibold px-2 py-0.5 rounded-full"
           style={{ backgroundColor: `hsl(${hue}, 70%, 20%)`, color: `hsl(${hue}, 80%, 65%)` }}
@@ -317,12 +317,12 @@ function MoodSlider({ value, onChange }: { value: number; onChange: (v: number) 
           onChange={(e) => onChange(parseInt(e.target.value))}
           className="energy-slider w-full h-2 appearance-none rounded-full cursor-pointer"
           style={{
-            background: `linear-gradient(to right, hsl(${hue},80%,45%) 0%, hsl(${hue},80%,45%) ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`,
+            background: `linear-gradient(to right, hsl(${hue},80%,45%) 0%, hsl(${hue},80%,45%) ${pct}%, rgba(36,63,22,0.10) ${pct}%, rgba(36,63,22,0.10) 100%)`,
           }}
         />
         <div className="flex justify-between mt-1 px-0.5">
           {Array.from({ length: 10 }, (_, i) => (
-            <span key={i} className="text-[10px] w-4 text-center" style={{ color: "rgba(255,255,255,0.3)" }}>
+            <span key={i} className="text-[10px] w-4 text-center" style={{ color: "var(--text-muted)" }}>
               {i + 1}
             </span>
           ))}
@@ -345,9 +345,9 @@ function MediaBlock({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Photo / Video</label>
+      <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Photo / Video</label>
       {mediaPreview ? (
-        <div className="relative rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
+        <div className="relative rounded-xl overflow-hidden" style={{ border: "1px solid rgba(36,63,22,0.10)" }}>
           <img src={mediaPreview} alt="Preview" className="w-full max-h-60 object-cover" />
           {uploading && (
             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
@@ -364,8 +364,8 @@ function MediaBlock({
           onClick={onFileClick}
           className="w-full rounded-xl py-8 flex flex-col items-center gap-2 transition-colors"
           style={{
-            border: "2px dashed rgba(255,255,255,0.12)",
-            color: "rgba(255,255,255,0.35)",
+            border: "2px dashed rgba(36,63,22,0.12)",
+            color: "var(--text-muted)",
           }}
         >
           <HiPhotograph className="w-8 h-8" />
@@ -499,9 +499,9 @@ export default function CreatePostContent() {
       toast.success("Workout session loaded!", {
         icon: "✓",
         style: {
-          background: "#1a1b2e",
-          color: "#ffffff",
-          border: "1px solid rgba(120,117,255,0.4)",
+          background: "var(--surface)",
+          color: "var(--text)",
+          border: "1px solid rgba(36,63,22,0.4)",
         },
       });
       return;
@@ -933,16 +933,16 @@ export default function CreatePostContent() {
           @keyframes rf-pop { 0%{transform:scale(0.5);opacity:0} 65%{transform:scale(1.12)} 100%{transform:scale(1);opacity:1} }
           @keyframes rf-fade-up { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
           .rf-pop { animation: rf-pop 0.45s cubic-bezier(.34,1.56,.64,1) forwards; }
-          .rf-fade-up-1 { animation: rf-fade-up 0.4s ease 0.35s forwards; opacity:0; }
-          .rf-fade-up-2 { animation: rf-fade-up 0.4s ease 0.5s forwards; opacity:0; }
-          .rf-fade-up-3 { animation: rf-fade-up 0.4s ease 0.65s forwards; opacity:0; }
+          .rf-fade-up-1 { animation: rf-fade-up 0.4s cubic-bezier(0.32, 0.72, 0, 1) 0.35s forwards; opacity:0; }
+          .rf-fade-up-2 { animation: rf-fade-up 0.4s cubic-bezier(0.32, 0.72, 0, 1) 0.5s forwards; opacity:0; }
+          .rf-fade-up-3 { animation: rf-fade-up 0.4s cubic-bezier(0.32, 0.72, 0, 1) 0.65s forwards; opacity:0; }
         `}</style>
 
         {/* Animated badge */}
         <div className="rf-pop mb-6">
           <div
             className="w-28 h-28 rounded-full flex items-center justify-center text-6xl shadow-2xl"
-            style={{ background: "linear-gradient(135deg, #7875ff 0%, #a78bfa 100%)" }}
+            style={{ background: "linear-gradient(135deg, #243F16 0%, #528531 100%)" }}
           >
             {TYPE_EMOJI[successPost.type]}
           </div>
@@ -950,13 +950,13 @@ export default function CreatePostContent() {
 
         <h1
           className="rf-fade-up-1 text-3xl font-bold mb-1"
-          style={{ color: "#ffffff" }}
+          style={{ color: "var(--text)" }}
         >
           Posted! 🎉
         </h1>
         <p
           className="rf-fade-up-2 text-base mb-10"
-          style={{ color: "rgba(255,255,255,0.5)" }}
+          style={{ color: "var(--text-muted)" }}
         >
           Your {TYPE_LABELS[successPost.type].toLowerCase()} is live
         </p>
@@ -965,14 +965,14 @@ export default function CreatePostContent() {
           <button
             onClick={copyLink}
             className="w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2"
-            style={{ background: "linear-gradient(135deg, #7875ff 0%, #a78bfa 100%)", color: "#fff" }}
+            style={{ background: "linear-gradient(135deg, #243F16 0%, #528531 100%)", color: "#ffffff" }}
           >
             🔗 Share Post
           </button>
           <button
             onClick={() => router.push("/feed")}
             className="w-full py-3 rounded-2xl text-sm font-semibold"
-            style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
+            style={{ background: "rgba(36,63,22,0.10)", color: "var(--text)" }}
           >
             View Feed
           </button>
@@ -982,13 +982,13 @@ export default function CreatePostContent() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>
+    <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "var(--text)" }}>
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={handleBack}
           className="p-2 rounded-xl transition-colors"
-          style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)" }}
+          style={{ background: "rgba(36,63,22,0.04)", color: "var(--text)" }}
         >
           <HiArrowLeft className="w-5 h-5" />
         </button>
@@ -1000,9 +1000,9 @@ export default function CreatePostContent() {
           <span
             className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold"
             style={{
-              background: "rgba(120,117,255,0.12)",
-              color: "#c4bfff",
-              border: "1px solid rgba(168,166,255,0.35)",
+              background: "rgba(36,63,22,0.12)",
+              color: "#528531",
+              border: "1px solid rgba(82,133,49,0.35)",
             }}
           >
             {sourceModeLabel[sourceMode]}
@@ -1013,17 +1013,17 @@ export default function CreatePostContent() {
       {isFromSession && type === "WORKOUT" && (
         <div
           className="mb-4 p-4 rounded-2xl"
-          style={{ background: "rgba(120,117,255,0.08)", border: "1px solid rgba(168,166,255,0.25)" }}
+          style={{ background: "rgba(36,63,22,0.08)", border: "1px solid rgba(82,133,49,0.25)" }}
         >
-          <p className="text-sm font-semibold" style={{ color: "#d4d3ff" }}>Review workout before posting</p>
-          <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.55)" }}>
+          <p className="text-sm font-semibold" style={{ color: "#528531" }}>Review workout before posting</p>
+          <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
             {workoutName || "Workout"} • {durationMinutes || "--"} min • {exercises.length} exercises logged
           </p>
           <button
             type="button"
             onClick={() => setShowWorkoutAdvanced((prev) => !prev)}
             className="mt-3 text-xs font-semibold px-3 py-1.5 rounded-lg"
-            style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
+            style={{ background: "rgba(36,63,22,0.10)", color: "var(--text)" }}
           >
             {showWorkoutAdvanced ? "Hide details" : "Edit details"}
           </button>
@@ -1041,12 +1041,12 @@ export default function CreatePostContent() {
         style={
           type === "CHECKIN"
             ? {
-                background: "rgba(56,189,248,0.10)",
-                border: "1px solid rgba(103,232,249,0.4)",
+                background: "rgba(82,133,49,0.10)",
+                border: "1px solid rgba(82,133,49,0.4)",
               }
             : {
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "rgba(36,63,22,0.04)",
+                border: "1px solid rgba(36,63,22,0.10)",
               }
         }
       >
@@ -1056,23 +1056,23 @@ export default function CreatePostContent() {
             style={{
               background:
                 type === "CHECKIN"
-                  ? "rgba(56,189,248,0.15)"
-                  : "rgba(255,255,255,0.06)",
+                  ? "rgba(82,133,49,0.15)"
+                  : "rgba(36,63,22,0.04)",
             }}
           >
             <HiLocationMarker
               className="w-5 h-5"
-              style={{ color: type === "CHECKIN" ? "#67e8f9" : "rgba(255,255,255,0.4)" }}
+              style={{ color: type === "CHECKIN" ? "#528531" : "var(--text-muted)" }}
             />
           </div>
           <div className="text-left">
             <p
               className="text-sm font-bold leading-tight"
-              style={{ color: type === "CHECKIN" ? "#67e8f9" : "rgba(255,255,255,0.8)" }}
+              style={{ color: type === "CHECKIN" ? "#528531" : "var(--text)" }}
             >
               Quick Check-in
             </p>
-            <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
               Tap to post you went to the gym
             </p>
           </div>
@@ -1081,8 +1081,8 @@ export default function CreatePostContent() {
           className="text-xs font-bold px-3 py-1.5 rounded-xl flex-shrink-0"
           style={
             type === "CHECKIN"
-              ? { background: "rgba(56,189,248,0.15)", color: "#67e8f9" }
-              : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
+              ? { background: "rgba(82,133,49,0.15)", color: "#528531" }
+              : { background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }
           }
         >
           {type === "CHECKIN" ? "Selected ✓" : "Tap →"}
@@ -1094,7 +1094,7 @@ export default function CreatePostContent() {
       <div
         className="flex gap-2 mb-5 p-1 rounded-xl transition-opacity"
         style={{
-          background: "rgba(255,255,255,0.04)",
+          background: "rgba(36,63,22,0.04)",
           opacity: type === "CHECKIN" ? 0.45 : 1,
         }}
       >
@@ -1105,8 +1105,8 @@ export default function CreatePostContent() {
             className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all"
             style={
               type === t
-                ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
-                : { background: "transparent", color: "rgba(255,255,255,0.4)" }
+                ? { background: "var(--brand)", color: "#ffffff" }
+                : { background: "transparent", color: "var(--text-muted)" }
             }
           >
             {TYPE_LABELS[t]}
@@ -1128,20 +1128,20 @@ export default function CreatePostContent() {
             {checkInGymId ? (
               <div
                 className="flex items-center justify-between px-4 py-3.5 rounded-2xl"
-                style={{ background: "rgba(56,189,248,0.08)", border: "1px solid rgba(103,232,249,0.3)" }}
+                style={{ background: "rgba(82,133,49,0.08)", border: "1px solid rgba(82,133,49,0.3)" }}
               >
                 <div className="flex items-center gap-3">
-                  <HiLocationMarker className="w-5 h-5 flex-shrink-0" style={{ color: "#67e8f9" }} />
+                  <HiLocationMarker className="w-5 h-5 flex-shrink-0" style={{ color: "#528531" }} />
                   <div>
-                    <p className="text-sm font-semibold" style={{ color: "#67e8f9" }}>{checkInGymName}</p>
-                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Gym selected</p>
+                    <p className="text-sm font-semibold" style={{ color: "#528531" }}>{checkInGymName}</p>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>Gym selected</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => { setCheckInGymId(null); setCheckInGymName(""); }}
                   className="text-xs px-3 py-1.5 rounded-lg transition-colors"
-                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}
+                  style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}
                 >
                   Change
                 </button>
@@ -1155,13 +1155,13 @@ export default function CreatePostContent() {
                     onClick={requestLocation}
                     disabled={locationLoading}
                     className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-60 flex-shrink-0"
-                    style={{ background: "rgba(56,189,248,0.10)", border: "1px solid rgba(103,232,249,0.25)", color: "#67e8f9" }}
+                    style={{ background: "rgba(82,133,49,0.10)", border: "1px solid rgba(82,133,49,0.25)", color: "#528531" }}
                   >
                     <HiLocationMarker className="w-4 h-4 flex-shrink-0" />
                     {locationLoading ? "Locating..." : "Near me"}
                   </button>
                   <div className="relative flex-1">
-                    <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />
+                    <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--text-muted)" }} />
                     <input
                       type="text"
                       value={gymSearchQuery}
@@ -1177,7 +1177,7 @@ export default function CreatePostContent() {
 
                 {/* Gym results */}
                 {gymSearchLoading ? (
-                  <p className="text-xs text-center py-3" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  <p className="text-xs text-center py-3" style={{ color: "var(--text-muted)" }}>
                     Searching...
                   </p>
                 ) : gymSearchResults.length > 0 ? (
@@ -1188,17 +1188,17 @@ export default function CreatePostContent() {
                         type="button"
                         onClick={() => { setCheckInGymId(gym.id); setCheckInGymName(gym.name); }}
                         className="w-full text-left px-3.5 py-3 rounded-xl transition-all"
-                        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.85)" }}
+                        style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.07)", color: "var(--text)" }}
                       >
                         <p className="text-sm font-medium leading-tight">{gym.name}</p>
                         {gym.address && (
-                          <p className="text-xs mt-0.5 truncate" style={{ color: "rgba(255,255,255,0.35)" }}>{gym.address}</p>
+                          <p className="text-xs mt-0.5 truncate" style={{ color: "var(--text-muted)" }}>{gym.address}</p>
                         )}
                       </button>
                     ))}
                   </div>
                 ) : gymSearchQuery.trim() ? (
-                  <p className="text-xs text-center py-3" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  <p className="text-xs text-center py-3" style={{ color: "var(--text-muted)" }}>
                     No gyms found for &ldquo;{gymSearchQuery}&rdquo;
                   </p>
                 ) : null}
@@ -1208,7 +1208,7 @@ export default function CreatePostContent() {
                   type="button"
                   onClick={() => setShowAddGym((v) => !v)}
                   className="flex items-center gap-1.5 text-xs font-medium transition-colors"
-                  style={{ color: "rgba(255,255,255,0.4)" }}
+                  style={{ color: "var(--text-muted)" }}
                 >
                   <HiPlus className="w-3.5 h-3.5" />
                   {showAddGym ? "Cancel" : "Add a new gym"}
@@ -1218,7 +1218,7 @@ export default function CreatePostContent() {
                 {showAddGym && (
                   <div
                     className="space-y-2.5 p-3.5 rounded-xl"
-                    style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+                    style={{ background: "rgba(36,63,22,0.03)", border: "1px solid rgba(36,63,22,0.10)" }}
                   >
                     <input
                       type="text"
@@ -1240,20 +1240,20 @@ export default function CreatePostContent() {
                         onClick={requestLocation}
                         disabled={locationLoading}
                         className="flex items-center gap-1.5 text-xs transition-colors disabled:opacity-60"
-                        style={{ color: "#67e8f9" }}
+                        style={{ color: "#528531" }}
                       >
                         <HiLocationMarker className="w-3.5 h-3.5" />
                         {locationLoading ? "Getting location..." : "Tag location (optional)"}
                       </button>
                     ) : (
-                      <p className="text-xs flex items-center gap-1" style={{ color: "#67e8f9" }}>
+                      <p className="text-xs flex items-center gap-1" style={{ color: "#528531" }}>
                         <HiLocationMarker className="w-3.5 h-3.5" />
                         Location tagged
                         <button
                           type="button"
                           onClick={() => { setNewGymLat(null); setNewGymLng(null); }}
                           className="ml-1"
-                          style={{ color: "rgba(255,255,255,0.3)" }}
+                          style={{ color: "var(--text-muted)" }}
                         >
                           <HiX className="w-3 h-3" />
                         </button>
@@ -1264,7 +1264,7 @@ export default function CreatePostContent() {
                       onClick={handleAddGym}
                       disabled={addingGym || !newGymName.trim()}
                       className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all btn-gradient disabled:opacity-50"
-                      style={{ color: "#fff" }}
+                      style={{ color: "var(--text)" }}
                     >
                       {addingGym ? "Adding..." : "Add Gym"}
                     </button>
@@ -1275,8 +1275,8 @@ export default function CreatePostContent() {
 
             {/* Optional caption */}
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>
-                Note <span style={{ color: "rgba(255,255,255,0.35)" }}>(optional)</span>
+              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>
+                Note <span style={{ color: "var(--text-muted)" }}>(optional)</span>
               </label>
               <textarea
                 value={caption}
@@ -1302,11 +1302,11 @@ export default function CreatePostContent() {
                   background:
                     sessionElapsed !== null
                       ? "rgba(34,197,94,0.07)"
-                      : "rgba(120,117,255,0.08)",
+                      : "rgba(36,63,22,0.08)",
                   border:
                     sessionElapsed !== null
                       ? "1px solid rgba(34,197,94,0.25)"
-                      : "1px solid rgba(120,117,255,0.25)",
+                      : "1px solid rgba(36,63,22,0.25)",
                 }}
               >
                 <div className="flex items-center gap-3">
@@ -1316,27 +1316,27 @@ export default function CreatePostContent() {
                       background:
                         sessionElapsed !== null
                           ? "rgba(34,197,94,0.15)"
-                          : "rgba(120,117,255,0.10)",
+                          : "rgba(36,63,22,0.10)",
                     }}
                   >
                     {sessionElapsed !== null ? (
                       <HiPlay className="w-5 h-5" style={{ color: "#4ade80" }} />
                     ) : (
-                      <HiLightningBolt className="w-5 h-5" style={{ color: "#a8a6ff" }} />
+                      <HiLightningBolt className="w-5 h-5" style={{ color: "var(--brand-light)" }} />
                     )}
                   </div>
                   <div className="text-left">
                     <p
                       className="text-sm font-bold leading-tight"
                       style={{
-                        color: sessionElapsed !== null ? "#4ade80" : "#a8a6ff",
+                        color: sessionElapsed !== null ? "#4ade80" : "#528531",
                       }}
                     >
                       {sessionElapsed !== null ? "Workout In Progress" : "Start a Live Workout"}
                     </p>
                     <p
                       className="text-xs mt-0.5"
-                      style={{ color: "rgba(255,255,255,0.4)" }}
+                      style={{ color: "var(--text-muted)" }}
                     >
                       {sessionElapsed !== null
                         ? (() => {
@@ -1358,7 +1358,7 @@ export default function CreatePostContent() {
                     background:
                       sessionElapsed !== null
                         ? "rgba(34,197,94,0.15)"
-                        : "linear-gradient(135deg, #6360e8, #9b98ff)",
+                        : "var(--brand)",
                     color: sessionElapsed !== null ? "#4ade80" : "#ffffff",
                   }}
                 >
@@ -1371,7 +1371,7 @@ export default function CreatePostContent() {
               <>
             {/* 1. Muscle group selector */}
             <div>
-              <label className="block text-sm font-medium mb-2" style={{ color: "rgba(255,255,255,0.9)" }}>
+              <label className="block text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
                 Target Muscles
               </label>
               <div className="grid grid-cols-4 gap-2">
@@ -1386,14 +1386,14 @@ export default function CreatePostContent() {
                       style={
                         active
                           ? {
-                              background: "rgba(120,117,255,0.10)",
-                              border: "1px solid rgba(168,166,255,0.5)",
-                              color: "#a8a6ff",
+                              background: "rgba(36,63,22,0.10)",
+                              border: "1px solid rgba(82,133,49,0.5)",
+                              color: "var(--brand-light)",
                             }
                           : {
-                              background: "rgba(255,255,255,0.04)",
-                              border: "1px solid rgba(255,255,255,0.07)",
-                              color: "rgba(255,255,255,0.4)",
+                              background: "rgba(36,63,22,0.04)",
+                              border: "1px solid rgba(36,63,22,0.07)",
+                              color: "var(--text-muted)",
                             }
                       }
                     >
@@ -1407,7 +1407,7 @@ export default function CreatePostContent() {
 
             {/* 2. Workout Name */}
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>
+              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>
                 Workout Name *
               </label>
               <input
@@ -1430,7 +1430,7 @@ export default function CreatePostContent() {
 
             {/* 5. Caption */}
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Caption</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Caption</label>
               <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
@@ -1448,16 +1448,16 @@ export default function CreatePostContent() {
                 onChange={(e) => setIsClass(e.target.checked)}
                 className="accent-primary w-4 h-4"
               />
-              <span style={{ color: "rgba(255,255,255,0.8)" }}>Group class</span>
+              <span style={{ color: "var(--text)" }}>Group class</span>
             </label>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Duration (min)</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Duration (min)</label>
                 <input type="number" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} placeholder="60" className="input-dark w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Exertion (1-10)</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Exertion (1-10)</label>
                 <input type="number" min="1" max="10" value={perceivedExertion} onChange={(e) => setPerceivedExertion(e.target.value)} placeholder="7" className="input-dark w-full" />
               </div>
             </div>
@@ -1465,22 +1465,22 @@ export default function CreatePostContent() {
             {/* Exercises */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.9)" }}>Exercises</label>
-                <button type="button" onClick={addExercise} className="flex items-center gap-1 text-xs font-medium" style={{ color: "#a8a6ff" }}>
+                <label className="text-sm font-medium" style={{ color: "var(--text)" }}>Exercises</label>
+                <button type="button" onClick={addExercise} className="flex items-center gap-1 text-xs font-medium" style={{ color: "var(--brand-light)" }}>
                   <HiPlus className="w-4 h-4" />
                   Add exercise
                 </button>
               </div>
 
               {exercises.length === 0 && (
-                <p className="text-xs text-center py-3 rounded-xl" style={{ border: "1px dashed rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.25)" }}>
+                <p className="text-xs text-center py-3 rounded-xl" style={{ border: "1px dashed rgba(36,63,22,0.10)", color: "var(--text-muted)" }}>
                   No exercises added yet
                 </p>
               )}
 
               <div className="space-y-3">
                 {exercises.map((ex, exIdx) => (
-                  <div key={exIdx} className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                  <div key={exIdx} className="rounded-xl p-3" style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.07)" }}>
                     <div className="flex gap-2 mb-2">
                       <input
                         value={ex.name}
@@ -1488,7 +1488,7 @@ export default function CreatePostContent() {
                         placeholder="Exercise name (e.g. Bench Press)"
                         className="input-dark flex-1"
                       />
-                      <button type="button" onClick={() => removeExercise(exIdx)} className="flex-shrink-0" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      <button type="button" onClick={() => removeExercise(exIdx)} className="flex-shrink-0" style={{ color: "var(--text-muted)" }}>
                         <HiTrash className="w-5 h-5" />
                       </button>
                     </div>
@@ -1496,7 +1496,7 @@ export default function CreatePostContent() {
                     <div className="space-y-2">
                       {ex.sets.map((set, setIdx) => (
                         <div key={setIdx} className="flex gap-1.5 items-center">
-                          <span className="text-xs w-8 flex-shrink-0 text-center font-medium" style={{ color: "rgba(255,255,255,0.3)" }}>
+                          <span className="text-xs w-8 flex-shrink-0 text-center font-medium" style={{ color: "var(--text-muted)" }}>
                             S{setIdx + 1}
                           </span>
                           <input
@@ -1531,7 +1531,7 @@ export default function CreatePostContent() {
                             className="input-dark w-14 text-xs px-2 py-1"
                           />
                           {ex.sets.length > 1 && (
-                            <button type="button" onClick={() => removeSet(exIdx, setIdx)} style={{ color: "rgba(255,255,255,0.25)" }}>
+                            <button type="button" onClick={() => removeSet(exIdx, setIdx)} style={{ color: "var(--text-muted)" }}>
                               <HiX className="w-3.5 h-3.5" />
                             </button>
                           )}
@@ -1539,7 +1539,7 @@ export default function CreatePostContent() {
                       ))}
                     </div>
 
-                    <button type="button" onClick={() => addSet(exIdx)} className="mt-2 flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                    <button type="button" onClick={() => addSet(exIdx)} className="mt-2 flex items-center gap-1 text-xs" style={{ color: "var(--text-muted)" }}>
                       <HiPlus className="w-3.5 h-3.5" />
                       Add set
                     </button>
@@ -1551,7 +1551,7 @@ export default function CreatePostContent() {
             )}
 
             {isFromSession && !showWorkoutAdvanced && (
-              <div className="text-xs px-3 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.45)", border: "1px dashed rgba(255,255,255,0.12)" }}>
+              <div className="text-xs px-3 py-2 rounded-xl" style={{ background: "rgba(36,63,22,0.03)", color: "var(--text-muted)", border: "1px dashed rgba(36,63,22,0.12)" }}>
                 Posting now uses your live session summary. Tap &ldquo;Edit details&rdquo; above to add muscles, media, and exercise sets.
               </div>
             )}
@@ -1562,19 +1562,19 @@ export default function CreatePostContent() {
         {type === "MEAL" && (
           <>
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Meal Name *</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Meal Name *</label>
               <input value={mealName} onChange={(e) => setMealName(e.target.value)} placeholder="e.g. Protein Smoothie, Chicken Rice Bowl" className="input-dark w-full" />
             </div>
 
             <MediaBlock {...mediaProps} />
 
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Caption</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Caption</label>
               <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={3} placeholder="Tell us about this meal..." className="textarea-dark w-full resize-none" />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Meal Type</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Meal Type</label>
               <select value={mealType} onChange={(e) => setMealType(e.target.value)} className="select-dark w-full">
                 <option value="breakfast">Breakfast</option>
                 <option value="lunch">Lunch</option>
@@ -1584,32 +1584,32 @@ export default function CreatePostContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Ingredients (comma-separated)</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Ingredients (comma-separated)</label>
               <input value={ingredients} onChange={(e) => setIngredients(e.target.value)} placeholder="chicken, rice, broccoli" className="input-dark w-full" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Calories</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Calories</label>
                 <input type="number" value={calories} onChange={(e) => setCalories(e.target.value)} placeholder="500" className="input-dark w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Protein (g)</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Protein (g)</label>
                 <input type="number" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="30" className="input-dark w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Carbs (g)</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Carbs (g)</label>
                 <input type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="50" className="input-dark w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Fat (g)</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Fat (g)</label>
                 <input type="number" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="15" className="input-dark w-full" />
               </div>
             </div>
 
             <label className="flex items-center gap-2 text-sm cursor-pointer">
               <input type="checkbox" checked={saveToCatalog} onChange={(e) => setSaveToCatalog(e.target.checked)} className="accent-primary w-4 h-4" />
-              <span style={{ color: "rgba(255,255,255,0.8)" }}>Save to my meal catalog</span>
+              <span style={{ color: "var(--text)" }}>Save to my meal catalog</span>
             </label>
           </>
         )}
@@ -1618,7 +1618,7 @@ export default function CreatePostContent() {
         {type === "WELLNESS" && (
           <>
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Activity Type *</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Activity Type *</label>
               <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="e.g. Yoga, Meditation, Sauna" className="input-dark w-full" />
             </div>
 
@@ -1627,17 +1627,17 @@ export default function CreatePostContent() {
             <MoodSlider value={wellnessMood} onChange={setWellnessMood} />
 
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Caption</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Caption</label>
               <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={3} placeholder="How did it go?" className="textarea-dark w-full resize-none" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Duration (min)</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Duration (min)</label>
                 <input type="number" value={wellnessDuration} onChange={(e) => setWellnessDuration(e.target.value)} placeholder="30" className="input-dark w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Intensity (1-10)</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Intensity (1-10)</label>
                 <input type="number" min="1" max="10" value={intensity} onChange={(e) => setIntensity(e.target.value)} placeholder="5" className="input-dark w-full" />
               </div>
             </div>
@@ -1650,15 +1650,15 @@ export default function CreatePostContent() {
           <>
             <MediaBlock {...mediaProps} />
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>Caption</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Caption</label>
               <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={3} placeholder="What's on your mind?" className="textarea-dark w-full resize-none" />
             </div>
           </>
         )}
 
         <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.9)" }}>
-            Add embed <span style={{ color: "rgba(255,255,255,0.35)" }}>(optional)</span>
+          <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>
+            Add embed <span style={{ color: "var(--text-muted)" }}>(optional)</span>
           </label>
           <div className="flex gap-2">
             <input
@@ -1672,19 +1672,19 @@ export default function CreatePostContent() {
               onClick={handleEmbedAdd}
               disabled={embedLoading || !embedInput.trim()}
               className="px-3 py-2 rounded-xl text-sm font-semibold disabled:opacity-50"
-              style={{ background: "rgba(120,117,255,0.15)", color: "#c4bfff", border: "1px solid rgba(168,166,255,0.35)" }}
+              style={{ background: "rgba(36,63,22,0.15)", color: "#528531", border: "1px solid rgba(82,133,49,0.35)" }}
             >
               {embedLoading ? "Adding..." : "Add"}
             </button>
           </div>
           {embedPreview && (
-            <div className="mt-2 rounded-xl p-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="mt-2 rounded-xl p-3" style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}>
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase" style={{ color: "#a8a6ff" }}>
+                  <p className="text-xs font-semibold uppercase" style={{ color: "var(--brand-light)" }}>
                     {embedPreview.provider}
                   </p>
-                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.85)" }}>
+                  <p className="text-sm" style={{ color: "var(--text)" }}>
                     {embedPreview.title || embedPreview.url}
                   </p>
                 </div>
@@ -1692,7 +1692,7 @@ export default function CreatePostContent() {
                   type="button"
                   onClick={clearEmbed}
                   className="text-xs px-2 py-1 rounded-md"
-                  style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)" }}
+                  style={{ background: "rgba(36,63,22,0.10)", color: "var(--text)" }}
                 >
                   Remove
                 </button>
@@ -1704,7 +1704,7 @@ export default function CreatePostContent() {
         {/* Visibility */}
         {(!isFromSession || type !== "WORKOUT" || showWorkoutAdvanced) && (
         <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: "rgba(255,255,255,0.9)" }}>Visibility</label>
+          <label className="block text-sm font-medium mb-2" style={{ color: "var(--text)" }}>Visibility</label>
           <div className="flex gap-2">
             {(["PUBLIC", "FOLLOWERS", "PRIVATE"] as const).map((v) => {
               const labels = { PUBLIC: "🌍 Public", FOLLOWERS: "👥 Followers", PRIVATE: "🔒 Private" };
@@ -1716,8 +1716,8 @@ export default function CreatePostContent() {
                   className="flex-1 py-2 rounded-xl text-xs font-medium transition-all"
                   style={
                     visibility === v
-                      ? { background: "rgba(120,117,255,0.10)", border: "1px solid rgba(168,166,255,0.5)", color: "#a8a6ff" }
-                      : { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)" }
+                      ? { background: "rgba(36,63,22,0.10)", border: "1px solid rgba(82,133,49,0.5)", color: "var(--brand-light)" }
+                      : { background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.07)", color: "var(--text-muted)" }
                   }
                 >
                   {labels[v]}
@@ -1735,7 +1735,7 @@ export default function CreatePostContent() {
             type="button"
             onClick={() => { setShowBackdate((v) => !v); if (showBackdate) setPostDate(""); }}
             className="text-xs font-medium"
-            style={{ color: "rgba(255,255,255,0.35)" }}
+            style={{ color: "var(--text-muted)" }}
           >
             {showBackdate ? "▲ Hide backdate" : "▼ Backdate this post"}
           </button>
@@ -1749,7 +1749,7 @@ export default function CreatePostContent() {
                 className="input-dark w-full"
               />
               {postDate && (
-                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
                   Will appear as posted on {new Date(postDate + "T12:00:00").toLocaleDateString()}
                 </p>
               )}
@@ -1763,7 +1763,7 @@ export default function CreatePostContent() {
           onClick={handleSubmit}
           disabled={submitting || uploading || (type === "CHECKIN" && !checkInGymId)}
           className="w-full py-3 rounded-xl font-semibold transition-all btn-gradient shadow-glow disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ color: "#ffffff" }}
+          style={{ color: "var(--text)" }}
         >
           {uploading
             ? "Uploading media..."

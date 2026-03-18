@@ -200,9 +200,9 @@ export default function WorkoutSession() {
     toast.success("Great workout! Logging your session...", {
       icon: "🏁",
       style: {
-        background: "#1a1b2e",
-        color: "#ffffff",
-        border: "1px solid rgba(120,117,255,0.4)",
+        background: "var(--surface)",
+        color: "var(--text)",
+        border: "1px solid rgba(36,63,22,0.4)",
       },
     });
 
@@ -226,17 +226,17 @@ export default function WorkoutSession() {
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ background: "#0b0c14", color: "#ffffff" }}
+      style={{ background: "var(--bg)", color: "var(--text)" }}
     >
       {/* ── Header ── */}
       <div
         className="flex items-center justify-between px-4 pt-4 pb-3"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ borderBottom: "1px solid rgba(36,63,22,0.04)" }}
       >
         <button
           onClick={() => setShowAbandon(true)}
           className="p-2 rounded-xl transition-colors"
-          style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)" }}
+          style={{ background: "rgba(36,63,22,0.04)", color: "var(--text)" }}
         >
           <HiArrowLeft className="w-5 h-5" />
         </button>
@@ -246,16 +246,16 @@ export default function WorkoutSession() {
             className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full"
             style={{
               background: isPaused
-                ? "rgba(255,255,255,0.06)"
+                ? "rgba(36,63,22,0.04)"
                 : "rgba(239,68,68,0.15)",
-              color: isPaused ? "rgba(255,255,255,0.4)" : "#f87171",
-              border: isPaused ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(239,68,68,0.3)",
+              color: isPaused ? "var(--text-muted)" : "#f87171",
+              border: isPaused ? "1px solid rgba(36,63,22,0.10)" : "1px solid rgba(239,68,68,0.3)",
             }}
           >
             <span
               className="w-1.5 h-1.5 rounded-full"
               style={{
-                background: isPaused ? "rgba(255,255,255,0.3)" : "#ef4444",
+                background: isPaused ? "var(--text-muted)" : "#ef4444",
                 animation: isPaused ? "none" : "pulse 1.5s infinite",
               }}
             />
@@ -266,7 +266,7 @@ export default function WorkoutSession() {
         <button
           onClick={() => setShowAbandon(true)}
           className="text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors"
-          style={{ color: "rgba(255,255,255,0.35)", background: "rgba(255,255,255,0.04)" }}
+          style={{ color: "var(--text-muted)", background: "rgba(36,63,22,0.04)" }}
         >
           End
         </button>
@@ -274,7 +274,7 @@ export default function WorkoutSession() {
 
       {/* ── Timer ── */}
       <div className="flex flex-col items-center py-8 px-4">
-        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.3)" }}>
+        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>
           Workout Duration
         </p>
         <div
@@ -283,8 +283,8 @@ export default function WorkoutSession() {
             fontSize: "clamp(52px, 15vw, 72px)",
             letterSpacing: "-2px",
             background: isPaused
-              ? "rgba(255,255,255,0.25)"
-              : "linear-gradient(135deg, #6360e8 0%, #9b98ff 50%, #a78bfa 100%)",
+              ? "var(--text-muted)"
+              : "linear-gradient(135deg, #243F16 0%, #528531 50%, #528531 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
@@ -300,10 +300,10 @@ export default function WorkoutSession() {
           className="mt-6 flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95"
           style={{
             background: isPaused
-              ? "linear-gradient(135deg, #6360e8, #9b98ff)"
-              : "rgba(255,255,255,0.07)",
-            color: isPaused ? "#ffffff" : "rgba(255,255,255,0.6)",
-            border: isPaused ? "none" : "1px solid rgba(255,255,255,0.1)",
+              ? "var(--brand)"
+              : "rgba(36,63,22,0.07)",
+            color: isPaused ? "#ffffff" : "var(--text)",
+            border: isPaused ? "none" : "1px solid rgba(36,63,22,0.10)",
           }}
         >
           {isPaused ? (
@@ -323,7 +323,7 @@ export default function WorkoutSession() {
 
         {/* Workout Name */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+          <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "var(--text-muted)" }}>
             Workout Name
           </label>
           <input
@@ -333,16 +333,16 @@ export default function WorkoutSession() {
             placeholder="e.g. Push Day, Leg Day..."
             className="w-full rounded-xl px-4 py-3 text-sm font-medium outline-none transition-colors placeholder:text-white/20"
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              color: "#ffffff",
+              background: "rgba(36,63,22,0.04)",
+              border: "1px solid rgba(36,63,22,0.10)",
+              color: "var(--text)",
             }}
           />
         </div>
 
         {/* Caption */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+          <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "var(--text-muted)" }}>
             Caption
           </label>
           <textarea
@@ -352,9 +352,9 @@ export default function WorkoutSession() {
             rows={3}
             className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none transition-colors placeholder:text-white/20"
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              color: "#ffffff",
+              background: "rgba(36,63,22,0.04)",
+              border: "1px solid rgba(36,63,22,0.10)",
+              color: "var(--text)",
             }}
           />
         </div>
@@ -362,14 +362,14 @@ export default function WorkoutSession() {
         {/* Exercises Checklist */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>
+            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
               Exercises
             </label>
             {totalCount > 0 && (
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{
-                background: "rgba(120,117,255,0.10)",
-                color: "#a8a6ff",
-                border: "1px solid rgba(120,117,255,0.2)",
+                background: "rgba(36,63,22,0.10)",
+                color: "#528531",
+                border: "1px solid rgba(36,63,22,0.2)",
               }}>
                 {checkedCount}/{totalCount} done
               </span>
@@ -383,11 +383,11 @@ export default function WorkoutSession() {
                 className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
                 style={{
                   background: ex.checked
-                    ? "rgba(120,117,255,0.08)"
-                    : "rgba(255,255,255,0.04)",
+                    ? "rgba(36,63,22,0.08)"
+                    : "rgba(36,63,22,0.04)",
                   border: ex.checked
-                    ? "1px solid rgba(120,117,255,0.25)"
-                    : "1px solid rgba(255,255,255,0.07)",
+                    ? "1px solid rgba(36,63,22,0.25)"
+                    : "1px solid rgba(36,63,22,0.07)",
                 }}
               >
                 {/* Checkbox */}
@@ -396,9 +396,9 @@ export default function WorkoutSession() {
                   className="flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center transition-all active:scale-90"
                   style={{
                     background: ex.checked
-                      ? "linear-gradient(135deg, #6360e8, #9b98ff)"
-                      : "rgba(255,255,255,0.06)",
-                    border: ex.checked ? "none" : "1.5px solid rgba(255,255,255,0.15)",
+                      ? "var(--brand)"
+                      : "rgba(36,63,22,0.04)",
+                    border: ex.checked ? "none" : "1.5px solid rgba(36,63,22,0.15)",
                   }}
                 >
                   {ex.checked && <HiCheck className="w-3.5 h-3.5 text-white" />}
@@ -413,7 +413,7 @@ export default function WorkoutSession() {
                   placeholder="Exercise name..."
                   className="flex-1 bg-transparent outline-none text-sm font-medium placeholder:text-white/20"
                   style={{
-                    color: ex.checked ? "rgba(255,255,255,0.45)" : "#ffffff",
+                    color: ex.checked ? "var(--text-muted)" : "#ffffff",
                     textDecoration: ex.checked ? "line-through" : "none",
                   }}
                   onKeyDown={(e) => {
@@ -438,9 +438,9 @@ export default function WorkoutSession() {
             onClick={addExercise}
             className="mt-2 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
             style={{
-              border: "1.5px dashed rgba(120,117,255,0.30)",
-              color: "#a8a6ff",
-              background: "rgba(120,117,255,0.04)",
+              border: "1.5px dashed rgba(36,63,22,0.30)",
+              color: "#528531",
+              background: "rgba(36,63,22,0.04)",
             }}
           >
             <HiPlus className="w-4 h-4" />
@@ -453,7 +453,7 @@ export default function WorkoutSession() {
           <div>
             <div
               className="w-full h-1.5 rounded-full overflow-hidden"
-              style={{ background: "rgba(255,255,255,0.07)" }}
+              style={{ background: "rgba(36,63,22,0.07)" }}
             >
               <div
                 className="h-full rounded-full transition-all duration-500"
@@ -461,7 +461,7 @@ export default function WorkoutSession() {
                   width: `${(checkedCount / totalCount) * 100}%`,
                   background: checkedCount === totalCount
                     ? "linear-gradient(90deg, #22c55e, #4ade80)"
-                    : "linear-gradient(90deg, #6360e8, #9b98ff)",
+                    : "linear-gradient(90deg, #243F16, #528531)",
                 }}
               />
             </div>
@@ -478,16 +478,16 @@ export default function WorkoutSession() {
       <div
         className="fixed bottom-16 left-0 right-0 px-4 pb-4 pt-4"
         style={{
-          background: "linear-gradient(to top, #0b0c14 70%, transparent)",
+          background: "linear-gradient(to top, var(--bg) 70%, transparent)",
         }}
       >
         <button
           onClick={finishWorkout}
           className="w-full flex items-center justify-center gap-2.5 py-4 rounded-2xl font-bold text-base transition-all active:scale-[0.97]"
           style={{
-            background: "linear-gradient(135deg, #6360e8, #9b98ff)",
+            background: "var(--brand)",
             color: "#ffffff",
-            boxShadow: "0 0 40px rgba(120,117,255,0.15), 0 8px 24px rgba(0,0,0,0.5)",
+            boxShadow: "0 0 40px rgba(36,63,22,0.15), 0 8px 24px rgba(24,25,15,0.09)",
           }}
         >
           <HiFlag className="w-5 h-5" />
@@ -499,22 +499,22 @@ export default function WorkoutSession() {
       {showAbandon && (
         <div
           className="fixed inset-0 z-[70] flex items-end justify-center p-4 pb-[calc(4rem+env(safe-area-inset-bottom))]"
-          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+          style={{ background: "rgba(24,25,15,0.15)", backdropFilter: "blur(8px)" }}
           onClick={() => setShowAbandon(false)}
         >
           <div
             className="w-full max-w-sm rounded-2xl p-6 space-y-4 max-h-[85vh] overflow-y-auto"
             style={{
-              background: "#13141f",
-              border: "1px solid rgba(255,255,255,0.1)",
-              boxShadow: "0 24px 64px rgba(0,0,0,0.6)",
+              background: "var(--surface)",
+              border: "1px solid rgba(36,63,22,0.10)",
+              boxShadow: "0 24px 64px rgba(24,25,15,0.15)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center">
               <div className="text-3xl mb-2">⚠️</div>
               <h2 className="text-lg font-bold mb-1">End this workout?</h2>
-              <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                 Your session data will be lost. This cannot be undone.
               </p>
             </div>
@@ -523,9 +523,9 @@ export default function WorkoutSession() {
                 onClick={() => setShowAbandon(false)}
                 className="flex-1 py-3 rounded-xl text-sm font-semibold"
                 style={{
-                  background: "rgba(255,255,255,0.06)",
-                  color: "rgba(255,255,255,0.7)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "rgba(36,63,22,0.04)",
+                  color: "var(--text)",
+                  border: "1px solid rgba(36,63,22,0.10)",
                 }}
               >
                 Keep Going

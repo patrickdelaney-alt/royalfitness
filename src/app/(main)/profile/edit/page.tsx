@@ -276,7 +276,7 @@ export default function EditProfilePage() {
         {/* Notification Preferences */}
         <div className="space-y-2 pt-2">
           <p className="text-sm font-semibold text-foreground">Notification Preferences</p>
-          <p className="text-xs mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+          <p className="text-xs mb-2" style={{ color: "var(--text-muted)" }}>
             Choose what activity sends you a notification.
           </p>
           {[

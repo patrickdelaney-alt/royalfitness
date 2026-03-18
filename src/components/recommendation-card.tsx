@@ -13,30 +13,30 @@ interface Recommendation {
 const TYPE_CONFIG = {
   workout: {
     emoji: "💪",
-    color: "#a8a6ff",
-    bg: "rgba(120,117,255,0.10)",
-    border: "rgba(168,166,255,0.2)",
+    color: "var(--brand)",
+    bg: "rgba(36,63,22,0.06)",
+    border: "rgba(36,63,22,0.14)",
     createType: "WORKOUT",
   },
   meal: {
     emoji: "🥗",
-    color: "#34d399",
-    bg: "rgba(52,211,153,0.1)",
-    border: "rgba(52,211,153,0.2)",
+    color: "var(--gold)",
+    bg: "rgba(154,123,46,0.08)",
+    border: "rgba(154,123,46,0.18)",
     createType: "MEAL",
   },
   wellness: {
     emoji: "🧘",
-    color: "#a78bfa",
-    bg: "rgba(167,139,250,0.1)",
-    border: "rgba(167,139,250,0.2)",
+    color: "var(--brand-light)",
+    bg: "rgba(82,133,49,0.08)",
+    border: "rgba(82,133,49,0.18)",
     createType: "WELLNESS",
   },
   general: {
     emoji: "⭐",
-    color: "#fbbf24",
-    bg: "rgba(251,191,36,0.08)",
-    border: "rgba(251,191,36,0.15)",
+    color: "var(--gold-light)",
+    bg: "rgba(154,123,46,0.06)",
+    border: "rgba(154,123,46,0.12)",
     createType: null,
   },
 };
@@ -110,7 +110,7 @@ export default function RecommendationCard() {
       {/* Icon */}
       <div
         className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-lg"
-        style={{ background: "rgba(255,255,255,0.06)" }}
+        style={{ background: "rgba(36,63,22,0.06)" }}
       >
         {config.emoji}
       </div>
@@ -125,7 +125,7 @@ export default function RecommendationCard() {
         </p>
         <p
           className="text-xs leading-relaxed"
-          style={{ color: "rgba(255,255,255,0.6)" }}
+          style={{ color: "var(--text-muted)" }}
         >
           {rec.message}
         </p>
@@ -135,7 +135,7 @@ export default function RecommendationCard() {
             className="mt-2 text-xs font-semibold"
             style={{ color: config.color }}
           >
-            Log now →
+            Log now &rarr;
           </button>
         )}
       </div>
@@ -144,7 +144,7 @@ export default function RecommendationCard() {
       <button
         onClick={handleDismiss}
         className="flex-shrink-0 text-sm leading-none mt-0.5"
-        style={{ color: "rgba(255,255,255,0.25)" }}
+        style={{ color: "var(--text-muted)" }}
         aria-label="Dismiss recommendation"
       >
         ✕

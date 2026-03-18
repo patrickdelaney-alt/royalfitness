@@ -30,8 +30,8 @@ export default function GlobalError({
           alignItems: "center",
           justifyContent: "center",
           flexDirection: "column",
-          background: "#0b0c14",
-          color: "#ffffff",
+          background: "var(--bg)",
+          color: "var(--text)",
           fontFamily: "system-ui, -apple-system, sans-serif",
           padding: "1rem",
           textAlign: "center",
@@ -41,13 +41,13 @@ export default function GlobalError({
         <h2 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "8px" }}>
           Something went wrong
         </h2>
-        <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.45)", marginBottom: "24px" }}>
+        <p style={{ fontSize: "14px", color: "var(--text-muted)", marginBottom: "24px" }}>
           An unexpected error occurred. Please try again.
         </p>
         <button
           onClick={reset}
           style={{
-            background: "linear-gradient(135deg, #6360e8, #9b98ff)",
+            background: "var(--brand)",
             color: "#ffffff",
             border: "none",
             borderRadius: "12px",
@@ -55,7 +55,7 @@ export default function GlobalError({
             fontSize: "14px",
             fontWeight: 600,
             cursor: "pointer",
-            boxShadow: "0 0 40px rgba(120,117,255,0.15), 0 8px 24px rgba(0,0,0,0.5)",
+            boxShadow: "0 0 40px rgba(36,63,22,0.15), 0 8px 24px rgba(24,25,15,0.09)",
           }}
         >
           Try again

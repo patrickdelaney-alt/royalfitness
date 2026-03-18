@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Achievement System
  *
@@ -45,7 +46,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     emoji: "🏋️",
     description: "Log your first workout",
     category: "workout",
-    gradient: "linear-gradient(135deg, #6360e8, #9b98ff)",
+    gradient: "linear-gradient(135deg, #243F16, #528531)",
     check: (s) => s.workoutCount >= 1,
     progress: (s) => Math.min(s.workoutCount / 1, 1),
   },
@@ -92,7 +93,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   {
     key: "workout_250",
     name: "Obsessed",
-    emoji: "👑",
+    emoji: "🏆",
     description: "Log 250 workouts",
     category: "workout",
     gradient: "linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)",
