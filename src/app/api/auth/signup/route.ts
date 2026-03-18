@@ -8,6 +8,26 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const data = signUpSchema.parse(body);
 
+    // Waitlist gate — only allow signup if the email is approved.
+    // Controlled by the WAITLIST_GATE_ENABLED env var (set to "true" to enable).
+    if (process.env.WAITLIST_GATE_ENABLED === "true") {
+      const approved = await prisma.waitlistUser.findFirst({
+        where: {
+          email: data.email.toLowerCase(),
+          status: { in: ["APPROVED", "INVITED", "ACTIVATED"] },
+        },
+      });
+      if (!approved) {
+        return NextResponse.json(
+          {
+            error:
+              "You're on the waitlist — we'll email you when you're approved.",
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     const existingEmail = await prisma.user.findUnique({
       where: { email: data.email },
     });
