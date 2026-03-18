@@ -93,6 +93,15 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model WaitlistEntry {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  name       String?
+  source     String   @default("website")
+  invitedAt  DateTime?
+  createdAt  DateTime @default(now())
+}
+
 // ─── SOCIAL ──────────────────────────────────────────────────────
 
 model Follow {

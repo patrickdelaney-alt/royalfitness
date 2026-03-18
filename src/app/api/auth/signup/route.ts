@@ -4,6 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { signUpSchema } from "@/lib/validations";
 
 export async function POST(req: NextRequest) {
+  if (process.env.WAITLIST_ONLY === "true") {
+    return NextResponse.json(
+      { error: "Signups are currently closed. Please join the waitlist." },
+      { status: 403 }
+    );
+  }
+
   try {
     const body = await req.json();
     const data = signUpSchema.parse(body);

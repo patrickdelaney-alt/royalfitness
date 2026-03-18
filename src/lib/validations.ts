@@ -16,6 +16,12 @@ export const signInSchema = z.object({
   password: z.string().min(1),
 });
 
+export const waitlistSchema = z.object({
+  name: z.string().trim().min(1).max(100).optional(),
+  email: z.string().trim().email().max(254),
+  source: z.string().trim().min(1).max(100).default("website"),
+});
+
 export const createPostSchema = z.object({
   type: z.enum(["WORKOUT", "MEAL", "WELLNESS", "GENERAL", "CHECKIN"]),
   caption: z.string().max(2000).optional(),
@@ -168,4 +174,5 @@ export const stepsEntrySchema = z.object({
 
 export type SignUpInput = z.infer<typeof signUpSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;
+export type WaitlistInput = z.infer<typeof waitlistSchema>;
 export type CreatePostInput = z.infer<typeof createPostSchema>;
