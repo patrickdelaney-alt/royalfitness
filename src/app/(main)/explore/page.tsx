@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { HiSearch, HiLocationMarker } from "react-icons/hi";
 import Link from "next/link";
 import { lightImpact } from "@/lib/haptics";
@@ -58,6 +58,7 @@ function activityPill(postCount: number, postTypes: string[]): string {
 
 export default function ExplorePage() {
   const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
   const [tab, setTab] = useState<"people" | "gyms">("people");
   const [users, setUsers] = useState<UserResult[]>([]);
   const [gyms, setGyms] = useState<GymResult[]>([]);
@@ -160,6 +161,16 @@ export default function ExplorePage() {
   }
 
   const showSuggestions = tab === "people" && query.trim().length === 0;
+  const trimmedQuery = query.trim();
+  const helperText =
+    tab === "people"
+      ? "Search by username or name"
+      : "Search gyms by name or browse all";
+
+  function clearQuery() {
+    setQuery("");
+    inputRef.current?.focus();
+  }
 
   return (
     <div className="max-w-lg mx-auto px-4 pt-4">
@@ -169,13 +180,25 @@ export default function ExplorePage() {
       <div className="relative mb-4">
         <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
         <input
+          ref={inputRef}
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={tab === "people" ? "Search people..." : "Search gyms..."}
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+          className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
         />
+        {trimmedQuery.length > 0 && (
+          <button
+            type="button"
+            onClick={clearQuery}
+            aria-label="Clear search"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded"
+          >
+            ✕
+          </button>
+        )}
       </div>
+      <p className="text-xs text-muted -mt-2 mb-4">{helperText}</p>
 
       {/* Tab switch */}
       <div className="flex gap-2 mb-4">
@@ -281,7 +304,9 @@ export default function ExplorePage() {
         )
       ) : tab === "people" ? (
         users.length === 0 ? (
-          <p className="text-center text-muted text-sm py-12">No users found</p>
+          <p className="text-center text-muted text-sm py-12">
+            No people matched ‘{trimmedQuery}’
+          </p>
         ) : (
           <div className="space-y-2">
             {users.map((user) => (
@@ -314,6 +339,11 @@ export default function ExplorePage() {
           </div>
         )
       ) : /* ── Gyms tab ── */ gyms.length === 0 ? (
+        trimmedQuery.length > 0 ? (
+          <p className="text-center text-muted text-sm py-12">
+            No gyms matched ‘{trimmedQuery}’
+          </p>
+        ) : (
         <div className="text-center py-16 px-4">
           <div
             className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
@@ -333,6 +363,7 @@ export default function ExplorePage() {
             Check in at a gym →
           </Link>
         </div>
+        )
       ) : (
         <div className="space-y-2">
           {query.trim().length === 0 && (
