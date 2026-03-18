@@ -38,7 +38,7 @@ function ProgressRing({ progress, size = 48 }: { progress: number; size?: number
         cy={size / 2}
         r={r}
         fill="none"
-        stroke="rgba(255,255,255,0.08)"
+        stroke="rgba(36,63,22,0.10)"
         strokeWidth={3}
       />
       <circle
@@ -46,7 +46,7 @@ function ProgressRing({ progress, size = 48 }: { progress: number; size?: number
         cy={size / 2}
         r={r}
         fill="none"
-        stroke="rgba(168,166,255,0.6)"
+        stroke="rgba(82,133,49,0.6)"
         strokeWidth={3}
         strokeDasharray={`${dash} ${circ}`}
         strokeLinecap="round"
@@ -64,10 +64,10 @@ function AchievementCard({ achievement }: { achievement: AchievementResult }) {
       style={{
         background: earned
           ? achievement.gradient
-          : "rgba(255,255,255,0.04)",
+          : "rgba(36,63,22,0.04)",
         border: earned
           ? "none"
-          : "1px solid rgba(255,255,255,0.08)",
+          : "1px solid rgba(36,63,22,0.10)",
         opacity: earned ? 1 : 0.7,
       }}
     >
@@ -94,8 +94,8 @@ function AchievementCard({ achievement }: { achievement: AchievementResult }) {
             style={{
               width: 18,
               height: 18,
-              background: "rgba(0,0,0,0.6)",
-              color: "rgba(255,255,255,0.4)",
+              background: "rgba(24,25,15,0.15)",
+              color: "var(--text-muted)",
               fontSize: 10,
             }}
           >
@@ -108,7 +108,7 @@ function AchievementCard({ achievement }: { achievement: AchievementResult }) {
       <p
         className="text-xs font-bold text-center leading-tight"
         style={{
-          color: earned ? "#fff" : "rgba(255,255,255,0.5)",
+          color: earned ? "#fff" : "var(--text-muted)",
           letterSpacing: "0.02em",
         }}
       >
@@ -120,7 +120,7 @@ function AchievementCard({ achievement }: { achievement: AchievementResult }) {
         className="text-center leading-tight"
         style={{
           fontSize: 10,
-          color: earned ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.3)",
+          color: earned ? "var(--text)" : "var(--text-muted)",
         }}
       >
         {earned && achievement.earnedAt
@@ -132,13 +132,13 @@ function AchievementCard({ achievement }: { achievement: AchievementResult }) {
       {!earned && achievement.progress > 0 && (
         <div
           className="w-full h-1 rounded-full overflow-hidden mt-1"
-          style={{ background: "rgba(255,255,255,0.08)" }}
+          style={{ background: "rgba(36,63,22,0.10)" }}
         >
           <div
             className="h-full rounded-full"
             style={{
               width: `${achievement.progress * 100}%`,
-              background: "linear-gradient(to right, #6360e8, #9b98ff)",
+              background: "var(--brand)",
             }}
           />
         </div>
@@ -192,14 +192,14 @@ export default function AchievementsPage() {
   return (
     <div
       className="max-w-lg mx-auto px-4 pt-4 pb-10"
-      style={{ color: "#ffffff" }}
+      style={{ color: "var(--text)" }}
     >
       {/* Header */}
       <div className="flex items-center gap-3 mb-5">
         <button
           onClick={() => router.back()}
           className="text-sm"
-          style={{ color: "rgba(255,255,255,0.4)" }}
+          style={{ color: "var(--text-muted)" }}
         >
           ← Back
         </button>
@@ -208,7 +208,7 @@ export default function AchievementsPage() {
           <span
             className="text-xs font-semibold px-3 py-1 rounded-full"
             style={{
-              background: "linear-gradient(135deg, #6360e8, #9b98ff)",
+              background: "var(--brand)",
               color: "#fff",
             }}
           >
@@ -222,19 +222,19 @@ export default function AchievementsPage() {
         <div className="mb-6">
           <div
             className="h-2 rounded-full overflow-hidden"
-            style={{ background: "rgba(255,255,255,0.08)" }}
+            style={{ background: "rgba(36,63,22,0.10)" }}
           >
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{
                 width: `${(earnedCount / total) * 100}%`,
-                background: "linear-gradient(to right, #6360e8, #9b98ff)",
+                background: "var(--brand)",
               }}
             />
           </div>
           <p
             className="text-xs mt-1.5 text-right"
-            style={{ color: "rgba(255,255,255,0.3)" }}
+            style={{ color: "var(--text-muted)" }}
           >
             {total - earnedCount} badges left to unlock
           </p>
@@ -253,13 +253,13 @@ export default function AchievementsPage() {
             activeCategory === "all"
               ? {
                   background:
-                    "linear-gradient(135deg, #6360e8, #9b98ff)",
+                    "var(--brand)",
                   color: "#fff",
                 }
               : {
-                  background: "rgba(255,255,255,0.06)",
-                  color: "rgba(255,255,255,0.4)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "rgba(36,63,22,0.04)",
+                  color: "var(--text-muted)",
+                  border: "1px solid rgba(36,63,22,0.10)",
                 }
           }
         >
@@ -280,13 +280,13 @@ export default function AchievementsPage() {
                 activeCategory === cat
                   ? {
                       background:
-                        "linear-gradient(135deg, #6360e8, #9b98ff)",
+                        "var(--brand)",
                       color: "#fff",
                     }
                   : {
-                      background: "rgba(255,255,255,0.06)",
-                      color: "rgba(255,255,255,0.4)",
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "rgba(36,63,22,0.04)",
+                      color: "var(--text-muted)",
+                      border: "1px solid rgba(36,63,22,0.10)",
                     }
               }
             >
@@ -306,7 +306,7 @@ export default function AchievementsPage() {
             <div
               key={i}
               className="rounded-2xl h-32 animate-pulse"
-              style={{ background: "rgba(255,255,255,0.06)" }}
+              style={{ background: "rgba(36,63,22,0.04)" }}
             />
           ))}
         </div>
@@ -323,13 +323,13 @@ export default function AchievementsPage() {
                 <div className="flex items-center justify-between mb-3">
                   <h2
                     className="text-xs font-semibold uppercase tracking-wide"
-                    style={{ color: "rgba(255,255,255,0.35)" }}
+                    style={{ color: "var(--text-muted)" }}
                   >
                     {meta.emoji} {meta.label}
                   </h2>
                   <span
                     className="text-xs"
-                    style={{ color: "rgba(255,255,255,0.3)" }}
+                    style={{ color: "var(--text-muted)" }}
                   >
                     {catEarned}/{items.length}
                   </span>
@@ -356,7 +356,7 @@ export default function AchievementsPage() {
       {!loading && displayed.length === 0 && (
         <p
           className="text-center py-16 text-sm"
-          style={{ color: "rgba(255,255,255,0.3)" }}
+          style={{ color: "var(--text-muted)" }}
         >
           No badges in this category yet
         </p>

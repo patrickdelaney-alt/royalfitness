@@ -39,9 +39,10 @@ export function BottomNav() {
               toast("You have new notifications", {
                 icon: "🔔",
                 style: {
-                  background: "#1a1b2e",
-                  color: "#fff",
-                  border: "1px solid rgba(255,255,255,0.1)",
+                  background: "var(--surface)",
+                  color: "var(--text)",
+                  border: "1px solid var(--border)",
+                  boxShadow: "var(--shadow-sm)",
                 },
               });
             }
@@ -67,9 +68,11 @@ export function BottomNav() {
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center border-t"
       style={{
-        background: "rgba(11,12,20,0.96)",
+        background: "rgba(253,250,245,0.85)",
         backdropFilter: "blur(20px)",
-        borderColor: "rgba(255,255,255,0.08)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderColor: "var(--border)",
+        boxShadow: "0 -1px 8px rgba(24,25,15,0.04), inset 0 1px 0 rgba(255,255,255,0.7)",
       }}
     >
       {tabs.map((tab) => {
@@ -89,9 +92,10 @@ export function BottomNav() {
               aria-label="Create post"
             >
               <div
-                className="flex items-center justify-center w-11 h-7 rounded-full btn-gradient shadow-glow-sm"
+                className="flex items-center justify-center w-11 h-7 rounded-full btn-primary"
+                style={{ padding: 0, boxShadow: "0 2px 8px rgba(36,63,22,0.20)" }}
               >
-                <tab.icon className="h-5 w-5 text-white" />
+                <tab.icon className="h-5 w-5" style={{ color: "#FDFAF5" }} />
               </div>
             </Link>
           );
@@ -101,13 +105,19 @@ export function BottomNav() {
           <Link
             key={tab.href}
             href={href}
-            className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-semibold transition-colors"
-            style={{ color: isActive ? "#a8a6ff" : "rgba(255,255,255,0.28)" }}
+            className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-semibold"
+            style={{
+              color: isActive ? "var(--brand)" : "var(--text-muted)",
+              transition: "color 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
+            }}
           >
             {isActive && <div className="nav-tab-pill" />}
             <div
-              className="relative transition-transform duration-150"
-              style={{ transform: isActive ? "scale(1.12)" : "scale(1)" }}
+              className="relative"
+              style={{
+                transform: isActive ? "scale(1.12)" : "scale(1)",
+                transition: "transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
+              }}
             >
               <tab.icon className="h-[22px] w-[22px]" />
               {tab.href === "/notifications" && unreadCount > 0 && (

@@ -150,7 +150,7 @@ function PhotoUpload({
           <button
             onClick={() => fileRef.current?.click()}
             className="absolute bottom-2 right-2 p-1.5 rounded-lg text-xs"
-            style={{ background: "rgba(0,0,0,0.6)", color: "#ffffff" }}
+            style={{ background: "rgba(24,25,15,0.15)", color: "#ffffff" }}
           >
             Change
           </button>
@@ -161,9 +161,9 @@ function PhotoUpload({
           disabled={uploading}
           className="w-full py-4 rounded-xl flex flex-col items-center gap-1.5 transition-all"
           style={{
-            background: "rgba(120,117,255,0.06)",
-            border: "1px dashed rgba(120,117,255,0.3)",
-            color: "rgba(120,117,255,0.6)",
+            background: "rgba(36,63,22,0.06)",
+            border: "1px dashed rgba(36,63,22,0.3)",
+            color: "rgba(36,63,22,0.6)",
           }}
         >
           {uploading ? (
@@ -239,7 +239,7 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
   return (
     <div
       className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
     >
       {error && (
         <p className="text-xs" style={{ color: "#f87171" }}>
@@ -337,7 +337,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
   return (
     <div
       className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
     >
       {error && (
         <p className="text-xs" style={{ color: "#f87171" }}>
@@ -362,7 +362,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
         {referralCode && (
           <span
             className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(120,117,255,0.15)", color: "#a8a6ff" }}
+            style={{ background: "rgba(36,63,22,0.15)", color: "#528531" }}
           >
             Code
           </span>
@@ -429,7 +429,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
   return (
     <div
       className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
     >
       {error && (
         <p className="text-xs" style={{ color: "#f87171" }}>
@@ -450,7 +450,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
         {referralCode && (
           <span
             className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(120,117,255,0.15)", color: "#a8a6ff" }}
+            style={{ background: "rgba(36,63,22,0.15)", color: "#528531" }}
           >
             Code
           </span>
@@ -519,7 +519,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
   return (
     <div
       className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
     >
       {error && (
         <p className="text-xs" style={{ color: "#f87171" }}>
@@ -549,7 +549,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         {referralCode && (
           <span
             className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(120,117,255,0.15)", color: "#a8a6ff" }}
+            style={{ background: "rgba(36,63,22,0.15)", color: "#528531" }}
           >
             Code
           </span>
@@ -617,7 +617,7 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
   return (
     <div
       className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
     >
       {error && (
         <p className="text-xs" style={{ color: "#f87171" }}>
@@ -685,14 +685,14 @@ function ItemDetailModal({
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div
         className="relative w-full sm:max-w-md max-h-[85vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl"
-        style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+        style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close */}
         <button
           onClick={onClose}
           className="absolute top-3 right-3 z-10 p-1.5 rounded-full"
-          style={{ background: "rgba(0,0,0,0.5)", color: "rgba(255,255,255,0.8)" }}
+          style={{ background: "rgba(24,25,15,0.09)", color: "var(--text)" }}
         >
           <HiX className="w-5 h-5" />
         </button>
@@ -713,26 +713,26 @@ function ItemDetailModal({
         {/* Content */}
         <div className="p-5 space-y-4">
           <div>
-            <h3 className="text-xl font-bold text-white">{item.name}</h3>
+            <h3 className="text-xl font-bold text-foreground">{item.name}</h3>
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
               <span
                 className="text-xs px-2.5 py-0.5 rounded-full"
-                style={{ background: "rgba(120,117,255,0.12)", color: "#a8a6ff" }}
+                style={{ background: "rgba(36,63,22,0.12)", color: "#528531" }}
               >
                 {tabInfo?.emoji} {tabInfo?.label}
               </span>
               {tab === "supplements" && (item as Supplement).brand && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>
+                <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}>
                   {(item as Supplement).brand}
                 </span>
               )}
               {tab === "accessories" && (item as Accessory).type && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>
+                <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}>
                   {(item as Accessory).type}
                 </span>
               )}
               {tab === "wellness" && (item as SavedWellnessItem).activityType && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>
+                <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}>
                   {(item as SavedWellnessItem).activityType}
                 </span>
               )}
@@ -741,7 +741,7 @@ function ItemDetailModal({
 
           {/* Supplement details */}
           {tab === "supplements" && ((item as Supplement).dose || (item as Supplement).schedule) && (
-            <div className="flex gap-4 text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+            <div className="flex gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
               {(item as Supplement).dose && <span>Dose: {(item as Supplement).dose}</span>}
               {(item as Supplement).schedule && <span>Schedule: {(item as Supplement).schedule}</span>}
             </div>
@@ -749,7 +749,7 @@ function ItemDetailModal({
 
           {/* Meal macros */}
           {tab === "meals" && ((item as SavedMeal).calories || (item as SavedMeal).protein) && (
-            <div className="flex gap-3 text-xs flex-wrap" style={{ color: "rgba(255,255,255,0.5)" }}>
+            <div className="flex gap-3 text-xs flex-wrap" style={{ color: "var(--text-muted)" }}>
               {(item as SavedMeal).calories != null && <span>{(item as SavedMeal).calories} cal</span>}
               {(item as SavedMeal).protein != null && <span>{(item as SavedMeal).protein}g protein</span>}
               {(item as SavedMeal).carbs != null && <span>{(item as SavedMeal).carbs}g carbs</span>}
@@ -759,7 +759,7 @@ function ItemDetailModal({
 
           {/* Ingredients */}
           {tab === "meals" && (item as SavedMeal).ingredients?.length > 0 && (
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
               {(item as SavedMeal).ingredients.join(", ")}
             </p>
           )}
@@ -771,7 +771,7 @@ function ItemDetailModal({
                 const exercises = JSON.parse((item as SavedWorkout).exercisesJson);
                 if (Array.isArray(exercises) && exercises.length > 0) {
                   return (
-                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                       {exercises.map((e: { name: string }) => e.name).join(", ")}
                     </p>
                   );
@@ -784,14 +784,14 @@ function ItemDetailModal({
 
           {/* Duration */}
           {tab === "wellness" && (item as SavedWellnessItem).durationMinutes != null && (
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
               {(item as SavedWellnessItem).durationMinutes} minutes
             </p>
           )}
 
           {/* Notes */}
           {notes && (
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
+            <p className="text-sm" style={{ color: "var(--text)" }}>
               {notes}
             </p>
           )}
@@ -800,13 +800,13 @@ function ItemDetailModal({
           {referralCode && (
             <div
               className="flex items-center justify-between p-3 rounded-xl"
-              style={{ background: "rgba(120,117,255,0.08)", border: "1px solid rgba(120,117,255,0.2)" }}
+              style={{ background: "rgba(36,63,22,0.08)", border: "1px solid rgba(36,63,22,0.2)" }}
             >
               <div>
-                <p className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
+                <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
                   Referral Code
                 </p>
-                <p className="text-base font-bold tracking-wider" style={{ color: "#a8a6ff" }}>
+                <p className="text-base font-bold tracking-wider" style={{ color: "#528531" }}>
                   {referralCode}
                 </p>
               </div>
@@ -814,8 +814,8 @@ function ItemDetailModal({
                 onClick={copyCode}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
                 style={{
-                  background: copied ? "rgba(34,197,94,0.2)" : "rgba(120,117,255,0.15)",
-                  color: copied ? "#22c55e" : "#a8a6ff",
+                  background: copied ? "rgba(34,197,94,0.2)" : "rgba(36,63,22,0.15)",
+                  color: copied ? "#22c55e" : "#528531",
                 }}
               >
                 <HiClipboardCopy className="w-3.5 h-3.5" />
@@ -917,7 +917,7 @@ export default function CatalogPage() {
   };
 
   const items = currentItems();
-  const muted = "rgba(255,255,255,0.4)";
+  const muted = "var(--text-muted)";
 
   const getItemPhotoUrl = (item: AnyItem): string | null => {
     if ("photoUrl" in item) return (item as { photoUrl: string | null }).photoUrl;
@@ -935,14 +935,14 @@ export default function CatalogPage() {
   };
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>
+    <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "var(--text)" }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
             className="p-2 rounded-xl"
-            style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)" }}
+            style={{ background: "rgba(36,63,22,0.04)", color: "var(--text)" }}
           >
             <HiArrowLeft className="w-5 h-5" />
           </button>
@@ -950,13 +950,13 @@ export default function CatalogPage() {
         </div>
         <div className="flex items-center gap-2">
           {/* View toggle */}
-          <div className="flex rounded-lg overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+          <div className="flex rounded-lg overflow-hidden" style={{ background: "rgba(36,63,22,0.04)" }}>
             <button
               onClick={() => setViewMode("grid")}
               className="p-1.5 transition-all"
               style={{
-                background: viewMode === "grid" ? "rgba(120,117,255,0.3)" : "transparent",
-                color: viewMode === "grid" ? "#a8a6ff" : "rgba(255,255,255,0.3)",
+                background: viewMode === "grid" ? "rgba(36,63,22,0.3)" : "transparent",
+                color: viewMode === "grid" ? "#528531" : "var(--text-muted)",
               }}
             >
               <HiViewGrid className="w-4 h-4" />
@@ -965,8 +965,8 @@ export default function CatalogPage() {
               onClick={() => setViewMode("list")}
               className="p-1.5 transition-all"
               style={{
-                background: viewMode === "list" ? "rgba(120,117,255,0.3)" : "transparent",
-                color: viewMode === "list" ? "#a8a6ff" : "rgba(255,255,255,0.3)",
+                background: viewMode === "list" ? "rgba(36,63,22,0.3)" : "transparent",
+                color: viewMode === "list" ? "#528531" : "var(--text-muted)",
               }}
             >
               <HiViewList className="w-4 h-4" />
@@ -976,7 +976,7 @@ export default function CatalogPage() {
           <button
             onClick={() => setShowForm((v) => !v)}
             className="flex items-center gap-1.5 text-sm font-medium"
-            style={{ color: "#a8a6ff" }}
+            style={{ color: "#528531" }}
           >
             <HiPlus className="w-4 h-4" />
             Add
@@ -993,8 +993,8 @@ export default function CatalogPage() {
             className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all"
             style={
               tab === t.key
-                ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
-                : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
+                ? { background: "var(--brand)", color: "#ffffff" }
+                : { background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }
             }
           >
             {t.emoji} {t.label}
@@ -1053,13 +1053,13 @@ export default function CatalogPage() {
         viewMode === "grid" ? (
           <div className="grid grid-cols-3 gap-0.5">
             {Array.from({ length: 9 }).map((_, i) => (
-              <div key={i} className="aspect-square rounded-sm animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
+              <div key={i} className="aspect-square rounded-sm animate-pulse" style={{ background: "rgba(36,63,22,0.04)" }} />
             ))}
           </div>
         ) : (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
+              <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: "rgba(36,63,22,0.04)" }} />
             ))}
           </div>
         )
@@ -1108,7 +1108,7 @@ export default function CatalogPage() {
 
               {/* Link/referral badge */}
               {(getItemLink(item) || getItemReferralCode(item)) && (
-                <div className="absolute top-1.5 right-1.5 p-1 rounded-full" style={{ background: "rgba(120,117,255,0.85)" }}>
+                <div className="absolute top-1.5 right-1.5 p-1 rounded-full" style={{ background: "rgba(36,63,22,0.85)" }}>
                   <HiLink className="w-2.5 h-2.5 text-white" />
                 </div>
               )}
@@ -1126,7 +1126,7 @@ export default function CatalogPage() {
               key={item.id}
               onClick={() => setSelectedItem(item)}
               className="flex items-center gap-3 p-3 rounded-xl w-full text-left transition-all"
-              style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+              style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
             >
               {/* Thumbnail */}
               {getItemPhotoUrl(item) ? (
@@ -1155,7 +1155,7 @@ export default function CatalogPage() {
                   {getItemReferralCode(item) && (
                     <span
                       className="text-[10px] px-2 py-0.5 rounded-full"
-                      style={{ background: "rgba(120,117,255,0.12)", color: "#a8a6ff" }}
+                      style={{ background: "rgba(36,63,22,0.12)", color: "#528531" }}
                     >
                       Code: {getItemReferralCode(item)}
                     </span>
@@ -1163,7 +1163,7 @@ export default function CatalogPage() {
                   {getItemLink(item) && !getItemReferralCode(item) && (
                     <span
                       className="text-[10px] px-2 py-0.5 rounded-full flex items-center gap-0.5"
-                      style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}
+                      style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}
                     >
                       <HiLink className="w-2.5 h-2.5" />
                       Link

@@ -7,7 +7,7 @@ export default function NotFound() {
       <h2 className="mb-2 text-xl font-bold text-foreground">
         Page not found
       </h2>
-      <p className="mb-6 text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+      <p className="mb-6 text-sm" style={{ color: "var(--text-muted)" }}>
         The page you&apos;re looking for doesn&apos;t exist.
       </p>
       <Link

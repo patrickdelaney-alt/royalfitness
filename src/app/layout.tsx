@@ -1,11 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat } from "next/font/google";
-
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  variable: "--font-montserrat",
-  display: "swap",
-});
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "react-hot-toast";
@@ -18,7 +11,7 @@ export const viewport: Viewport = {
   // Prevents iOS from zooming in when a form input is focused
   maximumScale: 1,
   // Colours the browser chrome / status bar to match the app
-  themeColor: "#7875ff",
+  themeColor: "#243F16",
 };
 
 export const metadata: Metadata = {
@@ -44,7 +37,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${montserrat.variable} antialiased bg-background`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="antialiased bg-background">
         <Providers>
           {children}
           <Toaster position="bottom-center" />

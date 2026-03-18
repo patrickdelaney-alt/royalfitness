@@ -242,7 +242,7 @@ export default function ExplorePage() {
         ) : (
           <div>
             <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-3">
-              👑 Active this week
+              Active this week
             </p>
             <div className="space-y-2">
               {suggestions.map((suggestion) => {
@@ -347,18 +347,18 @@ export default function ExplorePage() {
         <div className="text-center py-16 px-4">
           <div
             className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-            style={{ background: "rgba(56,189,248,0.10)", border: "1px solid rgba(103,232,249,0.2)" }}
+            style={{ background: "rgba(82,133,49,0.10)", border: "1px solid rgba(82,133,49,0.2)" }}
           >
-            <HiLocationMarker className="w-7 h-7" style={{ color: "#67e8f9" }} />
+            <HiLocationMarker className="w-7 h-7" style={{ color: "#528531" }} />
           </div>
-          <p className="font-semibold text-white text-base mb-1">No gyms yet</p>
-          <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
+          <p className="font-semibold text-foreground text-base mb-1">No gyms yet</p>
+          <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>
             Be the first to add your gym. Use Quick Check-in when posting to tag your location.
           </p>
           <Link
             href="/create?type=CHECKIN"
             className="inline-block px-5 py-2.5 rounded-full text-sm font-bold text-white"
-            style={{ background: "linear-gradient(135deg, #6360e8, #9b98ff)", boxShadow: "0 4px 20px rgba(120,117,255,0.3)" }}
+            style={{ background: "var(--brand)", boxShadow: "0 4px 20px rgba(36,63,22,0.3)" }}
           >
             Check in at a gym →
           </Link>
@@ -367,7 +367,7 @@ export default function ExplorePage() {
       ) : (
         <div className="space-y-2">
           {query.trim().length === 0 && (
-            <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+            <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "var(--text-muted)" }}>
               📍 All gyms
             </p>
           )}
@@ -375,24 +375,24 @@ export default function ExplorePage() {
             <div
               key={gym.id}
               className="flex items-center gap-3 p-3 rounded-xl border"
-              style={{ background: "#13141f", borderColor: "rgba(255,255,255,0.08)" }}
+              style={{ background: "var(--surface)", borderColor: "rgba(36,63,22,0.10)" }}
             >
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: "rgba(56,189,248,0.10)", border: "1px solid rgba(103,232,249,0.15)" }}
+                style={{ background: "rgba(82,133,49,0.10)", border: "1px solid rgba(82,133,49,0.15)" }}
               >
-                <HiLocationMarker className="w-5 h-5" style={{ color: "#67e8f9" }} />
+                <HiLocationMarker className="w-5 h-5" style={{ color: "#528531" }} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm text-foreground truncate">
                   {gym.name}
                 </p>
                 {gym.address && (
-                  <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  <p className="text-xs truncate" style={{ color: "var(--text-muted)" }}>
                     {gym.address}
                   </p>
                 )}
-                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
                   {gym._count.members} member{gym._count.members !== 1 ? "s" : ""}
                   {gym._count.posts > 0 && (
                     <> · {gym._count.posts} post{gym._count.posts !== 1 ? "s" : ""}</>

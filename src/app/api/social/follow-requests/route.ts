@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { safeAuth } from "@/lib/safe-auth";

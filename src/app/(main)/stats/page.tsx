@@ -6,18 +6,18 @@ import Link from "next/link";
 
 // Muscle group display config
 const MUSCLE_META: Record<string, { label: string; color: string }> = {
-  chest:     { label: "Chest",     color: "#7875ff" },
-  back:      { label: "Back",      color: "#a8a6ff" },
-  legs:      { label: "Legs",      color: "#a78bfa" },
-  shoulders: { label: "Shoulders", color: "#34d399" },
-  arms:      { label: "Arms",      color: "#fbbf24" },
+  chest:     { label: "Chest",     color: "#243F16" },
+  back:      { label: "Back",      color: "#528531" },
+  legs:      { label: "Legs",      color: "#528531" },
+  shoulders: { label: "Shoulders", color: "#9A7B2E" },
+  arms:      { label: "Arms",      color: "#C9A84C" },
   core:      { label: "Core",      color: "#f87171" },
-  glutes:    { label: "Glutes",    color: "#fb923c" },
-  cardio:    { label: "Cardio",    color: "#38bdf8" },
+  glutes:    { label: "Glutes",    color: "#C9A84C" },
+  cardio:    { label: "Cardio",    color: "#528531" },
 };
 
 function getMuscleColor(mg: string): string {
-  return MUSCLE_META[mg]?.color ?? "#a8a6ff";
+  return MUSCLE_META[mg]?.color ?? "#528531";
 }
 
 function getMuscleLabel(mg: string): string {
@@ -113,15 +113,15 @@ function WeeklyWorkoutChart({ days }: { days: WeeklyWorkoutDay[] }) {
                     style={{
                       height: `${heightPct}%`,
                       background: isSelected || isToday
-                        ? "linear-gradient(180deg, #a8a6ff 0%, #7875ff 100%)"
-                        : "linear-gradient(180deg, rgba(168,166,255,0.7) 0%, rgba(120,117,255,0.5) 100%)",
-                      boxShadow: isSelected ? "0 0 12px rgba(168,166,255,0.5)" : "none",
+                        ? "linear-gradient(180deg, #528531 0%, #243F16 100%)"
+                        : "linear-gradient(180deg, rgba(82,133,49,0.7) 0%, rgba(36,63,22,0.5) 100%)",
+                      boxShadow: isSelected ? "0 0 12px rgba(82,133,49,0.5)" : "none",
                     }}
                   />
                 ) : (
                   <div
                     className="w-full rounded-t-sm"
-                    style={{ height: 4, background: "rgba(255,255,255,0.06)" }}
+                    style={{ height: 4, background: "rgba(36,63,22,0.04)" }}
                   />
                 )}
               </div>
@@ -129,10 +129,10 @@ function WeeklyWorkoutChart({ days }: { days: WeeklyWorkoutDay[] }) {
                 className="text-xs font-medium"
                 style={{
                   color: isToday
-                    ? "#a8a6ff"
+                    ? "#528531"
                     : isSelected
-                    ? "rgba(255,255,255,0.9)"
-                    : "rgba(255,255,255,0.35)",
+                    ? "var(--text)"
+                    : "var(--text-muted)",
                 }}
               >
                 {day.dayName}
@@ -146,11 +146,11 @@ function WeeklyWorkoutChart({ days }: { days: WeeklyWorkoutDay[] }) {
       {selectedDay !== null && days[selectedDay] && (
         <div
           className="mt-3 p-3 rounded-xl text-sm"
-          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
         >
-          <p className="text-xs mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+          <p className="text-xs mb-2" style={{ color: "var(--text-muted)" }}>
             {formatDate(days[selectedDay].date)} —{" "}
-            <span className="font-semibold" style={{ color: "#ffffff" }}>
+            <span className="font-semibold" style={{ color: "var(--text)" }}>
               {days[selectedDay].workoutCount}{" "}
               {days[selectedDay].workoutCount === 1 ? "workout" : "workouts"}
             </span>
@@ -172,7 +172,7 @@ function WeeklyWorkoutChart({ days }: { days: WeeklyWorkoutDay[] }) {
               ))}
             </div>
           ) : (
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
               Rest day
             </p>
           )}
@@ -191,7 +191,7 @@ function MuscleGroupBreakdown({
   const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   if (entries.length === 0) {
     return (
-      <p className="text-xs text-center py-4" style={{ color: "rgba(255,255,255,0.25)" }}>
+      <p className="text-xs text-center py-4" style={{ color: "var(--text-muted)" }}>
         No muscle group data yet
       </p>
     );
@@ -207,13 +207,13 @@ function MuscleGroupBreakdown({
           <div key={mg} className="flex items-center gap-3">
             <span
               className="text-xs font-medium w-20 flex-shrink-0"
-              style={{ color: "rgba(255,255,255,0.7)" }}
+              style={{ color: "var(--text)" }}
             >
               {getMuscleLabel(mg)}
             </span>
             <div
               className="flex-1 h-2 rounded-full overflow-hidden"
-              style={{ background: "rgba(255,255,255,0.07)" }}
+              style={{ background: "rgba(36,63,22,0.07)" }}
             >
               <div
                 className="h-full rounded-full transition-all"
@@ -344,16 +344,16 @@ export default function StatsPage() {
   const boardEntries = leaderboard?.[activeBoard] ?? [];
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>
+    <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "var(--text)" }}>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold">Stats</h1>
         <Link
           href="/achievements"
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
           style={{
-            background: "linear-gradient(135deg, rgba(120,117,255,0.10) 0%, rgba(168,166,255,0.10) 100%)",
-            border: "1px solid rgba(168,166,255,0.25)",
-            color: "#a8a6ff",
+            background: "linear-gradient(135deg, rgba(36,63,22,0.10) 0%, rgba(82,133,49,0.10) 100%)",
+            border: "1px solid rgba(82,133,49,0.25)",
+            color: "var(--brand-light)",
           }}
         >
           🏅 Badges
@@ -361,7 +361,7 @@ export default function StatsPage() {
       </div>
 
       {/* Period selector */}
-      <div className="flex gap-2 mb-5 p-1 rounded-xl" style={{ background: "rgba(255,255,255,0.04)" }}>
+      <div className="flex gap-2 mb-5 p-1 rounded-xl" style={{ background: "rgba(36,63,22,0.04)" }}>
         {(["week", "month", "year"] as const).map((p) => (
           <button
             key={p}
@@ -369,8 +369,8 @@ export default function StatsPage() {
             className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
             style={
               period === p
-                ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
-                : { background: "transparent", color: "rgba(255,255,255,0.4)" }
+                ? { background: "var(--brand)", color: "#ffffff" }
+                : { background: "transparent", color: "var(--text-muted)" }
             }
           >
             {p.charAt(0).toUpperCase() + p.slice(1)}
@@ -381,38 +381,38 @@ export default function StatsPage() {
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="rounded-xl h-20 animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
+            <div key={i} className="rounded-xl h-20 animate-pulse" style={{ background: "rgba(36,63,22,0.04)" }} />
           ))}
         </div>
       ) : stats ? (
         <>
           {/* Streaks */}
           <div className="grid grid-cols-2 gap-3 mb-5">
-            <div className="rounded-xl p-4 text-center" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <HiFire className="w-6 h-6 mx-auto mb-1" style={{ color: "#a8a6ff" }} />
+            <div className="rounded-xl p-4 text-center" style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}>
+              <HiFire className="w-6 h-6 mx-auto mb-1" style={{ color: "var(--brand-light)" }} />
               <p className="text-2xl font-bold">{stats.currentStreak}</p>
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Day Streak</p>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>Day Streak</p>
             </div>
-            <div className="rounded-xl p-4 text-center" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <HiTrendingUp className="w-6 h-6 mx-auto mb-1" style={{ color: "#a8a6ff" }} />
+            <div className="rounded-xl p-4 text-center" style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}>
+              <HiTrendingUp className="w-6 h-6 mx-auto mb-1" style={{ color: "var(--brand-light)" }} />
               <p className="text-2xl font-bold">{stats.workoutStreak}</p>
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Workout Streak</p>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>Workout Streak</p>
             </div>
           </div>
 
           {/* Weekly Workout Tracker */}
           <div className="mb-5">
-            <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+            <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "var(--text-muted)" }}>
               Workouts This Week
             </h2>
             <div
               className="rounded-xl p-4"
-              style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+              style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
             >
               {stats.weeklyWorkouts && stats.weeklyWorkouts.length > 0 ? (
                 <WeeklyWorkoutChart days={stats.weeklyWorkouts} />
               ) : (
-                <p className="text-xs text-center py-4" style={{ color: "rgba(255,255,255,0.25)" }}>
+                <p className="text-xs text-center py-4" style={{ color: "var(--text-muted)" }}>
                   No workouts logged yet
                 </p>
               )}
@@ -421,52 +421,52 @@ export default function StatsPage() {
 
           {/* Muscle Group Breakdown */}
           <div className="mb-5">
-            <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+            <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "var(--text-muted)" }}>
               Muscle Groups · {periodLabel}
             </h2>
             <div
               className="rounded-xl p-4"
-              style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+              style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
             >
               <MuscleGroupBreakdown counts={stats.muscleGroupCounts ?? {}} />
             </div>
           </div>
 
           {/* Stats grid */}
-          <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+          <h2 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "var(--text-muted)" }}>
             {periodLabel}
           </h2>
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="rounded-xl p-4" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="rounded-xl p-4" style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}>
               <div className="flex items-center gap-2 mb-2">
-                <HiFire className="w-4 h-4" style={{ color: "#a8a6ff" }} />
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Workouts</span>
+                <HiFire className="w-4 h-4" style={{ color: "var(--brand-light)" }} />
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>Workouts</span>
               </div>
               <p className="text-xl font-bold">{stats.workoutCount}</p>
             </div>
-            <div className="rounded-xl p-4" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="rounded-xl p-4" style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}>
               <div className="flex items-center gap-2 mb-2">
-                <HiClock className="w-4 h-4" style={{ color: "#a78bfa" }} />
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Wellness Min</span>
+                <HiClock className="w-4 h-4" style={{ color: "#528531" }} />
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>Wellness Min</span>
               </div>
               <p className="text-xl font-bold">{stats.wellnessMinutes}</p>
             </div>
-            <div className="rounded-xl p-4" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="rounded-xl p-4" style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}>
               <div className="flex items-center gap-2 mb-2">
-                <HiTrendingUp className="w-4 h-4" style={{ color: "#34d399" }} />
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Total Volume</span>
+                <HiTrendingUp className="w-4 h-4" style={{ color: "#9A7B2E" }} />
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>Total Volume</span>
               </div>
               <p className="text-xl font-bold">
                 {stats.totalVolume > 999
                   ? `${(stats.totalVolume / 1000).toFixed(1)}k`
                   : stats.totalVolume}{" "}
-                <span className="text-xs font-normal" style={{ color: "rgba(255,255,255,0.4)" }}>lbs</span>
+                <span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>lbs</span>
               </p>
             </div>
-            <div className="rounded-xl p-4" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="rounded-xl p-4" style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}>
               <div className="flex items-center gap-2 mb-2">
-                <HiEmojiHappy className="w-4 h-4" style={{ color: "#fbbf24" }} />
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Avg Mood</span>
+                <HiEmojiHappy className="w-4 h-4" style={{ color: "#C9A84C" }} />
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>Avg Mood</span>
               </div>
               <p className="text-xl font-bold">
                 {stats.avgMoodAfter !== null ? `${stats.avgMoodAfter}/10` : "--"}
@@ -475,12 +475,12 @@ export default function StatsPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className="rounded-xl p-4" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Total Sets</p>
+            <div className="rounded-xl p-4" style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}>
+              <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Total Sets</p>
               <p className="text-xl font-bold">{stats.totalSets}</p>
             </div>
-            <div className="rounded-xl p-4" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Meals Logged</p>
+            <div className="rounded-xl p-4" style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}>
+              <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Meals Logged</p>
               <p className="text-xl font-bold">{stats.mealsPosted}</p>
             </div>
           </div>
@@ -488,32 +488,32 @@ export default function StatsPage() {
           {/* Steps section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.35)" }}>
+              <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
                 Steps
               </h2>
               <button
                 onClick={() => setShowStepsForm((v) => !v)}
                 className="text-xs font-medium"
-                style={{ color: "#a8a6ff" }}
+                style={{ color: "var(--brand-light)" }}
               >
                 {showStepsForm ? "Cancel" : "Log steps"}
               </button>
             </div>
 
-            <div className="rounded-xl p-4 mb-3" style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Last 7 days</p>
+            <div className="rounded-xl p-4 mb-3" style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}>
+              <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Last 7 days</p>
               <p className="text-2xl font-bold">{totalStepsWeek.toLocaleString()}</p>
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>steps</p>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>steps</p>
             </div>
 
             {showStepsForm && (
-              <div className="p-4 rounded-xl mb-3 space-y-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <div className="p-4 rounded-xl mb-3 space-y-3" style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}>
                 {stepsError && (
                   <p className="text-xs" style={{ color: "#f87171" }}>{stepsError}</p>
                 )}
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Date</label>
+                    <label className="block text-xs mb-1" style={{ color: "var(--text-muted)" }}>Date</label>
                     <input
                       type="date"
                       value={stepsDate}
@@ -522,7 +522,7 @@ export default function StatsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Steps</label>
+                    <label className="block text-xs mb-1" style={{ color: "var(--text-muted)" }}>Steps</label>
                     <input
                       type="number"
                       value={stepsCount}
@@ -536,7 +536,7 @@ export default function StatsPage() {
                   onClick={handleLogSteps}
                   disabled={stepsSubmitting}
                   className="w-full py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
-                  style={{ color: "#ffffff" }}
+                  style={{ color: "var(--text)" }}
                 >
                   {stepsSubmitting ? "Logging..." : "Log Steps"}
                 </button>
@@ -549,13 +549,13 @@ export default function StatsPage() {
                   const pct = Math.min((e.count / 10000) * 100, 100);
                   return (
                     <div key={e.id} className="flex items-center gap-3">
-                      <span className="text-xs w-16 flex-shrink-0" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      <span className="text-xs w-16 flex-shrink-0" style={{ color: "var(--text-muted)" }}>
                         {formatDate(e.date)}
                       </span>
-                      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "rgba(36,63,22,0.10)" }}>
                         <div
                           className="h-full rounded-full"
-                          style={{ width: `${pct}%`, background: "linear-gradient(to right, #6360e8, #9b98ff)" }}
+                          style={{ width: `${pct}%`, background: "var(--brand)" }}
                         />
                       </div>
                       <span className="text-xs font-medium w-16 text-right">{e.count.toLocaleString()}</span>
@@ -569,7 +569,7 @@ export default function StatsPage() {
           {/* Leaderboard */}
           <>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.35)" }}>
+              <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
                 Friends Leaderboard
               </h2>
               {/* Leaderboard period selector */}
@@ -586,8 +586,8 @@ export default function StatsPage() {
                     className="px-2 py-1 rounded-lg text-xs font-semibold transition-all"
                     style={
                       lbPeriod === p.key
-                        ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
-                        : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)" }
+                        ? { background: "var(--brand)", color: "#ffffff" }
+                        : { background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }
                     }
                   >
                     {p.label}
@@ -597,7 +597,7 @@ export default function StatsPage() {
             </div>
 
             {leaderboardError ? (
-              <p className="text-center text-sm py-6" style={{ color: "rgba(255,255,255,0.3)" }}>
+              <p className="text-center text-sm py-6" style={{ color: "var(--text-muted)" }}>
                 Could not load leaderboard
               </p>
             ) : leaderboard ? (
@@ -614,8 +614,8 @@ export default function StatsPage() {
                       className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
                       style={
                         activeBoard === b.key
-                          ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
-                          : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
+                          ? { background: "var(--brand)", color: "#ffffff" }
+                          : { background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }
                       }
                     >
                       {b.label}
@@ -624,7 +624,7 @@ export default function StatsPage() {
                 </div>
 
                 {boardEntries.length === 0 ? (
-                  <p className="text-center text-sm py-6" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  <p className="text-center text-sm py-6" style={{ color: "var(--text-muted)" }}>
                     Follow friends to see the leaderboard
                   </p>
                 ) : (
@@ -634,12 +634,12 @@ export default function StatsPage() {
                         <div
                           key={entry.userId}
                           className="flex items-center gap-3 p-3 rounded-xl"
-                          style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
+                          style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
                         >
                           <span
                             className="w-6 text-center text-sm font-bold"
                             style={{
-                              color: idx === 0 ? "#a8a6ff" : idx === 1 ? "rgba(255,255,255,0.5)" : idx === 2 ? "#f59e0b" : "rgba(255,255,255,0.3)",
+                              color: idx === 0 ? "var(--brand-light)" : idx === 1 ? "var(--text-muted)" : idx === 2 ? "#f59e0b" : "var(--text-muted)",
                             }}
                           >
                             {idx + 1}
@@ -652,14 +652,14 @@ export default function StatsPage() {
                             </div>
                           )}
                           <span className="flex-1 text-sm font-medium truncate">{entry.username}</span>
-                          <span className="text-sm font-bold" style={{ color: entry.value > 0 ? "#ffffff" : "rgba(255,255,255,0.3)" }}>
+                          <span className="text-sm font-bold" style={{ color: entry.value > 0 ? "var(--text)" : "var(--text-muted)" }}>
                             {activeBoard === "wellnessMinutes" ? `${entry.value}m` : entry.value}
                           </span>
                         </div>
                       ))}
                     </div>
                     {boardEntries.length === 1 && (
-                      <p className="text-center text-xs mt-3" style={{ color: "rgba(255,255,255,0.25)" }}>
+                      <p className="text-center text-xs mt-3" style={{ color: "var(--text-muted)" }}>
                         Follow friends to compare stats
                       </p>
                     )}
@@ -670,7 +670,7 @@ export default function StatsPage() {
           </>
         </>
       ) : (
-        <p className="text-center text-sm py-12" style={{ color: "rgba(255,255,255,0.3)" }}>
+        <p className="text-center text-sm py-12" style={{ color: "var(--text-muted)" }}>
           Failed to load stats
         </p>
       )}
