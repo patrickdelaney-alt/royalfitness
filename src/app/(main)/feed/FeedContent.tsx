@@ -183,6 +183,8 @@ export default function FeedContent() {
                 ? "Workouts"
                 : type === "MEAL"
                 ? "Meals"
+                : type === "AFFILIATE"
+                ? "Affiliate"
                 : "Wellness"}
             </button>
           );

@@ -772,8 +772,26 @@ const AFFILIATE_CATEGORY_OPTIONS = [
   { value: "TECH_WEARABLES", label: "Tech / Wearables" },
 ];
 
+interface BulkItem {
+  name: string;
+  brand: string | null;
+  link: string | null;
+  referralCode: string | null;
+  category: string;
+  included: boolean;
+}
+
 function AddAffiliateForm({ onAdd }: { onAdd: (a: AffiliateItem) => void }) {
+  // Mode: "paste" (bulk) or "single" (manual single item)
+  const [mode, setMode] = useState<"paste" | "single">("paste");
+
+  // Bulk paste state
   const [rawText, setRawText] = useState("");
+  const [bulkItems, setBulkItems] = useState<BulkItem[]>([]);
+  const [bulkParsed, setBulkParsed] = useState(false);
+  const [bulkSubmitting, setBulkSubmitting] = useState(false);
+
+  // Single item state
   const [name, setName] = useState("");
   const [brand, setBrand] = useState("");
   const [link, setLink] = useState("");
@@ -783,11 +801,88 @@ function AddAffiliateForm({ onAdd }: { onAdd: (a: AffiliateItem) => void }) {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [tagsText, setTagsText] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [parsed, setParsed] = useState(false);
 
-  const handleParse = () => {
-    if (!rawText.trim() || parsed) return;
+  const [error, setError] = useState("");
+
+  // Parse bulk text
+  const handleBulkParse = async () => {
+    if (!rawText.trim()) return;
+    setError("");
+    const { parseBulkAffiliateInput } = await import("@/lib/affiliate-parser");
+    const detected = parseBulkAffiliateInput(rawText);
+    if (detected.length === 0) {
+      setError("No links or codes detected. Try pasting one per line.");
+      return;
+    }
+    setBulkItems(
+      detected.map((d) => ({
+        name: d.name,
+        brand: d.brand,
+        link: d.link,
+        referralCode: d.referralCode,
+        category: d.category,
+        included: true,
+      }))
+    );
+    setBulkParsed(true);
+  };
+
+  const updateBulkItem = (index: number, field: keyof BulkItem, value: string | boolean) => {
+    setBulkItems((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+    );
+  };
+
+  const handleBulkSubmit = async () => {
+    const toSave = bulkItems.filter((b) => b.included);
+    if (toSave.length === 0) {
+      setError("Select at least one item to save");
+      return;
+    }
+    const invalid = toSave.find((b) => !b.name.trim());
+    if (invalid) {
+      setError("Every item needs a name");
+      return;
+    }
+    setBulkSubmitting(true);
+    setError("");
+    let savedCount = 0;
+    for (const item of toSave) {
+      try {
+        const res = await fetch("/api/catalog/affiliates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: item.name.trim(),
+            brand: item.brand?.trim() || undefined,
+            link: item.link?.trim() || undefined,
+            referralCode: item.referralCode?.trim() || undefined,
+            category: item.category,
+          }),
+        });
+        if (res.ok) {
+          const saved = await res.json();
+          onAdd(saved);
+          savedCount++;
+        }
+      } catch {
+        /* continue with next */
+      }
+    }
+    setBulkSubmitting(false);
+    if (savedCount > 0) {
+      setRawText("");
+      setBulkItems([]);
+      setBulkParsed(false);
+    }
+    if (savedCount < toSave.length) {
+      setError(`Saved ${savedCount}/${toSave.length} items. Some failed.`);
+    }
+  };
+
+  // Single item smart-paste
+  const handleSingleParse = () => {
+    if (!rawText.trim()) return;
     import("@/lib/affiliate-parser").then(({ parseAffiliateInput, suggestCategory }) => {
       const result = parseAffiliateInput(rawText);
       if (result.urls.length > 0 && !link) setLink(result.urls[0]);
@@ -795,11 +890,10 @@ function AddAffiliateForm({ onAdd }: { onAdd: (a: AffiliateItem) => void }) {
       if (result.brand && !brand) setBrand(result.brand);
       const suggested = suggestCategory(rawText, result.urls[0]);
       if (suggested !== "OTHER" && category === "OTHER") setCategory(suggested);
-      setParsed(true);
     });
   };
 
-  const handleSubmit = async () => {
+  const handleSingleSubmit = async () => {
     if (!name.trim()) {
       setError("Name is required");
       return;
@@ -846,68 +940,195 @@ function AddAffiliateForm({ onAdd }: { onAdd: (a: AffiliateItem) => void }) {
   };
 
   return (
-    <div className="space-y-3">
+    <div
+      className="space-y-3 p-4 rounded-xl"
+      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
+    >
       {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
 
-      {/* Smart paste area */}
-      <div>
-        <textarea
-          value={rawText}
-          onChange={(e) => { setRawText(e.target.value); setParsed(false); }}
-          onBlur={handleParse}
-          rows={3}
-          placeholder="Paste your affiliate link, referral code, or promo text here..."
-          className="textarea-dark w-full resize-none"
-        />
-        <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>
-          We&apos;ll auto-detect links, codes, and categories
-        </p>
+      {/* Mode toggle */}
+      <div className="flex rounded-lg overflow-hidden" style={{ background: "rgba(36,63,22,0.06)" }}>
+        <button
+          onClick={() => { setMode("paste"); setError(""); }}
+          className="flex-1 py-2 text-xs font-medium transition-all"
+          style={{
+            background: mode === "paste" ? "var(--brand)" : "transparent",
+            color: mode === "paste" ? "#ffffff" : "var(--text-muted)",
+          }}
+        >
+          Bulk Paste
+        </button>
+        <button
+          onClick={() => { setMode("single"); setError(""); }}
+          className="flex-1 py-2 text-xs font-medium transition-all"
+          style={{
+            background: mode === "single" ? "var(--brand)" : "transparent",
+            color: mode === "single" ? "#ffffff" : "var(--text-muted)",
+          }}
+        >
+          Add One
+        </button>
       </div>
 
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Item name *" className={inputCls} />
-      <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand name (optional)" className={inputCls} />
-
-      <div className="relative">
-        <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Affiliate / referral link" className={inputCls} />
-        {link && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.15)", color: "#528531" }}>
-            Link
-          </span>
-        )}
-      </div>
-
-      <div className="relative">
-        <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Discount / promo code (e.g. ROYAL20)" className={inputCls} />
-        {referralCode && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(154,123,46,0.15)", color: "#9A7B2E" }}>
-            Code
-          </span>
-        )}
-      </div>
-
-      <select
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        className="select-dark w-full"
-      >
-        {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-
-      <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} placeholder="Description (optional)" className="textarea-dark w-full resize-none" />
-
-      <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
-      <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
-
-      <button
-        onClick={handleSubmit}
-        disabled={submitting}
-        className="w-full py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
-        style={{ color: "#ffffff" }}
-      >
-        {submitting ? "Saving..." : "Add Affiliate Item"}
-      </button>
+      {mode === "paste" ? (
+        /* ── Bulk Paste Mode ── */
+        <>
+          {!bulkParsed ? (
+            <>
+              <textarea
+                value={rawText}
+                onChange={(e) => setRawText(e.target.value)}
+                rows={6}
+                placeholder={"Paste your affiliate links & codes here — one per line:\n\nhttps://myprotein.com/ref/ROYAL20\nhttps://gymshark.com?ref=abc GYMCODE15\nhttps://whoop.com/join/xyz"}
+                className="textarea-dark w-full resize-none"
+              />
+              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                One link or code per line. We&apos;ll auto-detect brands and categories.
+              </p>
+              <button
+                onClick={handleBulkParse}
+                disabled={!rawText.trim()}
+                className="w-full py-2.5 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
+                style={{ color: "#ffffff" }}
+              >
+                Detect Items
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Review detected items */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                  {bulkItems.filter((b) => b.included).length} of {bulkItems.length} items selected
+                </p>
+                {bulkItems.map((item, i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl p-3 space-y-2 transition-opacity"
+                    style={{
+                      background: item.included ? "var(--surface)" : "rgba(36,63,22,0.02)",
+                      border: "1px solid rgba(36,63,22,0.10)",
+                      opacity: item.included ? 1 : 0.5,
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={item.included}
+                        onChange={(e) => updateBulkItem(i, "included", e.target.checked)}
+                        className="rounded"
+                      />
+                      <input
+                        value={item.name}
+                        onChange={(e) => updateBulkItem(i, "name", e.target.value)}
+                        placeholder="Name *"
+                        className="flex-1 text-sm font-medium bg-transparent outline-none"
+                        style={{ color: "var(--text)" }}
+                      />
+                      <select
+                        value={item.category}
+                        onChange={(e) => updateBulkItem(i, "category", e.target.value)}
+                        className="text-[10px] px-2 py-1 rounded-full border-none outline-none"
+                        style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
+                      >
+                        {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex gap-2 text-[10px] flex-wrap" style={{ color: "var(--text-muted)" }}>
+                      {item.link && (
+                        <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}>
+                          <HiLink className="w-2.5 h-2.5" />
+                          {(() => { try { return new URL(item.link).hostname.replace(/^www\./, ""); } catch { return "link"; } })()}
+                        </span>
+                      )}
+                      {item.referralCode && (
+                        <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(154,123,46,0.12)", color: "#9A7B2E" }}>
+                          {item.referralCode}
+                        </span>
+                      )}
+                      {item.brand && (
+                        <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}>
+                          {item.brand}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setBulkParsed(false); setBulkItems([]); }}
+                  className="flex-1 py-2 rounded-xl text-sm font-medium"
+                  style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={handleBulkSubmit}
+                  disabled={bulkSubmitting || bulkItems.filter((b) => b.included).length === 0}
+                  className="flex-1 py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
+                  style={{ color: "#ffffff" }}
+                >
+                  {bulkSubmitting ? "Saving..." : `Save ${bulkItems.filter((b) => b.included).length} Items`}
+                </button>
+              </div>
+            </>
+          )}
+        </>
+      ) : (
+        /* ── Single Item Mode ── */
+        <>
+          <div>
+            <textarea
+              value={rawText}
+              onChange={(e) => setRawText(e.target.value)}
+              onBlur={handleSingleParse}
+              rows={2}
+              placeholder="Paste link or promo text to auto-fill..."
+              className="textarea-dark w-full resize-none"
+            />
+            <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+              We&apos;ll auto-detect links, codes, and categories
+            </p>
+          </div>
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Item name *" className={inputCls} />
+          <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand name (optional)" className={inputCls} />
+          <div className="relative">
+            <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Affiliate / referral link" className={inputCls} />
+            {link && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.15)", color: "#528531" }}>
+                Link
+              </span>
+            )}
+          </div>
+          <div className="relative">
+            <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Discount / promo code (e.g. ROYAL20)" className={inputCls} />
+            {referralCode && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(154,123,46,0.15)", color: "#9A7B2E" }}>
+                Code
+              </span>
+            )}
+          </div>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} className="select-dark w-full">
+            {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} placeholder="Description (optional)" className="textarea-dark w-full resize-none" />
+          <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
+          <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
+          <button
+            onClick={handleSingleSubmit}
+            disabled={submitting}
+            className="w-full py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
+            style={{ color: "#ffffff" }}
+          >
+            {submitting ? "Saving..." : "Add Affiliate Item"}
+          </button>
+        </>
+      )}
     </div>
   );
 }

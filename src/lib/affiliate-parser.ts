@@ -180,6 +180,84 @@ export function parseAffiliateInput(rawText: string): ParsedAffiliateInput {
 }
 
 /**
+ * A single detected affiliate item from bulk text parsing.
+ */
+export interface DetectedAffiliateItem {
+  name: string;
+  brand: string | null;
+  link: string | null;
+  referralCode: string | null;
+  category: AffiliateCategory;
+}
+
+/**
+ * Parse bulk pasted text and return multiple affiliate items.
+ * Splits on newlines — each line with a URL or code becomes an item.
+ * Lines without URLs or codes are skipped.
+ */
+export function parseBulkAffiliateInput(rawText: string): DetectedAffiliateItem[] {
+  const text = rawText.trim();
+  if (!text) return [];
+
+  // Split on newlines; each non-empty line is a potential item
+  const lines = text.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+  const items: DetectedAffiliateItem[] = [];
+
+  for (const line of lines) {
+    const urls = line.match(URL_REGEX) || [];
+    const textWithoutUrls = line.replace(URL_REGEX, " ");
+    const rawCodes = textWithoutUrls.match(CODE_REGEX) || [];
+    const codes = rawCodes.filter((code) => {
+      if (CODE_EXCLUSIONS.has(code)) return false;
+      return /\d/.test(code) || code.length >= 4;
+    });
+
+    const url = urls[0] || null;
+    const code = codes[0] || null;
+
+    // Skip lines with no URL and no code
+    if (!url && !code) continue;
+
+    let brand: string | null = null;
+    if (url) {
+      const domain = extractDomain(url);
+      if (domain) brand = brandFromDomain(domain);
+    }
+
+    const category = suggestCategory(line, url || undefined);
+
+    // Generate a name from brand + category, or from URL domain, or from code
+    let name = "";
+    if (brand && brand.toLowerCase() !== "com") {
+      name = brand;
+      const catLabel = CATEGORY_LABEL_MAP[category];
+      if (catLabel && category !== "OTHER") name += ` ${catLabel}`;
+    } else if (url) {
+      const domain = extractDomain(url);
+      name = domain ? domain.split(".").slice(-2, -1)[0] || "Affiliate Link" : "Affiliate Link";
+      name = name.charAt(0).toUpperCase() + name.slice(1);
+    } else if (code) {
+      name = `Code: ${code}`;
+    }
+
+    items.push({ name, brand, link: url, referralCode: code, category });
+  }
+
+  return items;
+}
+
+const CATEGORY_LABEL_MAP: Record<AffiliateCategory, string> = {
+  SUPPLEMENTS: "Supplements",
+  WELLNESS_ACCESSORIES: "Wellness",
+  GYM_ACCESSORIES: "Gym Gear",
+  RECOVERY_TOOLS: "Recovery",
+  APPAREL: "Apparel",
+  NUTRITION: "Nutrition",
+  TECH_WEARABLES: "Tech",
+  OTHER: "",
+};
+
+/**
  * Suggest an affiliate category based on text content and/or URL.
  */
 export function suggestCategory(text: string, url?: string): AffiliateCategory {
