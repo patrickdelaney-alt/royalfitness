@@ -87,6 +87,9 @@ type Tab = "meals" | "workouts" | "supplements" | "accessories" | "wellness";
 type AnyItem = SavedMeal | SavedWorkout | Supplement | Accessory | SavedWellnessItem;
 
 const inputCls = "input-dark w-full";
+// TODO(catalog-taxonomy): Run a DB migration to backfill `tags` from legacy `type`/`activityType`,
+// then remove legacy field writes + fallback UI logic once reads are fully tag-based.
+
 
 const TABS: { key: Tab; label: string; emoji: string }[] = [
   { key: "meals", label: "Meals", emoji: "🍽️" },
@@ -103,6 +106,19 @@ const CATEGORY_GRADIENTS: Record<Tab, string> = {
   accessories: "from-purple-600/80 to-pink-700/80",
   wellness: "from-teal-600/80 to-cyan-700/80",
 };
+
+const getTaxonomyTags = (item: AnyItem, tab: Tab): string[] => {
+  if (Array.isArray(item.tags) && item.tags.length > 0) {
+    return item.tags;
+  }
+
+  // Migration-safe fallback: derive taxonomy from legacy fields until DB backfill is complete.
+  const legacyTags: string[] = [];
+  if (tab === "accessories" && "type" in item && item.type) legacyTags.push(item.type);
+  if (tab === "wellness" && "activityType" in item && item.activityType) legacyTags.push(item.activityType);
+  return legacyTags;
+};
+
 
 // ── Photo Upload Component ────────────────────────────────────────────────────
 
@@ -404,12 +420,12 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
-          type: type.trim() || undefined,
+          type: type.trim() || undefined, // legacy write for backward-compatible reads
           link: link.trim() || undefined,
           referralCode: referralCode.trim() || undefined,
           photoUrl: photoUrl || undefined,
           notes: notes.trim() || undefined,
-          tags: [],
+          tags: type.trim() ? [type.trim()] : [],
         }),
       });
       if (!res.ok) {
@@ -438,7 +454,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
       )}
       <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Accessory name *" className={inputCls} />
-      <input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (e.g. Recovery, Gear)" className={inputCls} />
+      <input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (legacy optional — also auto-added to tags)" className={inputCls} />
       <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Link (optional)" type="url" className={inputCls} />
       <div className="relative">
         <input
@@ -493,13 +509,13 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
-          activityType: activityType.trim() || undefined,
+          activityType: activityType.trim() || undefined, // legacy write for backward-compatible reads
           durationMinutes: durationMinutes ? parseInt(durationMinutes) : undefined,
           link: link.trim() || undefined,
           referralCode: referralCode.trim() || undefined,
           photoUrl: photoUrl || undefined,
           notes: notes.trim() || undefined,
-          tags: [],
+          tags: activityType.trim() ? [activityType.trim()] : [],
         }),
       });
       if (!res.ok) {
@@ -529,7 +545,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
       <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Wellness item name *" className={inputCls} />
       <div className="grid grid-cols-2 gap-2">
-        <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="Activity type (e.g. Yoga)" className={inputCls} />
+        <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="Activity type (legacy optional — also auto-added to tags)" className={inputCls} />
         <input
           type="number"
           value={durationMinutes}
@@ -726,16 +742,11 @@ function ItemDetailModal({
                   {(item as Supplement).brand}
                 </span>
               )}
-              {tab === "accessories" && (item as Accessory).type && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}>
-                  {(item as Accessory).type}
+              {getTaxonomyTags(item, tab).map((tag) => (
+                <span key={tag} className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}>
+                  {tag}
                 </span>
-              )}
-              {tab === "wellness" && (item as SavedWellnessItem).activityType && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}>
-                  {(item as SavedWellnessItem).activityType}
-                </span>
-              )}
+              ))}
             </div>
           </div>
 
@@ -1167,6 +1178,14 @@ export default function CatalogPage() {
                     >
                       <HiLink className="w-2.5 h-2.5" />
                       Link
+                    </span>
+                  )}
+                  {getTaxonomyTags(item, tab)[0] && (
+                    <span
+                      className="text-[10px] px-2 py-0.5 rounded-full"
+                      style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}
+                    >
+                      {getTaxonomyTags(item, tab)[0]}
                     </span>
                   )}
                 </div>
