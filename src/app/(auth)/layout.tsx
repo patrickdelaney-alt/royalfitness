@@ -38,9 +38,6 @@ export default function AuthLayout({
             >
               Royal
             </h1>
-            <span className="eyebrow" style={{ fontSize: "8px", padding: "4px 10px" }}>
-              Beta
-            </span>
           </div>
         </div>
         <p className="text-sm" style={{ color: "var(--text-muted)", lineHeight: 1.65 }}>

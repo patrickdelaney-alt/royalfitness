@@ -16,7 +16,7 @@ export async function sendInviteEmail(
     await resend.emails.send({
       from: 'Royal Fitness <noreply@royalwellness.app>',
       to: email,
-      subject: "You're approved! Welcome to Royal Fitness beta",
+      subject: "You're approved! Welcome to Royal Fitness",
       html: `
         <h2>Welcome to Royal Fitness${displayName}!</h2>
         <p>Great news — your spot has been approved! You're ready to sign up and start tracking your fitness journey.</p>

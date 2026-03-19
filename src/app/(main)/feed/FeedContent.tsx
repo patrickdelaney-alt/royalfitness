@@ -138,7 +138,6 @@ export default function FeedContent() {
           <h1 className="text-xl font-light tracking-tight" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>
             Royal
           </h1>
-          <span className="eyebrow" style={{ fontSize: "8px", padding: "3px 8px" }}>Beta</span>
         </div>
         {/* Search shortcut — always visible at top-right so Explore is reachable
             even if the bottom nav is reshuffled in future changes. */}
