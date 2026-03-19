@@ -1,7 +1,5 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function sendInviteEmail(
   email: string,
   firstName?: string | null
@@ -11,6 +9,7 @@ export async function sendInviteEmail(
     return;
   }
 
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const displayName = firstName ? ` ${firstName}` : '';
 
   try {
