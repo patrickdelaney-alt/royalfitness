@@ -38,6 +38,7 @@ model User {
   supplements      Supplement[]
   wellnessAccessories WellnessAccessory[]
   savedWellness    SavedWellness[]
+  affiliateItems   AffiliateItem[]
 
   stepsEntries   StepsEntry[]
   achievements   UserAchievement[]
@@ -127,6 +128,7 @@ enum PostType {
   WELLNESS
   GENERAL
   CHECKIN
+  AFFILIATE
 }
 
 enum Visibility {
@@ -157,9 +159,10 @@ model Post {
   gymId       String?
   gym         Gym?       @relation(fields: [gymId], references: [id])
 
-  workoutDetail  WorkoutDetail?
-  mealDetail     MealDetail?
-  wellnessDetail WellnessDetail?
+  workoutDetail    WorkoutDetail?
+  mealDetail       MealDetail?
+  wellnessDetail   WellnessDetail?
+  affiliateDetail  AffiliateDetail?
 
   comments    Comment[]
   likes       Like[]
@@ -237,6 +240,19 @@ model WellnessDetail {
   notes           String?
 }
 
+model AffiliateDetail {
+  id              String            @id @default(cuid())
+  postId          String            @unique
+  post            Post              @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  affiliateItemId String?
+  title           String
+  brand           String?
+  link            String?
+  referralCode    String?
+  category        AffiliateCategory @default(OTHER)
+}
+
 // ─── EXTERNAL CONTENT ────────────────────────────────────────────
 
 model ExternalContent {
@@ -312,6 +328,17 @@ model GymMembership {
 }
 
 // ─── CATALOGS ────────────────────────────────────────────────────
+
+enum AffiliateCategory {
+  SUPPLEMENTS
+  WELLNESS_ACCESSORIES
+  GYM_ACCESSORIES
+  RECOVERY_TOOLS
+  APPAREL
+  NUTRITION
+  TECH_WEARABLES
+  OTHER
+}
 
 model SavedMeal {
   id              String   @id @default(cuid())
@@ -395,6 +422,23 @@ model SavedWellness {
   notes           String?
   isPrivate       Boolean  @default(false)
   createdAt       DateTime @default(now())
+}
+
+model AffiliateItem {
+  id           String            @id @default(cuid())
+  userId       String
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name         String
+  brand        String?
+  description  String?
+  link         String?
+  referralCode String?
+  category     AffiliateCategory @default(OTHER)
+  photoUrl     String?
+  tags         String[]          @default([])
+  isPrivate    Boolean           @default(false)
+  createdAt    DateTime          @default(now())
 }
 
 // ─── ACHIEVEMENTS ────────────────────────────────────────────────
