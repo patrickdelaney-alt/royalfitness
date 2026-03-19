@@ -74,9 +74,10 @@ function EyeOffIcon() {
 interface Props {
   appleEnabled: boolean;
   googleEnabled: boolean;
+  waitlistGated: boolean;
 }
 
-export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
+export default function SignUpClient({ appleEnabled, googleEnabled, waitlistGated }: Props) {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -161,6 +162,44 @@ export default function SignUpClient({ appleEnabled, googleEnabled }: Props) {
   }
 
   const hasOAuth = appleEnabled || googleEnabled;
+
+  if (waitlistGated) {
+    return (
+      <div className="text-center">
+        <div className="mb-4 flex items-center justify-center">
+          <span
+            className="w-3 h-3 rounded-full animate-pulse"
+            style={{ background: "var(--brand)" }}
+          />
+        </div>
+        <h2
+          className="text-2xl font-normal mb-3"
+          style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}
+        >
+          Signups are invite-only
+        </h2>
+        <p
+          className="text-sm mb-6"
+          style={{ color: "var(--text-muted)", lineHeight: 1.65 }}
+        >
+          Royal is currently in private beta. Join the waitlist and we&apos;ll
+          reach out when your spot opens up.
+        </p>
+        <Link
+          href="/waitlist"
+          className="btn-primary w-full justify-center block text-center mb-4"
+        >
+          Join the Waitlist
+        </Link>
+        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          Already have an account?{" "}
+          <Link href="/signin" className="font-bold" style={{ color: "var(--brand)" }}>
+            Sign in
+          </Link>
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>
