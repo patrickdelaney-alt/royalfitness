@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = req.nextUrl;
     const cursor = searchParams.get("cursor") || undefined;
     const limit = Math.min(Math.max(parseInt(searchParams.get("limit") || "20", 10), 1), 50);
-    const type = searchParams.get("type") as "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN" | null;
+    const type = searchParams.get("type") as "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN" | "AFFILIATE" | null;
     const gymId = searchParams.get("gymId") || undefined;
 
     // Build where clause
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     const where: Record<string, any> = {};
 
     // Filter by post type
-    if (type && ["WORKOUT", "MEAL", "WELLNESS", "GENERAL", "CHECKIN"].includes(type)) {
+    if (type && ["WORKOUT", "MEAL", "WELLNESS", "GENERAL", "CHECKIN", "AFFILIATE"].includes(type)) {
       where.type = type;
     }
 
@@ -91,6 +91,7 @@ export async function GET(req: NextRequest) {
       },
       mealDetail: true,
       wellnessDetail: true,
+      affiliateDetail: true,
       gym: { select: { id: true, name: true } },
       externalContent: true,
       _count: { select: { likes: true, comments: true } },
@@ -185,6 +186,12 @@ export async function POST(req: NextRequest) {
     if (data.type === "WELLNESS" && !data.wellness) {
       return NextResponse.json(
         { error: "Wellness details are required for WELLNESS posts" },
+        { status: 400 }
+      );
+    }
+    if (data.type === "AFFILIATE" && !data.affiliate) {
+      return NextResponse.json(
+        { error: "Affiliate details are required for AFFILIATE posts" },
         { status: 400 }
       );
     }
@@ -303,6 +310,20 @@ export async function POST(req: NextRequest) {
         });
       }
 
+      if (data.type === "AFFILIATE" && data.affiliate) {
+        await tx.affiliateDetail.create({
+          data: {
+            postId: newPost.id,
+            affiliateItemId: data.affiliate.affiliateItemId || null,
+            title: data.affiliate.title,
+            brand: data.affiliate.brand || null,
+            link: data.affiliate.link || null,
+            referralCode: data.affiliate.referralCode || null,
+            category: data.affiliate.category,
+          },
+        });
+      }
+
       // Create external content if URL is provided
       if (data.embed && parsedEmbed) {
         await tx.externalContent.create({
@@ -346,6 +367,7 @@ export async function POST(req: NextRequest) {
           },
           mealDetail: true,
           wellnessDetail: true,
+          affiliateDetail: true,
           gym: { select: { id: true, name: true } },
           externalContent: true,
           _count: { select: { likes: true, comments: true } },

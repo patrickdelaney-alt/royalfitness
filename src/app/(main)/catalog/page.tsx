@@ -82,9 +82,22 @@ interface SavedWellnessItem {
   createdAt: string;
 }
 
-type Tab = "meals" | "workouts" | "supplements" | "accessories" | "wellness";
+interface AffiliateItem {
+  id: string;
+  name: string;
+  brand: string | null;
+  description: string | null;
+  link: string | null;
+  referralCode: string | null;
+  category: string;
+  photoUrl: string | null;
+  tags: string[];
+  createdAt: string;
+}
 
-type AnyItem = SavedMeal | SavedWorkout | Supplement | Accessory | SavedWellnessItem;
+type Tab = "meals" | "workouts" | "supplements" | "accessories" | "wellness" | "affiliates";
+
+type AnyItem = SavedMeal | SavedWorkout | Supplement | Accessory | SavedWellnessItem | AffiliateItem;
 
 const inputCls = "input-dark w-full";
 const TAG_LIMITS = {
@@ -98,6 +111,7 @@ const TABS: { key: Tab; label: string; emoji: string }[] = [
   { key: "supplements", label: "Supps", emoji: "💊" },
   { key: "accessories", label: "Gear", emoji: "⚡" },
   { key: "wellness", label: "Wellness", emoji: "🧘" },
+  { key: "affiliates", label: "Affiliate", emoji: "🔗" },
 ];
 
 const CATEGORY_GRADIENTS: Record<Tab, string> = {
@@ -106,6 +120,7 @@ const CATEGORY_GRADIENTS: Record<Tab, string> = {
   supplements: "from-green-600/80 to-emerald-700/80",
   accessories: "from-purple-600/80 to-pink-700/80",
   wellness: "from-teal-600/80 to-cyan-700/80",
+  affiliates: "from-amber-600/80 to-yellow-700/80",
 };
 
 const parseTagsText = (tagsText: string) =>
@@ -744,6 +759,380 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
   );
 }
 
+// ── Add Affiliate Form ────────────────────────────────────────────────────────
+
+const AFFILIATE_CATEGORY_OPTIONS = [
+  { value: "OTHER", label: "Other" },
+  { value: "SUPPLEMENTS", label: "Supplements" },
+  { value: "WELLNESS_ACCESSORIES", label: "Wellness Accessories" },
+  { value: "GYM_ACCESSORIES", label: "Gym Accessories" },
+  { value: "RECOVERY_TOOLS", label: "Recovery Tools" },
+  { value: "APPAREL", label: "Apparel" },
+  { value: "NUTRITION", label: "Nutrition" },
+  { value: "TECH_WEARABLES", label: "Tech / Wearables" },
+];
+
+interface BulkItem {
+  name: string;
+  brand: string | null;
+  link: string | null;
+  referralCode: string | null;
+  category: string;
+  included: boolean;
+}
+
+function AddAffiliateForm({ onAdd }: { onAdd: (a: AffiliateItem) => void }) {
+  // Mode: "paste" (bulk) or "single" (manual single item)
+  const [mode, setMode] = useState<"paste" | "single">("paste");
+
+  // Bulk paste state
+  const [rawText, setRawText] = useState("");
+  const [bulkItems, setBulkItems] = useState<BulkItem[]>([]);
+  const [bulkParsed, setBulkParsed] = useState(false);
+  const [bulkSubmitting, setBulkSubmitting] = useState(false);
+
+  // Single item state
+  const [name, setName] = useState("");
+  const [brand, setBrand] = useState("");
+  const [link, setLink] = useState("");
+  const [referralCode, setReferralCode] = useState("");
+  const [category, setCategory] = useState("OTHER");
+  const [description, setDescription] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [tagsText, setTagsText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const [error, setError] = useState("");
+
+  // Parse bulk text
+  const handleBulkParse = async () => {
+    if (!rawText.trim()) return;
+    setError("");
+    const { parseBulkAffiliateInput } = await import("@/lib/affiliate-parser");
+    const detected = parseBulkAffiliateInput(rawText);
+    if (detected.length === 0) {
+      setError("No links or codes detected. Try pasting one per line.");
+      return;
+    }
+    setBulkItems(
+      detected.map((d) => ({
+        name: d.name,
+        brand: d.brand,
+        link: d.link,
+        referralCode: d.referralCode,
+        category: d.category,
+        included: true,
+      }))
+    );
+    setBulkParsed(true);
+  };
+
+  const updateBulkItem = (index: number, field: keyof BulkItem, value: string | boolean) => {
+    setBulkItems((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+    );
+  };
+
+  const handleBulkSubmit = async () => {
+    const toSave = bulkItems.filter((b) => b.included);
+    if (toSave.length === 0) {
+      setError("Select at least one item to save");
+      return;
+    }
+    const invalid = toSave.find((b) => !b.name.trim());
+    if (invalid) {
+      setError("Every item needs a name");
+      return;
+    }
+    setBulkSubmitting(true);
+    setError("");
+    let savedCount = 0;
+    for (const item of toSave) {
+      try {
+        const res = await fetch("/api/catalog/affiliates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: item.name.trim(),
+            brand: item.brand?.trim() || undefined,
+            link: item.link?.trim() || undefined,
+            referralCode: item.referralCode?.trim() || undefined,
+            category: item.category,
+          }),
+        });
+        if (res.ok) {
+          const saved = await res.json();
+          onAdd(saved);
+          savedCount++;
+        }
+      } catch {
+        /* continue with next */
+      }
+    }
+    setBulkSubmitting(false);
+    if (savedCount > 0) {
+      setRawText("");
+      setBulkItems([]);
+      setBulkParsed(false);
+    }
+    if (savedCount < toSave.length) {
+      setError(`Saved ${savedCount}/${toSave.length} items. Some failed.`);
+    }
+  };
+
+  // Single item smart-paste
+  const handleSingleParse = () => {
+    if (!rawText.trim()) return;
+    import("@/lib/affiliate-parser").then(({ parseAffiliateInput, suggestCategory }) => {
+      const result = parseAffiliateInput(rawText);
+      if (result.urls.length > 0 && !link) setLink(result.urls[0]);
+      if (result.codes.length > 0 && !referralCode) setReferralCode(result.codes[0]);
+      if (result.brand && !brand) setBrand(result.brand);
+      const suggested = suggestCategory(rawText, result.urls[0]);
+      if (suggested !== "OTHER" && category === "OTHER") setCategory(suggested);
+    });
+  };
+
+  const handleSingleSubmit = async () => {
+    if (!name.trim()) {
+      setError("Name is required");
+      return;
+    }
+    if (!link.trim() && !referralCode.trim()) {
+      setError("Add a link or code");
+      return;
+    }
+    const parsedTags = dedupeTags(parseTagsText(tagsText));
+    const tagsError = getTagValidationError(parsedTags);
+    if (tagsError) {
+      setError(tagsError);
+      return;
+    }
+    setSubmitting(true);
+    setError("");
+    try {
+      const res = await fetch("/api/catalog/affiliates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          brand: brand.trim() || undefined,
+          description: description.trim() || undefined,
+          link: link.trim() || undefined,
+          referralCode: referralCode.trim() || undefined,
+          category,
+          photoUrl: photoUrl || undefined,
+          tags: parsedTags,
+        }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        setError(d.error || "Failed");
+        return;
+      }
+      const item = await res.json();
+      onAdd(item);
+    } catch {
+      setError("Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      className="space-y-3 p-4 rounded-xl"
+      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
+    >
+      {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
+
+      {/* Mode toggle */}
+      <div className="flex rounded-lg overflow-hidden" style={{ background: "rgba(36,63,22,0.06)" }}>
+        <button
+          onClick={() => { setMode("paste"); setError(""); }}
+          className="flex-1 py-2 text-xs font-medium transition-all"
+          style={{
+            background: mode === "paste" ? "var(--brand)" : "transparent",
+            color: mode === "paste" ? "#ffffff" : "var(--text-muted)",
+          }}
+        >
+          Bulk Paste
+        </button>
+        <button
+          onClick={() => { setMode("single"); setError(""); }}
+          className="flex-1 py-2 text-xs font-medium transition-all"
+          style={{
+            background: mode === "single" ? "var(--brand)" : "transparent",
+            color: mode === "single" ? "#ffffff" : "var(--text-muted)",
+          }}
+        >
+          Add One
+        </button>
+      </div>
+
+      {mode === "paste" ? (
+        /* ── Bulk Paste Mode ── */
+        <>
+          {!bulkParsed ? (
+            <>
+              <textarea
+                value={rawText}
+                onChange={(e) => setRawText(e.target.value)}
+                rows={6}
+                placeholder={"Paste your affiliate links & codes here — one per line:\n\nhttps://myprotein.com/ref/ROYAL20\nhttps://gymshark.com?ref=abc GYMCODE15\nhttps://whoop.com/join/xyz"}
+                className="textarea-dark w-full resize-none"
+              />
+              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                One link or code per line. We&apos;ll auto-detect brands and categories.
+              </p>
+              <button
+                onClick={handleBulkParse}
+                disabled={!rawText.trim()}
+                className="w-full py-2.5 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
+                style={{ color: "#ffffff" }}
+              >
+                Detect Items
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Review detected items */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                  {bulkItems.filter((b) => b.included).length} of {bulkItems.length} items selected
+                </p>
+                {bulkItems.map((item, i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl p-3 space-y-2 transition-opacity"
+                    style={{
+                      background: item.included ? "var(--surface)" : "rgba(36,63,22,0.02)",
+                      border: "1px solid rgba(36,63,22,0.10)",
+                      opacity: item.included ? 1 : 0.5,
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={item.included}
+                        onChange={(e) => updateBulkItem(i, "included", e.target.checked)}
+                        className="rounded"
+                      />
+                      <input
+                        value={item.name}
+                        onChange={(e) => updateBulkItem(i, "name", e.target.value)}
+                        placeholder="Name *"
+                        className="flex-1 text-sm font-medium bg-transparent outline-none"
+                        style={{ color: "var(--text)" }}
+                      />
+                      <select
+                        value={item.category}
+                        onChange={(e) => updateBulkItem(i, "category", e.target.value)}
+                        className="text-[10px] px-2 py-1 rounded-full border-none outline-none"
+                        style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
+                      >
+                        {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex gap-2 text-[10px] flex-wrap" style={{ color: "var(--text-muted)" }}>
+                      {item.link && (
+                        <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}>
+                          <HiLink className="w-2.5 h-2.5" />
+                          {(() => { try { return new URL(item.link).hostname.replace(/^www\./, ""); } catch { return "link"; } })()}
+                        </span>
+                      )}
+                      {item.referralCode && (
+                        <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(154,123,46,0.12)", color: "#9A7B2E" }}>
+                          {item.referralCode}
+                        </span>
+                      )}
+                      {item.brand && (
+                        <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}>
+                          {item.brand}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setBulkParsed(false); setBulkItems([]); }}
+                  className="flex-1 py-2 rounded-xl text-sm font-medium"
+                  style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={handleBulkSubmit}
+                  disabled={bulkSubmitting || bulkItems.filter((b) => b.included).length === 0}
+                  className="flex-1 py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
+                  style={{ color: "#ffffff" }}
+                >
+                  {bulkSubmitting ? "Saving..." : `Save ${bulkItems.filter((b) => b.included).length} Items`}
+                </button>
+              </div>
+            </>
+          )}
+        </>
+      ) : (
+        /* ── Single Item Mode ── */
+        <>
+          <div>
+            <textarea
+              value={rawText}
+              onChange={(e) => setRawText(e.target.value)}
+              onBlur={handleSingleParse}
+              rows={2}
+              placeholder="Paste link or promo text to auto-fill..."
+              className="textarea-dark w-full resize-none"
+            />
+            <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+              We&apos;ll auto-detect links, codes, and categories
+            </p>
+          </div>
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Item name *" className={inputCls} />
+          <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand name (optional)" className={inputCls} />
+          <div className="relative">
+            <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Affiliate / referral link" className={inputCls} />
+            {link && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.15)", color: "#528531" }}>
+                Link
+              </span>
+            )}
+          </div>
+          <div className="relative">
+            <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Discount / promo code (e.g. ROYAL20)" className={inputCls} />
+            {referralCode && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(154,123,46,0.15)", color: "#9A7B2E" }}>
+                Code
+              </span>
+            )}
+          </div>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} className="select-dark w-full">
+            {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} placeholder="Description (optional)" className="textarea-dark w-full resize-none" />
+          <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
+          <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
+          <button
+            onClick={handleSingleSubmit}
+            disabled={submitting}
+            className="w-full py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
+            style={{ color: "#ffffff" }}
+          >
+            {submitting ? "Saving..." : "Add Affiliate Item"}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Detail Modal ──────────────────────────────────────────────────────────────
 
 function ItemDetailModal({
@@ -910,6 +1299,21 @@ function ItemDetailModal({
             </p>
           )}
 
+          {/* Affiliate category + description */}
+          {tab === "affiliates" && (item as AffiliateItem).category && (item as AffiliateItem).category !== "OTHER" && (
+            <span
+              className="text-xs px-2.5 py-0.5 rounded-full inline-block"
+              style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
+            >
+              {AFFILIATE_CATEGORY_OPTIONS.find((o) => o.value === (item as AffiliateItem).category)?.label || (item as AffiliateItem).category}
+            </span>
+          )}
+          {tab === "affiliates" && (item as AffiliateItem).description && (
+            <p className="text-sm" style={{ color: "var(--text)" }}>
+              {(item as AffiliateItem).description}
+            </p>
+          )}
+
           {/* Notes */}
           {notes && (
             <p className="text-sm" style={{ color: "var(--text)" }}>
@@ -989,6 +1393,7 @@ export default function CatalogPage() {
   const [supplements, setSupplements] = useState<Supplement[]>([]);
   const [accessories, setAccessories] = useState<Accessory[]>([]);
   const [wellness, setWellness] = useState<SavedWellnessItem[]>([]);
+  const [affiliates, setAffiliates] = useState<AffiliateItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const endpointMap: Record<Tab, string> = {
@@ -997,6 +1402,7 @@ export default function CatalogPage() {
     supplements: "/api/catalog/supplements",
     accessories: "/api/catalog/accessories",
     wellness: "/api/catalog/wellness",
+    affiliates: "/api/catalog/affiliates",
   };
 
   useEffect(() => {
@@ -1010,6 +1416,7 @@ export default function CatalogPage() {
         else if (tab === "supplements") setSupplements(Array.isArray(data) ? data : []);
         else if (tab === "accessories") setAccessories(Array.isArray(data) ? data : []);
         else if (tab === "wellness") setWellness(Array.isArray(data) ? data : []);
+        else if (tab === "affiliates") setAffiliates(Array.isArray(data) ? data : []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -1024,6 +1431,7 @@ export default function CatalogPage() {
       else if (tab === "supplements") setSupplements((p) => p.filter((s) => s.id !== id));
       else if (tab === "accessories") setAccessories((p) => p.filter((a) => a.id !== id));
       else if (tab === "wellness") setWellness((p) => p.filter((w) => w.id !== id));
+      else if (tab === "affiliates") setAffiliates((p) => p.filter((a) => a.id !== id));
     }
     setSelectedItem(null);
   };
@@ -1034,6 +1442,7 @@ export default function CatalogPage() {
     if (tab === "supplements") return supplements;
     if (tab === "accessories") return accessories;
     if (tab === "wellness") return wellness;
+    if (tab === "affiliates") return affiliates;
     return [];
   };
 
@@ -1066,6 +1475,17 @@ export default function CatalogPage() {
     }
     if (tab === "wellness" && "activityType" in item && item.activityType) {
       rawTags.push(item.activityType);
+    }
+    if (tab === "affiliates" && "brand" in item && item.brand) {
+      rawTags.push(item.brand);
+    }
+    if (tab === "affiliates" && "category" in item && item.category && item.category !== "OTHER") {
+      const catLabels: Record<string, string> = {
+        SUPPLEMENTS: "Supplements", WELLNESS_ACCESSORIES: "Wellness",
+        GYM_ACCESSORIES: "Gym Gear", RECOVERY_TOOLS: "Recovery",
+        APPAREL: "Apparel", NUTRITION: "Nutrition", TECH_WEARABLES: "Tech",
+      };
+      rawTags.push(catLabels[item.category as string] || "");
     }
 
     const seen = new Set<string>();
@@ -1189,6 +1609,14 @@ export default function CatalogPage() {
             <AddWellnessForm
               onAdd={(w) => {
                 setWellness((p) => [w, ...p]);
+                setShowForm(false);
+              }}
+            />
+          )}
+          {tab === "affiliates" && (
+            <AddAffiliateForm
+              onAdd={(a) => {
+                setAffiliates((p) => [a, ...p]);
                 setShowForm(false);
               }}
             />

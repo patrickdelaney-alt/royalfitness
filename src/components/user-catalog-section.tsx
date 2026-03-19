@@ -35,7 +35,7 @@ interface UserCatalogSectionProps {
   isOwnProfile: boolean;
 }
 
-type CatalogType = "meals" | "workouts" | "supplements" | "accessories" | "wellness";
+type CatalogType = "meals" | "workouts" | "supplements" | "accessories" | "wellness" | "affiliates";
 
 const CATALOG_TYPES: { type: CatalogType; label: string }[] = [
   { type: "meals", label: "Meals" },
@@ -43,6 +43,7 @@ const CATALOG_TYPES: { type: CatalogType; label: string }[] = [
   { type: "supplements", label: "Supps" },
   { type: "accessories", label: "Gear" },
   { type: "wellness", label: "Wellness" },
+  { type: "affiliates", label: "Affiliate" },
 ];
 
 const CATEGORY_GRADIENTS: Record<CatalogType, string> = {
@@ -51,6 +52,7 @@ const CATEGORY_GRADIENTS: Record<CatalogType, string> = {
   supplements: "from-emerald-700/70 to-emerald-900/70",
   accessories: "from-stone-600/70 to-stone-800/70",
   wellness: "from-lime-700/70 to-lime-900/70",
+  affiliates: "from-amber-600/70 to-yellow-800/70",
 };
 
 const normalizeTagLabel = (value: string) =>

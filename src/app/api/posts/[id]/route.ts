@@ -28,6 +28,7 @@ export async function GET(
         },
         mealDetail: true,
         wellnessDetail: true,
+        affiliateDetail: true,
         gym: { select: { id: true, name: true } },
         externalContent: true,
         _count: { select: { likes: true, comments: true } },

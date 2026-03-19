@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare, HiX } from "react-icons/hi";
+import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare, HiX, HiExternalLink, HiClipboardCopy } from "react-icons/hi";
 import { lightImpact } from "@/lib/haptics";
 import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
 import EmbedMedia, { type ExternalContentItem } from "@/components/embed-media";
@@ -104,6 +104,16 @@ interface WellnessDetail {
   notes: string | null;
 }
 
+interface AffiliateDetail {
+  id: string;
+  title: string;
+  brand: string | null;
+  link: string | null;
+  referralCode: string | null;
+  category: string;
+  affiliateItemId: string | null;
+}
+
 interface Comment {
   id: string;
   text: string;
@@ -118,7 +128,7 @@ interface Gym {
 
 export interface Post {
   id: string;
-  type: "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN";
+  type: "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN" | "AFFILIATE";
   caption: string | null;
   mediaUrl: string | null;
   visibility: string;
@@ -128,6 +138,7 @@ export interface Post {
   workoutDetail: WorkoutDetail | null;
   mealDetail: MealDetail | null;
   wellnessDetail: WellnessDetail | null;
+  affiliateDetail: AffiliateDetail | null;
   externalContent?: ExternalContentItem[];
   gym: Gym | null;
   likedByMe: boolean;
@@ -144,7 +155,8 @@ const TYPE_BADGE: Record<Post["type"], { bg: string; text: string; label: string
   MEAL:    { bg: "rgba(154,123,46,0.12)",   text: "#9A7B2E", label: "Meal",     emoji: "🥗" },
   WELLNESS:{ bg: "rgba(82,133,49,0.12)",  text: "#528531", label: "Wellness", emoji: "🧘" },
   GENERAL: { bg: "rgba(36,63,22,0.10)", text: "#7A7560", label: "General", emoji: "⭐" },
-  CHECKIN: { bg: "rgba(154,123,46,0.10)",  text: "#9A7B2E", label: "Check-in", emoji: "📍" },
+  CHECKIN:   { bg: "rgba(154,123,46,0.10)",  text: "#9A7B2E", label: "Check-in",  emoji: "📍" },
+  AFFILIATE: { bg: "rgba(154,123,46,0.12)",  text: "#9A7B2E", label: "Affiliate", emoji: "🔗" },
 };
 
 // ── mood label ────────────────────────────────────────────────────────────────
@@ -344,6 +356,86 @@ function WellnessSection({ detail }: { detail: WellnessDetail }) {
         )}
       </div>
 
+    </div>
+  );
+}
+
+const AFFILIATE_CATEGORY_LABELS: Record<string, string> = {
+  SUPPLEMENTS: "Supplements",
+  WELLNESS_ACCESSORIES: "Wellness",
+  GYM_ACCESSORIES: "Gym Gear",
+  RECOVERY_TOOLS: "Recovery",
+  APPAREL: "Apparel",
+  NUTRITION: "Nutrition",
+  TECH_WEARABLES: "Tech",
+  OTHER: "Other",
+};
+
+function AffiliateSection({ detail }: { detail: AffiliateDetail }) {
+  const [copied, setCopied] = useState(false);
+
+  const copyCode = () => {
+    if (detail.referralCode) {
+      navigator.clipboard.writeText(detail.referralCode);
+      setCopied(true);
+      toast.success("Code copied!");
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <div className="mt-3 space-y-2.5 text-sm">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="font-semibold text-foreground">{detail.title}</span>
+        {detail.brand && (
+          <span
+            className="text-xs px-2 py-0.5 rounded-full"
+            style={{ background: "rgba(154,123,46,0.1)", color: "#9A7B2E" }}
+          >
+            {detail.brand}
+          </span>
+        )}
+        <span
+          className="text-xs px-2 py-0.5 rounded-full"
+          style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
+        >
+          {AFFILIATE_CATEGORY_LABELS[detail.category] || detail.category}
+        </span>
+      </div>
+
+      {detail.referralCode && (
+        <button
+          onClick={copyCode}
+          className="flex items-center gap-2 w-full p-3 rounded-xl transition-all"
+          style={{
+            background: copied ? "rgba(34,197,94,0.08)" : "rgba(154,123,46,0.08)",
+            border: `1px solid ${copied ? "rgba(34,197,94,0.2)" : "rgba(154,123,46,0.15)"}`,
+          }}
+        >
+          <div className="flex-1 text-left">
+            <p className="text-xs font-medium" style={{ color: "#7A7560" }}>
+              {copied ? "Copied!" : "Tap to copy code"}
+            </p>
+            <p className="text-base font-bold tracking-wider" style={{ color: copied ? "#16a34a" : "#9A7B2E" }}>
+              {detail.referralCode}
+            </p>
+          </div>
+          <HiClipboardCopy className="w-5 h-5 flex-shrink-0" style={{ color: copied ? "#16a34a" : "#9A7B2E" }} />
+        </button>
+      )}
+
+      {detail.link && (
+        <a
+          href={detail.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold btn-gradient transition-all"
+          style={{ color: "#FDFAF5" }}
+        >
+          <HiExternalLink className="w-4 h-4" />
+          Shop Now
+        </a>
+      )}
     </div>
   );
 }
@@ -769,10 +861,11 @@ function FullPostCard({
   return (
     <article
       className={`rounded-xl border card-hover ${
-        post.type === "WORKOUT"  ? "type-border-workout"  :
-        post.type === "MEAL"     ? "type-border-meal"     :
-        post.type === "WELLNESS" ? "type-border-wellness" :
-                                   "type-border-general"
+        post.type === "WORKOUT"   ? "type-border-workout"   :
+        post.type === "MEAL"      ? "type-border-meal"      :
+        post.type === "WELLNESS"  ? "type-border-wellness"  :
+        post.type === "AFFILIATE" ? "type-border-meal"      :
+                                    "type-border-general"
       }`}
       style={{ background: "#FDFAF5", borderColor: "rgba(36,63,22,0.10)" }}
     >
@@ -1151,9 +1244,10 @@ function FullPostCard({
 
         {post.externalContent?.[0] && <EmbedMedia item={post.externalContent[0]} />}
 
-        {post.type === "WORKOUT"  && post.workoutDetail  && <WorkoutSection  detail={post.workoutDetail}  />}
-        {post.type === "MEAL"     && post.mealDetail      && <MealSection     detail={post.mealDetail}      />}
-        {post.type === "WELLNESS" && post.wellnessDetail  && <WellnessSection detail={post.wellnessDetail}  />}
+        {post.type === "WORKOUT"   && post.workoutDetail   && <WorkoutSection   detail={post.workoutDetail}   />}
+        {post.type === "MEAL"      && post.mealDetail      && <MealSection     detail={post.mealDetail}      />}
+        {post.type === "WELLNESS"  && post.wellnessDetail  && <WellnessSection detail={post.wellnessDetail}  />}
+        {post.type === "AFFILIATE" && post.affiliateDetail && <AffiliateSection detail={post.affiliateDetail} />}
       </div>
 
       {/* ── actions ── */}

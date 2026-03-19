@@ -16,8 +16,13 @@ export const signInSchema = z.object({
   password: z.string().min(1),
 });
 
+export const AFFILIATE_CATEGORIES = [
+  "SUPPLEMENTS", "WELLNESS_ACCESSORIES", "GYM_ACCESSORIES",
+  "RECOVERY_TOOLS", "APPAREL", "NUTRITION", "TECH_WEARABLES", "OTHER",
+] as const;
+
 export const createPostSchema = z.object({
-  type: z.enum(["WORKOUT", "MEAL", "WELLNESS", "GENERAL", "CHECKIN"]),
+  type: z.enum(["WORKOUT", "MEAL", "WELLNESS", "GENERAL", "CHECKIN", "AFFILIATE"]),
   caption: z.string().max(2000).optional(),
   visibility: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]).default("PUBLIC"),
   tags: z.array(z.string().max(50)).max(10).default([]),
@@ -79,6 +84,18 @@ export const createPostSchema = z.object({
       intensity: z.number().int().min(1).max(10).optional(),
       moodAfter: z.number().int().min(1).max(10).optional(),
       notes: z.string().max(2000).optional(),
+    })
+    .optional(),
+
+  // Affiliate fields
+  affiliate: z
+    .object({
+      affiliateItemId: z.string().optional(),
+      title: z.string().min(1).max(200),
+      brand: z.string().max(200).optional(),
+      link: z.string().url().optional().or(z.literal("")),
+      referralCode: z.string().max(100).optional(),
+      category: z.enum(AFFILIATE_CATEGORIES).default("OTHER"),
     })
     .optional(),
 
@@ -158,6 +175,17 @@ export const catalogWellnessSchema = z.object({
   referralCode: z.string().max(100).optional(),
   tags: z.array(z.string()).default([]),
   notes: z.string().max(2000).optional(),
+});
+
+export const affiliateItemSchema = z.object({
+  name: z.string().min(1).max(200),
+  brand: z.string().max(200).optional(),
+  description: z.string().max(2000).optional(),
+  link: z.string().url().optional().or(z.literal("")),
+  referralCode: z.string().max(100).optional(),
+  category: z.enum(AFFILIATE_CATEGORIES).default("OTHER"),
+  photoUrl: z.string().optional(),
+  tags: z.array(z.string()).default([]),
 });
 
 export const stepsEntrySchema = z.object({
