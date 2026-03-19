@@ -116,6 +116,14 @@ const parseTagsText = (tagsText: string) =>
 
 const dedupeTags = (tags: string[]) => Array.from(new Set(tags));
 
+const normalizeTagLabel = (value: string) =>
+  value
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
 const getTagValidationError = (tags: string[]) => {
   if (tags.length > TAG_LIMITS.maxCount) {
     return `Use up to ${TAG_LIMITS.maxCount} tags`;
@@ -752,6 +760,29 @@ function ItemDetailModal({
   const [copied, setCopied] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const tabInfo = TABS.find((t) => t.key === tab);
+  const detailTags = (() => {
+    const rawTags = [...(item.tags ?? [])];
+    if (tab === "supplements" && (item as Supplement).brand) {
+      rawTags.push((item as Supplement).brand as string);
+    }
+    if (tab === "accessories" && (item as Accessory).type) {
+      rawTags.push((item as Accessory).type as string);
+    }
+    if (tab === "wellness" && (item as SavedWellnessItem).activityType) {
+      rawTags.push((item as SavedWellnessItem).activityType as string);
+    }
+    const seen = new Set<string>();
+    const tags: string[] = [];
+    rawTags.forEach((tag) => {
+      const normalized = normalizeTagLabel(tag);
+      if (!normalized) return;
+      const key = normalized.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      tags.push(normalized);
+    });
+    return tags;
+  })();
 
   const photoUrl = "photoUrl" in item ? (item as { photoUrl: string | null }).photoUrl : null;
   const link = "link" in item ? (item as { link: string | null }).link : null;
@@ -812,23 +843,22 @@ function ItemDetailModal({
               >
                 {tabInfo?.emoji} {tabInfo?.label}
               </span>
-              {tab === "supplements" && (item as Supplement).brand && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}>
-                  {(item as Supplement).brand}
-                </span>
-              )}
-              {tab === "accessories" && (item as Accessory).type && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}>
-                  {(item as Accessory).type}
-                </span>
-              )}
-              {tab === "wellness" && (item as SavedWellnessItem).activityType && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}>
-                  {(item as SavedWellnessItem).activityType}
-                </span>
-              )}
             </div>
           </div>
+
+          {detailTags.length > 0 && (
+            <div className="flex gap-1.5 flex-wrap">
+              {detailTags.map((tag) => (
+                <span
+                  key={`${item.id}-${tag}`}
+                  className="text-xs px-2 py-0.5 rounded-full"
+                  style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Supplement details */}
           {tab === "supplements" && ((item as Supplement).dose || (item as Supplement).schedule) && (
@@ -1025,6 +1055,33 @@ export default function CatalogPage() {
     return null;
   };
 
+  const getDisplayTags = (item: AnyItem): string[] => {
+    const rawTags = [...(item.tags ?? [])];
+
+    if (tab === "supplements" && "brand" in item && item.brand) {
+      rawTags.push(item.brand);
+    }
+    if (tab === "accessories" && "type" in item && item.type) {
+      rawTags.push(item.type);
+    }
+    if (tab === "wellness" && "activityType" in item && item.activityType) {
+      rawTags.push(item.activityType);
+    }
+
+    const seen = new Set<string>();
+    const displayTags: string[] = [];
+    rawTags.forEach((tag) => {
+      const normalized = normalizeTagLabel(tag);
+      if (!normalized) return;
+      const dedupeKey = normalized.toLowerCase();
+      if (seen.has(dedupeKey)) return;
+      seen.add(dedupeKey);
+      displayTags.push(normalized);
+    });
+
+    return displayTags;
+  };
+
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "var(--text)" }}>
       {/* Header */}
@@ -1172,98 +1229,122 @@ export default function CatalogPage() {
       ) : viewMode === "grid" ? (
         /* ── Grid View ── */
         <div className="grid grid-cols-3 gap-0.5">
-          {items.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setSelectedItem(item)}
-              className="relative aspect-square overflow-hidden rounded-sm group"
-            >
-              {getItemPhotoUrl(item) ? (
-                <img
-                  src={getItemPhotoUrl(item)!}
-                  alt={item.name}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                />
-              ) : (
-                <div
-                  className={`w-full h-full bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center`}
-                >
-                  <span className="text-3xl opacity-80">{TABS.find((t) => t.key === tab)?.emoji}</span>
+          {items.map((item) => {
+            const tileTags = getDisplayTags(item);
+            return (
+              <button
+                key={item.id}
+                onClick={() => setSelectedItem(item)}
+                className="relative aspect-square overflow-hidden rounded-sm group"
+              >
+                {getItemPhotoUrl(item) ? (
+                  <img
+                    src={getItemPhotoUrl(item)!}
+                    alt={item.name}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                  />
+                ) : (
+                  <div
+                    className={`w-full h-full bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center`}
+                  >
+                    <span className="text-3xl opacity-80">{TABS.find((t) => t.key === tab)?.emoji}</span>
+                  </div>
+                )}
+
+                {/* Bottom gradient overlay with name */}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 pt-6">
+                  <p className="text-[10px] font-medium text-white truncate leading-tight">{item.name}</p>
                 </div>
-              )}
 
-              {/* Bottom gradient overlay with name */}
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 pt-6">
-                <p className="text-[10px] font-medium text-white truncate leading-tight">{item.name}</p>
-              </div>
+                {/* Tag hint */}
+                {tileTags.length > 0 && (
+                  <div className="absolute top-1.5 left-1.5">
+                    <span className="text-[9px] leading-none px-1.5 py-1 rounded-full bg-black/55 text-white">
+                      #{tileTags[0]}
+                    </span>
+                  </div>
+                )}
 
-              {/* Link/referral badge */}
-              {(getItemLink(item) || getItemReferralCode(item)) && (
-                <div className="absolute top-1.5 right-1.5 p-1 rounded-full" style={{ background: "rgba(36,63,22,0.85)" }}>
-                  <HiLink className="w-2.5 h-2.5 text-white" />
-                </div>
-              )}
+                {/* Link/referral badge */}
+                {(getItemLink(item) || getItemReferralCode(item)) && (
+                  <div className="absolute top-1.5 right-1.5 p-1 rounded-full" style={{ background: "rgba(36,63,22,0.85)" }}>
+                    <HiLink className="w-2.5 h-2.5 text-white" />
+                  </div>
+                )}
 
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-            </button>
-          ))}
+                {/* Hover overlay */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+              </button>
+            );
+          })}
         </div>
       ) : (
         /* ── List View ── */
         <div className="space-y-2">
-          {items.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setSelectedItem(item)}
-              className="flex items-center gap-3 p-3 rounded-xl w-full text-left transition-all"
-              style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
-            >
-              {/* Thumbnail */}
-              {getItemPhotoUrl(item) ? (
-                <img
-                  src={getItemPhotoUrl(item)!}
-                  alt={item.name}
-                  className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
-                />
-              ) : (
-                <div
-                  className={`w-14 h-14 rounded-lg bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center flex-shrink-0`}
-                >
-                  <span className="text-xl">{TABS.find((t) => t.key === tab)?.emoji}</span>
-                </div>
-              )}
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm truncate">{item.name}</p>
-                {"notes" in item && (item as { notes: string | null }).notes && (
-                  <p className="text-xs truncate mt-0.5" style={{ color: muted }}>
-                    {(item as { notes: string | null }).notes}
-                  </p>
+          {items.map((item) => {
+            const displayTags = getDisplayTags(item);
+            return (
+              <button
+                key={item.id}
+                onClick={() => setSelectedItem(item)}
+                className="flex items-center gap-3 p-3 rounded-xl w-full text-left transition-all"
+                style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
+              >
+                {/* Thumbnail */}
+                {getItemPhotoUrl(item) ? (
+                  <img
+                    src={getItemPhotoUrl(item)!}
+                    alt={item.name}
+                    className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+                  />
+                ) : (
+                  <div
+                    className={`w-14 h-14 rounded-lg bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center flex-shrink-0`}
+                  >
+                    <span className="text-xl">{TABS.find((t) => t.key === tab)?.emoji}</span>
+                  </div>
                 )}
-                <div className="flex gap-1.5 mt-1 flex-wrap">
-                  {getItemReferralCode(item) && (
-                    <span
-                      className="text-[10px] px-2 py-0.5 rounded-full"
-                      style={{ background: "rgba(36,63,22,0.12)", color: "#528531" }}
-                    >
-                      Code: {getItemReferralCode(item)}
-                    </span>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm truncate">{item.name}</p>
+                  {"notes" in item && (item as { notes: string | null }).notes && (
+                    <p className="text-xs truncate mt-0.5" style={{ color: muted }}>
+                      {(item as { notes: string | null }).notes}
+                    </p>
                   )}
-                  {getItemLink(item) && !getItemReferralCode(item) && (
-                    <span
-                      className="text-[10px] px-2 py-0.5 rounded-full flex items-center gap-0.5"
-                      style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}
-                    >
-                      <HiLink className="w-2.5 h-2.5" />
-                      Link
-                    </span>
-                  )}
+                  <div className="flex gap-1.5 mt-1 flex-wrap">
+                    {displayTags.slice(0, 2).map((tag) => (
+                      <span
+                        key={`${item.id}-${tag}`}
+                        className="text-[10px] px-2 py-0.5 rounded-full"
+                        style={{ background: "rgba(36,63,22,0.08)", color: "var(--text-muted)" }}
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                    {getItemReferralCode(item) && (
+                      <span
+                        className="text-[10px] px-2 py-0.5 rounded-full"
+                        style={{ background: "rgba(36,63,22,0.12)", color: "#528531" }}
+                      >
+                        Code: {getItemReferralCode(item)}
+                      </span>
+                    )}
+                    {getItemLink(item) && !getItemReferralCode(item) && (
+                      <span
+                        className="text-[10px] px-2 py-0.5 rounded-full flex items-center gap-0.5"
+                        style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}
+                      >
+                        <HiLink className="w-2.5 h-2.5" />
+                        Link
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
       )}
 

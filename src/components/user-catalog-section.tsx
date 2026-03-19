@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { HiLockOpen } from "react-icons/hi2";
 import { HiExternalLink, HiX, HiLink, HiClipboardCopy } from "react-icons/hi";
 
 interface CatalogItem {
   id: string;
+  createdAt?: string;
   name: string;
   photoUrl?: string | null;
   link?: string | null;
@@ -301,38 +302,24 @@ export default function UserCatalogSection({
   username,
   isOwnProfile,
 }: UserCatalogSectionProps) {
-  const [activeTab, setActiveTab] = useState<CatalogType>("meals");
-  const [items, setItems] = useState<CatalogItem[]>([]);
+  const [items, setItems] = useState<Array<CatalogItem & { catalogType: CatalogType }>>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [cursor, setCursor] = useState<string | undefined>();
-  const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedItem, setSelectedItem] = useState<CatalogItem | null>(null);
-  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [selectedItem, setSelectedItem] = useState<(CatalogItem & { catalogType: CatalogType }) | null>(null);
 
-  const fetchCatalog = useCallback(
-    async (reset = false) => {
-      if (reset) {
-        setLoading(true);
-        setError(null);
-      } else {
-        setLoadingMore(true);
-      }
+  const fetchCatalog = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
-      try {
+    try {
+      const requests = CATALOG_TYPES.map(async ({ type }) => {
         const params = new URLSearchParams({ limit: "30" });
-        if (!reset && cursor) params.set("cursor", cursor);
-
         const res = await fetch(
-          `/api/users/${encodeURIComponent(username)}/catalogs/${activeTab}?${params}`
+          `/api/users/${encodeURIComponent(username)}/catalogs/${type}?${params}`
         );
 
         if (res.status === 403) {
-          setError("This account is private.");
-          setItems([]);
-          setHasMore(false);
-          return;
+          throw new Error("PRIVATE_ACCOUNT");
         }
 
         if (!res.ok) {
@@ -340,56 +327,46 @@ export default function UserCatalogSection({
         }
 
         const data = await res.json();
-        const key = activeTab === "accessories" ? "accessories" : activeTab;
+        const key = type === "accessories" ? "accessories" : type;
         const itemsList = data[key] || [];
 
         if (!Array.isArray(itemsList)) {
           throw new Error("Invalid response format");
         }
 
-        if (reset) {
-          setItems(itemsList);
-        } else {
-          setItems((prev) => [...prev, ...itemsList]);
-        }
+        return itemsList.map((item: CatalogItem) => ({
+          ...item,
+          catalogType: type,
+        }));
+      });
 
-        setCursor(data.nextCursor);
-        setHasMore(!!data.nextCursor);
-      } catch (err) {
-        console.error(`Failed to fetch ${activeTab} catalog:`, err);
+      const results = await Promise.all(requests);
+      const mergedItems = results
+        .flat()
+        .sort((a, b) => {
+          const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return bTime - aTime;
+        });
+
+      setItems(mergedItems);
+    } catch (err) {
+      if (err instanceof Error && err.message === "PRIVATE_ACCOUNT") {
+        setError("This account is private.");
+      } else {
+        console.error("Failed to fetch catalog:", err);
         setError("Failed to load catalog items");
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
       }
-    },
-    [username, activeTab, cursor]
-  );
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [username]);
 
   useEffect(() => {
-    setItems([]);
-    setCursor(undefined);
-    setHasMore(true);
-    setError(null);
-    fetchCatalog(true);
+    fetchCatalog();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, username]);
-
-  useEffect(() => {
-    if (!sentinelRef.current || !hasMore || loadingMore || loading) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          fetchCatalog(false);
-        }
-      },
-      { rootMargin: "100px" }
-    );
-
-    observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [hasMore, loadingMore, loading, fetchCatalog]);
+  }, [username]);
 
   // Count items with links for the tab badge
   const linkedCount = items.filter((i) => i.link || i.referralCode).length;
@@ -406,24 +383,6 @@ export default function UserCatalogSection({
             {linkedCount} product {linkedCount === 1 ? "link" : "links"}
           </span>
         )}
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-1.5 mb-4 overflow-x-auto pb-2">
-        {CATALOG_TYPES.map(({ type, label }) => (
-          <button
-            key={type}
-            onClick={() => setActiveTab(type)}
-            className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all flex-shrink-0"
-            style={
-              activeTab === type
-                ? { background: "var(--brand)", color: "#FDFAF5" }
-                : { background: "var(--surface-2)", color: "var(--text-muted)" }
-            }
-          >
-            {label}
-          </button>
-        ))}
       </div>
 
       {/* Content */}
@@ -452,7 +411,7 @@ export default function UserCatalogSection({
       ) : items.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-sm text-muted">
-            No {activeTab} saved yet.
+            No catalog items saved yet.
           </p>
         </div>
       ) : (
@@ -461,7 +420,7 @@ export default function UserCatalogSection({
           <div className="grid grid-cols-3 gap-0.5">
             {items.map((item) => (
               (() => {
-                const tileTags = buildDisplayTags(item, activeTab);
+                const tileTags = buildDisplayTags(item, item.catalogType);
                 return (
                   <button
                     key={item.id}
@@ -476,7 +435,7 @@ export default function UserCatalogSection({
                       />
                     ) : (
                       <div
-                        className={`w-full h-full bg-gradient-to-br ${CATEGORY_GRADIENTS[activeTab]} flex items-center justify-center`}
+                        className={`w-full h-full bg-gradient-to-br ${CATEGORY_GRADIENTS[item.catalogType]} flex items-center justify-center`}
                       />
                     )}
 
@@ -487,14 +446,20 @@ export default function UserCatalogSection({
                       </p>
                     </div>
 
+                    <div className="absolute top-1.5 left-1.5 flex flex-col items-start gap-1">
+                      <span
+                        className="text-[9px] leading-none px-1.5 py-1 rounded-full"
+                        style={{ background: "rgba(36,63,22,0.8)", color: "#FDFAF5" }}
+                      >
+                        {CATALOG_TYPES.find((c) => c.type === item.catalogType)?.label}
+                      </span>
                     {/* Compact tag hint */}
                     {tileTags.length > 0 && (
-                      <div className="absolute top-1.5 left-1.5">
                         <span className="text-[9px] leading-none px-1.5 py-1 rounded-full bg-black/55 text-white">
                           #{tileTags[0]}
                         </span>
-                      </div>
                     )}
+                    </div>
 
                     {/* Link/referral badge */}
                     {(item.link || item.referralCode) && (
@@ -514,12 +479,6 @@ export default function UserCatalogSection({
             ))}
           </div>
 
-          {loadingMore && (
-            <div className="flex justify-center py-4">
-              <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            </div>
-          )}
-          <div ref={sentinelRef} className="h-1" />
         </>
       )}
 
@@ -527,7 +486,7 @@ export default function UserCatalogSection({
       {selectedItem && (
         <DetailModal
           item={selectedItem}
-          type={activeTab}
+          type={selectedItem.catalogType}
           onClose={() => setSelectedItem(null)}
         />
       )}
