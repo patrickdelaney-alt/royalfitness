@@ -52,6 +52,46 @@ const CATEGORY_GRADIENTS: Record<CatalogType, string> = {
   wellness: "from-lime-700/70 to-lime-900/70",
 };
 
+const normalizeTagLabel = (value: string) =>
+  value
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
+const buildDisplayTags = (item: CatalogItem, type: CatalogType) => {
+  const seedTags = [...(item.tags ?? [])];
+
+  if (type === "accessories" && item.type) {
+    seedTags.push(item.type);
+  }
+
+  if (type === "wellness" && item.activityType) {
+    seedTags.push(item.activityType);
+  }
+
+  if (item.brand) {
+    seedTags.push(item.brand);
+  }
+
+  const seen = new Set<string>();
+  const displayTags: string[] = [];
+
+  seedTags.forEach((rawTag) => {
+    const normalized = normalizeTagLabel(rawTag);
+    if (!normalized) return;
+
+    const dedupeKey = normalized.toLowerCase();
+    if (seen.has(dedupeKey)) return;
+
+    seen.add(dedupeKey);
+    displayTags.push(normalized);
+  });
+
+  return displayTags;
+};
+
 function DetailModal({
   item,
   type,
@@ -81,6 +121,7 @@ function DetailModal({
   };
 
   const categoryInfo = CATALOG_TYPES.find((c) => c.type === type);
+  const displayTags = buildDisplayTags(item, type);
 
   return (
     <div
@@ -136,32 +177,23 @@ function DetailModal({
               >
                 {categoryInfo?.label}
               </span>
-              {item.brand && (
-                <span
-                  className="text-xs px-2.5 py-0.5 rounded-full"
-                  style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}
-                >
-                  {item.brand}
-                </span>
-              )}
-              {item.type && (
-                <span
-                  className="text-xs px-2.5 py-0.5 rounded-full"
-                  style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}
-                >
-                  {item.type}
-                </span>
-              )}
-              {item.activityType && (
-                <span
-                  className="text-xs px-2.5 py-0.5 rounded-full"
-                  style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}
-                >
-                  {item.activityType}
-                </span>
-              )}
             </div>
           </div>
+
+          {/* Tags */}
+          {displayTags.length > 0 && (
+            <div className="flex gap-1.5 flex-wrap">
+              {displayTags.map((tag, i) => (
+                <span
+                  key={`${tag}-${i}`}
+                  className="text-xs px-2 py-0.5 rounded-full"
+                  style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Supplement details */}
           {(item.dose || item.schedule) && (
@@ -259,20 +291,6 @@ function DetailModal({
             </a>
           )}
 
-          {/* Tags */}
-          {item.tags && item.tags.length > 0 && (
-            <div className="flex gap-1.5 flex-wrap">
-              {item.tags.map((tag: string, i: number) => (
-                <span
-                  key={i}
-                  className="text-xs px-2 py-0.5 rounded-full"
-                  style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -442,43 +460,57 @@ export default function UserCatalogSection({
           {/* Instagram Grid */}
           <div className="grid grid-cols-3 gap-0.5">
             {items.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setSelectedItem(item)}
-                className="relative aspect-square overflow-hidden rounded-sm group"
-              >
-                {item.photoUrl ? (
-                  <img
-                    src={item.photoUrl}
-                    alt={item.name}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                  />
-                ) : (
-                  <div
-                    className={`w-full h-full bg-gradient-to-br ${CATEGORY_GRADIENTS[activeTab]} flex items-center justify-center`}
-                  />
-                )}
-
-                {/* Bottom gradient overlay with name */}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 pt-6">
-                  <p className="text-[10px] font-medium text-white truncate leading-tight">
-                    {item.name}
-                  </p>
-                </div>
-
-                {/* Link/referral badge */}
-                {(item.link || item.referralCode) && (
-                  <div
-                    className="absolute top-1.5 right-1.5 p-1 rounded-full"
-                    style={{ background: "rgba(36,63,22,0.75)" }}
+              (() => {
+                const tileTags = buildDisplayTags(item, activeTab);
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setSelectedItem(item)}
+                    className="relative aspect-square overflow-hidden rounded-sm group"
                   >
-                    <HiLink className="w-2.5 h-2.5 text-white" />
-                  </div>
-                )}
+                    {item.photoUrl ? (
+                      <img
+                        src={item.photoUrl}
+                        alt={item.name}
+                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                      />
+                    ) : (
+                      <div
+                        className={`w-full h-full bg-gradient-to-br ${CATEGORY_GRADIENTS[activeTab]} flex items-center justify-center`}
+                      />
+                    )}
 
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-              </button>
+                    {/* Bottom gradient overlay with name */}
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 pt-6">
+                      <p className="text-[10px] font-medium text-white truncate leading-tight">
+                        {item.name}
+                      </p>
+                    </div>
+
+                    {/* Compact tag hint */}
+                    {tileTags.length > 0 && (
+                      <div className="absolute top-1.5 left-1.5">
+                        <span className="text-[9px] leading-none px-1.5 py-1 rounded-full bg-black/55 text-white">
+                          #{tileTags[0]}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Link/referral badge */}
+                    {(item.link || item.referralCode) && (
+                      <div
+                        className="absolute top-1.5 right-1.5 p-1 rounded-full"
+                        style={{ background: "rgba(36,63,22,0.75)" }}
+                      >
+                        <HiLink className="w-2.5 h-2.5 text-white" />
+                      </div>
+                    )}
+
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                  </button>
+                );
+              })()
             ))}
           </div>
 
