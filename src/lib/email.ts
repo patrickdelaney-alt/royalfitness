@@ -1,21 +1,32 @@
-/**
- * Email sending placeholder.
- *
- * Currently logs to the console. To send real emails, replace the body of
- * sendInviteEmail with a Resend (or Postmark/SendGrid) call, e.g.:
- *
- *   import { Resend } from 'resend';
- *   const resend = new Resend(process.env.RESEND_API_KEY);
- *   await resend.emails.send({ from: '...', to: email, subject: '...', html: '...' });
- *
- * Add RESEND_API_KEY (or equivalent) to .env.example and Vercel env vars when ready.
- */
+import { Resend } from 'resend';
+
 export async function sendInviteEmail(
   email: string,
   firstName?: string | null
 ): Promise<void> {
-  // TODO: replace with real email provider integration
-  console.log(
-    `[email] Invite queued for ${email}${firstName ? ` (${firstName})` : ""}`
-  );
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[email] RESEND_API_KEY not configured, skipping email');
+    return;
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const displayName = firstName ? ` ${firstName}` : '';
+
+  try {
+    await resend.emails.send({
+      from: 'Royal Fitness <noreply@royalwellness.app>',
+      to: email,
+      subject: "You're approved! Welcome to Royal Fitness beta",
+      html: `
+        <h2>Welcome to Royal Fitness${displayName}!</h2>
+        <p>Great news — your spot has been approved! You're ready to sign up and start tracking your fitness journey.</p>
+        <p><a href="https://royalwellness.app/signup" style="background-color: #1a4d2e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 24px; display: inline-block; font-weight: bold;">Create Your Account</a></p>
+        <p>If you have any questions, feel free to reach out. We can't wait to have you on board!</p>
+        <p>— The Royal Fitness team</p>
+      `,
+    });
+  } catch (error) {
+    console.error('[email] Failed to send invite email to', email, error);
+    // Don't throw — just log. Admin action already completed in DB.
+  }
 }
