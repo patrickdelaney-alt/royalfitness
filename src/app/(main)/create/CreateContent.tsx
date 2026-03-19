@@ -39,6 +39,63 @@ interface Exercise {
   sets: ExerciseSet[];
 }
 
+const CREATE_DRAFT_STORAGE_KEY = "rf_create_draft_v1";
+const AUTOSAVE_DEBOUNCE_MS = 600;
+const RECENT_AUTOSAVE_WINDOW_MS = 5000;
+const LEAVE_WARNING_MESSAGE = "You have unsaved changes. Leave this page?";
+
+interface CreateDraftV1 {
+  version: 1;
+  type: PostType;
+  payload: {
+    caption: string;
+    visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+    postDate: string;
+    workout: {
+      workoutName: string;
+      editingName: boolean;
+      selectedMuscles: string[];
+      isClass: boolean;
+      durationMinutes: string;
+      perceivedExertion: string;
+      energy: number;
+      exercises: Exercise[];
+      postTiming: "BEFORE" | "DURING" | "AFTER";
+      showAdvanced: boolean;
+    };
+    meal: {
+      mealName: string;
+      mealType: string;
+      ingredients: string;
+      calories: string;
+      protein: string;
+      carbs: string;
+      fat: string;
+      saveToCatalog: boolean;
+    };
+    wellness: {
+      activityType: string;
+      wellnessDuration: string;
+      intensity: string;
+      wellnessMood: number;
+    };
+    checkIn: {
+      checkInGymId: string | null;
+      checkInGymName: string;
+      gymSearchQuery: string;
+    };
+    media: {
+      mediaUrl: string | null;
+      previewRef: string | null;
+      hasPendingUpload: boolean;
+    };
+    embed: {
+      embedInput: string;
+      embedPreview: EmbedPreview | null;
+    };
+  };
+}
+
 const emptySet = (): ExerciseSet => ({ reps: "", weight: "", unit: "lbs", rpe: "" });
 const emptyExercise = (): Exercise => ({ name: "", sets: [emptySet()] });
 
@@ -425,14 +482,11 @@ export default function CreatePostContent() {
   const [energy, setEnergy] = useState(7);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [postTiming, setPostTiming] = useState<"BEFORE" | "DURING" | "AFTER">("AFTER");
-
-  const handleBack = useCallback(() => {
-    if (isFromSession) {
-      router.replace("/feed");
-      return;
-    }
-    router.back();
-  }, [isFromSession, router]);
+  const [pendingDraft, setPendingDraft] = useState<CreateDraftV1 | null>(null);
+  const [draftReady, setDraftReady] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const lastAutosaveAtRef = useRef<number>(0);
+  const lastDraftSignatureRef = useRef<string>("");
 
   // ── Active session banner state ───────────────────────────────────────────
   const [sessionElapsed, setSessionElapsed] = useState<number | null>(null);
@@ -558,6 +612,94 @@ export default function CreatePostContent() {
   const [newGymLat, setNewGymLat] = useState<number | null>(null);
   const [newGymLng, setNewGymLng] = useState<number | null>(null);
   const [addingGym, setAddingGym] = useState(false);
+
+  const buildDraft = useCallback((): CreateDraftV1 => ({
+    version: 1,
+    type,
+    payload: {
+      caption,
+      visibility,
+      postDate,
+      workout: {
+        workoutName,
+        editingName,
+        selectedMuscles,
+        isClass,
+        durationMinutes,
+        perceivedExertion,
+        energy,
+        exercises,
+        postTiming,
+        showAdvanced: showWorkoutAdvanced,
+      },
+      meal: {
+        mealName,
+        mealType,
+        ingredients,
+        calories,
+        protein,
+        carbs,
+        fat,
+        saveToCatalog,
+      },
+      wellness: {
+        activityType,
+        wellnessDuration,
+        intensity,
+        wellnessMood,
+      },
+      checkIn: {
+        checkInGymId,
+        checkInGymName,
+        gymSearchQuery,
+      },
+      media: {
+        mediaUrl,
+        previewRef: mediaPreview && !mediaPreview.startsWith("blob:") ? mediaPreview : null,
+        hasPendingUpload: uploading,
+      },
+      embed: {
+        embedInput,
+        embedPreview,
+      },
+    },
+  }), [
+    type, caption, visibility, postDate, workoutName, editingName, selectedMuscles, isClass,
+    durationMinutes, perceivedExertion, energy, exercises, postTiming, showWorkoutAdvanced,
+    mealName, mealType, ingredients, calories, protein, carbs, fat, saveToCatalog, activityType,
+    wellnessDuration, intensity, wellnessMood, checkInGymId, checkInGymName, gymSearchQuery,
+    mediaUrl, mediaPreview, uploading, embedInput, embedPreview,
+  ]);
+
+  const clearDraft = useCallback(() => {
+    try {
+      localStorage.removeItem(CREATE_DRAFT_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+    lastDraftSignatureRef.current = JSON.stringify(buildDraft());
+    lastAutosaveAtRef.current = Date.now();
+    setIsDirty(false);
+  }, [buildDraft]);
+
+  const shouldWarnOnLeave = useCallback(() => {
+    if (!isDirty) return false;
+    return Date.now() - lastAutosaveAtRef.current > RECENT_AUTOSAVE_WINDOW_MS;
+  }, [isDirty]);
+
+  const confirmLeaveIfNeeded = useCallback(() => {
+    if (!shouldWarnOnLeave()) return true;
+    return window.confirm(LEAVE_WARNING_MESSAGE);
+  }, [shouldWarnOnLeave]);
+
+  const handleBack = useCallback(() => {
+    if (!confirmLeaveIfNeeded()) return;
+    if (isFromSession) {
+      router.replace("/feed");
+      return;
+    }
+    router.back();
+  }, [confirmLeaveIfNeeded, isFromSession, router]);
 
   const searchGyms = useCallback(async (query: string, lat?: number, lng?: number) => {
     setGymSearchLoading(true);
@@ -739,6 +881,108 @@ export default function CreatePostContent() {
     setEmbedPreview(null);
   };
 
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(CREATE_DRAFT_STORAGE_KEY);
+      if (!raw) {
+        setDraftReady(true);
+        return;
+      }
+      const parsed: CreateDraftV1 = JSON.parse(raw);
+      if (parsed?.version !== 1 || !parsed.payload) {
+        localStorage.removeItem(CREATE_DRAFT_STORAGE_KEY);
+        setDraftReady(true);
+        return;
+      }
+      setPendingDraft(parsed);
+    } catch {
+      // ignore draft parse failures
+    } finally {
+      setDraftReady(true);
+    }
+  }, []);
+
+  const applyDraft = useCallback((draft: CreateDraftV1) => {
+    setType(draft.type);
+    setCaption(draft.payload.caption);
+    setVisibility(draft.payload.visibility);
+    setPostDate(draft.payload.postDate);
+
+    setWorkoutName(draft.payload.workout.workoutName);
+    setEditingName(draft.payload.workout.editingName);
+    setSelectedMuscles(draft.payload.workout.selectedMuscles);
+    setIsClass(draft.payload.workout.isClass);
+    setDurationMinutes(draft.payload.workout.durationMinutes);
+    setPerceivedExertion(draft.payload.workout.perceivedExertion);
+    setEnergy(draft.payload.workout.energy);
+    setExercises(draft.payload.workout.exercises);
+    setPostTiming(draft.payload.workout.postTiming);
+    setShowWorkoutAdvanced(draft.payload.workout.showAdvanced);
+
+    setMealName(draft.payload.meal.mealName);
+    setMealType(draft.payload.meal.mealType);
+    setIngredients(draft.payload.meal.ingredients);
+    setCalories(draft.payload.meal.calories);
+    setProtein(draft.payload.meal.protein);
+    setCarbs(draft.payload.meal.carbs);
+    setFat(draft.payload.meal.fat);
+    setSaveToCatalog(draft.payload.meal.saveToCatalog);
+
+    setActivityType(draft.payload.wellness.activityType);
+    setWellnessDuration(draft.payload.wellness.wellnessDuration);
+    setIntensity(draft.payload.wellness.intensity);
+    setWellnessMood(draft.payload.wellness.wellnessMood);
+
+    setCheckInGymId(draft.payload.checkIn.checkInGymId);
+    setCheckInGymName(draft.payload.checkIn.checkInGymName);
+    setGymSearchQuery(draft.payload.checkIn.gymSearchQuery);
+
+    setMediaUrl(draft.payload.media.mediaUrl);
+    setMediaPreview(draft.payload.media.previewRef);
+    setEmbedInput(draft.payload.embed.embedInput);
+    setEmbedPreview(draft.payload.embed.embedPreview);
+  }, []);
+
+  const handleResumeDraft = useCallback(() => {
+    if (!pendingDraft) return;
+    applyDraft(pendingDraft);
+    setPendingDraft(null);
+  }, [applyDraft, pendingDraft]);
+
+  const handleDiscardDraft = useCallback(() => {
+    setPendingDraft(null);
+    clearDraft();
+  }, [clearDraft]);
+
+  useEffect(() => {
+    if (!draftReady || pendingDraft || submitting || successPost) return;
+    const draft = buildDraft();
+    const signature = JSON.stringify(draft);
+    if (signature === lastDraftSignatureRef.current) return;
+    setIsDirty(true);
+    const timer = window.setTimeout(() => {
+      try {
+        localStorage.setItem(CREATE_DRAFT_STORAGE_KEY, signature);
+        lastDraftSignatureRef.current = signature;
+        lastAutosaveAtRef.current = Date.now();
+        setIsDirty(false);
+      } catch {
+        // ignore storage write failures
+      }
+    }, AUTOSAVE_DEBOUNCE_MS);
+    return () => window.clearTimeout(timer);
+  }, [buildDraft, draftReady, pendingDraft, submitting, successPost]);
+
+  useEffect(() => {
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!shouldWarnOnLeave()) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [shouldWarnOnLeave]);
+
   // ── Exercise helpers ──────────────────────────────────────
   const addExercise = () => setExercises((prev) => [...prev, emptyExercise()]);
   const removeExercise = (idx: number) => setExercises((prev) => prev.filter((_, i) => i !== idx));
@@ -870,6 +1114,7 @@ export default function CreatePostContent() {
       }
 
       const created = await res.json();
+      clearDraft();
       successNotification();
       setSuccessPost({ id: created.id, type: created.type as PostType });
     } catch {
@@ -970,7 +1215,10 @@ export default function CreatePostContent() {
             🔗 Share Post
           </button>
           <button
-            onClick={() => router.push("/feed")}
+            onClick={() => {
+              if (!confirmLeaveIfNeeded()) return;
+              router.push("/feed");
+            }}
             className="w-full py-3 rounded-2xl text-sm font-semibold"
             style={{ background: "rgba(36,63,22,0.10)", color: "var(--text)" }}
           >
@@ -994,6 +1242,38 @@ export default function CreatePostContent() {
         </button>
         <h1 className="text-lg font-bold">New Post</h1>
       </div>
+
+      {pendingDraft && (
+        <div
+          className="mb-4 p-4 rounded-2xl flex items-center justify-between gap-3"
+          style={{ background: "rgba(36,63,22,0.08)", border: "1px solid rgba(82,133,49,0.25)" }}
+        >
+          <div>
+            <p className="text-sm font-semibold" style={{ color: "#528531" }}>Resume your draft?</p>
+            <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+              We found an in-progress {pendingDraft.type.toLowerCase()} post.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleResumeDraft}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold"
+              style={{ background: "#528531", color: "white" }}
+            >
+              Resume
+            </button>
+            <button
+              type="button"
+              onClick={handleDiscardDraft}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold"
+              style={{ background: "rgba(36,63,22,0.10)", color: "var(--text)" }}
+            >
+              Discard
+            </button>
+          </div>
+        </div>
+      )}
 
       {sourceMode !== "MANUAL" && (
         <div className="mb-4">
