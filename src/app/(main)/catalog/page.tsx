@@ -14,6 +14,13 @@ import {
   HiViewList,
 } from "react-icons/hi";
 import { useRouter } from "next/navigation";
+import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
+import {
+  AFFILIATE_CATEGORY_LABELS,
+  dedupeTags,
+  getCatalogDisplayTags,
+  parseTagsText,
+} from "@/lib/catalog-tags";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -123,22 +130,6 @@ const CATEGORY_GRADIENTS: Record<Tab, string> = {
   affiliates: "from-amber-600/80 to-yellow-700/80",
 };
 
-const parseTagsText = (tagsText: string) =>
-  tagsText
-    .split(",")
-    .map((t) => t.trim().toLowerCase())
-    .filter(Boolean);
-
-const dedupeTags = (tags: string[]) => Array.from(new Set(tags));
-
-const normalizeTagLabel = (value: string) =>
-  value
-    .trim()
-    .replace(/[_-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-
 const getTagValidationError = (tags: string[]) => {
   if (tags.length > TAG_LIMITS.maxCount) {
     return `Use up to ${TAG_LIMITS.maxCount} tags`;
@@ -174,6 +165,7 @@ function TagsInput({
         </span>
         {validationError ? <span style={{ color: "#f87171" }}>{validationError}</span> : null}
       </div>
+      <SubcategoryChips tags={parsedTags} />
     </div>
   );
 }
@@ -1149,29 +1141,16 @@ function ItemDetailModal({
   const [copied, setCopied] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const tabInfo = TABS.find((t) => t.key === tab);
-  const detailTags = (() => {
-    const rawTags = [...(item.tags ?? [])];
-    if (tab === "supplements" && (item as Supplement).brand) {
-      rawTags.push((item as Supplement).brand as string);
-    }
-    if (tab === "accessories" && (item as Accessory).type) {
-      rawTags.push((item as Accessory).type as string);
-    }
-    if (tab === "wellness" && (item as SavedWellnessItem).activityType) {
-      rawTags.push((item as SavedWellnessItem).activityType as string);
-    }
-    const seen = new Set<string>();
-    const tags: string[] = [];
-    rawTags.forEach((tag) => {
-      const normalized = normalizeTagLabel(tag);
-      if (!normalized) return;
-      const key = normalized.toLowerCase();
-      if (seen.has(key)) return;
-      seen.add(key);
-      tags.push(normalized);
-    });
-    return tags;
-  })();
+  const detailTags = getCatalogDisplayTags({
+    tags: item.tags,
+    brand: tab === "supplements" || tab === "affiliates" ? (item as Supplement | AffiliateItem).brand : null,
+    type: tab === "accessories" ? (item as Accessory).type : null,
+    activityType: tab === "wellness" ? (item as SavedWellnessItem).activityType : null,
+    categoryLabel:
+      tab === "affiliates" && (item as AffiliateItem).category !== "OTHER"
+        ? AFFILIATE_CATEGORY_LABELS[(item as AffiliateItem).category]
+        : null,
+  });
 
   const photoUrl = "photoUrl" in item ? (item as { photoUrl: string | null }).photoUrl : null;
   const link = "link" in item ? (item as { link: string | null }).link : null;
@@ -1236,17 +1215,7 @@ function ItemDetailModal({
           </div>
 
           {detailTags.length > 0 && (
-            <div className="flex gap-1.5 flex-wrap">
-              {detailTags.map((tag) => (
-                <span
-                  key={`${item.id}-${tag}`}
-                  className="text-xs px-2 py-0.5 rounded-full"
-                  style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
+            <SubcategoryChips tags={detailTags} />
           )}
 
           {/* Supplement details */}
@@ -1465,41 +1434,16 @@ export default function CatalogPage() {
   };
 
   const getDisplayTags = (item: AnyItem): string[] => {
-    const rawTags = [...(item.tags ?? [])];
-
-    if (tab === "supplements" && "brand" in item && item.brand) {
-      rawTags.push(item.brand);
-    }
-    if (tab === "accessories" && "type" in item && item.type) {
-      rawTags.push(item.type);
-    }
-    if (tab === "wellness" && "activityType" in item && item.activityType) {
-      rawTags.push(item.activityType);
-    }
-    if (tab === "affiliates" && "brand" in item && item.brand) {
-      rawTags.push(item.brand);
-    }
-    if (tab === "affiliates" && "category" in item && item.category && item.category !== "OTHER") {
-      const catLabels: Record<string, string> = {
-        SUPPLEMENTS: "Supplements", WELLNESS_ACCESSORIES: "Wellness",
-        GYM_ACCESSORIES: "Gym Gear", RECOVERY_TOOLS: "Recovery",
-        APPAREL: "Apparel", NUTRITION: "Nutrition", TECH_WEARABLES: "Tech",
-      };
-      rawTags.push(catLabels[item.category as string] || "");
-    }
-
-    const seen = new Set<string>();
-    const displayTags: string[] = [];
-    rawTags.forEach((tag) => {
-      const normalized = normalizeTagLabel(tag);
-      if (!normalized) return;
-      const dedupeKey = normalized.toLowerCase();
-      if (seen.has(dedupeKey)) return;
-      seen.add(dedupeKey);
-      displayTags.push(normalized);
+    return getCatalogDisplayTags({
+      tags: item.tags,
+      brand: tab === "supplements" || tab === "affiliates" ? ("brand" in item ? item.brand : null) : null,
+      type: tab === "accessories" && "type" in item ? item.type : null,
+      activityType: tab === "wellness" && "activityType" in item ? item.activityType : null,
+      categoryLabel:
+        tab === "affiliates" && "category" in item && item.category !== "OTHER"
+          ? AFFILIATE_CATEGORY_LABELS[item.category as string]
+          : null,
     });
-
-    return displayTags;
   };
 
   return (
@@ -1687,9 +1631,12 @@ export default function CatalogPage() {
                 {/* Tag hint */}
                 {tileTags.length > 0 && (
                   <div className="absolute top-1.5 left-1.5">
-                    <span className="text-[9px] leading-none px-1.5 py-1 rounded-full bg-black/55 text-white">
-                      #{tileTags[0]}
-                    </span>
+                    <SubcategoryChips
+                      tags={tileTags}
+                      compact
+                      limit={1}
+                      className="[&>span]:!bg-black/55 [&>span]:!text-white"
+                    />
                   </div>
                 )}
 
@@ -1742,15 +1689,7 @@ export default function CatalogPage() {
                     </p>
                   )}
                   <div className="flex gap-1.5 mt-1 flex-wrap">
-                    {displayTags.slice(0, 2).map((tag) => (
-                      <span
-                        key={`${item.id}-${tag}`}
-                        className="text-[10px] px-2 py-0.5 rounded-full"
-                        style={{ background: "rgba(36,63,22,0.08)", color: "var(--text-muted)" }}
-                      >
-                        #{tag}
-                      </span>
-                    ))}
+                    <SubcategoryChips tags={displayTags} limit={2} />
                     {getItemReferralCode(item) && (
                       <span
                         className="text-[10px] px-2 py-0.5 rounded-full"
