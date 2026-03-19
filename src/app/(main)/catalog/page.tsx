@@ -87,9 +87,6 @@ type Tab = "meals" | "workouts" | "supplements" | "accessories" | "wellness";
 type AnyItem = SavedMeal | SavedWorkout | Supplement | Accessory | SavedWellnessItem;
 
 const inputCls = "input-dark w-full";
-// TODO(catalog-taxonomy): Run a DB migration to backfill `tags` from legacy `type`/`activityType`,
-// then remove legacy field writes + fallback UI logic once reads are fully tag-based.
-
 
 const TABS: { key: Tab; label: string; emoji: string }[] = [
   { key: "meals", label: "Meals", emoji: "🍽️" },
@@ -1178,14 +1175,6 @@ export default function CatalogPage() {
                     >
                       <HiLink className="w-2.5 h-2.5" />
                       Link
-                    </span>
-                  )}
-                  {getTaxonomyTags(item, tab)[0] && (
-                    <span
-                      className="text-[10px] px-2 py-0.5 rounded-full"
-                      style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}
-                    >
-                      {getTaxonomyTags(item, tab)[0]}
                     </span>
                   )}
                 </div>
