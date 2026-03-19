@@ -437,6 +437,11 @@ model AffiliateItem {
   category     AffiliateCategory @default(OTHER)
   photoUrl     String?
   tags         String[]          @default([])
+  subcategoryTags String[]       @default([])
+  ctaLabel     String?
+  logoUrl      String?
+  enrichmentConfidence String?
+  needsReview  Boolean           @default(false)
   isPrivate    Boolean           @default(false)
   createdAt    DateTime          @default(now())
 }

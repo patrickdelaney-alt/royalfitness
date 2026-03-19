@@ -3,6 +3,21 @@ import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 import { affiliateItemSchema } from "@/lib/validations";
 
+const normalizeAffiliateItem = <T extends {
+  subcategoryTags?: string[] | null;
+  ctaLabel?: string | null;
+  logoUrl?: string | null;
+  enrichmentConfidence?: string | null;
+  needsReview?: boolean | null;
+}>(item: T) => ({
+  ...item,
+  subcategoryTags: item.subcategoryTags ?? [],
+  ctaLabel: item.ctaLabel ?? null,
+  logoUrl: item.logoUrl ?? null,
+  enrichmentConfidence: item.enrichmentConfidence ?? null,
+  needsReview: item.needsReview ?? false,
+});
+
 export async function GET() {
   try {
     const session = await safeAuth();
@@ -15,7 +30,7 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(affiliates);
+    return NextResponse.json(affiliates.map(normalizeAffiliateItem));
   } catch (error) {
     console.error("GET /api/catalog/affiliates error:", error);
     return NextResponse.json(
@@ -46,10 +61,15 @@ export async function POST(req: NextRequest) {
         category: data.category,
         photoUrl: data.photoUrl,
         tags: data.tags,
+        subcategoryTags: data.subcategoryTags,
+        ctaLabel: data.ctaLabel,
+        logoUrl: data.logoUrl,
+        enrichmentConfidence: data.enrichmentConfidence,
+        needsReview: data.needsReview,
       },
     });
 
-    return NextResponse.json(affiliate, { status: 201 });
+    return NextResponse.json(normalizeAffiliateItem(affiliate), { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
       return NextResponse.json(
@@ -107,10 +127,15 @@ export async function PATCH(req: NextRequest) {
         ...(data.category !== undefined && { category: data.category }),
         ...(data.photoUrl !== undefined && { photoUrl: data.photoUrl }),
         ...(data.tags !== undefined && { tags: data.tags }),
+        ...(data.subcategoryTags !== undefined && { subcategoryTags: data.subcategoryTags }),
+        ...(data.ctaLabel !== undefined && { ctaLabel: data.ctaLabel }),
+        ...(data.logoUrl !== undefined && { logoUrl: data.logoUrl }),
+        ...(data.enrichmentConfidence !== undefined && { enrichmentConfidence: data.enrichmentConfidence }),
+        ...(data.needsReview !== undefined && { needsReview: data.needsReview }),
       },
     });
 
-    return NextResponse.json(updated);
+    return NextResponse.json(normalizeAffiliateItem(updated));
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
       return NextResponse.json(

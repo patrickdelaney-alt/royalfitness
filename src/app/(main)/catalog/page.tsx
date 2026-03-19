@@ -92,6 +92,11 @@ interface AffiliateItem {
   category: string;
   photoUrl: string | null;
   tags: string[];
+  subcategoryTags?: string[];
+  ctaLabel?: string | null;
+  logoUrl?: string | null;
+  enrichmentConfidence?: string | null;
+  needsReview?: boolean;
   createdAt: string;
 }
 
@@ -149,6 +154,24 @@ const getTagValidationError = (tags: string[]) => {
   }
   return "";
 };
+
+const normalizeAffiliateItem = (item: Partial<AffiliateItem> & { id: string; name: string; createdAt: string }): AffiliateItem => ({
+  id: item.id,
+  name: item.name,
+  brand: item.brand ?? null,
+  description: item.description ?? null,
+  link: item.link ?? null,
+  referralCode: item.referralCode ?? null,
+  category: item.category ?? "OTHER",
+  photoUrl: item.photoUrl ?? null,
+  tags: Array.isArray(item.tags) ? item.tags : [],
+  subcategoryTags: Array.isArray(item.subcategoryTags) ? item.subcategoryTags : [],
+  ctaLabel: item.ctaLabel ?? null,
+  logoUrl: item.logoUrl ?? null,
+  enrichmentConfidence: item.enrichmentConfidence ?? null,
+  needsReview: item.needsReview ?? false,
+  createdAt: item.createdAt,
+});
 
 function TagsInput({
   tagsText,
@@ -1177,6 +1200,7 @@ function ItemDetailModal({
   const link = "link" in item ? (item as { link: string | null }).link : null;
   const referralCode = "referralCode" in item ? (item as { referralCode: string | null }).referralCode : null;
   const notes = "notes" in item ? (item as { notes: string | null }).notes : null;
+  const affiliateItem = tab === "affiliates" ? normalizeAffiliateItem(item as AffiliateItem) : null;
 
   const copyCode = () => {
     if (referralCode) {
@@ -1300,18 +1324,30 @@ function ItemDetailModal({
           )}
 
           {/* Affiliate category + description */}
-          {tab === "affiliates" && (item as AffiliateItem).category && (item as AffiliateItem).category !== "OTHER" && (
+          {tab === "affiliates" && affiliateItem?.category && affiliateItem.category !== "OTHER" && (
             <span
               className="text-xs px-2.5 py-0.5 rounded-full inline-block"
               style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
             >
-              {AFFILIATE_CATEGORY_OPTIONS.find((o) => o.value === (item as AffiliateItem).category)?.label || (item as AffiliateItem).category}
+              {AFFILIATE_CATEGORY_OPTIONS.find((o) => o.value === affiliateItem.category)?.label || affiliateItem.category}
             </span>
           )}
-          {tab === "affiliates" && (item as AffiliateItem).description && (
+          {tab === "affiliates" && affiliateItem?.description && (
             <p className="text-sm" style={{ color: "var(--text)" }}>
-              {(item as AffiliateItem).description}
+              {affiliateItem.description}
             </p>
+          )}
+          {tab === "affiliates" && affiliateItem?.needsReview && (
+            <p className="text-xs font-medium" style={{ color: "#9A7B2E" }}>
+              Needs review
+            </p>
+          )}
+          {tab === "affiliates" && affiliateItem?.logoUrl && (
+            <img
+              src={affiliateItem.logoUrl}
+              alt={`${item.name} logo`}
+              className="h-8 w-auto object-contain rounded"
+            />
           )}
 
           {/* Notes */}
@@ -1359,7 +1395,13 @@ function ItemDetailModal({
               style={{ color: "#ffffff" }}
             >
               <HiExternalLink className="w-4 h-4" />
-              {link ? "Shop Now" : tab === "workouts" ? "Watch Video" : "View Source"}
+              {tab === "affiliates" && affiliateItem?.ctaLabel
+                ? affiliateItem.ctaLabel
+                : link
+                  ? "Shop Now"
+                  : tab === "workouts"
+                    ? "Watch Video"
+                    : "View Source"}
             </a>
           )}
 
@@ -1416,7 +1458,15 @@ export default function CatalogPage() {
         else if (tab === "supplements") setSupplements(Array.isArray(data) ? data : []);
         else if (tab === "accessories") setAccessories(Array.isArray(data) ? data : []);
         else if (tab === "wellness") setWellness(Array.isArray(data) ? data : []);
-        else if (tab === "affiliates") setAffiliates(Array.isArray(data) ? data : []);
+        else if (tab === "affiliates") {
+          setAffiliates(
+            Array.isArray(data)
+              ? data
+                  .filter((item): item is { id: string; name: string; createdAt: string } => !!item?.id && !!item?.name && !!item?.createdAt)
+                  .map((item) => normalizeAffiliateItem(item))
+              : []
+          );
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -1478,6 +1528,9 @@ export default function CatalogPage() {
     }
     if (tab === "affiliates" && "brand" in item && item.brand) {
       rawTags.push(item.brand);
+    }
+    if (tab === "affiliates" && "subcategoryTags" in item && Array.isArray(item.subcategoryTags)) {
+      rawTags.push(...item.subcategoryTags);
     }
     if (tab === "affiliates" && "category" in item && item.category && item.category !== "OTHER") {
       const catLabels: Record<string, string> = {
@@ -1616,7 +1669,7 @@ export default function CatalogPage() {
           {tab === "affiliates" && (
             <AddAffiliateForm
               onAdd={(a) => {
-                setAffiliates((p) => [a, ...p]);
+                setAffiliates((p) => [normalizeAffiliateItem(a), ...p]);
                 setShowForm(false);
               }}
             />
