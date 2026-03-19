@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 
 const STORAGE_KEY = "rf_welcome_seen";
@@ -36,12 +36,40 @@ interface Props {
 export default function OnboardingModal({ onClose }: Props) {
   const [step, setStep] = useState(0);
 
-  function dismiss() {
+  const dismiss = useCallback(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY, "1");
     }
     onClose();
-  }
+  }, [onClose]);
+
+  const requestDismiss = useCallback(() => {
+    if (step === 0) {
+      dismiss();
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      const shouldDismiss = window.confirm(
+        "Are you sure you want to close onboarding? You can revisit it later from your profile settings.",
+      );
+
+      if (shouldDismiss) {
+        dismiss();
+      }
+    }
+  }, [dismiss, step]);
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        requestDismiss();
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [requestDismiss]);
 
   const isLast = step === steps.length - 1;
   const current = steps[step];
@@ -50,16 +78,20 @@ export default function OnboardingModal({ onClose }: Props) {
     <div
       className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
       style={{ background: "rgba(24,25,15,0.5)", backdropFilter: "blur(4px)" }}
-      onClick={(e) => { if (e.target === e.currentTarget) dismiss(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          requestDismiss();
+        }
+      }}
     >
       <div className="relative w-full max-w-sm rounded-t-2xl sm:rounded-2xl card-shell" style={{ borderRadius: "32px 32px 0 0" }}>
         <div className="card-core p-6 pb-8 sm:rounded-2xl" style={{ borderRadius: "28px 28px 0 0" }}>
           {/* Close button */}
           <button
-            onClick={dismiss}
+            onClick={requestDismiss}
             className="absolute top-6 right-6 w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold"
             style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}
-            aria-label="Skip onboarding"
+            aria-label="Close onboarding"
           >
             ✕
           </button>
@@ -68,6 +100,9 @@ export default function OnboardingModal({ onClose }: Props) {
           <div className="text-center mt-2">
             <div className="text-5xl mb-4">{current.emoji}</div>
             <h2 className="text-xl font-normal mb-1" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>{current.title}</h2>
+            <p className="text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>
+              Step {step + 1} of {steps.length}
+            </p>
             <p className="text-sm font-semibold mb-3" style={{ color: "var(--brand)" }}>
               {current.subtitle}
             </p>
