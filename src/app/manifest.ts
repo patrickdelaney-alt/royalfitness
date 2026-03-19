@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Royal Beta",
+    name: "Royal",
     short_name: "Royal",
     description: "Track your workouts. Track your nutrition. Track your wellness.",
     start_url: "/",

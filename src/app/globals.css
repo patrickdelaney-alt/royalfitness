@@ -343,21 +343,6 @@ input, textarea {
   padding: 5px 12px;
 }
 
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(36,63,22,0.06);
-  border: 1px solid rgba(36,63,22,0.14);
-  border-radius: 9999px;
-  padding: 7px 16px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.20em;
-  text-transform: uppercase;
-  color: var(--brand);
-}
-
 /* ── Navigation (Floating Pill) ──────────────────────────────────────────── */
 
 .nav-pill {
