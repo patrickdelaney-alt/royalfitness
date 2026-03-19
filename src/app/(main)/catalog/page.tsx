@@ -12,6 +12,7 @@ import {
   HiPhotograph,
   HiViewGrid,
   HiViewList,
+  HiPencil,
 } from "react-icons/hi";
 import { useRouter } from "next/navigation";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
@@ -1125,17 +1126,287 @@ function AddAffiliateForm({ onAdd }: { onAdd: (a: AffiliateItem) => void }) {
   );
 }
 
+function EditItemModal({
+  item,
+  tab,
+  onClose,
+  onSave,
+}: {
+  item: AnyItem;
+  tab: Exclude<Tab, "affiliates">;
+  onClose: () => void;
+  onSave: (updated: AnyItem) => void;
+}) {
+  const [name, setName] = useState(item.name ?? "");
+  const [ingredients, setIngredients] = useState(
+    tab === "meals" ? ((item as SavedMeal).ingredients ?? []).join(", ") : ""
+  );
+  const [calories, setCalories] = useState(
+    tab === "meals" && (item as SavedMeal).calories != null ? String((item as SavedMeal).calories) : ""
+  );
+  const [protein, setProtein] = useState(
+    tab === "meals" && (item as SavedMeal).protein != null ? String((item as SavedMeal).protein) : ""
+  );
+  const [carbs, setCarbs] = useState(
+    tab === "meals" && (item as SavedMeal).carbs != null ? String((item as SavedMeal).carbs) : ""
+  );
+  const [fat, setFat] = useState(
+    tab === "meals" && (item as SavedMeal).fat != null ? String((item as SavedMeal).fat) : ""
+  );
+  const [recipeSourceUrl, setRecipeSourceUrl] = useState(
+    tab === "meals" ? (item as SavedMeal).recipeSourceUrl ?? "" : ""
+  );
+  const [exercisesJson, setExercisesJson] = useState(
+    tab === "workouts" ? (item as SavedWorkout).exercisesJson ?? "" : ""
+  );
+  const [videoUrl, setVideoUrl] = useState(
+    tab === "workouts" ? (item as SavedWorkout).videoUrl ?? "" : ""
+  );
+  const [brand, setBrand] = useState(
+    tab === "supplements" ? (item as Supplement).brand ?? "" : ""
+  );
+  const [dose, setDose] = useState(
+    tab === "supplements" ? (item as Supplement).dose ?? "" : ""
+  );
+  const [schedule, setSchedule] = useState(
+    tab === "supplements" ? (item as Supplement).schedule ?? "" : ""
+  );
+  const [type, setType] = useState(
+    tab === "accessories" ? (item as Accessory).type ?? "" : ""
+  );
+  const [activityType, setActivityType] = useState(
+    tab === "wellness" ? (item as SavedWellnessItem).activityType ?? "" : ""
+  );
+  const [durationMinutes, setDurationMinutes] = useState(
+    tab === "wellness" && (item as SavedWellnessItem).durationMinutes != null
+      ? String((item as SavedWellnessItem).durationMinutes)
+      : ""
+  );
+  const [link, setLink] = useState(
+    tab === "supplements"
+      ? (item as Supplement).link ?? ""
+      : tab === "accessories"
+        ? (item as Accessory).link ?? ""
+        : tab === "wellness"
+          ? (item as SavedWellnessItem).link ?? ""
+          : ""
+  );
+  const [referralCode, setReferralCode] = useState(
+    tab === "supplements"
+      ? (item as Supplement).referralCode ?? ""
+      : tab === "accessories"
+        ? (item as Accessory).referralCode ?? ""
+        : tab === "wellness"
+          ? (item as SavedWellnessItem).referralCode ?? ""
+          : ""
+  );
+  const [notes, setNotes] = useState(("notes" in item ? item.notes : "") ?? "");
+  const [photoUrl, setPhotoUrl] = useState(("photoUrl" in item ? item.photoUrl : "") ?? "");
+  const [tagsText, setTagsText] = useState((item.tags ?? []).join(", "));
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async () => {
+    if (!name.trim()) {
+      setError("Name required");
+      return;
+    }
+
+    const parsedTags = dedupeTags(parseTagsText(tagsText));
+    const tagsError = getTagValidationError(parsedTags);
+    if (tagsError) {
+      setError(tagsError);
+      return;
+    }
+
+    if (tab === "workouts") {
+      try {
+        JSON.parse(exercisesJson || "[]");
+      } catch {
+        setError("Exercises must be valid JSON");
+        return;
+      }
+    }
+
+    const payload: Record<string, unknown> = {};
+    const addIfChanged = (key: string, value: unknown, original: unknown) => {
+      const left = Array.isArray(value) ? JSON.stringify(value) : value;
+      const right = Array.isArray(original) ? JSON.stringify(original) : original;
+      if (left !== right) payload[key] = value;
+    };
+
+    addIfChanged("name", name.trim(), item.name);
+    addIfChanged("tags", parsedTags, item.tags ?? []);
+
+    if (tab === "meals") {
+      const original = item as SavedMeal;
+      addIfChanged(
+        "ingredients",
+        ingredients.split(",").map((s) => s.trim()).filter(Boolean),
+        original.ingredients ?? []
+      );
+      addIfChanged("calories", calories ? parseInt(calories) : undefined, original.calories ?? undefined);
+      addIfChanged("protein", protein ? parseFloat(protein) : undefined, original.protein ?? undefined);
+      addIfChanged("carbs", carbs ? parseFloat(carbs) : undefined, original.carbs ?? undefined);
+      addIfChanged("fat", fat ? parseFloat(fat) : undefined, original.fat ?? undefined);
+      addIfChanged("recipeSourceUrl", recipeSourceUrl.trim(), original.recipeSourceUrl ?? "");
+      addIfChanged("photoUrl", photoUrl || undefined, original.photoUrl ?? undefined);
+      addIfChanged("notes", notes.trim(), original.notes ?? "");
+    } else if (tab === "workouts") {
+      const original = item as SavedWorkout;
+      addIfChanged("exercisesJson", exercisesJson.trim(), original.exercisesJson ?? "");
+      addIfChanged("videoUrl", videoUrl.trim(), original.videoUrl ?? "");
+      addIfChanged("notes", notes.trim(), original.notes ?? "");
+    } else if (tab === "supplements") {
+      const original = item as Supplement;
+      addIfChanged("brand", brand.trim(), original.brand ?? "");
+      addIfChanged("dose", dose.trim(), original.dose ?? "");
+      addIfChanged("schedule", schedule.trim(), original.schedule ?? "");
+      addIfChanged("notes", notes.trim(), original.notes ?? "");
+      addIfChanged("photoUrl", photoUrl || undefined, original.photoUrl ?? undefined);
+      addIfChanged("link", link.trim(), original.link ?? "");
+      addIfChanged("referralCode", referralCode.trim(), original.referralCode ?? "");
+    } else if (tab === "accessories") {
+      const original = item as Accessory;
+      addIfChanged("type", type.trim(), original.type ?? "");
+      addIfChanged("link", link.trim(), original.link ?? "");
+      addIfChanged("photoUrl", photoUrl || undefined, original.photoUrl ?? undefined);
+      addIfChanged("referralCode", referralCode.trim(), original.referralCode ?? "");
+      addIfChanged("notes", notes.trim(), original.notes ?? "");
+    } else if (tab === "wellness") {
+      const original = item as SavedWellnessItem;
+      addIfChanged("activityType", activityType.trim(), original.activityType ?? "");
+      addIfChanged(
+        "durationMinutes",
+        durationMinutes ? parseInt(durationMinutes) : undefined,
+        original.durationMinutes ?? undefined
+      );
+      addIfChanged("link", link.trim(), original.link ?? "");
+      addIfChanged("photoUrl", photoUrl || undefined, original.photoUrl ?? undefined);
+      addIfChanged("referralCode", referralCode.trim(), original.referralCode ?? "");
+      addIfChanged("notes", notes.trim(), original.notes ?? "");
+    }
+
+    if (Object.keys(payload).length === 0) {
+      setError("No changes to save");
+      return;
+    }
+
+    setSubmitting(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/catalog/${tab}?id=${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to update");
+        return;
+      }
+      const updated = await res.json();
+      onSave(updated);
+      onClose();
+    } catch {
+      setError("Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div
+        className="relative w-full sm:max-w-md max-h-[85vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl p-4 space-y-3"
+        style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold">Edit {item.name}</h3>
+          <button onClick={onClose} className="p-1.5 rounded-full" style={{ background: "rgba(24,25,15,0.09)" }}>
+            <HiX className="w-4 h-4" />
+          </button>
+        </div>
+
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" className={inputCls} />
+        {tab === "meals" && (
+          <>
+            <input value={ingredients} onChange={(e) => setIngredients(e.target.value)} placeholder="Ingredients (comma-separated)" className={inputCls} />
+            <div className="grid grid-cols-2 gap-2">
+              <input type="number" value={calories} onChange={(e) => setCalories(e.target.value)} placeholder="Calories" className={inputCls} />
+              <input type="number" step="0.1" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="Protein (g)" className={inputCls} />
+              <input type="number" step="0.1" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="Carbs (g)" className={inputCls} />
+              <input type="number" step="0.1" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="Fat (g)" className={inputCls} />
+            </div>
+            <input value={recipeSourceUrl} onChange={(e) => setRecipeSourceUrl(e.target.value)} placeholder="Recipe URL (optional)" className={inputCls} />
+          </>
+        )}
+        {tab === "workouts" && (
+          <>
+            <textarea value={exercisesJson} onChange={(e) => setExercisesJson(e.target.value)} rows={4} placeholder='Exercises JSON (e.g. [{"name":"Squat","sets":3}])' className="textarea-dark w-full resize-none" />
+            <input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="Video URL (optional)" className={inputCls} />
+          </>
+        )}
+        {tab === "supplements" && (
+          <>
+            <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand (optional)" className={inputCls} />
+            <div className="grid grid-cols-2 gap-2">
+              <input value={dose} onChange={(e) => setDose(e.target.value)} placeholder="Dose (optional)" className={inputCls} />
+              <input value={schedule} onChange={(e) => setSchedule(e.target.value)} placeholder="Schedule (optional)" className={inputCls} />
+            </div>
+            <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Link (optional)" className={inputCls} />
+            <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Referral Code (optional)" className={inputCls} />
+          </>
+        )}
+        {tab === "accessories" && (
+          <>
+            <input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (optional)" className={inputCls} />
+            <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Link (optional)" className={inputCls} />
+            <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Referral Code (optional)" className={inputCls} />
+          </>
+        )}
+        {tab === "wellness" && (
+          <>
+            <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="Activity Type (optional)" className={inputCls} />
+            <input type="number" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} placeholder="Duration (minutes)" className={inputCls} />
+            <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Link (optional)" className={inputCls} />
+            <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Referral Code (optional)" className={inputCls} />
+          </>
+        )}
+
+        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes (optional)" className="textarea-dark w-full resize-none" />
+        {tab !== "workouts" && <PhotoUpload photoUrl={photoUrl || null} onUpload={setPhotoUrl} />}
+        <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
+        {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
+
+        <button
+          onClick={handleSubmit}
+          disabled={submitting}
+          className="w-full py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
+          style={{ color: "#ffffff" }}
+        >
+          {submitting ? "Saving..." : "Save Changes"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Detail Modal ──────────────────────────────────────────────────────────────
 
 function ItemDetailModal({
   item,
   tab,
   onClose,
+  onEdit,
   onDelete,
 }: {
   item: AnyItem;
   tab: Tab;
   onClose: () => void;
+  onEdit: () => void;
   onDelete: () => void;
 }) {
   const [copied, setCopied] = useState(false);
@@ -1334,6 +1605,17 @@ function ItemDetailModal({
             </a>
           )}
 
+          {tab !== "affiliates" && (
+            <button
+              onClick={onEdit}
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium transition-all"
+              style={{ background: "rgba(82,133,49,0.12)", color: "#528531", border: "1px solid rgba(82,133,49,0.25)" }}
+            >
+              <HiPencil className="w-4 h-4" />
+              Edit Item
+            </button>
+          )}
+
           {/* Delete */}
           <button
             onClick={handleDelete}
@@ -1358,6 +1640,7 @@ export default function CatalogPage() {
   const [showForm, setShowForm] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedItem, setSelectedItem] = useState<AnyItem | null>(null);
+  const [editingItem, setEditingItem] = useState<AnyItem | null>(null);
 
   const [meals, setMeals] = useState<SavedMeal[]>([]);
   const [workouts, setWorkouts] = useState<SavedWorkout[]>([]);
@@ -1405,6 +1688,15 @@ export default function CatalogPage() {
       else if (tab === "affiliates") setAffiliates((p) => p.filter((a) => a.id !== id));
     }
     setSelectedItem(null);
+  };
+
+  const handleSaveEdited = (updated: AnyItem) => {
+    if (tab === "meals") setMeals((p) => p.map((item) => (item.id === updated.id ? (updated as SavedMeal) : item)));
+    else if (tab === "workouts") setWorkouts((p) => p.map((item) => (item.id === updated.id ? (updated as SavedWorkout) : item)));
+    else if (tab === "supplements") setSupplements((p) => p.map((item) => (item.id === updated.id ? (updated as Supplement) : item)));
+    else if (tab === "accessories") setAccessories((p) => p.map((item) => (item.id === updated.id ? (updated as Accessory) : item)));
+    else if (tab === "wellness") setWellness((p) => p.map((item) => (item.id === updated.id ? (updated as SavedWellnessItem) : item)));
+    setSelectedItem(updated);
   };
 
   const currentItems = (): AnyItem[] => {
@@ -1732,7 +2024,17 @@ export default function CatalogPage() {
           item={selectedItem}
           tab={tab}
           onClose={() => setSelectedItem(null)}
+          onEdit={() => setEditingItem(selectedItem)}
           onDelete={() => handleDelete(selectedItem.id)}
+        />
+      )}
+
+      {editingItem && tab !== "affiliates" && (
+        <EditItemModal
+          item={editingItem}
+          tab={tab}
+          onClose={() => setEditingItem(null)}
+          onSave={handleSaveEdited}
         />
       )}
     </div>
