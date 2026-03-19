@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
-import { catalogWellnessSchema } from "@/lib/validations";
+import { catalogWellnessSchema, mergeLegacyTaxonomyTag } from "@/lib/validations";
 
 export async function DELETE(req: NextRequest) {
   try {
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
         link: data.link,
         photoUrl: data.photoUrl,
         referralCode: data.referralCode,
-        tags: data.tags,
+        tags: mergeLegacyTaxonomyTag(data.tags, data.activityType),
         notes: data.notes,
       },
     });

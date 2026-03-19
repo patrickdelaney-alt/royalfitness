@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
-import { wellnessAccessorySchema } from "@/lib/validations";
+import { mergeLegacyTaxonomyTag, wellnessAccessorySchema } from "@/lib/validations";
 
 export async function GET() {
   try {
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
         link: data.link,
         photoUrl: data.photoUrl,
         referralCode: data.referralCode,
-        tags: data.tags,
+        tags: mergeLegacyTaxonomyTag(data.tags, data.type),
         notes: data.notes,
       },
     });

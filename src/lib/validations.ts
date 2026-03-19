@@ -139,38 +139,34 @@ export const supplementSchema = z.object({
   tags: z.array(z.string()).default([]),
 });
 
-export const wellnessAccessorySchema = z
-  .object({
-    name: z.string().min(1).max(200),
-    type: z.string().max(100).optional(), // legacy optional taxonomy field
-    link: z.string().optional(),
-    photoUrl: z.string().optional(),
-    referralCode: z.string().max(100).optional(),
-    tags: z.array(z.string()).default([]),
-    notes: z.string().max(2000).optional(),
-  })
-  .transform((data) => ({
-    ...data,
-    // Tags are now primary taxonomy. Keep legacy `type` write for compatibility during migration.
-    tags: Array.from(new Set([...data.tags, ...(data.type ? [data.type] : [])])),
-  }));
+export const wellnessAccessorySchema = z.object({
+  name: z.string().min(1).max(200),
+  type: z.string().max(100).optional(), // legacy optional taxonomy field
+  link: z.string().optional(),
+  photoUrl: z.string().optional(),
+  referralCode: z.string().max(100).optional(),
+  tags: z.array(z.string()).default([]),
+  notes: z.string().max(2000).optional(),
+});
 
-export const catalogWellnessSchema = z
-  .object({
-    name: z.string().min(1).max(200),
-    activityType: z.string().max(100).optional(), // legacy optional taxonomy field
-    durationMinutes: z.number().int().positive().optional(),
-    link: z.string().optional(),
-    photoUrl: z.string().optional(),
-    referralCode: z.string().max(100).optional(),
-    tags: z.array(z.string()).default([]),
-    notes: z.string().max(2000).optional(),
-  })
-  .transform((data) => ({
-    ...data,
-    // TODO(catalog-taxonomy): Backfill DB tags from legacy fields and remove legacy dependencies.
-    tags: Array.from(new Set([...data.tags, ...(data.activityType ? [data.activityType] : [])])),
-  }));
+export const catalogWellnessSchema = z.object({
+  name: z.string().min(1).max(200),
+  activityType: z.string().max(100).optional(), // legacy optional taxonomy field
+  durationMinutes: z.number().int().positive().optional(),
+  link: z.string().optional(),
+  photoUrl: z.string().optional(),
+  referralCode: z.string().max(100).optional(),
+  tags: z.array(z.string()).default([]),
+  notes: z.string().max(2000).optional(),
+});
+
+export const mergeLegacyTaxonomyTag = (tags: string[], legacyValue?: string): string[] => {
+  if (!legacyValue) return tags;
+  return Array.from(new Set([...tags, legacyValue]));
+};
+
+// TODO(catalog-taxonomy): Run a DB migration to backfill tags from legacy fields,
+// then remove legacy taxonomy writes/dependencies once reads are fully tag-based.
 
 export const stepsEntrySchema = z.object({
   date: z.string(), // ISO date string
