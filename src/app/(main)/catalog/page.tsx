@@ -87,6 +87,10 @@ type Tab = "meals" | "workouts" | "supplements" | "accessories" | "wellness";
 type AnyItem = SavedMeal | SavedWorkout | Supplement | Accessory | SavedWellnessItem;
 
 const inputCls = "input-dark w-full";
+const TAG_LIMITS = {
+  maxCount: 12,
+  maxLength: 24,
+};
 
 const TABS: { key: Tab; label: string; emoji: string }[] = [
   { key: "meals", label: "Meals", emoji: "🍽️" },
@@ -103,6 +107,53 @@ const CATEGORY_GRADIENTS: Record<Tab, string> = {
   accessories: "from-purple-600/80 to-pink-700/80",
   wellness: "from-teal-600/80 to-cyan-700/80",
 };
+
+const parseTagsText = (tagsText: string) =>
+  tagsText
+    .split(",")
+    .map((t) => t.trim().toLowerCase())
+    .filter(Boolean);
+
+const dedupeTags = (tags: string[]) => Array.from(new Set(tags));
+
+const getTagValidationError = (tags: string[]) => {
+  if (tags.length > TAG_LIMITS.maxCount) {
+    return `Use up to ${TAG_LIMITS.maxCount} tags`;
+  }
+  const overLimitTag = tags.find((tag) => tag.length > TAG_LIMITS.maxLength);
+  if (overLimitTag) {
+    return `Each tag must be ${TAG_LIMITS.maxLength} chars or fewer`;
+  }
+  return "";
+};
+
+function TagsInput({
+  tagsText,
+  setTagsText,
+}: {
+  tagsText: string;
+  setTagsText: (value: string) => void;
+}) {
+  const parsedTags = dedupeTags(parseTagsText(tagsText));
+  const validationError = getTagValidationError(parsedTags);
+
+  return (
+    <div className="space-y-1">
+      <input
+        value={tagsText}
+        onChange={(e) => setTagsText(e.target.value)}
+        placeholder="Tags (comma-separated)"
+        className={inputCls}
+      />
+      <div className="flex items-center justify-between gap-2 text-[11px]" style={{ color: "var(--text-muted)" }}>
+        <span>
+          {parsedTags.length}/{TAG_LIMITS.maxCount} tags · {TAG_LIMITS.maxLength} chars max
+        </span>
+        {validationError ? <span style={{ color: "#f87171" }}>{validationError}</span> : null}
+      </div>
+    </div>
+  );
+}
 
 // ── Photo Upload Component ────────────────────────────────────────────────────
 
@@ -190,6 +241,7 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
   const [carbs, setCarbs] = useState("");
   const [fat, setFat] = useState("");
   const [notes, setNotes] = useState("");
+  const [tagsText, setTagsText] = useState("");
   const [recipeSourceUrl, setRecipeSourceUrl] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -198,6 +250,12 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
   const handleSubmit = async () => {
     if (!name.trim()) {
       setError("Name required");
+      return;
+    }
+    const parsedTags = dedupeTags(parseTagsText(tagsText));
+    const tagsError = getTagValidationError(parsedTags);
+    if (tagsError) {
+      setError(tagsError);
       return;
     }
     setSubmitting(true);
@@ -219,7 +277,7 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
           recipeSourceUrl: recipeSourceUrl.trim() || undefined,
           photoUrl: photoUrl || undefined,
           notes: notes.trim() || undefined,
-          tags: [],
+          tags: parsedTags,
         }),
       });
       if (!res.ok) {
@@ -273,6 +331,7 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
         placeholder="Notes"
         className="textarea-dark w-full resize-none"
       />
+      <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
       <button
         onClick={handleSubmit}
         disabled={submitting}
@@ -291,6 +350,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
   const [dose, setDose] = useState("");
   const [schedule, setSchedule] = useState("");
   const [notes, setNotes] = useState("");
+  const [tagsText, setTagsText] = useState("");
   const [link, setLink] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
@@ -300,6 +360,12 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
   const handleSubmit = async () => {
     if (!name.trim()) {
       setError("Name required");
+      return;
+    }
+    const parsedTags = dedupeTags(parseTagsText(tagsText));
+    const tagsError = getTagValidationError(parsedTags);
+    if (tagsError) {
+      setError(tagsError);
       return;
     }
     setSubmitting(true);
@@ -317,7 +383,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
           link: link.trim() || undefined,
           referralCode: referralCode.trim() || undefined,
           photoUrl: photoUrl || undefined,
-          tags: [],
+          tags: parsedTags,
         }),
       });
       if (!res.ok) {
@@ -369,6 +435,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
         )}
       </div>
       <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
+      <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
       <button
         onClick={handleSubmit}
         disabled={submitting}
@@ -388,12 +455,19 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
   const [referralCode, setReferralCode] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
+  const [tagsText, setTagsText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async () => {
     if (!name.trim()) {
       setError("Name required");
+      return;
+    }
+    const parsedTags = dedupeTags(parseTagsText(tagsText));
+    const tagsError = getTagValidationError(parsedTags);
+    if (tagsError) {
+      setError(tagsError);
       return;
     }
     setSubmitting(true);
@@ -409,7 +483,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
           referralCode: referralCode.trim() || undefined,
           photoUrl: photoUrl || undefined,
           notes: notes.trim() || undefined,
-          tags: [],
+          tags: parsedTags,
         }),
       });
       if (!res.ok) {
@@ -457,6 +531,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
         )}
       </div>
       <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
+      <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
       <button
         onClick={handleSubmit}
         disabled={submitting}
@@ -477,12 +552,19 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
   const [referralCode, setReferralCode] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
+  const [tagsText, setTagsText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async () => {
     if (!name.trim()) {
       setError("Name required");
+      return;
+    }
+    const parsedTags = dedupeTags(parseTagsText(tagsText));
+    const tagsError = getTagValidationError(parsedTags);
+    if (tagsError) {
+      setError(tagsError);
       return;
     }
     setSubmitting(true);
@@ -499,7 +581,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
           referralCode: referralCode.trim() || undefined,
           photoUrl: photoUrl || undefined,
           notes: notes.trim() || undefined,
-          tags: [],
+          tags: parsedTags,
         }),
       });
       if (!res.ok) {
@@ -556,6 +638,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         )}
       </div>
       <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
+      <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
       <button
         onClick={handleSubmit}
         disabled={submitting}
@@ -573,12 +656,19 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
   const [exercises, setExercises] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [notes, setNotes] = useState("");
+  const [tagsText, setTagsText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async () => {
     if (!name.trim()) {
       setError("Name required");
+      return;
+    }
+    const parsedTags = dedupeTags(parseTagsText(tagsText));
+    const tagsError = getTagValidationError(parsedTags);
+    if (tagsError) {
+      setError(tagsError);
       return;
     }
     setSubmitting(true);
@@ -597,7 +687,7 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
           exercisesJson: JSON.stringify(exerciseList),
           videoUrl: videoUrl.trim() || undefined,
           notes: notes.trim() || undefined,
-          tags: [],
+          tags: parsedTags,
         }),
       });
       if (!res.ok) {
@@ -633,6 +723,7 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
         className={inputCls}
       />
       <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
+      <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
       <button
         onClick={handleSubmit}
         disabled={submitting}
