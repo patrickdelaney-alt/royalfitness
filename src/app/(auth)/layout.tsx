@@ -31,7 +31,7 @@ export default function AuthLayout({
       {/* Royal wordmark branding */}
       <div className="mb-8 text-center">
         <div className="flex items-center justify-center gap-3 mb-3">
-          <div className="text-left">
+          <div className="text-center">
             <h1
               className="text-3xl font-light tracking-tight leading-none"
               style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}
