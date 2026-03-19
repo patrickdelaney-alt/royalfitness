@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import {
   HiArrowLeft,
+  HiCheck,
+  HiChevronLeft,
+  HiChevronRight,
   HiPlus,
   HiTrash,
   HiExternalLink,
@@ -765,16 +768,40 @@ const AFFILIATE_CATEGORY_OPTIONS = [
   { value: "TECH_WEARABLES", label: "Tech / Wearables" },
 ];
 
+const AFFILIATE_CATEGORY_LABELS: Record<string, string> = {
+  OTHER: "Other",
+  SUPPLEMENTS: "Supplements",
+  WELLNESS_ACCESSORIES: "Wellness Accessories",
+  GYM_ACCESSORIES: "Gym Accessories",
+  RECOVERY_TOOLS: "Recovery Tools",
+  APPAREL: "Apparel",
+  NUTRITION: "Nutrition",
+  TECH_WEARABLES: "Tech / Wearables",
+};
+
 interface BulkItem {
+  id: string;
   name: string;
   brand: string | null;
   link: string | null;
   referralCode: string | null;
   category: string;
+  subcategory: string;
+  tagsText: string;
+  photoUrl: string | null;
+  confidence: number;
+  needsReview: boolean;
+  lowConfidenceConfirmed: boolean;
   included: boolean;
 }
 
-function AddAffiliateForm({ onAdd }: { onAdd: (a: AffiliateItem) => void }) {
+function AddAffiliateForm({
+  onAdd,
+  onBulkSaveComplete,
+}: {
+  onAdd: (a: AffiliateItem) => void;
+  onBulkSaveComplete: () => Promise<void>;
+}) {
   // Mode: "paste" (bulk) or "single" (manual single item)
   const [mode, setMode] = useState<"paste" | "single">("paste");
 
@@ -783,6 +810,7 @@ function AddAffiliateForm({ onAdd }: { onAdd: (a: AffiliateItem) => void }) {
   const [bulkItems, setBulkItems] = useState<BulkItem[]>([]);
   const [bulkParsed, setBulkParsed] = useState(false);
   const [bulkSubmitting, setBulkSubmitting] = useState(false);
+  const [reviewIndex, setReviewIndex] = useState(0);
 
   // Single item state
   const [name, setName] = useState("");
@@ -797,6 +825,15 @@ function AddAffiliateForm({ onAdd }: { onAdd: (a: AffiliateItem) => void }) {
 
   const [error, setError] = useState("");
 
+  const getConfidenceScore = (item: { brand: string | null; link: string | null; referralCode: string | null; category: string }) => {
+    let score = 0.35;
+    if (item.link) score += 0.3;
+    if (item.referralCode) score += 0.15;
+    if (item.brand) score += 0.15;
+    if (item.category !== "OTHER") score += 0.15;
+    return Math.min(0.99, score);
+  };
+
   // Parse bulk text
   const handleBulkParse = async () => {
     if (!rawText.trim()) return;
@@ -808,19 +845,30 @@ function AddAffiliateForm({ onAdd }: { onAdd: (a: AffiliateItem) => void }) {
       return;
     }
     setBulkItems(
-      detected.map((d) => ({
-        name: d.name,
-        brand: d.brand,
-        link: d.link,
-        referralCode: d.referralCode,
-        category: d.category,
-        included: true,
-      }))
+      detected.map((d, i) => {
+        const confidence = getConfidenceScore(d);
+        return {
+          id: `${Date.now()}-${i}`,
+          name: d.name,
+          brand: d.brand,
+          link: d.link,
+          referralCode: d.referralCode,
+          category: d.category,
+          subcategory: "",
+          tagsText: "",
+          photoUrl: null,
+          confidence,
+          needsReview: confidence < 0.75,
+          lowConfidenceConfirmed: confidence >= 0.55,
+          included: true,
+        };
+      })
     );
     setBulkParsed(true);
+    setReviewIndex(0);
   };
 
-  const updateBulkItem = (index: number, field: keyof BulkItem, value: string | boolean) => {
+  const updateBulkItem = (index: number, field: keyof BulkItem, value: string | boolean | null | number) => {
     setBulkItems((prev) =>
       prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
     );
@@ -837,6 +885,11 @@ function AddAffiliateForm({ onAdd }: { onAdd: (a: AffiliateItem) => void }) {
       setError("Every item needs a name");
       return;
     }
+    const lowConfidencePending = toSave.filter((item) => item.confidence < 0.55 && !item.lowConfidenceConfirmed);
+    if (lowConfidencePending.length > 0) {
+      setError(`Confirm ${lowConfidencePending.length} low-confidence item(s) before saving.`);
+      return;
+    }
     setBulkSubmitting(true);
     setError("");
     let savedCount = 0;
@@ -851,6 +904,8 @@ function AddAffiliateForm({ onAdd }: { onAdd: (a: AffiliateItem) => void }) {
             link: item.link?.trim() || undefined,
             referralCode: item.referralCode?.trim() || undefined,
             category: item.category,
+            photoUrl: item.photoUrl?.trim() || undefined,
+            tags: dedupeTags(parseTagsText(item.tagsText)),
           }),
         });
         if (res.ok) {
@@ -867,11 +922,29 @@ function AddAffiliateForm({ onAdd }: { onAdd: (a: AffiliateItem) => void }) {
       setRawText("");
       setBulkItems([]);
       setBulkParsed(false);
+      setReviewIndex(0);
+      await onBulkSaveComplete();
     }
     if (savedCount < toSave.length) {
       setError(`Saved ${savedCount}/${toSave.length} items. Some failed.`);
     }
   };
+
+  useEffect(() => {
+    if (!bulkParsed || mode !== "paste") return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        setReviewIndex((prev) => Math.min(prev + 1, Math.max(0, bulkItems.length - 1)));
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        setReviewIndex((prev) => Math.max(prev - 1, 0));
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [bulkParsed, mode, bulkItems.length]);
 
   // Single item smart-paste
   const handleSingleParse = () => {
@@ -994,65 +1067,95 @@ function AddAffiliateForm({ onAdd }: { onAdd: (a: AffiliateItem) => void }) {
                 <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
                   {bulkItems.filter((b) => b.included).length} of {bulkItems.length} items selected
                 </p>
-                {bulkItems.map((item, i) => (
-                  <div
-                    key={i}
-                    className="rounded-xl p-3 space-y-2 transition-opacity"
-                    style={{
-                      background: item.included ? "var(--surface)" : "rgba(36,63,22,0.02)",
-                      border: "1px solid rgba(36,63,22,0.10)",
-                      opacity: item.included ? 1 : 0.5,
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={item.included}
-                        onChange={(e) => updateBulkItem(i, "included", e.target.checked)}
-                        className="rounded"
-                      />
-                      <input
-                        value={item.name}
-                        onChange={(e) => updateBulkItem(i, "name", e.target.value)}
-                        placeholder="Name *"
-                        className="flex-1 text-sm font-medium bg-transparent outline-none"
-                        style={{ color: "var(--text)" }}
-                      />
-                      <select
-                        value={item.category}
-                        onChange={(e) => updateBulkItem(i, "category", e.target.value)}
-                        className="text-[10px] px-2 py-1 rounded-full border-none outline-none"
-                        style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
-                      >
-                        {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
+                {bulkItems.length > 0 && (() => {
+                  const activeIndex = Math.min(reviewIndex, bulkItems.length - 1);
+                  const item = bulkItems[activeIndex];
+                  if (!item) return null;
+                  const confidencePercent = Math.round(item.confidence * 100);
+                  const confidenceTone = item.confidence >= 0.75 ? "#528531" : item.confidence >= 0.55 ? "#9A7B2E" : "#f87171";
+                  const confidenceLabel = item.confidence >= 0.75 ? "High confidence" : item.confidence >= 0.55 ? "Medium confidence" : "Low confidence";
+                  return (
+                    <div
+                      className="rounded-xl p-3 space-y-3 transition-opacity"
+                      style={{
+                        background: item.included ? "var(--surface)" : "rgba(36,63,22,0.02)",
+                        border: item.needsReview ? "1px solid rgba(248,113,113,0.28)" : "1px solid rgba(36,63,22,0.10)",
+                        opacity: item.included ? 1 : 0.55,
+                      }}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                          Review {activeIndex + 1} / {bulkItems.length}
+                        </p>
+                        <span className="text-[10px] px-2 py-1 rounded-full font-medium" style={{ background: `${confidenceTone}22`, color: confidenceTone }}>
+                          {confidenceLabel} · {confidencePercent}%
+                        </span>
+                      </div>
+                      <input value={item.name} onChange={(e) => updateBulkItem(activeIndex, "name", e.target.value)} placeholder="Title *" className={inputCls} />
+                      <input value={item.brand ?? ""} onChange={(e) => updateBulkItem(activeIndex, "brand", e.target.value)} placeholder="Brand" className={inputCls} />
+                      <div className="grid grid-cols-2 gap-2">
+                        <select value={item.category} onChange={(e) => updateBulkItem(activeIndex, "category", e.target.value)} className="select-dark w-full">
+                          {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
+                        <input value={item.subcategory} onChange={(e) => updateBulkItem(activeIndex, "subcategory", e.target.value)} placeholder="Subcategory tag" className={inputCls} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input value={item.link ?? ""} onChange={(e) => updateBulkItem(activeIndex, "link", e.target.value)} placeholder="Affiliate link" className={inputCls} />
+                        <input value={item.referralCode ?? ""} onChange={(e) => updateBulkItem(activeIndex, "referralCode", e.target.value)} placeholder="Code" className={inputCls} />
+                      </div>
+                      <input value={item.photoUrl ?? ""} onChange={(e) => updateBulkItem(activeIndex, "photoUrl", e.target.value)} placeholder="Logo image URL" className={inputCls} />
+                      <input value={item.tagsText} onChange={(e) => updateBulkItem(activeIndex, "tagsText", e.target.value)} placeholder="Tags (comma-separated)" className={inputCls} />
+                      {item.confidence < 0.55 && item.included && (
+                        <label className="flex items-start gap-2 text-xs" style={{ color: "#f87171" }}>
+                          <input
+                            type="checkbox"
+                            checked={item.lowConfidenceConfirmed}
+                            onChange={(e) => updateBulkItem(activeIndex, "lowConfidenceConfirmed", e.target.checked)}
+                            className="mt-0.5 rounded"
+                          />
+                          Confirm this low-confidence item before final save.
+                        </label>
+                      )}
+                      <div className="flex flex-wrap gap-2 text-[10px]" style={{ color: "var(--text-muted)" }}>
+                        {item.link && <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}><HiLink className="inline w-2.5 h-2.5 mr-1" />{item.link}</span>}
+                        {item.referralCode && <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(154,123,46,0.12)", color: "#9A7B2E" }}>{item.referralCode}</span>}
+                        <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}>{AFFILIATE_CATEGORY_LABELS[item.category] ?? "Other"}</span>
+                        {item.subcategory.trim() && <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}>#{item.subcategory.trim()}</span>}
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => updateBulkItem(activeIndex, "included", true)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(82,133,49,0.14)", color: "#528531" }}>Accept</button>
+                        <button onClick={() => updateBulkItem(activeIndex, "included", false)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(248,113,113,0.14)", color: "#f87171" }}>Skip</button>
+                        <button onClick={() => updateBulkItem(activeIndex, "needsReview", true)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(36,63,22,0.08)", color: "var(--text-muted)" }}>Edit</button>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setReviewIndex((prev) => Math.max(prev - 1, 0))}
+                          disabled={activeIndex === 0}
+                          className="flex-1 py-2 rounded-xl text-xs font-medium disabled:opacity-40"
+                          style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}
+                        >
+                          <HiChevronLeft className="inline w-3.5 h-3.5 mr-1" />
+                          Previous
+                        </button>
+                        <button
+                          onClick={() => setReviewIndex((prev) => Math.min(prev + 1, bulkItems.length - 1))}
+                          disabled={activeIndex === bulkItems.length - 1}
+                          className="flex-1 py-2 rounded-xl text-xs font-medium disabled:opacity-40"
+                          style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}
+                        >
+                          Next
+                          <HiChevronRight className="inline w-3.5 h-3.5 ml-1" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-2 text-[10px] flex-wrap" style={{ color: "var(--text-muted)" }}>
-                      {item.link && (
-                        <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}>
-                          <HiLink className="w-2.5 h-2.5" />
-                          {(() => { try { return new URL(item.link).hostname.replace(/^www\./, ""); } catch { return "link"; } })()}
-                        </span>
-                      )}
-                      {item.referralCode && (
-                        <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(154,123,46,0.12)", color: "#9A7B2E" }}>
-                          {item.referralCode}
-                        </span>
-                      )}
-                      {item.brand && (
-                        <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}>
-                          {item.brand}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })()}
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => { setBulkParsed(false); setBulkItems([]); }}
+                  onClick={() => { setBulkParsed(false); setBulkItems([]); setReviewIndex(0); }}
                   className="flex-1 py-2 rounded-xl text-sm font-medium"
                   style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}
                 >
@@ -1064,9 +1167,18 @@ function AddAffiliateForm({ onAdd }: { onAdd: (a: AffiliateItem) => void }) {
                   className="flex-1 py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
                   style={{ color: "#ffffff" }}
                 >
-                  {bulkSubmitting ? "Saving..." : `Save ${bulkItems.filter((b) => b.included).length} Items`}
+                  {bulkSubmitting ? "Saving..." : `Save Reviewed ${bulkItems.filter((b) => b.included).length}`}
                 </button>
               </div>
+              <button
+                onClick={handleBulkSubmit}
+                disabled={bulkSubmitting || bulkItems.filter((b) => b.included).length === 0}
+                className="w-full py-2 rounded-xl text-xs font-medium disabled:opacity-40"
+                style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}
+              >
+                <HiCheck className="inline w-3.5 h-3.5 mr-1" />
+                Save Selected (fallback)
+              </button>
             </>
           )}
         </>
@@ -1677,6 +1789,16 @@ export default function CatalogPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
+  const refreshAffiliates = async () => {
+    try {
+      const response = await fetch(endpointMap.affiliates);
+      const data = await response.json();
+      setAffiliates(Array.isArray(data) ? data : []);
+    } catch {
+      // no-op
+    }
+  };
+
   const handleDelete = async (id: string) => {
     const res = await fetch(`${endpointMap[tab]}?id=${id}`, { method: "DELETE" });
     if (res.ok) {
@@ -1856,6 +1978,10 @@ export default function CatalogPage() {
             <AddAffiliateForm
               onAdd={(a) => {
                 setAffiliates((p) => [a, ...p]);
+              }}
+              onBulkSaveComplete={async () => {
+                setTab("affiliates");
+                await refreshAffiliates();
                 setShowForm(false);
               }}
             />
