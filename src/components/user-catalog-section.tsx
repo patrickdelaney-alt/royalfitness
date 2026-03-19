@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { HiLockOpen } from "react-icons/hi2";
 import { HiExternalLink, HiX, HiLink, HiClipboardCopy } from "react-icons/hi";
+import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
+import { getCatalogDisplayTags } from "@/lib/catalog-tags";
 
 interface CatalogItem {
   id: string;
@@ -55,44 +57,13 @@ const CATEGORY_GRADIENTS: Record<CatalogType, string> = {
   affiliates: "from-amber-600/70 to-yellow-800/70",
 };
 
-const normalizeTagLabel = (value: string) =>
-  value
-    .trim()
-    .replace(/[_-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-
 const buildDisplayTags = (item: CatalogItem, type: CatalogType) => {
-  const seedTags = [...(item.tags ?? [])];
-
-  if (type === "accessories" && item.type) {
-    seedTags.push(item.type);
-  }
-
-  if (type === "wellness" && item.activityType) {
-    seedTags.push(item.activityType);
-  }
-
-  if (item.brand) {
-    seedTags.push(item.brand);
-  }
-
-  const seen = new Set<string>();
-  const displayTags: string[] = [];
-
-  seedTags.forEach((rawTag) => {
-    const normalized = normalizeTagLabel(rawTag);
-    if (!normalized) return;
-
-    const dedupeKey = normalized.toLowerCase();
-    if (seen.has(dedupeKey)) return;
-
-    seen.add(dedupeKey);
-    displayTags.push(normalized);
+  return getCatalogDisplayTags({
+    tags: item.tags,
+    brand: item.brand,
+    type: type === "accessories" ? item.type : null,
+    activityType: type === "wellness" ? item.activityType : null,
   });
-
-  return displayTags;
 };
 
 function DetailModal({
@@ -185,17 +156,7 @@ function DetailModal({
 
           {/* Tags */}
           {displayTags.length > 0 && (
-            <div className="flex gap-1.5 flex-wrap">
-              {displayTags.map((tag, i) => (
-                <span
-                  key={`${tag}-${i}`}
-                  className="text-xs px-2 py-0.5 rounded-full"
-                  style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
+            <SubcategoryChips tags={displayTags} />
           )}
 
           {/* Supplement details */}
@@ -457,9 +418,12 @@ export default function UserCatalogSection({
                       </span>
                     {/* Compact tag hint */}
                     {tileTags.length > 0 && (
-                        <span className="text-[9px] leading-none px-1.5 py-1 rounded-full bg-black/55 text-white">
-                          #{tileTags[0]}
-                        </span>
+                      <SubcategoryChips
+                        tags={tileTags}
+                        compact
+                        limit={1}
+                        className="[&>span]:!bg-black/55 [&>span]:!text-white"
+                      />
                     )}
                     </div>
 
