@@ -15,7 +15,7 @@ export default function WaitlistPage() {
       {/* Logo */}
       <div className="mb-10 text-center">
         <div className="flex items-center justify-center gap-3 mb-1">
-          <div className="text-left">
+          <div className="text-center">
             <h1
               className="text-3xl font-light tracking-tight leading-none"
               style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}
