@@ -8,7 +8,7 @@ import { compressImage } from "@/lib/compress-image";
 import { successNotification } from "@/lib/haptics";
 import { parseEmbedUrl, type EmbedProvider } from "@/lib/embed-parser";
 
-type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN" | "AFFILIATE";
+type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN";
 
 interface GymResult {
   id: string;
@@ -78,14 +78,6 @@ interface CreateDraftV1 {
       wellnessDuration: string;
       intensity: string;
       wellnessMood: number;
-    };
-    affiliate: {
-      affiliateItemId: string | null;
-      title: string;
-      brand: string;
-      link: string;
-      referralCode: string;
-      category: string;
     };
     checkIn: {
       checkInGymId: string | null;
@@ -607,16 +599,6 @@ export default function CreatePostContent() {
   const [intensity, setIntensity] = useState("");
   const [wellnessMood, setWellnessMood] = useState(7);
 
-  // Affiliate fields
-  const [affTitle, setAffTitle] = useState("");
-  const [affBrand, setAffBrand] = useState("");
-  const [affLink, setAffLink] = useState("");
-  const [affCode, setAffCode] = useState("");
-  const [affCategory, setAffCategory] = useState("OTHER");
-  const [affItemId, setAffItemId] = useState<string | null>(null);
-  const [affCatalogItems, setAffCatalogItems] = useState<{ id: string; name: string; brand: string | null; link: string | null; referralCode: string | null; category: string }[]>([]);
-  const [affCatalogLoaded, setAffCatalogLoaded] = useState(false);
-
   // ── Check-in fields ───────────────────────────────────────
   const [checkInGymId, setCheckInGymId] = useState<string | null>(null);
   const [checkInGymName, setCheckInGymName] = useState("");
@@ -666,14 +648,6 @@ export default function CreatePostContent() {
         intensity,
         wellnessMood,
       },
-      affiliate: {
-        affiliateItemId: affItemId,
-        title: affTitle,
-        brand: affBrand,
-        link: affLink,
-        referralCode: affCode,
-        category: affCategory,
-      },
       checkIn: {
         checkInGymId,
         checkInGymName,
@@ -693,7 +667,7 @@ export default function CreatePostContent() {
     type, caption, visibility, postDate, workoutName, editingName, selectedMuscles, isClass,
     durationMinutes, perceivedExertion, energy, exercises, postTiming, showWorkoutAdvanced,
     mealName, mealType, ingredients, calories, protein, carbs, fat, saveToCatalog, activityType,
-    wellnessDuration, intensity, wellnessMood, affItemId, affTitle, affBrand, affLink, affCode, affCategory,
+    wellnessDuration, intensity, wellnessMood,
     checkInGymId, checkInGymName, gymSearchQuery, mediaUrl, mediaPreview, uploading, embedInput, embedPreview,
   ]);
 
@@ -959,15 +933,6 @@ export default function CreatePostContent() {
     setIntensity(draft.payload.wellness.intensity);
     setWellnessMood(draft.payload.wellness.wellnessMood);
 
-    if (draft.payload.affiliate) {
-      setAffItemId(draft.payload.affiliate.affiliateItemId);
-      setAffTitle(draft.payload.affiliate.title);
-      setAffBrand(draft.payload.affiliate.brand);
-      setAffLink(draft.payload.affiliate.link);
-      setAffCode(draft.payload.affiliate.referralCode);
-      setAffCategory(draft.payload.affiliate.category);
-    }
-
     setCheckInGymId(draft.payload.checkIn.checkInGymId);
     setCheckInGymName(draft.payload.checkIn.checkInGymName);
     setGymSearchQuery(draft.payload.checkIn.gymSearchQuery);
@@ -1127,27 +1092,6 @@ export default function CreatePostContent() {
         };
       }
 
-      if (type === "AFFILIATE") {
-        if (!affTitle.trim()) {
-          setError("Title is required for affiliate posts");
-          setSubmitting(false);
-          return;
-        }
-        if (!affLink.trim() && !affCode.trim()) {
-          setError("Add a link or code");
-          setSubmitting(false);
-          return;
-        }
-        body.affiliate = {
-          affiliateItemId: affItemId || undefined,
-          title: affTitle.trim(),
-          brand: affBrand.trim() || undefined,
-          link: affLink.trim() || undefined,
-          referralCode: affCode.trim() || undefined,
-          category: affCategory,
-        };
-      }
-
       if (type === "CHECKIN") {
         if (!checkInGymId) {
           setError("Please select a gym for your check-in");
@@ -1195,7 +1139,6 @@ export default function CreatePostContent() {
     WELLNESS: "Wellness",
     GENERAL: "General",
     CHECKIN: "Check-in",
-    AFFILIATE: "Affiliate",
   };
 
   const TYPE_EMOJI: Record<PostType, string> = {
@@ -1204,7 +1147,6 @@ export default function CreatePostContent() {
     WELLNESS: "🧘",
     GENERAL: "📝",
     CHECKIN: "📍",
-    AFFILIATE: "🔗",
   };
 
   const sourceMode: "LIVE_COMPLETED" | "LIVE_ACTIVE" | "MANUAL" = isFromSession
@@ -1980,93 +1922,6 @@ export default function CreatePostContent() {
               </div>
             </div>
 
-          </>
-        )}
-
-        {/* ─── AFFILIATE ───────────────────────────────────── */}
-        {type === "AFFILIATE" && (
-          <>
-            {/* Load existing catalog items for selection */}
-            {!affCatalogLoaded && (() => {
-              fetch("/api/catalog/affiliates")
-                .then((r) => r.json())
-                .then((data) => {
-                  if (Array.isArray(data)) setAffCatalogItems(data);
-                  setAffCatalogLoaded(true);
-                })
-                .catch(() => setAffCatalogLoaded(true));
-              return null;
-            })()}
-
-            {affCatalogItems.length > 0 && (
-              <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>
-                  Select from catalog <span style={{ color: "var(--text-muted)" }}>(optional)</span>
-                </label>
-                <select
-                  value={affItemId || ""}
-                  onChange={(e) => {
-                    const id = e.target.value;
-                    if (!id) {
-                      setAffItemId(null);
-                      return;
-                    }
-                    setAffItemId(id);
-                    const item = affCatalogItems.find((i) => i.id === id);
-                    if (item) {
-                      setAffTitle(item.name);
-                      if (item.brand) setAffBrand(item.brand);
-                      if (item.link) setAffLink(item.link);
-                      if (item.referralCode) setAffCode(item.referralCode);
-                      if (item.category) setAffCategory(item.category);
-                    }
-                  }}
-                  className="select-dark w-full"
-                >
-                  <option value="">Enter manually</option>
-                  {affCatalogItems.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name}{item.brand ? ` — ${item.brand}` : ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Title *</label>
-              <input value={affTitle} onChange={(e) => setAffTitle(e.target.value)} placeholder="e.g. MyProtein Whey Protein" className="input-dark w-full" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Brand</label>
-              <input value={affBrand} onChange={(e) => setAffBrand(e.target.value)} placeholder="Brand name (optional)" className="input-dark w-full" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Affiliate Link</label>
-              <input value={affLink} onChange={(e) => setAffLink(e.target.value)} placeholder="https://..." className="input-dark w-full" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Discount / Promo Code</label>
-              <input value={affCode} onChange={(e) => setAffCode(e.target.value)} placeholder="e.g. ROYAL20" className="input-dark w-full" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Category</label>
-              <select value={affCategory} onChange={(e) => setAffCategory(e.target.value)} className="select-dark w-full">
-                <option value="OTHER">Other</option>
-                <option value="SUPPLEMENTS">Supplements</option>
-                <option value="WELLNESS_ACCESSORIES">Wellness Accessories</option>
-                <option value="GYM_ACCESSORIES">Gym Accessories</option>
-                <option value="RECOVERY_TOOLS">Recovery Tools</option>
-                <option value="APPAREL">Apparel</option>
-                <option value="NUTRITION">Nutrition</option>
-                <option value="TECH_WEARABLES">Tech / Wearables</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Caption</label>
-              <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={2} placeholder="Share your thoughts about this product..." className="textarea-dark w-full resize-none" />
-            </div>
-            <MediaBlock {...mediaProps} />
           </>
         )}
 

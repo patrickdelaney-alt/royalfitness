@@ -9,7 +9,7 @@ import PostCard, { Post } from "@/components/post-card";
 import RecommendationCard from "@/components/recommendation-card";
 import OnboardingModal, { shouldShowOnboarding } from "@/components/onboarding-modal";
 
-const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS", "AFFILIATE"] as const;
+const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS"] as const;
 
 
 export default function FeedContent() {
@@ -182,8 +182,6 @@ export default function FeedContent() {
                 ? "Workouts"
                 : type === "MEAL"
                 ? "Meals"
-                : type === "AFFILIATE"
-                ? "Affiliate"
                 : "Wellness"}
             </button>
           );
