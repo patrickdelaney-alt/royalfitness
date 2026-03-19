@@ -105,13 +105,13 @@ const TAG_LIMITS = {
   maxLength: 24,
 };
 
-const TABS: { key: Tab; label: string; emoji: string }[] = [
-  { key: "meals", label: "Meals", emoji: "🍽️" },
-  { key: "workouts", label: "Workouts", emoji: "💪" },
-  { key: "supplements", label: "Supps", emoji: "💊" },
-  { key: "accessories", label: "Gear", emoji: "⚡" },
-  { key: "wellness", label: "Wellness", emoji: "🧘" },
-  { key: "affiliates", label: "Affiliate", emoji: "🔗" },
+const TABS: { key: Tab; label: string; shortLabel: string }[] = [
+  { key: "meals", label: "Meals", shortLabel: "Meals" },
+  { key: "workouts", label: "Workouts", shortLabel: "Workout" },
+  { key: "supplements", label: "Supplements", shortLabel: "Supps" },
+  { key: "accessories", label: "Accessories", shortLabel: "Gear" },
+  { key: "wellness", label: "Wellness", shortLabel: "Wellness" },
+  { key: "affiliates", label: "Affiliate", shortLabel: "Affiliate" },
 ];
 
 const CATEGORY_GRADIENTS: Record<Tab, string> = {
@@ -1217,7 +1217,9 @@ function ItemDetailModal({
           <div
             className={`w-full aspect-[4/3] bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center rounded-t-2xl`}
           >
-            <span className="text-6xl">{tabInfo?.emoji}</span>
+            <span className="text-xl font-semibold uppercase tracking-[0.12em] text-white/90">
+              {tabInfo?.shortLabel}
+            </span>
           </div>
         )}
 
@@ -1230,7 +1232,7 @@ function ItemDetailModal({
                 className="text-xs px-2.5 py-0.5 rounded-full"
                 style={{ background: "rgba(36,63,22,0.12)", color: "#528531" }}
               >
-                {tabInfo?.emoji} {tabInfo?.label}
+                {tabInfo?.label}
               </span>
             </div>
           </div>
@@ -1448,6 +1450,7 @@ export default function CatalogPage() {
 
   const items = currentItems();
   const muted = "var(--text-muted)";
+  const activeTabInfo = TABS.find((t) => t.key === tab);
 
   const getItemPhotoUrl = (item: AnyItem): string | null => {
     if ("photoUrl" in item) return (item as { photoUrl: string | null }).photoUrl;
@@ -1565,7 +1568,7 @@ export default function CatalogPage() {
                 : { background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }
             }
           >
-            {t.emoji} {t.label}
+            {t.shortLabel}
           </button>
         ))}
       </div>
@@ -1641,7 +1644,11 @@ export default function CatalogPage() {
         )
       ) : items.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-3xl mb-2">{TABS.find((t) => t.key === tab)?.emoji}</p>
+          <div className={`w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center`}>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/95">
+              {activeTabInfo?.shortLabel}
+            </span>
+          </div>
           <p className="text-sm" style={{ color: muted }}>
             No {tab} saved yet
           </p>
@@ -1675,7 +1682,9 @@ export default function CatalogPage() {
                   <div
                     className={`w-full h-full bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center`}
                   >
-                    <span className="text-3xl opacity-80">{TABS.find((t) => t.key === tab)?.emoji}</span>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/90 px-1 text-center">
+                      {activeTabInfo?.shortLabel}
+                    </span>
                   </div>
                 )}
 
@@ -1729,7 +1738,9 @@ export default function CatalogPage() {
                   <div
                     className={`w-14 h-14 rounded-lg bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center flex-shrink-0`}
                   >
-                    <span className="text-xl">{TABS.find((t) => t.key === tab)?.emoji}</span>
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.1em] text-white/90 text-center px-1">
+                      {activeTabInfo?.shortLabel}
+                    </span>
                   </div>
                 )}
 
