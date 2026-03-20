@@ -46,6 +46,11 @@ export async function POST(req: NextRequest) {
         category: data.category,
         photoUrl: data.photoUrl,
         tags: data.tags,
+        subcategoryTags: data.subcategoryTags,
+        ctaLabel: data.ctaLabel,
+        logoUrl: data.logoUrl,
+        enrichmentConfidence: data.enrichmentConfidence,
+        needsReview: data.needsReview,
       },
     });
 
@@ -107,6 +112,11 @@ export async function PATCH(req: NextRequest) {
         ...(data.category !== undefined && { category: data.category }),
         ...(data.photoUrl !== undefined && { photoUrl: data.photoUrl }),
         ...(data.tags !== undefined && { tags: data.tags }),
+        ...(data.subcategoryTags !== undefined && { subcategoryTags: data.subcategoryTags }),
+        ...(data.ctaLabel !== undefined && { ctaLabel: data.ctaLabel }),
+        ...(data.logoUrl !== undefined && { logoUrl: data.logoUrl }),
+        ...(data.enrichmentConfidence !== undefined && { enrichmentConfidence: data.enrichmentConfidence }),
+        ...(data.needsReview !== undefined && { needsReview: data.needsReview }),
       },
     });
 

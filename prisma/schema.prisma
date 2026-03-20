@@ -439,6 +439,13 @@ model AffiliateItem {
   tags         String[]          @default([])
   isPrivate    Boolean           @default(false)
   createdAt    DateTime          @default(now())
+
+  // Enrichment fields (additive, all optional/defaulted)
+  subcategoryTags      String[]  @default([])
+  ctaLabel             String?
+  logoUrl              String?
+  enrichmentConfidence String?
+  needsReview          Boolean   @default(false)
 }
 
 // ─── ACHIEVEMENTS ────────────────────────────────────────────────
