@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { HiLogout, HiPencil, HiCheck, HiX } from "react-icons/hi";
+import { HiLogout, HiPencil, HiCheck, HiX, HiUpload } from "react-icons/hi";
 import Link from "next/link";
 import FollowListModal from "@/components/follow-list-modal";
 import UserCatalogSection from "@/components/user-catalog-section";
@@ -289,6 +289,17 @@ export default function ProfilePage() {
               <HiLogout className="w-4 h-4" />
             </button>
           </div>
+          <Link
+            href="/catalog?tab=affiliates&upload=true"
+            className="flex items-center gap-3 py-3 px-4 rounded-xl text-left transition-all btn-gradient"
+            style={{ color: "#ffffff" }}
+          >
+            <HiUpload className="w-5 h-5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold leading-tight">Upload Affiliate &amp; Discount Links</p>
+              <p className="text-xs mt-0.5 opacity-80">Paste links, promo codes &amp; referrals in bulk</p>
+            </div>
+          </Link>
           <Link
             href="/achievements"
             className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"

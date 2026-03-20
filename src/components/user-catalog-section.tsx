@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { HiLockOpen } from "react-icons/hi2";
-import { HiExternalLink, HiX, HiLink, HiClipboardCopy } from "react-icons/hi";
+import { HiExternalLink, HiX, HiLink, HiClipboardCopy, HiUpload } from "react-icons/hi";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
 import { getCatalogDisplayTags } from "@/lib/catalog-tags";
 
@@ -372,10 +373,34 @@ export default function UserCatalogSection({
           )}
         </div>
       ) : items.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-sm text-muted">
-            No catalog items saved yet.
-          </p>
+        <div className="text-center py-10">
+          {isOwnProfile ? (
+            <>
+              <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>No catalog items yet</p>
+              <Link
+                href="/catalog?tab=affiliates&upload=true"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold btn-gradient"
+                style={{ color: "#ffffff" }}
+              >
+                <HiUpload className="w-4 h-4" />
+                Upload Affiliate Links
+              </Link>
+              <p className="text-xs mt-3" style={{ color: "var(--text-muted)" }}>
+                Discount codes, referral links &amp; more
+              </p>
+              <Link
+                href="/catalog"
+                className="block text-xs mt-2 underline"
+                style={{ color: "var(--text-muted)" }}
+              >
+                Browse all catalog options
+              </Link>
+            </>
+          ) : (
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+              No catalog items saved yet.
+            </p>
+          )}
         </div>
       ) : (
         <>
