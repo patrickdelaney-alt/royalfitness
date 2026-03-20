@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { HiLockOpen } from "react-icons/hi2";
-import { HiExternalLink, HiX, HiLink, HiClipboardCopy, HiUpload } from "react-icons/hi";
+import { HiExternalLink, HiX, HiLink, HiClipboardCopy, HiUpload, HiPencil } from "react-icons/hi";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
 import { getCatalogDisplayTags } from "@/lib/catalog-tags";
 
@@ -71,10 +71,12 @@ function DetailModal({
   item,
   type,
   onClose,
+  isOwnProfile,
 }: {
   item: CatalogItem;
   type: CatalogType;
   onClose: () => void;
+  isOwnProfile?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -220,11 +222,11 @@ function DetailModal({
               className="flex items-center justify-between p-3 rounded-xl"
               style={{ background: "var(--gold-subtle)", border: "1px solid var(--border-gold)" }}
             >
-              <div>
+              <div className="min-w-0 overflow-hidden mr-3">
                 <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
                   Referral Code
                 </p>
-                <p className="text-base font-bold tracking-wider" style={{ color: "var(--gold)" }}>
+                <p className="text-base font-bold tracking-wider break-all" style={{ color: "var(--gold)" }}>
                   {item.referralCode}
                 </p>
               </div>
@@ -254,6 +256,18 @@ function DetailModal({
               <HiExternalLink className="w-4 h-4" />
               {item.link ? "Shop Now" : item.videoUrl ? "Watch Video" : "View Source"}
             </a>
+          )}
+
+          {/* Edit / Delete shortcut for own profile */}
+          {isOwnProfile && (
+            <Link
+              href="/catalog"
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium"
+              style={{ background: "rgba(82,133,49,0.08)", color: "#528531", border: "1px solid rgba(82,133,49,0.18)" }}
+            >
+              <HiPencil className="w-4 h-4" />
+              Edit or Delete in My Catalog
+            </Link>
           )}
 
         </div>
@@ -423,7 +437,7 @@ export default function UserCatalogSection({
                       />
                     ) : (
                       <div
-                        className={`w-full h-full bg-gradient-to-br ${CATEGORY_GRADIENTS[item.catalogType]} flex items-center justify-center`}
+                        className={`w-full h-full bg-gradient-to-br ${CATEGORY_GRADIENTS[item.catalogType as CatalogType]} flex items-center justify-center`}
                       />
                     )}
 
@@ -462,6 +476,13 @@ export default function UserCatalogSection({
                       </div>
                     )}
 
+                    {/* Pencil badge — visible on own profile to signal editability */}
+                    {isOwnProfile && (
+                      <div className="absolute bottom-1.5 right-1.5 p-1 rounded-full bg-black/50">
+                        <HiPencil className="w-2.5 h-2.5 text-white" />
+                      </div>
+                    )}
+
                     {/* Hover overlay */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                   </button>
@@ -479,6 +500,7 @@ export default function UserCatalogSection({
           item={selectedItem}
           type={selectedItem.catalogType}
           onClose={() => setSelectedItem(null)}
+          isOwnProfile={isOwnProfile}
         />
       )}
     </div>

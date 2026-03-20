@@ -111,9 +111,11 @@ interface AffiliateItem {
   needsReview: boolean;
 }
 
-type Tab = "meals" | "workouts" | "supplements" | "accessories" | "wellness" | "affiliates";
+type CatalogTab = "meals" | "workouts" | "supplements" | "accessories" | "wellness" | "affiliates";
+type Tab = "all" | CatalogTab;
 
 type AnyItem = SavedMeal | SavedWorkout | Supplement | Accessory | SavedWellnessItem | AffiliateItem;
+type AnyItemWithType = AnyItem & { _catalogType: CatalogTab };
 
 const inputCls = "input-dark w-full";
 const TAG_LIMITS = {
@@ -122,6 +124,7 @@ const TAG_LIMITS = {
 };
 
 const TABS: { key: Tab; label: string; shortLabel: string }[] = [
+  { key: "all", label: "All Items", shortLabel: "All" },
   { key: "affiliates", label: "Affiliate Links", shortLabel: "Links" },
   { key: "meals", label: "Meals", shortLabel: "Meals" },
   { key: "workouts", label: "Workouts", shortLabel: "Workout" },
@@ -131,12 +134,22 @@ const TABS: { key: Tab; label: string; shortLabel: string }[] = [
 ];
 
 const CATEGORY_GRADIENTS: Record<Tab, string> = {
+  all: "from-stone-600/80 to-stone-800/80",
   meals: "from-orange-600/80 to-red-700/80",
   workouts: "from-blue-600/80 to-indigo-700/80",
   supplements: "from-green-600/80 to-emerald-700/80",
   accessories: "from-purple-600/80 to-pink-700/80",
   wellness: "from-teal-600/80 to-cyan-700/80",
   affiliates: "from-amber-600/80 to-yellow-700/80",
+};
+
+const CATALOG_TAB_LABELS: Record<CatalogTab, string> = {
+  meals: "Meals",
+  workouts: "Workout",
+  supplements: "Supps",
+  accessories: "Gear",
+  wellness: "Wellness",
+  affiliates: "Links",
 };
 
 const getTagValidationError = (tags: string[]) => {
@@ -1243,7 +1256,7 @@ function EditItemModal({
   onSave,
 }: {
   item: AnyItem;
-  tab: Tab;
+  tab: CatalogTab;
   onClose: () => void;
   onSave: (updated: AnyItem) => void;
 }) {
@@ -1618,7 +1631,7 @@ function ItemDetailModal({
   onDelete,
 }: {
   item: AnyItem;
-  tab: Tab;
+  tab: CatalogTab;
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -1790,11 +1803,11 @@ function ItemDetailModal({
                 className="flex items-center justify-between p-3 rounded-xl"
                 style={{ background: "rgba(36,63,22,0.08)", border: "1px solid rgba(36,63,22,0.2)" }}
               >
-                <div>
+                <div className="min-w-0 overflow-hidden mr-3">
                   <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
                     Promo / Referral Code
                   </p>
-                  <p className="text-base font-bold tracking-wider" style={{ color: "#528531" }}>
+                  <p className="text-base font-bold tracking-wider break-all" style={{ color: "#528531" }}>
                     {referralCode}
                   </p>
                 </div>
@@ -1855,7 +1868,7 @@ function ItemDetailModal({
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
-const VALID_TABS = new Set<Tab>(["meals", "workouts", "supplements", "accessories", "wellness", "affiliates"]);
+const VALID_TABS = new Set<Tab>(["all", "meals", "workouts", "supplements", "accessories", "wellness", "affiliates"]);
 
 export default function CatalogPage() {
   const router = useRouter();
@@ -1863,7 +1876,7 @@ export default function CatalogPage() {
 
   const initialTab = (): Tab => {
     const t = searchParams.get("tab");
-    return t && VALID_TABS.has(t as Tab) ? (t as Tab) : "meals";
+    return t && VALID_TABS.has(t as Tab) ? (t as Tab) : "all";
   };
 
   const [tab, setTab] = useState<Tab>(initialTab);
@@ -1893,9 +1906,10 @@ export default function CatalogPage() {
   const [accessories, setAccessories] = useState<Accessory[]>([]);
   const [wellness, setWellness] = useState<SavedWellnessItem[]>([]);
   const [affiliates, setAffiliates] = useState<AffiliateItem[]>([]);
+  const [allItems, setAllItems] = useState<AnyItemWithType[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const endpointMap: Record<Tab, string> = {
+  const endpointMap: Record<CatalogTab, string> = {
     meals: "/api/catalog/meals",
     workouts: "/api/catalog/workouts",
     supplements: "/api/catalog/supplements",
@@ -1907,7 +1921,35 @@ export default function CatalogPage() {
   useEffect(() => {
     setLoading(true);
     setShowForm(false);
-    fetch(endpointMap[tab])
+
+    if (tab === "all") {
+      // Fetch all catalog types in parallel and merge into one sorted list
+      const catalogTabs: CatalogTab[] = ["affiliates", "meals", "workouts", "supplements", "accessories", "wellness"];
+      Promise.all(
+        catalogTabs.map((t) =>
+          fetch(endpointMap[t])
+            .then((r) => r.json())
+            .then((data) => {
+              const items: AnyItem[] = Array.isArray(data) ? data : [];
+              return items.map((item) => ({ ...item, _catalogType: t } as AnyItemWithType));
+            })
+            .catch(() => [] as AnyItemWithType[])
+        )
+      ).then((results) => {
+        const merged = results
+          .flat()
+          .sort((a, b) => {
+            const aTime = "createdAt" in a && a.createdAt ? new Date(a.createdAt as string).getTime() : 0;
+            const bTime = "createdAt" in b && b.createdAt ? new Date(b.createdAt as string).getTime() : 0;
+            return bTime - aTime;
+          });
+        setAllItems(merged);
+        setLoading(false);
+      });
+      return;
+    }
+
+    fetch(endpointMap[tab as CatalogTab])
       .then((r) => r.json())
       .then((data) => {
         if (tab === "meals") setMeals(Array.isArray(data) ? data : []);
@@ -1939,30 +1981,37 @@ export default function CatalogPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    const res = await fetch(`${endpointMap[tab]}?id=${id}`, { method: "DELETE" });
+  const handleDelete = async (id: string, itemCatalogType?: CatalogTab) => {
+    const effectiveTab = itemCatalogType ?? (tab as CatalogTab);
+    const res = await fetch(`${endpointMap[effectiveTab]}?id=${id}`, { method: "DELETE" });
     if (res.ok) {
-      if (tab === "meals") setMeals((p) => p.filter((m) => m.id !== id));
-      else if (tab === "workouts") setWorkouts((p) => p.filter((w) => w.id !== id));
-      else if (tab === "supplements") setSupplements((p) => p.filter((s) => s.id !== id));
-      else if (tab === "accessories") setAccessories((p) => p.filter((a) => a.id !== id));
-      else if (tab === "wellness") setWellness((p) => p.filter((w) => w.id !== id));
-      else if (tab === "affiliates") setAffiliates((p) => p.filter((a) => a.id !== id));
+      if (tab === "all") {
+        setAllItems((p) => p.filter((m) => m.id !== id));
+      } else if (effectiveTab === "meals") setMeals((p) => p.filter((m) => m.id !== id));
+      else if (effectiveTab === "workouts") setWorkouts((p) => p.filter((w) => w.id !== id));
+      else if (effectiveTab === "supplements") setSupplements((p) => p.filter((s) => s.id !== id));
+      else if (effectiveTab === "accessories") setAccessories((p) => p.filter((a) => a.id !== id));
+      else if (effectiveTab === "wellness") setWellness((p) => p.filter((w) => w.id !== id));
+      else if (effectiveTab === "affiliates") setAffiliates((p) => p.filter((a) => a.id !== id));
     }
     setSelectedItem(null);
   };
 
-  const handleSaveEdited = (updated: AnyItem) => {
-    if (tab === "meals") setMeals((p) => p.map((item) => (item.id === updated.id ? (updated as SavedMeal) : item)));
-    else if (tab === "workouts") setWorkouts((p) => p.map((item) => (item.id === updated.id ? (updated as SavedWorkout) : item)));
-    else if (tab === "supplements") setSupplements((p) => p.map((item) => (item.id === updated.id ? (updated as Supplement) : item)));
-    else if (tab === "accessories") setAccessories((p) => p.map((item) => (item.id === updated.id ? (updated as Accessory) : item)));
-    else if (tab === "wellness") setWellness((p) => p.map((item) => (item.id === updated.id ? (updated as SavedWellnessItem) : item)));
-    else if (tab === "affiliates") setAffiliates((p) => p.map((item) => (item.id === updated.id ? (updated as AffiliateItem) : item)));
+  const handleSaveEdited = (updated: AnyItem, itemCatalogType?: CatalogTab) => {
+    const effectiveTab = itemCatalogType ?? (tab as CatalogTab);
+    if (tab === "all") {
+      setAllItems((p) => p.map((item) => (item.id === updated.id ? ({ ...updated, _catalogType: effectiveTab } as AnyItemWithType) : item)));
+    } else if (effectiveTab === "meals") setMeals((p) => p.map((item) => (item.id === updated.id ? (updated as SavedMeal) : item)));
+    else if (effectiveTab === "workouts") setWorkouts((p) => p.map((item) => (item.id === updated.id ? (updated as SavedWorkout) : item)));
+    else if (effectiveTab === "supplements") setSupplements((p) => p.map((item) => (item.id === updated.id ? (updated as Supplement) : item)));
+    else if (effectiveTab === "accessories") setAccessories((p) => p.map((item) => (item.id === updated.id ? (updated as Accessory) : item)));
+    else if (effectiveTab === "wellness") setWellness((p) => p.map((item) => (item.id === updated.id ? (updated as SavedWellnessItem) : item)));
+    else if (effectiveTab === "affiliates") setAffiliates((p) => p.map((item) => (item.id === updated.id ? (updated as AffiliateItem) : item)));
     setSelectedItem(updated);
   };
 
   const currentItems = (): AnyItem[] => {
+    if (tab === "all") return allItems as AnyItem[];
     if (tab === "meals") return meals;
     if (tab === "workouts") return workouts;
     if (tab === "supplements") return supplements;
@@ -1970,6 +2019,12 @@ export default function CatalogPage() {
     if (tab === "wellness") return wellness;
     if (tab === "affiliates") return affiliates;
     return [];
+  };
+
+  // For items in "all" view, resolve the effective tab from _catalogType
+  const getItemCatalogType = (item: AnyItem): CatalogTab | null => {
+    if ("_catalogType" in item) return (item as AnyItemWithType)._catalogType;
+    return null;
   };
 
   const items = currentItems();
@@ -1992,13 +2047,14 @@ export default function CatalogPage() {
   };
 
   const getDisplayTags = (item: AnyItem): string[] => {
+    const effectiveTab = getItemCatalogType(item) ?? (tab as CatalogTab);
     return getCatalogDisplayTags({
       tags: item.tags,
-      brand: tab === "supplements" || tab === "affiliates" ? ("brand" in item ? item.brand : null) : null,
-      type: tab === "accessories" && "type" in item ? item.type : null,
-      activityType: tab === "wellness" && "activityType" in item ? item.activityType : null,
+      brand: effectiveTab === "supplements" || effectiveTab === "affiliates" ? ("brand" in item ? item.brand : null) : null,
+      type: effectiveTab === "accessories" && "type" in item ? item.type : null,
+      activityType: effectiveTab === "wellness" && "activityType" in item ? item.activityType : null,
       categoryLabel:
-        tab === "affiliates" && "category" in item && item.category !== "OTHER"
+        effectiveTab === "affiliates" && "category" in item && item.category !== "OTHER"
           ? AFFILIATE_CATEGORY_LABELS[item.category as string]
           : null,
     });
@@ -2042,15 +2098,17 @@ export default function CatalogPage() {
               <HiViewList className="w-4 h-4" />
             </button>
           </div>
-          {/* Add button */}
-          <button
-            onClick={() => setShowForm((v) => !v)}
-            className="flex items-center gap-1.5 text-sm font-medium"
-            style={{ color: "#528531" }}
-          >
-            <HiPlus className="w-4 h-4" />
-            Add
-          </button>
+          {/* Add button — hidden in "All" view since add requires a specific category */}
+          {tab !== "all" && (
+            <button
+              onClick={() => setShowForm((v) => !v)}
+              className="flex items-center gap-1.5 text-sm font-medium"
+              style={{ color: "#528531" }}
+            >
+              <HiPlus className="w-4 h-4" />
+              Add
+            </button>
+          )}
         </div>
       </div>
 
@@ -2072,8 +2130,8 @@ export default function CatalogPage() {
         ))}
       </div>
 
-      {/* Add form */}
-      {showForm && (
+      {/* Add form — not available in "All" view */}
+      {showForm && tab !== "all" && (
         <div className="mb-4">
           {tab === "meals" && (
             <AddMealForm
@@ -2147,12 +2205,17 @@ export default function CatalogPage() {
         )
       ) : items.length === 0 ? (
         <div className="text-center py-12">
-          <div className={`w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center`}>
+          <div className={`w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br ${CATEGORY_GRADIENTS[tab as Tab]} flex items-center justify-center`}>
             <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/95">
               {activeTabInfo?.shortLabel}
             </span>
           </div>
-          {tab === "affiliates" ? (
+          {tab === "all" ? (
+            <>
+              <p className="text-sm font-medium" style={{ color: muted }}>Your catalog is empty</p>
+              <p className="text-xs mt-1 mb-3" style={{ color: muted }}>Select a category above to start adding items</p>
+            </>
+          ) : tab === "affiliates" ? (
             <>
               <p className="text-sm font-medium" style={{ color: muted }}>No affiliate links yet</p>
               <p className="text-xs mt-1 mb-3" style={{ color: muted }}>Paste multiple links at once — we&apos;ll auto-detect the brand &amp; category</p>
@@ -2186,6 +2249,9 @@ export default function CatalogPage() {
         <div className="grid grid-cols-3 gap-0.5">
           {items.map((item) => {
             const tileTags = getDisplayTags(item);
+            const itemCatalogType = getItemCatalogType(item);
+            const tileGradient = CATEGORY_GRADIENTS[itemCatalogType ?? (tab as CatalogTab)];
+            const tileShortLabel = itemCatalogType ? CATALOG_TAB_LABELS[itemCatalogType] : activeTabInfo?.shortLabel;
             return (
               <button
                 key={item.id}
@@ -2200,10 +2266,10 @@ export default function CatalogPage() {
                   />
                 ) : (
                   <div
-                    className={`w-full h-full bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center`}
+                    className={`w-full h-full bg-gradient-to-br ${tileGradient} flex items-center justify-center`}
                   >
                     <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/90 px-1 text-center">
-                      {activeTabInfo?.shortLabel}
+                      {tileShortLabel}
                     </span>
                   </div>
                 )}
@@ -2213,8 +2279,20 @@ export default function CatalogPage() {
                   <p className="text-[10px] font-medium text-white truncate leading-tight">{item.name}</p>
                 </div>
 
-                {/* Tag hint */}
-                {tileTags.length > 0 && (
+                {/* In "all" view, show category label chip top-left */}
+                {tab === "all" && itemCatalogType && (
+                  <div className="absolute top-1.5 left-1.5">
+                    <span
+                      className="text-[9px] leading-none px-1.5 py-1 rounded-full"
+                      style={{ background: "rgba(24,25,15,0.72)", color: "#FDFAF5" }}
+                    >
+                      {CATALOG_TAB_LABELS[itemCatalogType]}
+                    </span>
+                  </div>
+                )}
+
+                {/* Tag hint (only in per-category views) */}
+                {tab !== "all" && tileTags.length > 0 && (
                   <div className="absolute top-1.5 left-1.5">
                     <SubcategoryChips
                       tags={tileTags}
@@ -2231,6 +2309,11 @@ export default function CatalogPage() {
                     <HiLink className="w-2.5 h-2.5 text-white" />
                   </div>
                 )}
+
+                {/* Edit indicator — pencil badge so users know tapping opens edit/delete */}
+                <div className="absolute bottom-1.5 right-1.5 p-1 rounded-full bg-black/50">
+                  <HiPencil className="w-2.5 h-2.5 text-white" />
+                </div>
 
                 {/* Hover overlay */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
@@ -2259,7 +2342,7 @@ export default function CatalogPage() {
                   />
                 ) : (
                   <div
-                    className={`w-14 h-14 rounded-lg bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center flex-shrink-0`}
+                    className={`w-14 h-14 rounded-lg bg-gradient-to-br ${CATEGORY_GRADIENTS[tab as Tab]} flex items-center justify-center flex-shrink-0`}
                   >
                     <span className="text-[9px] font-semibold uppercase tracking-[0.1em] text-white/90 text-center px-1">
                       {activeTabInfo?.shortLabel}
@@ -2303,24 +2386,32 @@ export default function CatalogPage() {
       )}
 
       {/* Detail Modal */}
-      {selectedItem && (
-        <ItemDetailModal
-          item={selectedItem}
-          tab={tab}
-          onClose={() => setSelectedItem(null)}
-          onEdit={() => setEditingItem(selectedItem)}
-          onDelete={() => handleDelete(selectedItem.id)}
-        />
-      )}
+      {selectedItem && (() => {
+        const itemType = getItemCatalogType(selectedItem);
+        const effectiveTab = (itemType ?? (tab === "all" ? "meals" : tab)) as CatalogTab;
+        return (
+          <ItemDetailModal
+            item={selectedItem}
+            tab={effectiveTab}
+            onClose={() => setSelectedItem(null)}
+            onEdit={() => setEditingItem(selectedItem)}
+            onDelete={() => handleDelete(selectedItem.id, itemType ?? undefined)}
+          />
+        );
+      })()}
 
-      {editingItem && (
-        <EditItemModal
-          item={editingItem}
-          tab={tab}
-          onClose={() => setEditingItem(null)}
-          onSave={handleSaveEdited}
-        />
-      )}
+      {editingItem && (() => {
+        const itemType = getItemCatalogType(editingItem);
+        const effectiveTab = (itemType ?? (tab === "all" ? "meals" : tab)) as CatalogTab;
+        return (
+          <EditItemModal
+            item={editingItem}
+            tab={effectiveTab}
+            onClose={() => setEditingItem(null)}
+            onSave={(updated) => handleSaveEdited(updated, itemType ?? undefined)}
+          />
+        );
+      })()}
     </div>
   );
 }

@@ -19,7 +19,15 @@ export default async function MainLayout({
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <main className="flex-1 overflow-y-auto pb-16">{children}</main>
+      <main
+        className="flex-1 overflow-y-auto"
+        style={{
+          paddingBottom: "calc(4rem + env(safe-area-inset-bottom))",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
+        {children}
+      </main>
       <Suspense fallback={<div className="h-16" />}>
         <BottomNav />
       </Suspense>
