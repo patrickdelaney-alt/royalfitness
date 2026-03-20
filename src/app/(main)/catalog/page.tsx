@@ -104,6 +104,11 @@ interface AffiliateItem {
   photoUrl: string | null;
   tags: string[];
   createdAt: string;
+  subcategoryTags: string[];
+  ctaLabel: string | null;
+  logoUrl: string | null;
+  enrichmentConfidence: string | null;
+  needsReview: boolean;
 }
 
 type Tab = "meals" | "workouts" | "supplements" | "accessories" | "wellness" | "affiliates";
@@ -779,6 +784,7 @@ interface BulkItem {
   tagsText: string;
   photoUrl: string | null;
   confidence: number;
+  confidenceReasons: string[];
   needsReview: boolean;
   lowConfidenceConfirmed: boolean;
   included: boolean;
@@ -814,14 +820,7 @@ function AddAffiliateForm({
 
   const [error, setError] = useState("");
 
-  const getConfidenceScore = (item: { brand: string | null; link: string | null; referralCode: string | null; category: string }) => {
-    let score = 0.35;
-    if (item.link) score += 0.3;
-    if (item.referralCode) score += 0.15;
-    if (item.brand) score += 0.15;
-    if (item.category !== "OTHER") score += 0.15;
-    return Math.min(0.99, score);
-  };
+  const CONF_MAP: Record<string, number> = { high: 0.9, medium: 0.65, low: 0.35 };
 
   // Parse bulk text
   const handleBulkParse = async () => {
@@ -835,7 +834,7 @@ function AddAffiliateForm({
     }
     setBulkItems(
       detected.map((d, i) => {
-        const confidence = getConfidenceScore(d);
+        const confidence = CONF_MAP[d.confidence] ?? 0.35;
         return {
           id: `${Date.now()}-${i}`,
           name: d.name,
@@ -843,11 +842,12 @@ function AddAffiliateForm({
           link: d.link,
           referralCode: d.referralCode,
           category: d.category,
-          subcategory: "",
-          tagsText: "",
-          photoUrl: null,
+          subcategory: d.subcategoryTags.join(", "),
+          tagsText: d.subcategoryTags.join(", "),
+          photoUrl: d.logoUrl ?? null,
           confidence,
-          needsReview: confidence < 0.75,
+          confidenceReasons: d.confidenceReasons,
+          needsReview: d.needsReview,
           lowConfidenceConfirmed: confidence >= 0.55,
           included: true,
         };
@@ -895,6 +895,10 @@ function AddAffiliateForm({
             category: item.category,
             photoUrl: item.photoUrl?.trim() || undefined,
             tags: dedupeTags(parseTagsText(item.tagsText)),
+            subcategoryTags: dedupeTags(parseTagsText(item.tagsText)),
+            logoUrl: item.photoUrl?.trim() || undefined,
+            enrichmentConfidence: item.confidence >= 0.75 ? "high" : item.confidence >= 0.55 ? "medium" : "low",
+            needsReview: item.needsReview,
           }),
         });
         if (res.ok) {
@@ -1080,6 +1084,11 @@ function AddAffiliateForm({
                           {confidenceLabel} · {confidencePercent}%
                         </span>
                       </div>
+                      {item.confidenceReasons.length > 0 && (
+                        <ul className="text-[10px] space-y-0.5" style={{ color: confidenceTone }}>
+                          {item.confidenceReasons.map((r, idx) => <li key={idx}>· {r}</li>)}
+                        </ul>
+                      )}
                       <input value={item.name} onChange={(e) => updateBulkItem(activeIndex, "name", e.target.value)} placeholder="Title *" className={inputCls} />
                       <input value={item.brand ?? ""} onChange={(e) => updateBulkItem(activeIndex, "brand", e.target.value)} placeholder="Brand" className={inputCls} />
                       <div className="grid grid-cols-2 gap-2">
@@ -1234,7 +1243,7 @@ function EditItemModal({
   onSave,
 }: {
   item: AnyItem;
-  tab: Exclude<Tab, "affiliates">;
+  tab: Tab;
   onClose: () => void;
   onSave: (updated: AnyItem) => void;
 }) {
@@ -1264,7 +1273,11 @@ function EditItemModal({
     tab === "workouts" ? (item as SavedWorkout).videoUrl ?? "" : ""
   );
   const [brand, setBrand] = useState(
-    tab === "supplements" ? (item as Supplement).brand ?? "" : ""
+    tab === "supplements"
+      ? (item as Supplement).brand ?? ""
+      : tab === "affiliates"
+        ? (item as AffiliateItem).brand ?? ""
+        : ""
   );
   const [dose, setDose] = useState(
     tab === "supplements" ? (item as Supplement).dose ?? "" : ""
@@ -1290,7 +1303,9 @@ function EditItemModal({
         ? (item as Accessory).link ?? ""
         : tab === "wellness"
           ? (item as SavedWellnessItem).link ?? ""
-          : ""
+          : tab === "affiliates"
+            ? (item as AffiliateItem).link ?? ""
+            : ""
   );
   const [referralCode, setReferralCode] = useState(
     tab === "supplements"
@@ -1299,11 +1314,29 @@ function EditItemModal({
         ? (item as Accessory).referralCode ?? ""
         : tab === "wellness"
           ? (item as SavedWellnessItem).referralCode ?? ""
-          : ""
+          : tab === "affiliates"
+            ? (item as AffiliateItem).referralCode ?? ""
+            : ""
   );
-  const [notes, setNotes] = useState(("notes" in item ? item.notes : "") ?? "");
-  const [photoUrl, setPhotoUrl] = useState(("photoUrl" in item ? item.photoUrl : "") ?? "");
+  const [notes, setNotes] = useState(
+    tab === "affiliates"
+      ? (item as AffiliateItem).description ?? ""
+      : ("notes" in item ? (item as { notes: string | null }).notes : "") ?? ""
+  );
+  const [photoUrl, setPhotoUrl] = useState(("photoUrl" in item ? (item as { photoUrl: string | null }).photoUrl : "") ?? "");
   const [tagsText, setTagsText] = useState((item.tags ?? []).join(", "));
+  const [affiliateCategory, setAffiliateCategory] = useState(
+    tab === "affiliates" ? (item as AffiliateItem).category : "OTHER"
+  );
+  const [subcategoryTagsText, setSubcategoryTagsText] = useState(
+    tab === "affiliates" ? ((item as AffiliateItem).subcategoryTags ?? []).join(", ") : ""
+  );
+  const [ctaLabel, setCtaLabel] = useState(
+    tab === "affiliates" ? (item as AffiliateItem).ctaLabel ?? "" : ""
+  );
+  const [logoUrl, setLogoUrl] = useState(
+    tab === "affiliates" ? (item as AffiliateItem).logoUrl ?? "" : ""
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -1386,6 +1419,17 @@ function EditItemModal({
       addIfChanged("photoUrl", photoUrl || undefined, original.photoUrl ?? undefined);
       addIfChanged("referralCode", referralCode.trim(), original.referralCode ?? "");
       addIfChanged("notes", notes.trim(), original.notes ?? "");
+    } else if (tab === "affiliates") {
+      const original = item as AffiliateItem;
+      addIfChanged("description", notes.trim(), original.description ?? "");
+      addIfChanged("brand", brand.trim(), original.brand ?? "");
+      addIfChanged("link", link.trim(), original.link ?? "");
+      addIfChanged("referralCode", referralCode.trim(), original.referralCode ?? "");
+      addIfChanged("category", affiliateCategory, original.category);
+      addIfChanged("subcategoryTags", dedupeTags(parseTagsText(subcategoryTagsText)), original.subcategoryTags ?? []);
+      addIfChanged("ctaLabel", ctaLabel.trim() || undefined, original.ctaLabel ?? undefined);
+      addIfChanged("logoUrl", logoUrl.trim() || undefined, original.logoUrl ?? undefined);
+      addIfChanged("photoUrl", photoUrl || undefined, original.photoUrl ?? undefined);
     }
 
     if (Object.keys(payload).length === 0) {
@@ -1476,8 +1520,23 @@ function EditItemModal({
             <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Referral Code (optional)" className={inputCls} />
           </>
         )}
+        {tab === "affiliates" && (
+          <>
+            <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand (optional)" className={inputCls} />
+            <select value={affiliateCategory} onChange={(e) => setAffiliateCategory(e.target.value)} className="select-dark w-full">
+              {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            <input value={subcategoryTagsText} onChange={(e) => setSubcategoryTagsText(e.target.value)} placeholder="Subcategory tags (comma-separated)" className={inputCls} />
+            <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Affiliate link (optional)" className={inputCls} />
+            <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Referral code (optional)" className={inputCls} />
+            <input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder="CTA label (e.g. Shop Now)" className={inputCls} />
+            <input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="Logo URL (optional)" className={inputCls} />
+          </>
+        )}
 
-        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes (optional)" className="textarea-dark w-full resize-none" />
+        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder={tab === "affiliates" ? "Description (optional)" : "Notes (optional)"} className="textarea-dark w-full resize-none" />
         {tab !== "workouts" && <PhotoUpload photoUrl={photoUrl || null} onUpload={setPhotoUrl} />}
         <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
         {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
@@ -1706,16 +1765,14 @@ function ItemDetailModal({
             </a>
           )}
 
-          {tab !== "affiliates" && (
-            <button
-              onClick={onEdit}
-              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium transition-all"
-              style={{ background: "rgba(82,133,49,0.12)", color: "#528531", border: "1px solid rgba(82,133,49,0.25)" }}
-            >
-              <HiPencil className="w-4 h-4" />
-              Edit Item
-            </button>
-          )}
+          <button
+            onClick={onEdit}
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium transition-all"
+            style={{ background: "rgba(82,133,49,0.12)", color: "#528531", border: "1px solid rgba(82,133,49,0.25)" }}
+          >
+            <HiPencil className="w-4 h-4" />
+            Edit Item
+          </button>
 
           {/* Delete */}
           <button
@@ -1807,6 +1864,7 @@ export default function CatalogPage() {
     else if (tab === "supplements") setSupplements((p) => p.map((item) => (item.id === updated.id ? (updated as Supplement) : item)));
     else if (tab === "accessories") setAccessories((p) => p.map((item) => (item.id === updated.id ? (updated as Accessory) : item)));
     else if (tab === "wellness") setWellness((p) => p.map((item) => (item.id === updated.id ? (updated as SavedWellnessItem) : item)));
+    else if (tab === "affiliates") setAffiliates((p) => p.map((item) => (item.id === updated.id ? (updated as AffiliateItem) : item)));
     setSelectedItem(updated);
   };
 
@@ -2144,7 +2202,7 @@ export default function CatalogPage() {
         />
       )}
 
-      {editingItem && tab !== "affiliates" && (
+      {editingItem && (
         <EditItemModal
           item={editingItem}
           tab={tab}

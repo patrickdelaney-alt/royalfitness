@@ -186,6 +186,11 @@ export const affiliateItemSchema = z.object({
   category: z.enum(AFFILIATE_CATEGORIES).default("OTHER"),
   photoUrl: z.string().optional(),
   tags: z.array(z.string()).default([]),
+  subcategoryTags: z.array(z.string()).default([]),
+  ctaLabel: z.string().max(100).optional(),
+  logoUrl: z.string().optional(),
+  enrichmentConfidence: z.enum(["high", "medium", "low"]).optional(),
+  needsReview: z.boolean().default(false),
 });
 
 export const stepsEntrySchema = z.object({
