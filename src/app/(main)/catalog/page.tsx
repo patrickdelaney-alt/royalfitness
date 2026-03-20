@@ -1460,95 +1460,111 @@ function EditItemModal({
     }
   };
 
+  const namePlaceholder = (): string => {
+    if (tab === "meals") return "Meal name (e.g. Chicken Bowl)";
+    if (tab === "workouts") return "Workout name (e.g. Push Day)";
+    if (tab === "supplements") return "Product name (e.g. Whey Protein)";
+    if (tab === "accessories") return "Item name (e.g. Resistance Bands)";
+    if (tab === "wellness") return "Activity name (e.g. Morning Run)";
+    if (tab === "affiliates") return "Product or offer name";
+    return "Name";
+  };
+
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div
-        className="relative w-full sm:max-w-md max-h-[85vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl p-4 space-y-3"
+        className="relative w-full sm:max-w-md flex flex-col max-h-[85vh] rounded-t-2xl sm:rounded-2xl overflow-hidden"
         style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold">Edit {item.name}</h3>
-          <button onClick={onClose} className="p-1.5 rounded-full" style={{ background: "rgba(24,25,15,0.09)" }}>
+        {/* Sticky header */}
+        <div className="flex items-center justify-between px-4 py-3 shrink-0" style={{ borderBottom: "1px solid rgba(36,63,22,0.08)" }}>
+          <h3 className="text-base font-semibold truncate">Edit {item.name}</h3>
+          <button onClick={onClose} className="ml-2 shrink-0 p-1.5 rounded-full" style={{ background: "rgba(24,25,15,0.09)" }}>
             <HiX className="w-4 h-4" />
           </button>
         </div>
 
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" className={inputCls} />
-        {tab === "meals" && (
-          <>
-            <input value={ingredients} onChange={(e) => setIngredients(e.target.value)} placeholder="Ingredients (comma-separated)" className={inputCls} />
-            <div className="grid grid-cols-2 gap-2">
-              <input type="number" value={calories} onChange={(e) => setCalories(e.target.value)} placeholder="Calories" className={inputCls} />
-              <input type="number" step="0.1" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="Protein (g)" className={inputCls} />
-              <input type="number" step="0.1" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="Carbs (g)" className={inputCls} />
-              <input type="number" step="0.1" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="Fat (g)" className={inputCls} />
-            </div>
-            <input value={recipeSourceUrl} onChange={(e) => setRecipeSourceUrl(e.target.value)} placeholder="Recipe URL (optional)" className={inputCls} />
-          </>
-        )}
-        {tab === "workouts" && (
-          <>
-            <textarea value={exercisesJson} onChange={(e) => setExercisesJson(e.target.value)} rows={4} placeholder='Exercises JSON (e.g. [{"name":"Squat","sets":3}])' className="textarea-dark w-full resize-none" />
-            <input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="Video URL (optional)" className={inputCls} />
-          </>
-        )}
-        {tab === "supplements" && (
-          <>
-            <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand (optional)" className={inputCls} />
-            <div className="grid grid-cols-2 gap-2">
-              <input value={dose} onChange={(e) => setDose(e.target.value)} placeholder="Dose (optional)" className={inputCls} />
-              <input value={schedule} onChange={(e) => setSchedule(e.target.value)} placeholder="Schedule (optional)" className={inputCls} />
-            </div>
-            <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Link (optional)" className={inputCls} />
-            <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Referral Code (optional)" className={inputCls} />
-          </>
-        )}
-        {tab === "accessories" && (
-          <>
-            <input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (optional)" className={inputCls} />
-            <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Link (optional)" className={inputCls} />
-            <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Referral Code (optional)" className={inputCls} />
-          </>
-        )}
-        {tab === "wellness" && (
-          <>
-            <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="Activity Type (optional)" className={inputCls} />
-            <input type="number" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} placeholder="Duration (minutes)" className={inputCls} />
-            <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Link (optional)" className={inputCls} />
-            <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Referral Code (optional)" className={inputCls} />
-          </>
-        )}
-        {tab === "affiliates" && (
-          <>
-            <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand (optional)" className={inputCls} />
-            <select value={affiliateCategory} onChange={(e) => setAffiliateCategory(e.target.value)} className="select-dark w-full">
-              {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-            <input value={subcategoryTagsText} onChange={(e) => setSubcategoryTagsText(e.target.value)} placeholder="Subcategory tags (comma-separated)" className={inputCls} />
-            <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Affiliate link (optional)" className={inputCls} />
-            <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Referral code (optional)" className={inputCls} />
-            <input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder="CTA label (e.g. Shop Now)" className={inputCls} />
-            <input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="Logo URL (optional)" className={inputCls} />
-          </>
-        )}
+        {/* Scrollable form body */}
+        <div className="overflow-y-auto overscroll-contain flex-1 p-4 space-y-3" style={{ WebkitOverflowScrolling: "touch" }}>
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder={namePlaceholder()} className={inputCls} />
 
-        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder={tab === "affiliates" ? "Description (optional)" : "Notes (optional)"} className="textarea-dark w-full resize-none" />
-        {tab !== "workouts" && <PhotoUpload photoUrl={photoUrl || null} onUpload={setPhotoUrl} />}
-        <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
-        {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
+          {tab === "meals" && (
+            <>
+              <input value={recipeSourceUrl} onChange={(e) => setRecipeSourceUrl(e.target.value)} placeholder="Recipe URL (optional)" className={inputCls} />
+              <input value={ingredients} onChange={(e) => setIngredients(e.target.value)} placeholder="Ingredients (comma-separated, optional)" className={inputCls} />
+              <div className="grid grid-cols-2 gap-2">
+                <input type="number" value={calories} onChange={(e) => setCalories(e.target.value)} placeholder="Calories" className={inputCls} />
+                <input type="number" step="0.1" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="Protein (g)" className={inputCls} />
+                <input type="number" step="0.1" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="Carbs (g)" className={inputCls} />
+                <input type="number" step="0.1" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="Fat (g)" className={inputCls} />
+              </div>
+            </>
+          )}
+          {tab === "workouts" && (
+            <>
+              <input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="Video URL (optional)" className={inputCls} />
+              <textarea value={exercisesJson} onChange={(e) => setExercisesJson(e.target.value)} rows={4} placeholder='Exercises JSON (e.g. [{"name":"Squat","sets":3}])' className="textarea-dark w-full resize-none" />
+            </>
+          )}
+          {tab === "supplements" && (
+            <>
+              <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand (e.g. Optimum Nutrition)" className={inputCls} />
+              <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Website / Shop URL" className={inputCls} />
+              <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo or referral code" className={inputCls} />
+              <div className="grid grid-cols-2 gap-2">
+                <input value={dose} onChange={(e) => setDose(e.target.value)} placeholder="Dose (optional)" className={inputCls} />
+                <input value={schedule} onChange={(e) => setSchedule(e.target.value)} placeholder="Schedule (optional)" className={inputCls} />
+              </div>
+            </>
+          )}
+          {tab === "accessories" && (
+            <>
+              <input value={type} onChange={(e) => setType(e.target.value)} placeholder="Item type (e.g. Resistance Band)" className={inputCls} />
+              <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Website / Shop URL" className={inputCls} />
+              <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo or referral code" className={inputCls} />
+            </>
+          )}
+          {tab === "wellness" && (
+            <>
+              <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="Activity type (e.g. Yoga, HIIT)" className={inputCls} />
+              <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Website / App URL" className={inputCls} />
+              <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo or referral code" className={inputCls} />
+              <input type="number" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} placeholder="Duration (minutes, optional)" className={inputCls} />
+            </>
+          )}
+          {tab === "affiliates" && (
+            <>
+              <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand (e.g. Nike)" className={inputCls} />
+              <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Website / Shop URL" className={inputCls} />
+              <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo or referral code" className={inputCls} />
+              <select value={affiliateCategory} onChange={(e) => setAffiliateCategory(e.target.value)} className="select-dark w-full">
+                {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              <input value={subcategoryTagsText} onChange={(e) => setSubcategoryTagsText(e.target.value)} placeholder="Subcategory tags (comma-separated, optional)" className={inputCls} />
+            </>
+          )}
 
-        <button
-          onClick={handleSubmit}
-          disabled={submitting}
-          className="w-full py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
-          style={{ color: "#ffffff" }}
-        >
-          {submitting ? "Saving..." : "Save Changes"}
-        </button>
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder={tab === "affiliates" ? "Description (optional)" : "Notes (optional)"} className="textarea-dark w-full resize-none" />
+          {tab !== "workouts" && <PhotoUpload photoUrl={photoUrl || null} onUpload={setPhotoUrl} />}
+          <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
+          {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
+        </div>
+
+        {/* Sticky footer */}
+        <div className="px-4 py-3 shrink-0" style={{ borderTop: "1px solid rgba(36,63,22,0.08)" }}>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="w-full py-2.5 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
+            style={{ color: "#ffffff" }}
+          >
+            {submitting ? "Saving…" : "Save Changes"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -1601,188 +1617,195 @@ function ItemDetailModal({
     onDelete();
   };
 
+  const getLinkLabel = (): string => {
+    if (tab === "workouts") return "Watch Video";
+    if (tab === "meals") return "View Recipe";
+    if (tab === "wellness") return "Open Link";
+    return "Shop Now";
+  };
+
+  const itemLink =
+    link ||
+    (tab === "meals" ? (item as SavedMeal).recipeSourceUrl : null) ||
+    (tab === "workouts" ? (item as SavedWorkout).videoUrl : null);
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div
-        className="relative w-full sm:max-w-md max-h-[85vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl"
+        className="relative w-full sm:max-w-md flex flex-col max-h-[85vh] rounded-t-2xl sm:rounded-2xl overflow-hidden"
         style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 z-10 p-1.5 rounded-full"
-          style={{ background: "rgba(24,25,15,0.09)", color: "var(--text)" }}
-        >
-          <HiX className="w-5 h-5" />
-        </button>
-
-        {/* Image */}
-        {photoUrl ? (
-          <div className="w-full aspect-square">
-            <img src={photoUrl} alt={item.name} className="w-full h-full object-cover rounded-t-2xl" />
-          </div>
-        ) : (
-          <div
-            className={`w-full aspect-[4/3] bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center rounded-t-2xl`}
-          >
-            <span className="text-xl font-semibold uppercase tracking-[0.12em] text-white/90">
-              {tabInfo?.shortLabel}
+        {/* Sticky header */}
+        <div className="flex items-center justify-between px-4 py-3 shrink-0" style={{ borderBottom: "1px solid rgba(36,63,22,0.08)" }}>
+          <div className="flex items-center gap-2 min-w-0">
+            <span
+              className="text-xs px-2.5 py-0.5 rounded-full shrink-0"
+              style={{ background: "rgba(36,63,22,0.12)", color: "#528531" }}
+            >
+              {tabInfo?.label}
             </span>
+            <h3 className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>{item.name}</h3>
           </div>
-        )}
+          <button
+            onClick={onClose}
+            className="ml-2 shrink-0 p-1.5 rounded-full"
+            style={{ background: "rgba(24,25,15,0.09)", color: "var(--text)" }}
+          >
+            <HiX className="w-4 h-4" />
+          </button>
+        </div>
 
-        {/* Content */}
-        <div className="p-5 space-y-4">
-          <div>
-            <h3 className="text-xl font-bold text-foreground">{item.name}</h3>
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span
-                className="text-xs px-2.5 py-0.5 rounded-full"
-                style={{ background: "rgba(36,63,22,0.12)", color: "#528531" }}
-              >
-                {tabInfo?.label}
+        {/* Scrollable body */}
+        <div className="overflow-y-auto overscroll-contain flex-1" style={{ WebkitOverflowScrolling: "touch" }}>
+          {/* Image */}
+          {photoUrl ? (
+            <div className="w-full aspect-[4/3]">
+              <img src={photoUrl} alt={item.name} className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div
+              className={`w-full aspect-[4/3] bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center`}
+            >
+              <span className="text-xl font-semibold uppercase tracking-[0.12em] text-white/90">
+                {tabInfo?.shortLabel}
               </span>
             </div>
-          </div>
-
-          {detailTags.length > 0 && (
-            <SubcategoryChips tags={detailTags} />
           )}
 
-          {/* Supplement details */}
-          {tab === "supplements" && ((item as Supplement).dose || (item as Supplement).schedule) && (
-            <div className="flex gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
-              {(item as Supplement).dose && <span>Dose: {(item as Supplement).dose}</span>}
-              {(item as Supplement).schedule && <span>Schedule: {(item as Supplement).schedule}</span>}
-            </div>
-          )}
+          {/* Content */}
+          <div className="p-5 space-y-4">
+            {detailTags.length > 0 && (
+              <SubcategoryChips tags={detailTags} />
+            )}
 
-          {/* Meal macros */}
-          {tab === "meals" && ((item as SavedMeal).calories || (item as SavedMeal).protein) && (
-            <div className="flex gap-3 text-xs flex-wrap" style={{ color: "var(--text-muted)" }}>
-              {(item as SavedMeal).calories != null && <span>{(item as SavedMeal).calories} cal</span>}
-              {(item as SavedMeal).protein != null && <span>{(item as SavedMeal).protein}g protein</span>}
-              {(item as SavedMeal).carbs != null && <span>{(item as SavedMeal).carbs}g carbs</span>}
-              {(item as SavedMeal).fat != null && <span>{(item as SavedMeal).fat}g fat</span>}
-            </div>
-          )}
-
-          {/* Ingredients */}
-          {tab === "meals" && (item as SavedMeal).ingredients?.length > 0 && (
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              {(item as SavedMeal).ingredients.join(", ")}
-            </p>
-          )}
-
-          {/* Workout exercises */}
-          {tab === "workouts" &&
-            (() => {
-              try {
-                const exercises = JSON.parse((item as SavedWorkout).exercisesJson);
-                if (Array.isArray(exercises) && exercises.length > 0) {
-                  return (
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                      {exercises.map((e: { name: string }) => e.name).join(", ")}
-                    </p>
-                  );
-                }
-              } catch {
-                /* ignore */
-              }
-              return null;
-            })()}
-
-          {/* Duration */}
-          {tab === "wellness" && (item as SavedWellnessItem).durationMinutes != null && (
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              {(item as SavedWellnessItem).durationMinutes} minutes
-            </p>
-          )}
-
-          {/* Affiliate category + description */}
-          {tab === "affiliates" && (item as AffiliateItem).category && (item as AffiliateItem).category !== "OTHER" && (
-            <span
-              className="text-xs px-2.5 py-0.5 rounded-full inline-block"
-              style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
-            >
-              {AFFILIATE_CATEGORY_OPTIONS.find((o) => o.value === (item as AffiliateItem).category)?.label || (item as AffiliateItem).category}
-            </span>
-          )}
-          {tab === "affiliates" && (item as AffiliateItem).description && (
-            <p className="text-sm" style={{ color: "var(--text)" }}>
-              {(item as AffiliateItem).description}
-            </p>
-          )}
-
-          {/* Notes */}
-          {notes && (
-            <p className="text-sm" style={{ color: "var(--text)" }}>
-              {notes}
-            </p>
-          )}
-
-          {/* Referral Code */}
-          {referralCode && (
-            <div
-              className="flex items-center justify-between p-3 rounded-xl"
-              style={{ background: "rgba(36,63,22,0.08)", border: "1px solid rgba(36,63,22,0.2)" }}
-            >
-              <div>
-                <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                  Referral Code
-                </p>
-                <p className="text-base font-bold tracking-wider" style={{ color: "#528531" }}>
-                  {referralCode}
-                </p>
+            {/* Supplement details */}
+            {tab === "supplements" && ((item as Supplement).dose || (item as Supplement).schedule) && (
+              <div className="flex gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
+                {(item as Supplement).dose && <span>Dose: {(item as Supplement).dose}</span>}
+                {(item as Supplement).schedule && <span>Schedule: {(item as Supplement).schedule}</span>}
               </div>
-              <button
-                onClick={copyCode}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                style={{
-                  background: copied ? "rgba(34,197,94,0.2)" : "rgba(36,63,22,0.15)",
-                  color: copied ? "#22c55e" : "#528531",
-                }}
+            )}
+
+            {/* Meal macros */}
+            {tab === "meals" && ((item as SavedMeal).calories || (item as SavedMeal).protein) && (
+              <div className="flex gap-3 text-xs flex-wrap" style={{ color: "var(--text-muted)" }}>
+                {(item as SavedMeal).calories != null && <span>{(item as SavedMeal).calories} cal</span>}
+                {(item as SavedMeal).protein != null && <span>{(item as SavedMeal).protein}g protein</span>}
+                {(item as SavedMeal).carbs != null && <span>{(item as SavedMeal).carbs}g carbs</span>}
+                {(item as SavedMeal).fat != null && <span>{(item as SavedMeal).fat}g fat</span>}
+              </div>
+            )}
+
+            {/* Ingredients */}
+            {tab === "meals" && (item as SavedMeal).ingredients?.length > 0 && (
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                {(item as SavedMeal).ingredients.join(", ")}
+              </p>
+            )}
+
+            {/* Workout exercises */}
+            {tab === "workouts" &&
+              (() => {
+                try {
+                  const exercises = JSON.parse((item as SavedWorkout).exercisesJson);
+                  if (Array.isArray(exercises) && exercises.length > 0) {
+                    return (
+                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                        {exercises.map((e: { name: string }) => e.name).join(", ")}
+                      </p>
+                    );
+                  }
+                } catch {
+                  /* ignore */
+                }
+                return null;
+              })()}
+
+            {/* Duration */}
+            {tab === "wellness" && (item as SavedWellnessItem).durationMinutes != null && (
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                {(item as SavedWellnessItem).durationMinutes} minutes
+              </p>
+            )}
+
+            {/* Affiliate description */}
+            {tab === "affiliates" && (item as AffiliateItem).description && (
+              <p className="text-sm" style={{ color: "var(--text)" }}>
+                {(item as AffiliateItem).description}
+              </p>
+            )}
+
+            {/* Notes */}
+            {notes && (
+              <p className="text-sm" style={{ color: "var(--text)" }}>
+                {notes}
+              </p>
+            )}
+
+            {/* Referral Code */}
+            {referralCode && (
+              <div
+                className="flex items-center justify-between p-3 rounded-xl"
+                style={{ background: "rgba(36,63,22,0.08)", border: "1px solid rgba(36,63,22,0.2)" }}
               >
-                <HiClipboardCopy className="w-3.5 h-3.5" />
-                {copied ? "Copied!" : "Copy"}
-              </button>
-            </div>
-          )}
+                <div>
+                  <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                    Promo / Referral Code
+                  </p>
+                  <p className="text-base font-bold tracking-wider" style={{ color: "#528531" }}>
+                    {referralCode}
+                  </p>
+                </div>
+                <button
+                  onClick={copyCode}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                  style={{
+                    background: copied ? "rgba(34,197,94,0.2)" : "rgba(36,63,22,0.15)",
+                    color: copied ? "#22c55e" : "#528531",
+                  }}
+                >
+                  <HiClipboardCopy className="w-3.5 h-3.5" />
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+              </div>
+            )}
 
-          {/* Link button */}
-          {(link || (tab === "meals" && (item as SavedMeal).recipeSourceUrl) || (tab === "workouts" && (item as SavedWorkout).videoUrl)) && (
-            <a
-              href={link || (tab === "meals" ? (item as SavedMeal).recipeSourceUrl : (item as SavedWorkout).videoUrl) || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold btn-gradient transition-all"
-              style={{ color: "#ffffff" }}
-            >
-              <HiExternalLink className="w-4 h-4" />
-              {link ? "Shop Now" : tab === "workouts" ? "Watch Video" : "View Source"}
-            </a>
-          )}
+            {/* Link button */}
+            {itemLink && (
+              <a
+                href={itemLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold btn-gradient transition-all"
+                style={{ color: "#ffffff" }}
+              >
+                <HiExternalLink className="w-4 h-4" />
+                {getLinkLabel()}
+              </a>
+            )}
+          </div>
+        </div>
 
+        {/* Sticky footer — Edit + Delete always visible */}
+        <div className="flex gap-2 px-4 py-3 shrink-0" style={{ borderTop: "1px solid rgba(36,63,22,0.08)" }}>
           <button
             onClick={onEdit}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium transition-all"
+            className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
             style={{ background: "rgba(82,133,49,0.12)", color: "#528531", border: "1px solid rgba(82,133,49,0.25)" }}
           >
             <HiPencil className="w-4 h-4" />
-            Edit Item
+            Edit
           </button>
-
-          {/* Delete */}
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium transition-all"
+            className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
             style={{ background: "rgba(248,113,113,0.1)", color: "#f87171", border: "1px solid rgba(248,113,113,0.2)" }}
           >
             <HiTrash className="w-4 h-4" />
-            {deleting ? "Deleting..." : "Delete Item"}
+            {deleting ? "Deleting…" : "Delete"}
           </button>
         </div>
       </div>
@@ -1808,6 +1831,18 @@ export default function CatalogPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedItem, setSelectedItem] = useState<AnyItem | null>(null);
   const [editingItem, setEditingItem] = useState<AnyItem | null>(null);
+
+  // Lock body scroll when any modal is open
+  useEffect(() => {
+    if (selectedItem || editingItem) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [selectedItem, editingItem]);
 
   // Ref to track if we should auto-open the upload form on first load (from ?upload=true)
   const uploadOnMount = useRef(searchParams.get("upload") === "true");
