@@ -41,8 +41,7 @@ export default function AuthLayout({
           </div>
         </div>
         <p className="text-sm" style={{ color: "var(--text-muted)", lineHeight: 1.65 }}>
-          Earn royalties for your workouts &amp; wellness.{" "}
-          <span style={{ opacity: 0.82 }}>Coming soon to the App Store.</span>
+          Earn royalties for your workouts &amp; wellness.
         </p>
       </div>
 
