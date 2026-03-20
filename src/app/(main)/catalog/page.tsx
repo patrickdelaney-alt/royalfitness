@@ -1466,7 +1466,7 @@ function EditItemModal({
     if (tab === "supplements") return "Product name (e.g. Whey Protein)";
     if (tab === "accessories") return "Item name (e.g. Resistance Bands)";
     if (tab === "wellness") return "Activity name (e.g. Morning Run)";
-    if (tab === "affiliates") return "Product or offer name";
+    if (tab === "affiliates") return "Brand or offer name (e.g. Dutch Meadows Farm)";
     return "Name";
   };
 
@@ -1536,19 +1536,23 @@ function EditItemModal({
           )}
           {tab === "affiliates" && (
             <>
-              <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand (e.g. Nike)" className={inputCls} />
-              <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Website / Shop URL" className={inputCls} />
-              <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo or referral code" className={inputCls} />
+              <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Affiliate / referral link (the URL to share)" className={inputCls} />
+              <div className="space-y-1">
+                <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo code (e.g. SAVE20) — optional" className={inputCls} />
+                <p className="text-xs pl-1" style={{ color: "var(--text-muted)" }}>Short code only — not the same URL as above</p>
+              </div>
               <select value={affiliateCategory} onChange={(e) => setAffiliateCategory(e.target.value)} className="select-dark w-full">
                 {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
-              <input value={subcategoryTagsText} onChange={(e) => setSubcategoryTagsText(e.target.value)} placeholder="Subcategory tags (comma-separated, optional)" className={inputCls} />
             </>
           )}
 
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder={tab === "affiliates" ? "Description (optional)" : "Notes (optional)"} className="textarea-dark w-full resize-none" />
+          {tab === "affiliates" && (
+            <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand name (optional)" className={inputCls} />
+          )}
           {tab !== "workouts" && <PhotoUpload photoUrl={photoUrl || null} onUpload={setPhotoUrl} />}
           <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
           {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
@@ -1566,6 +1570,40 @@ function EditItemModal({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Site Logo (for affiliate items without a photo) ───────────────────────────
+
+function SiteLogo({ url, name, gradient }: { url: string | null; name: string; gradient: string }) {
+  const [imgError, setImgError] = useState(false);
+  const domain = url
+    ? (() => {
+        try {
+          return new URL(url).hostname.replace(/^www\./, "");
+        } catch {
+          return null;
+        }
+      })()
+    : null;
+
+  if (!domain || imgError) {
+    return (
+      <div className={`w-full h-28 bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+        <span className="text-5xl font-bold text-white/70">{name.charAt(0).toUpperCase()}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full h-28 flex items-center justify-center" style={{ background: "var(--surface)" }}>
+      <img
+        src={`https://logo.clearbit.com/${domain}`}
+        alt={name}
+        className="max-h-16 max-w-[55%] object-contain"
+        onError={() => setImgError(true)}
+      />
     </div>
   );
 }
@@ -1659,16 +1697,18 @@ function ItemDetailModal({
 
         {/* Scrollable body */}
         <div className="overflow-y-auto overscroll-contain flex-1" style={{ WebkitOverflowScrolling: "touch" }}>
-          {/* Image */}
+          {/* Image / logo */}
           {photoUrl ? (
             <div className="w-full aspect-[4/3]">
               <img src={photoUrl} alt={item.name} className="w-full h-full object-cover" />
             </div>
+          ) : tab === "affiliates" ? (
+            <SiteLogo url={link} name={item.name} gradient={CATEGORY_GRADIENTS[tab]} />
           ) : (
             <div
-              className={`w-full aspect-[4/3] bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center`}
+              className={`w-full h-24 bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center`}
             >
-              <span className="text-xl font-semibold uppercase tracking-[0.12em] text-white/90">
+              <span className="text-lg font-semibold uppercase tracking-[0.12em] text-white/90">
                 {tabInfo?.shortLabel}
               </span>
             </div>
