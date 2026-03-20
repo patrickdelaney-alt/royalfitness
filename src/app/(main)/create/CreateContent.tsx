@@ -1305,8 +1305,15 @@ export default function CreatePostContent() {
             className="mt-3 text-xs font-semibold px-3 py-1.5 rounded-lg"
             style={{ background: "rgba(36,63,22,0.10)", color: "var(--text)" }}
           >
-            {showWorkoutAdvanced ? "Hide details" : "Edit details"}
+            {showWorkoutAdvanced ? "Hide details" : "Add muscles, sets & more"}
           </button>
+        </div>
+      )}
+
+      {/* Photo/video always visible when posting a workout from a live session */}
+      {isFromSession && type === "WORKOUT" && (
+        <div className="mb-1">
+          <MediaBlock {...mediaProps} />
         </div>
       )}
 
@@ -1702,8 +1709,8 @@ export default function CreatePostContent() {
               />
             </div>
 
-            {/* 3. Media */}
-            <MediaBlock {...mediaProps} />
+            {/* 3. Media (only shown here for manual / non-session posts; session posts get it hoisted above) */}
+            {!isFromSession && <MediaBlock {...mediaProps} />}
 
             {/* 4. Energy slider */}
             <EnergySlider value={energy} onChange={setEnergy} />
@@ -1832,7 +1839,7 @@ export default function CreatePostContent() {
 
             {isFromSession && !showWorkoutAdvanced && (
               <div className="text-xs px-3 py-2 rounded-xl" style={{ background: "rgba(36,63,22,0.03)", color: "var(--text-muted)", border: "1px dashed rgba(36,63,22,0.12)" }}>
-                Posting now uses your live session summary. Tap &ldquo;Edit details&rdquo; above to add muscles, media, and exercise sets.
+                Posting now uses your live session summary. Tap &ldquo;Add muscles, sets &amp; more&rdquo; above to log muscles targeted and exercise sets.
               </div>
             )}
           </>

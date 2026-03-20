@@ -331,7 +331,7 @@ export default function WorkoutSession() {
             value={session.workoutName}
             onChange={(e) => update((s) => ({ ...s, workoutName: e.target.value }))}
             placeholder="e.g. Push Day, Leg Day..."
-            className="w-full rounded-xl px-4 py-3 text-sm font-medium outline-none transition-colors placeholder:text-white/20"
+            className="w-full rounded-xl px-4 py-3 text-sm font-medium outline-none transition-colors placeholder:opacity-40"
             style={{
               background: "rgba(36,63,22,0.04)",
               border: "1px solid rgba(36,63,22,0.10)",
@@ -350,7 +350,7 @@ export default function WorkoutSession() {
             onChange={(e) => update((s) => ({ ...s, notes: e.target.value }))}
             placeholder="What's on your mind? Share your goals, energy, or what you crushed today..."
             rows={3}
-            className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none transition-colors placeholder:text-white/20"
+            className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none transition-colors placeholder:opacity-40"
             style={{
               background: "rgba(36,63,22,0.04)",
               border: "1px solid rgba(36,63,22,0.10)",
@@ -411,9 +411,9 @@ export default function WorkoutSession() {
                   value={ex.name}
                   onChange={(e) => updateExerciseName(ex.id, e.target.value)}
                   placeholder="Exercise name..."
-                  className="flex-1 bg-transparent outline-none text-sm font-medium placeholder:text-white/20"
+                  className="flex-1 bg-transparent outline-none text-sm font-medium placeholder:opacity-40"
                   style={{
-                    color: ex.checked ? "var(--text-muted)" : "#ffffff",
+                    color: ex.checked ? "var(--text-muted)" : "var(--text)",
                     textDecoration: ex.checked ? "line-through" : "none",
                   }}
                   onKeyDown={(e) => {
