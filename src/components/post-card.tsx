@@ -529,11 +529,11 @@ function CheckInPostCard({
 
   return (
     <article
-      className="rounded-xl border card-hover"
+      className="rounded-xl border card-hover overflow-hidden"
       style={{ background: "#FDFAF5", borderColor: "rgba(36,63,22,0.10)" }}
     >
-      <div className="flex items-center gap-2.5 px-3 py-3">
-        {/* Small avatar */}
+      {/* Header row: avatar + username + like + time + delete */}
+      <div className="flex items-center gap-2.5 px-3 pt-3 pb-2">
         <Link href={`/profile/${post.author.username}`} className="flex-shrink-0">
           {post.author.avatarUrl ? (
             <img
@@ -549,36 +549,13 @@ function CheckInPostCard({
           )}
         </Link>
 
-        {/* Text: "username was at Gym Name 📍" */}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm leading-snug truncate">
-            <Link
-              href={`/profile/${post.author.username}`}
-              className="font-semibold text-foreground hover:underline"
-            >
-              {post.author.username}
-            </Link>
-            <span style={{ color: "#7A7560" }}> was at </span>
-            {post.gym ? (
-              <span className="font-medium" style={{ color: "#9A7B2E" }}>
-                {post.gym.name}
-              </span>
-            ) : (
-              <span style={{ color: "#7A7560" }}>the gym</span>
-            )}
-            <span className="ml-1 text-xs">📍</span>
-          </p>
-          {post.caption && (
-            <p
-              className="text-xs mt-0.5 truncate"
-              style={{ color: "#7A7560" }}
-            >
-              {post.caption}
-            </p>
-          )}
-        </div>
+        <Link
+          href={`/profile/${post.author.username}`}
+          className="flex-1 min-w-0 font-semibold text-sm text-foreground hover:underline truncate"
+        >
+          {post.author.username}
+        </Link>
 
-        {/* Right side: like + time + optional delete */}
         <div className="flex items-center gap-2.5 flex-shrink-0">
           <button
             onClick={toggleLike}
@@ -629,6 +606,25 @@ function CheckInPostCard({
             )
           )}
         </div>
+      </div>
+
+      {/* Divider */}
+      <div className="mx-3 border-t" style={{ borderColor: "rgba(36,63,22,0.08)" }} />
+
+      {/* Body: location + caption — no truncation */}
+      <div className="px-3 pt-2 pb-3 space-y-1">
+        <p className="text-sm leading-snug">
+          <span style={{ color: "#7A7560" }}>was at </span>
+          <span className="font-semibold" style={{ color: "#9A7B2E" }}>
+            {post.gym ? post.gym.name : "the gym"}
+          </span>
+          <span className="ml-1">📍</span>
+        </p>
+        {post.caption && (
+          <p className="text-xs leading-relaxed" style={{ color: "#7A7560" }}>
+            {post.caption}
+          </p>
+        )}
       </div>
     </article>
   );
