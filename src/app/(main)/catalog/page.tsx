@@ -768,17 +768,6 @@ const AFFILIATE_CATEGORY_OPTIONS = [
   { value: "TECH_WEARABLES", label: "Tech / Wearables" },
 ];
 
-const AFFILIATE_CATEGORY_LABELS: Record<string, string> = {
-  OTHER: "Other",
-  SUPPLEMENTS: "Supplements",
-  WELLNESS_ACCESSORIES: "Wellness Accessories",
-  GYM_ACCESSORIES: "Gym Accessories",
-  RECOVERY_TOOLS: "Recovery Tools",
-  APPAREL: "Apparel",
-  NUTRITION: "Nutrition",
-  TECH_WEARABLES: "Tech / Wearables",
-};
-
 interface BulkItem {
   id: string;
   name: string;
