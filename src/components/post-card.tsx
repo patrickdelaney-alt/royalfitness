@@ -5,6 +5,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare, HiX, HiExternalLink, HiClipboardCopy } from "react-icons/hi";
 import { lightImpact } from "@/lib/haptics";
+import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
 import EmbedMedia, { type ExternalContentItem } from "@/components/embed-media";
 
@@ -429,6 +430,12 @@ function AffiliateSection({ detail }: { detail: AffiliateDetail }) {
           href={detail.link}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={(e) => {
+            if (isCapacitorNative()) {
+              e.preventDefault();
+              openExternalLink(detail.link!);
+            }
+          }}
           className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold btn-gradient transition-all"
           style={{ color: "#FDFAF5" }}
         >
