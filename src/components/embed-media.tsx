@@ -1,4 +1,5 @@
 import React from "react";
+import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 
 export interface ExternalContentItem {
   id: string;
@@ -65,6 +66,12 @@ export default function EmbedMedia({ item }: { item: ExternalContentItem }) {
       href={item.url}
       target="_blank"
       rel="noreferrer"
+      onClick={(e) => {
+        if (isCapacitorNative()) {
+          e.preventDefault();
+          openExternalLink(item.url);
+        }
+      }}
       className="mt-2 block rounded-lg p-3"
       style={{ background: "rgba(36,63,22,0.04)", border: "1px solid var(--border)" }}
     >

@@ -6,6 +6,7 @@ import { HiLockOpen } from "react-icons/hi2";
 import { HiExternalLink, HiX, HiLink, HiClipboardCopy, HiUpload, HiPencil } from "react-icons/hi";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
 import { getCatalogDisplayTags } from "@/lib/catalog-tags";
+import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 
 interface CatalogItem {
   id: string;
@@ -250,6 +251,13 @@ function DetailModal({
               href={item.link || item.recipeSourceUrl || item.videoUrl || "#"}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => {
+                const url = item.link || item.recipeSourceUrl || item.videoUrl;
+                if (url && isCapacitorNative()) {
+                  e.preventDefault();
+                  openExternalLink(url);
+                }
+              }}
               className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold btn-gradient transition-all"
               style={{ color: "#FDFAF5" }}
             >

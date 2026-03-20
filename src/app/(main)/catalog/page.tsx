@@ -25,6 +25,7 @@ import {
   getCatalogDisplayTags,
   parseTagsText,
 } from "@/lib/catalog-tags";
+import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -1831,6 +1832,12 @@ function ItemDetailModal({
                 href={itemLink}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) => {
+                  if (isCapacitorNative()) {
+                    e.preventDefault();
+                    openExternalLink(itemLink);
+                  }
+                }}
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold btn-gradient transition-all"
                 style={{ color: "#ffffff" }}
               >

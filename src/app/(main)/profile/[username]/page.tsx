@@ -8,6 +8,7 @@ import Link from "next/link";
 import FollowListModal from "@/components/follow-list-modal";
 import UserCatalogSection from "@/components/user-catalog-section";
 import { lightImpact } from "@/lib/haptics";
+import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 
 interface UserProfile {
   id: string;
@@ -250,12 +251,36 @@ export default function ProfilePage() {
       {(profile.instagramUrl || profile.tiktokUrl) && (
         <div className="flex gap-3 mb-4">
           {profile.instagramUrl && (
-            <a href={profile.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "var(--brand-light)" }}>
+            <a
+              href={profile.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                if (isCapacitorNative()) {
+                  e.preventDefault();
+                  openExternalLink(profile.instagramUrl!);
+                }
+              }}
+              className="text-xs hover:underline"
+              style={{ color: "var(--brand-light)" }}
+            >
               Instagram
             </a>
           )}
           {profile.tiktokUrl && (
-            <a href={profile.tiktokUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "var(--brand-light)" }}>
+            <a
+              href={profile.tiktokUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                if (isCapacitorNative()) {
+                  e.preventDefault();
+                  openExternalLink(profile.tiktokUrl!);
+                }
+              }}
+              className="text-xs hover:underline"
+              style={{ color: "var(--brand-light)" }}
+            >
               TikTok
             </a>
           )}
