@@ -17,7 +17,7 @@ import {
   HiViewList,
   HiPencil,
 } from "react-icons/hi";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
 import {
   AFFILIATE_CATEGORY_LABELS,
@@ -122,12 +122,12 @@ const TAG_LIMITS = {
 };
 
 const TABS: { key: Tab; label: string; shortLabel: string }[] = [
+  { key: "affiliates", label: "Affiliate Links", shortLabel: "Links" },
   { key: "meals", label: "Meals", shortLabel: "Meals" },
   { key: "workouts", label: "Workouts", shortLabel: "Workout" },
   { key: "supplements", label: "Supplements", shortLabel: "Supps" },
   { key: "accessories", label: "Accessories", shortLabel: "Gear" },
   { key: "wellness", label: "Wellness", shortLabel: "Wellness" },
-  { key: "affiliates", label: "Affiliate", shortLabel: "Affiliate" },
 ];
 
 const CATEGORY_GRADIENTS: Record<Tab, string> = {
@@ -1792,13 +1792,25 @@ function ItemDetailModal({
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
+const VALID_TABS = new Set<Tab>(["meals", "workouts", "supplements", "accessories", "wellness", "affiliates"]);
+
 export default function CatalogPage() {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("meals");
+  const searchParams = useSearchParams();
+
+  const initialTab = (): Tab => {
+    const t = searchParams.get("tab");
+    return t && VALID_TABS.has(t as Tab) ? (t as Tab) : "meals";
+  };
+
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [showForm, setShowForm] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedItem, setSelectedItem] = useState<AnyItem | null>(null);
   const [editingItem, setEditingItem] = useState<AnyItem | null>(null);
+
+  // Ref to track if we should auto-open the upload form on first load (from ?upload=true)
+  const uploadOnMount = useRef(searchParams.get("upload") === "true");
 
   const [meals, setMeals] = useState<SavedMeal[]>([]);
   const [workouts, setWorkouts] = useState<SavedWorkout[]>([]);
@@ -1831,7 +1843,14 @@ export default function CatalogPage() {
         else if (tab === "affiliates") setAffiliates(Array.isArray(data) ? data : []);
       })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        // Auto-open the upload form when navigating from the profile CTA
+        if (uploadOnMount.current && tab === "affiliates") {
+          setShowForm(true);
+          uploadOnMount.current = false;
+        }
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
@@ -2058,17 +2077,34 @@ export default function CatalogPage() {
               {activeTabInfo?.shortLabel}
             </span>
           </div>
-          <p className="text-sm" style={{ color: muted }}>
-            No {tab} saved yet
-          </p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="mt-3 text-sm font-medium px-4 py-2 rounded-xl btn-gradient"
-            style={{ color: "#ffffff" }}
-          >
-            <HiPlus className="w-4 h-4 inline mr-1" />
-            Add your first {tab === "accessories" ? "accessory" : tab.slice(0, -1)}
-          </button>
+          {tab === "affiliates" ? (
+            <>
+              <p className="text-sm font-medium" style={{ color: muted }}>No affiliate links yet</p>
+              <p className="text-xs mt-1 mb-3" style={{ color: muted }}>Paste multiple links at once — we&apos;ll auto-detect the brand &amp; category</p>
+              <button
+                onClick={() => setShowForm(true)}
+                className="text-sm font-medium px-4 py-2 rounded-xl btn-gradient"
+                style={{ color: "#ffffff" }}
+              >
+                <HiPlus className="w-4 h-4 inline mr-1" />
+                Bulk upload affiliate links, discount codes &amp; referrals
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm" style={{ color: muted }}>
+                No {tab} saved yet
+              </p>
+              <button
+                onClick={() => setShowForm(true)}
+                className="mt-3 text-sm font-medium px-4 py-2 rounded-xl btn-gradient"
+                style={{ color: "#ffffff" }}
+              >
+                <HiPlus className="w-4 h-4 inline mr-1" />
+                Add your first {tab === "accessories" ? "accessory" : tab.slice(0, -1)}
+              </button>
+            </>
+          )}
         </div>
       ) : viewMode === "grid" ? (
         /* ── Grid View ── */
