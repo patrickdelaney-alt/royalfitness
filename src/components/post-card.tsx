@@ -175,7 +175,7 @@ function moodLabel(val: number | null): string | null {
 
 const EXERCISE_PREVIEW_COUNT = 4;
 
-function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
+function WorkoutSection({ detail, hideTitle = false }: { detail: WorkoutDetail; hideTitle?: boolean }) {
   const [showAllExercises, setShowAllExercises] = useState(false);
   const hasMore = detail.exercises.length > EXERCISE_PREVIEW_COUNT;
   const visibleExercises = showAllExercises
@@ -185,7 +185,7 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
   return (
     <div className="mt-3 space-y-2 text-sm">
       <div className="flex items-center gap-3 flex-wrap">
-        <span className="font-semibold text-foreground">{detail.workoutName}</span>
+        {!hideTitle && <span className="font-semibold text-foreground">{detail.workoutName}</span>}
         {detail.isClass && (
           <span
             className="text-xs px-2 py-0.5 rounded-full"
@@ -277,11 +277,11 @@ function WorkoutSection({ detail }: { detail: WorkoutDetail }) {
   );
 }
 
-function MealSection({ detail }: { detail: MealDetail }) {
+function MealSection({ detail, hideTitle = false }: { detail: MealDetail; hideTitle?: boolean }) {
   return (
     <div className="mt-3 space-y-2 text-sm">
       <div className="flex items-center gap-3 flex-wrap">
-        <span className="font-semibold text-foreground">{detail.mealName}</span>
+        {!hideTitle && <span className="font-semibold text-foreground">{detail.mealName}</span>}
         <span
           className="text-xs px-2 py-0.5 rounded-full capitalize"
           style={{ background: "rgba(154,123,46,0.1)", color: "#9A7B2E" }}
@@ -319,13 +319,15 @@ function MealSection({ detail }: { detail: MealDetail }) {
   );
 }
 
-function WellnessSection({ detail }: { detail: WellnessDetail }) {
+function WellnessSection({ detail, hideTitle = false }: { detail: WellnessDetail; hideTitle?: boolean }) {
   return (
     <div className="mt-3 space-y-2 text-sm">
       <div className="flex items-center gap-3 flex-wrap">
-        <span className="font-semibold text-foreground capitalize">
-          {detail.activityType}
-        </span>
+        {!hideTitle && (
+          <span className="font-semibold text-foreground capitalize">
+            {detail.activityType}
+          </span>
+        )}
         {detail.durationMinutes != null && (
           <span className="flex items-center gap-1 text-muted-dim">
             <HiClock className="w-3.5 h-3.5" />
@@ -372,7 +374,7 @@ const AFFILIATE_CATEGORY_LABELS: Record<string, string> = {
   OTHER: "Other",
 };
 
-function AffiliateSection({ detail }: { detail: AffiliateDetail }) {
+function AffiliateSection({ detail, hideTitle = false }: { detail: AffiliateDetail; hideTitle?: boolean }) {
   const [copied, setCopied] = useState(false);
 
   const copyCode = () => {
@@ -387,7 +389,7 @@ function AffiliateSection({ detail }: { detail: AffiliateDetail }) {
   return (
     <div className="mt-3 space-y-2.5 text-sm">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="font-semibold text-foreground">{detail.title}</span>
+        {!hideTitle && <span className="font-semibold text-foreground">{detail.title}</span>}
         {detail.brand && (
           <span
             className="text-xs px-2 py-0.5 rounded-full"
@@ -680,6 +682,12 @@ function FullPostCard({
 
   const badge = TYPE_BADGE[post.type];
   const isOwner = !!currentUserId && currentUserId === post.author.id;
+  const primaryTitle =
+    post.type === "WORKOUT" ? post.workoutDetail?.workoutName :
+    post.type === "MEAL" ? post.mealDetail?.mealName :
+    post.type === "WELLNESS" ? post.wellnessDetail?.activityType :
+    post.type === "AFFILIATE" ? post.affiliateDetail?.title :
+    null;
 
   // ── like toggle ──
 
@@ -1218,9 +1226,9 @@ function FullPostCard({
 
       {/* ── body ── */}
       <div className="px-4 pb-3">
-        {post.caption && (
+        {primaryTitle && (
           <p className="text-sm text-foreground whitespace-pre-wrap mt-1 mb-1">
-            {post.caption}
+            {primaryTitle}
           </p>
         )}
 
@@ -1247,10 +1255,16 @@ function FullPostCard({
 
         {post.externalContent?.[0] && <EmbedMedia item={post.externalContent[0]} />}
 
-        {post.type === "WORKOUT"   && post.workoutDetail   && <WorkoutSection   detail={post.workoutDetail}   />}
-        {post.type === "MEAL"      && post.mealDetail      && <MealSection     detail={post.mealDetail}      />}
-        {post.type === "WELLNESS"  && post.wellnessDetail  && <WellnessSection detail={post.wellnessDetail}  />}
-        {post.type === "AFFILIATE" && post.affiliateDetail && <AffiliateSection detail={post.affiliateDetail} />}
+        {post.type === "WORKOUT"   && post.workoutDetail   && <WorkoutSection detail={post.workoutDetail} hideTitle={!!primaryTitle} />}
+        {post.type === "MEAL"      && post.mealDetail      && <MealSection detail={post.mealDetail} hideTitle={!!primaryTitle} />}
+        {post.type === "WELLNESS"  && post.wellnessDetail  && <WellnessSection detail={post.wellnessDetail} hideTitle={!!primaryTitle} />}
+        {post.type === "AFFILIATE" && post.affiliateDetail && <AffiliateSection detail={post.affiliateDetail} hideTitle={!!primaryTitle} />}
+
+        {post.caption && (
+          <p className="text-sm text-foreground whitespace-pre-wrap mt-3 mb-1">
+            {post.caption}
+          </p>
+        )}
       </div>
 
       {/* ── actions ── */}
