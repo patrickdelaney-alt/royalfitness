@@ -40,6 +40,30 @@ export const parseTagsText = (tagsText: string) =>
     .map((tag) => tag.trim())
     .filter(Boolean);
 
+/** Maps AffiliateCategory → user-friendly display label matching the 5 main categories */
+export const AFFILIATE_CATEGORY_TO_DISPLAY: Record<string, string> = {
+  SUPPLEMENTS: "Supps",
+  NUTRITION: "Supps",
+  GYM_ACCESSORIES: "Gear",
+  APPAREL: "Gear",
+  WELLNESS_ACCESSORIES: "Wellness",
+  RECOVERY_TOOLS: "Wellness",
+  TECH_WEARABLES: "Wellness",
+  OTHER: "Other",
+};
+
+/** Maps AffiliateCategory → internal CatalogTab key for gradient/routing */
+export const AFFILIATE_TO_CATALOG_TYPE: Record<string, string> = {
+  SUPPLEMENTS: "supplements",
+  NUTRITION: "supplements",
+  GYM_ACCESSORIES: "accessories",
+  APPAREL: "accessories",
+  WELLNESS_ACCESSORIES: "wellness",
+  RECOVERY_TOOLS: "wellness",
+  TECH_WEARABLES: "wellness",
+  OTHER: "accessories",
+};
+
 export const getCatalogDisplayTags = ({
   tags,
   brand,

@@ -21,6 +21,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
 import {
   AFFILIATE_CATEGORY_LABELS,
+  AFFILIATE_CATEGORY_TO_DISPLAY,
+  AFFILIATE_TO_CATALOG_TYPE,
   dedupeTags,
   getCatalogDisplayTags,
   parseTagsText,
@@ -113,7 +115,6 @@ interface AffiliateItem {
 }
 
 type CatalogTab = "meals" | "workouts" | "supplements" | "accessories" | "wellness" | "affiliates";
-type Tab = "all" | CatalogTab;
 
 type AnyItem = SavedMeal | SavedWorkout | Supplement | Accessory | SavedWellnessItem | AffiliateItem;
 type AnyItemWithType = AnyItem & { _catalogType: CatalogTab };
@@ -124,18 +125,7 @@ const TAG_LIMITS = {
   maxLength: 24,
 };
 
-const TABS: { key: Tab; label: string; shortLabel: string }[] = [
-  { key: "all", label: "All Items", shortLabel: "All" },
-  { key: "affiliates", label: "Affiliate Links", shortLabel: "Links" },
-  { key: "meals", label: "Meals", shortLabel: "Meals" },
-  { key: "workouts", label: "Workouts", shortLabel: "Workout" },
-  { key: "supplements", label: "Supplements", shortLabel: "Supps" },
-  { key: "accessories", label: "Accessories", shortLabel: "Gear" },
-  { key: "wellness", label: "Wellness", shortLabel: "Wellness" },
-];
-
-const CATEGORY_GRADIENTS: Record<Tab, string> = {
-  all: "from-stone-600/80 to-stone-800/80",
+const CATEGORY_GRADIENTS: Record<CatalogTab, string> = {
   meals: "from-orange-600/80 to-red-700/80",
   workouts: "from-blue-600/80 to-indigo-700/80",
   supplements: "from-green-600/80 to-emerald-700/80",
@@ -150,7 +140,24 @@ const CATALOG_TAB_LABELS: Record<CatalogTab, string> = {
   supplements: "Supps",
   accessories: "Gear",
   wellness: "Wellness",
-  affiliates: "Links",
+  affiliates: "Links", // fallback; affiliate items resolve via AFFILIATE_CATEGORY_TO_DISPLAY
+};
+
+/** For affiliate items, resolve display label from their AffiliateCategory */
+const getItemDisplayLabel = (item: AnyItem, catalogType: CatalogTab): string => {
+  if (catalogType === "affiliates" && "category" in item) {
+    return AFFILIATE_CATEGORY_TO_DISPLAY[(item as AffiliateItem).category] ?? "Other";
+  }
+  return CATALOG_TAB_LABELS[catalogType];
+};
+
+/** For affiliate items, resolve gradient from their mapped catalog type */
+const getItemGradient = (item: AnyItem, catalogType: CatalogTab): string => {
+  if (catalogType === "affiliates" && "category" in item) {
+    const mapped = AFFILIATE_TO_CATALOG_TYPE[(item as AffiliateItem).category] as CatalogTab | undefined;
+    return CATEGORY_GRADIENTS[mapped ?? "accessories"];
+  }
+  return CATEGORY_GRADIENTS[catalogType];
 };
 
 const getTagValidationError = (tags: string[]) => {
@@ -777,14 +784,11 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
 // ── Add Affiliate Form ────────────────────────────────────────────────────────
 
 const AFFILIATE_CATEGORY_OPTIONS = [
+  { value: "SUPPLEMENTS", label: "Supps" },
+  { value: "NUTRITION", label: "Meals" },
+  { value: "GYM_ACCESSORIES", label: "Gear" },
+  { value: "WELLNESS_ACCESSORIES", label: "Wellness" },
   { value: "OTHER", label: "Other" },
-  { value: "SUPPLEMENTS", label: "Supplements" },
-  { value: "WELLNESS_ACCESSORIES", label: "Wellness Accessories" },
-  { value: "GYM_ACCESSORIES", label: "Gym Accessories" },
-  { value: "RECOVERY_TOOLS", label: "Recovery Tools" },
-  { value: "APPAREL", label: "Apparel" },
-  { value: "NUTRITION", label: "Nutrition" },
-  { value: "TECH_WEARABLES", label: "Tech / Wearables" },
 ];
 
 interface BulkItem {
@@ -836,7 +840,9 @@ function AddAffiliateForm({
 
   const CONF_MAP: Record<string, number> = { high: 0.9, medium: 0.65, low: 0.35 };
 
-  // Parse bulk text
+  const [enriching, setEnriching] = useState(false);
+
+  // Parse bulk text and enrich with URL metadata
   const handleBulkParse = async () => {
     if (!rawText.trim()) return;
     setError("");
@@ -846,6 +852,40 @@ function AddAffiliateForm({
       setError("No links or codes detected. Try pasting one per line.");
       return;
     }
+
+    // Auto-enrich each item with URL metadata (title, image, site name)
+    setEnriching(true);
+    for (const d of detected) {
+      if (d.link) {
+        try {
+          const res = await fetch("/api/unfurl", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: d.link }),
+          });
+          if (res.ok) {
+            const meta = await res.json();
+            // Use og:title if the current name is just a domain or generic
+            if (meta.title) {
+              const domainOnly = (() => {
+                try { return new URL(d.link!).hostname.replace(/^www\./, ""); } catch { return ""; }
+              })();
+              if (!d.name || d.name === domainOnly || d.name.length < 3) {
+                d.name = meta.title;
+              }
+            }
+            if (meta.imageUrl && !d.logoUrl) {
+              d.logoUrl = meta.imageUrl;
+            }
+            if (meta.siteName && !d.brand) {
+              d.brand = meta.siteName;
+            }
+          }
+        } catch { /* continue enriching other items */ }
+      }
+    }
+    setEnriching(false);
+
     setBulkItems(
       detected.map((d, i) => {
         const confidence = CONF_MAP[d.confidence] ?? 0.35;
@@ -1060,11 +1100,11 @@ function AddAffiliateForm({
               </p>
               <button
                 onClick={handleBulkParse}
-                disabled={!rawText.trim()}
+                disabled={!rawText.trim() || enriching}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
                 style={{ color: "#ffffff" }}
               >
-                Detect Items
+                {enriching ? "Detecting & enriching..." : "Detect Items"}
               </button>
             </>
           ) : (
@@ -1639,7 +1679,8 @@ function ItemDetailModal({
 }) {
   const [copied, setCopied] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const tabInfo = TABS.find((t) => t.key === tab);
+  const tabLabel = getItemDisplayLabel(item, tab);
+  const tabGradient = getItemGradient(item, tab);
   const detailTags = getCatalogDisplayTags({
     tags: item.tags,
     brand: tab === "supplements" || tab === "affiliates" ? (item as Supplement | AffiliateItem).brand : null,
@@ -1696,7 +1737,7 @@ function ItemDetailModal({
               className="text-xs px-2.5 py-0.5 rounded-full shrink-0"
               style={{ background: "rgba(36,63,22,0.12)", color: "#528531" }}
             >
-              {tabInfo?.label}
+              {tabLabel}
             </span>
             <h3 className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>{item.name}</h3>
           </div>
@@ -1717,13 +1758,13 @@ function ItemDetailModal({
               <img src={photoUrl} alt={item.name} className="w-full h-full object-cover" />
             </div>
           ) : tab === "affiliates" ? (
-            <SiteLogo url={link} name={item.name} gradient={CATEGORY_GRADIENTS[tab]} />
+            <SiteLogo url={link} name={item.name} gradient={tabGradient} />
           ) : (
             <div
-              className={`w-full h-24 bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center`}
+              className={`w-full h-24 bg-gradient-to-br ${tabGradient} flex items-center justify-center`}
             >
               <span className="text-lg font-semibold uppercase tracking-[0.12em] text-white/90">
-                {tabInfo?.shortLabel}
+                {tabLabel}
               </span>
             </div>
           )}
@@ -1876,12 +1917,12 @@ function ItemDetailModal({
 // ── Category Picker ───────────────────────────────────────────────────────────
 
 const CATEGORY_PICKER_OPTIONS: { key: CatalogTab; label: string; emoji: string }[] = [
-  { key: "meals",       label: "Meals",   emoji: "🍽" },
-  { key: "workouts",    label: "Workout", emoji: "💪" },
-  { key: "supplements", label: "Supps",   emoji: "💊" },
-  { key: "accessories", label: "Gear",    emoji: "⚙️" },
-  { key: "wellness",    label: "Wellness",emoji: "🧘" },
-  { key: "affiliates",  label: "Links",   emoji: "🔗" },
+  { key: "meals",       label: "Meals",        emoji: "🍽" },
+  { key: "workouts",    label: "Workout",      emoji: "💪" },
+  { key: "supplements", label: "Supps",        emoji: "💊" },
+  { key: "accessories", label: "Gear",         emoji: "⚙️" },
+  { key: "wellness",    label: "Wellness",     emoji: "🧘" },
+  { key: "affiliates",  label: "Import Links", emoji: "📋" },
 ];
 
 function CategoryPicker({
@@ -1923,18 +1964,10 @@ function CategoryPicker({
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
-const VALID_TABS = new Set<Tab>(["all", "meals", "workouts", "supplements", "accessories", "wellness", "affiliates"]);
-
 export default function CatalogPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const initialTab = (): Tab => {
-    const t = searchParams.get("tab");
-    return t && VALID_TABS.has(t as Tab) ? (t as Tab) : "all";
-  };
-
-  const [tab, setTab] = useState<Tab>(initialTab);
   const [addingCategory, setAddingCategory] = useState<CatalogTab | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -1956,12 +1989,6 @@ export default function CatalogPage() {
   // Ref to track if we should auto-open the upload form on first load (from ?upload=true)
   const uploadOnMount = useRef(searchParams.get("upload") === "true");
 
-  const [meals, setMeals] = useState<SavedMeal[]>([]);
-  const [workouts, setWorkouts] = useState<SavedWorkout[]>([]);
-  const [supplements, setSupplements] = useState<Supplement[]>([]);
-  const [accessories, setAccessories] = useState<Accessory[]>([]);
-  const [wellness, setWellness] = useState<SavedWellnessItem[]>([]);
-  const [affiliates, setAffiliates] = useState<AffiliateItem[]>([]);
   const [allItems, setAllItems] = useState<AnyItemWithType[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -1974,119 +2001,65 @@ export default function CatalogPage() {
     affiliates: "/api/catalog/affiliates",
   };
 
-  useEffect(() => {
+  const fetchAllItems = () => {
     setLoading(true);
-    setAddingCategory(null);
-    setShowPicker(false);
+    const catalogTabs: CatalogTab[] = ["affiliates", "meals", "workouts", "supplements", "accessories", "wellness"];
+    Promise.all(
+      catalogTabs.map((t) =>
+        fetch(endpointMap[t])
+          .then((r) => r.json())
+          .then((data) => {
+            const items: AnyItem[] = Array.isArray(data) ? data : [];
+            return items.map((item) => ({ ...item, _catalogType: t } as AnyItemWithType));
+          })
+          .catch(() => [] as AnyItemWithType[])
+      )
+    ).then((results) => {
+      const merged = results
+        .flat()
+        .sort((a, b) => {
+          const aTime = "createdAt" in a && a.createdAt ? new Date(a.createdAt as string).getTime() : 0;
+          const bTime = "createdAt" in b && b.createdAt ? new Date(b.createdAt as string).getTime() : 0;
+          return bTime - aTime;
+        });
+      setAllItems(merged);
+      setLoading(false);
 
-    if (tab === "all") {
-      // Fetch all catalog types in parallel and merge into one sorted list
-      const catalogTabs: CatalogTab[] = ["affiliates", "meals", "workouts", "supplements", "accessories", "wellness"];
-      Promise.all(
-        catalogTabs.map((t) =>
-          fetch(endpointMap[t])
-            .then((r) => r.json())
-            .then((data) => {
-              const items: AnyItem[] = Array.isArray(data) ? data : [];
-              return items.map((item) => ({ ...item, _catalogType: t } as AnyItemWithType));
-            })
-            .catch(() => [] as AnyItemWithType[])
-        )
-      ).then((results) => {
-        const merged = results
-          .flat()
-          .sort((a, b) => {
-            const aTime = "createdAt" in a && a.createdAt ? new Date(a.createdAt as string).getTime() : 0;
-            const bTime = "createdAt" in b && b.createdAt ? new Date(b.createdAt as string).getTime() : 0;
-            return bTime - aTime;
-          });
-        setAllItems(merged);
-        setLoading(false);
-      });
-      return;
-    }
-
-    fetch(endpointMap[tab as CatalogTab])
-      .then((r) => r.json())
-      .then((data) => {
-        if (tab === "meals") setMeals(Array.isArray(data) ? data : []);
-        else if (tab === "workouts") setWorkouts(Array.isArray(data) ? data : []);
-        else if (tab === "supplements") setSupplements(Array.isArray(data) ? data : []);
-        else if (tab === "accessories") setAccessories(Array.isArray(data) ? data : []);
-        else if (tab === "wellness") setWellness(Array.isArray(data) ? data : []);
-        else if (tab === "affiliates") setAffiliates(Array.isArray(data) ? data : []);
-      })
-      .catch(() => {})
-      .finally(() => {
-        setLoading(false);
-        // Auto-open the upload form when navigating from the profile CTA
-        if (uploadOnMount.current && tab === "affiliates") {
-          setAddingCategory("affiliates");
-          uploadOnMount.current = false;
-        }
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab]);
-
-  const refreshAffiliates = async () => {
-    try {
-      const response = await fetch(endpointMap.affiliates);
-      const data = await response.json();
-      setAffiliates(Array.isArray(data) ? data : []);
-    } catch {
-      // no-op
-    }
+      // Auto-open the upload form when navigating with ?upload=true
+      if (uploadOnMount.current) {
+        setAddingCategory("affiliates");
+        uploadOnMount.current = false;
+      }
+    });
   };
 
+  useEffect(() => {
+    fetchAllItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleDelete = async (id: string, itemCatalogType?: CatalogTab) => {
-    const effectiveTab = itemCatalogType ?? (tab as CatalogTab);
+    const effectiveTab = itemCatalogType ?? "meals";
     const res = await fetch(`${endpointMap[effectiveTab]}?id=${id}`, { method: "DELETE" });
     if (res.ok) {
-      if (tab === "all") {
-        setAllItems((p) => p.filter((m) => m.id !== id));
-      } else if (effectiveTab === "meals") setMeals((p) => p.filter((m) => m.id !== id));
-      else if (effectiveTab === "workouts") setWorkouts((p) => p.filter((w) => w.id !== id));
-      else if (effectiveTab === "supplements") setSupplements((p) => p.filter((s) => s.id !== id));
-      else if (effectiveTab === "accessories") setAccessories((p) => p.filter((a) => a.id !== id));
-      else if (effectiveTab === "wellness") setWellness((p) => p.filter((w) => w.id !== id));
-      else if (effectiveTab === "affiliates") setAffiliates((p) => p.filter((a) => a.id !== id));
+      setAllItems((p) => p.filter((m) => m.id !== id));
     }
     setSelectedItem(null);
   };
 
   const handleSaveEdited = (updated: AnyItem, itemCatalogType?: CatalogTab) => {
-    const effectiveTab = itemCatalogType ?? (tab as CatalogTab);
-    if (tab === "all") {
-      setAllItems((p) => p.map((item) => (item.id === updated.id ? ({ ...updated, _catalogType: effectiveTab } as AnyItemWithType) : item)));
-    } else if (effectiveTab === "meals") setMeals((p) => p.map((item) => (item.id === updated.id ? (updated as SavedMeal) : item)));
-    else if (effectiveTab === "workouts") setWorkouts((p) => p.map((item) => (item.id === updated.id ? (updated as SavedWorkout) : item)));
-    else if (effectiveTab === "supplements") setSupplements((p) => p.map((item) => (item.id === updated.id ? (updated as Supplement) : item)));
-    else if (effectiveTab === "accessories") setAccessories((p) => p.map((item) => (item.id === updated.id ? (updated as Accessory) : item)));
-    else if (effectiveTab === "wellness") setWellness((p) => p.map((item) => (item.id === updated.id ? (updated as SavedWellnessItem) : item)));
-    else if (effectiveTab === "affiliates") setAffiliates((p) => p.map((item) => (item.id === updated.id ? (updated as AffiliateItem) : item)));
+    const effectiveTab = itemCatalogType ?? "meals";
+    setAllItems((p) => p.map((item) => (item.id === updated.id ? ({ ...updated, _catalogType: effectiveTab } as AnyItemWithType) : item)));
     setSelectedItem(updated);
   };
 
-  const currentItems = (): AnyItem[] => {
-    if (tab === "all") return allItems as AnyItem[];
-    if (tab === "meals") return meals;
-    if (tab === "workouts") return workouts;
-    if (tab === "supplements") return supplements;
-    if (tab === "accessories") return accessories;
-    if (tab === "wellness") return wellness;
-    if (tab === "affiliates") return affiliates;
-    return [];
-  };
-
-  // For items in "all" view, resolve the effective tab from _catalogType
   const getItemCatalogType = (item: AnyItem): CatalogTab | null => {
     if ("_catalogType" in item) return (item as AnyItemWithType)._catalogType;
     return null;
   };
 
-  const items = currentItems();
+  const items = allItems as AnyItem[];
   const muted = "var(--text-muted)";
-  const activeTabInfo = TABS.find((t) => t.key === tab);
 
   const getItemPhotoUrl = (item: AnyItem): string | null => {
     if ("photoUrl" in item) return (item as { photoUrl: string | null }).photoUrl;
@@ -2104,7 +2077,7 @@ export default function CatalogPage() {
   };
 
   const getDisplayTags = (item: AnyItem): string[] => {
-    const effectiveTab = getItemCatalogType(item) ?? (tab as CatalogTab);
+    const effectiveTab = getItemCatalogType(item) ?? "meals";
     return getCatalogDisplayTags({
       tags: item.tags,
       brand: effectiveTab === "supplements" || effectiveTab === "affiliates" ? ("brand" in item ? item.brand : null) : null,
@@ -2155,16 +2128,14 @@ export default function CatalogPage() {
               <HiViewList className="w-4 h-4" />
             </button>
           </div>
-          {/* Add button — always visible; picker appears when on "All" tab */}
+          {/* Add button — always shows picker */}
           <button
             onClick={() => {
               if (addingCategory !== null || showPicker) {
                 setAddingCategory(null);
                 setShowPicker(false);
-              } else if (tab === "all") {
-                setShowPicker(true);
               } else {
-                setAddingCategory(tab as CatalogTab);
+                setShowPicker(true);
               }
             }}
             className="flex items-center gap-1.5 text-sm font-medium"
@@ -2180,26 +2151,8 @@ export default function CatalogPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 mb-4 overflow-x-auto pb-1">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all"
-            style={
-              tab === t.key
-                ? { background: "var(--brand)", color: "#ffffff" }
-                : { background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }
-            }
-          >
-            {t.shortLabel}
-          </button>
-        ))}
-      </div>
-
-      {/* Category picker — shown when on "All" tab and user taps Add */}
-      {showPicker && tab === "all" && (
+      {/* Category picker */}
+      {showPicker && (
         <CategoryPicker
           onSelect={(cat) => {
             setAddingCategory(cat);
@@ -2215,8 +2168,7 @@ export default function CatalogPage() {
           {addingCategory === "meals" && (
             <AddMealForm
               onAdd={(m) => {
-                setMeals((p) => [m, ...p]);
-                if (tab === "all") setAllItems((p) => [{ ...m, _catalogType: "meals" as CatalogTab }, ...p]);
+                setAllItems((p) => [{ ...m, _catalogType: "meals" as CatalogTab }, ...p]);
                 setAddingCategory(null);
               }}
             />
@@ -2224,8 +2176,7 @@ export default function CatalogPage() {
           {addingCategory === "workouts" && (
             <AddWorkoutForm
               onAdd={(w) => {
-                setWorkouts((p) => [w, ...p]);
-                if (tab === "all") setAllItems((p) => [{ ...w, _catalogType: "workouts" as CatalogTab }, ...p]);
+                setAllItems((p) => [{ ...w, _catalogType: "workouts" as CatalogTab }, ...p]);
                 setAddingCategory(null);
               }}
             />
@@ -2233,8 +2184,7 @@ export default function CatalogPage() {
           {addingCategory === "supplements" && (
             <AddSupplementForm
               onAdd={(s) => {
-                setSupplements((p) => [s, ...p]);
-                if (tab === "all") setAllItems((p) => [{ ...s, _catalogType: "supplements" as CatalogTab }, ...p]);
+                setAllItems((p) => [{ ...s, _catalogType: "supplements" as CatalogTab }, ...p]);
                 setAddingCategory(null);
               }}
             />
@@ -2242,8 +2192,7 @@ export default function CatalogPage() {
           {addingCategory === "accessories" && (
             <AddAccessoryForm
               onAdd={(a) => {
-                setAccessories((p) => [a, ...p]);
-                if (tab === "all") setAllItems((p) => [{ ...a, _catalogType: "accessories" as CatalogTab }, ...p]);
+                setAllItems((p) => [{ ...a, _catalogType: "accessories" as CatalogTab }, ...p]);
                 setAddingCategory(null);
               }}
             />
@@ -2251,8 +2200,7 @@ export default function CatalogPage() {
           {addingCategory === "wellness" && (
             <AddWellnessForm
               onAdd={(w) => {
-                setWellness((p) => [w, ...p]);
-                if (tab === "all") setAllItems((p) => [{ ...w, _catalogType: "wellness" as CatalogTab }, ...p]);
+                setAllItems((p) => [{ ...w, _catalogType: "wellness" as CatalogTab }, ...p]);
                 setAddingCategory(null);
               }}
             />
@@ -2260,12 +2208,10 @@ export default function CatalogPage() {
           {addingCategory === "affiliates" && (
             <AddAffiliateForm
               onAdd={(a) => {
-                setAffiliates((p) => [a, ...p]);
-                if (tab === "all") setAllItems((p) => [{ ...a, _catalogType: "affiliates" as CatalogTab }, ...p]);
+                setAllItems((p) => [{ ...a, _catalogType: "affiliates" as CatalogTab }, ...p]);
               }}
               onBulkSaveComplete={async () => {
-                setTab("affiliates");
-                await refreshAffiliates();
+                fetchAllItems();
                 setAddingCategory(null);
               }}
             />
@@ -2290,53 +2236,22 @@ export default function CatalogPage() {
         )
       ) : items.length === 0 ? (
         <div className="text-center py-12">
-          <div className={`w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br ${CATEGORY_GRADIENTS[tab as Tab]} flex items-center justify-center`}>
+          <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-stone-600/80 to-stone-800/80 flex items-center justify-center">
             <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/95">
-              {activeTabInfo?.shortLabel}
+              Catalog
             </span>
           </div>
-          {tab === "all" ? (
-            <>
-              <p className="text-sm font-medium" style={{ color: muted }}>Your catalog is empty</p>
-              <p className="text-xs mt-1 mb-3" style={{ color: muted }}>Tap Add above to get started</p>
-            </>
-          ) : tab === "affiliates" ? (
-            <>
-              <p className="text-sm font-medium" style={{ color: muted }}>No affiliate links yet</p>
-              <p className="text-xs mt-1 mb-3" style={{ color: muted }}>Paste multiple links at once — we&apos;ll auto-detect the brand &amp; category</p>
-              <button
-                onClick={() => setAddingCategory("affiliates")}
-                className="text-sm font-medium px-4 py-2 rounded-xl btn-gradient"
-                style={{ color: "#ffffff" }}
-              >
-                <HiPlus className="w-4 h-4 inline mr-1" />
-                Bulk upload affiliate links, discount codes &amp; referrals
-              </button>
-            </>
-          ) : (
-            <>
-              <p className="text-sm" style={{ color: muted }}>
-                No {tab} saved yet
-              </p>
-              <button
-                onClick={() => setAddingCategory(tab as CatalogTab)}
-                className="mt-3 text-sm font-medium px-4 py-2 rounded-xl btn-gradient"
-                style={{ color: "#ffffff" }}
-              >
-                <HiPlus className="w-4 h-4 inline mr-1" />
-                Add your first {tab === "accessories" ? "accessory" : tab.slice(0, -1)}
-              </button>
-            </>
-          )}
+          <p className="text-sm font-medium" style={{ color: muted }}>Your catalog is empty</p>
+          <p className="text-xs mt-1 mb-3" style={{ color: muted }}>Tap Add above to get started</p>
         </div>
       ) : viewMode === "grid" ? (
         /* ── Grid View ── */
         <div className="grid grid-cols-3 gap-0.5">
           {items.map((item) => {
             const tileTags = getDisplayTags(item);
-            const itemCatalogType = getItemCatalogType(item);
-            const tileGradient = CATEGORY_GRADIENTS[itemCatalogType ?? (tab as CatalogTab)];
-            const tileShortLabel = itemCatalogType ? CATALOG_TAB_LABELS[itemCatalogType] : activeTabInfo?.shortLabel;
+            const itemCatalogType = getItemCatalogType(item) ?? "meals";
+            const tileGradient = getItemGradient(item, itemCatalogType);
+            const tileShortLabel = getItemDisplayLabel(item, itemCatalogType);
             return (
               <button
                 key={item.id}
@@ -2364,29 +2279,15 @@ export default function CatalogPage() {
                   <p className="text-[10px] font-medium text-white truncate leading-tight">{item.name}</p>
                 </div>
 
-                {/* In "all" view, show category label chip top-left */}
-                {tab === "all" && itemCatalogType && (
-                  <div className="absolute top-1.5 left-1.5">
-                    <span
-                      className="text-[9px] leading-none px-1.5 py-1 rounded-full"
-                      style={{ background: "rgba(24,25,15,0.72)", color: "#FDFAF5" }}
-                    >
-                      {CATALOG_TAB_LABELS[itemCatalogType]}
-                    </span>
-                  </div>
-                )}
-
-                {/* Tag hint (only in per-category views) */}
-                {tab !== "all" && tileTags.length > 0 && (
-                  <div className="absolute top-1.5 left-1.5">
-                    <SubcategoryChips
-                      tags={tileTags}
-                      compact
-                      limit={1}
-                      className="[&>span]:!bg-black/55 [&>span]:!text-white"
-                    />
-                  </div>
-                )}
+                {/* Category badge — always visible */}
+                <div className="absolute top-1.5 left-1.5">
+                  <span
+                    className="text-[9px] leading-none px-1.5 py-1 rounded-full"
+                    style={{ background: "rgba(24,25,15,0.72)", color: "#FDFAF5" }}
+                  >
+                    {tileShortLabel}
+                  </span>
+                </div>
 
                 {/* Link/referral badge */}
                 {(getItemLink(item) || getItemReferralCode(item)) && (
@@ -2411,6 +2312,9 @@ export default function CatalogPage() {
         <div className="space-y-2">
           {items.map((item) => {
             const displayTags = getDisplayTags(item);
+            const listCatalogType = getItemCatalogType(item) ?? "meals";
+            const listLabel = getItemDisplayLabel(item, listCatalogType);
+            const listGradient = getItemGradient(item, listCatalogType);
             return (
               <button
                 key={item.id}
@@ -2427,10 +2331,10 @@ export default function CatalogPage() {
                   />
                 ) : (
                   <div
-                    className={`w-14 h-14 rounded-lg bg-gradient-to-br ${CATEGORY_GRADIENTS[tab as Tab]} flex items-center justify-center flex-shrink-0`}
+                    className={`w-14 h-14 rounded-lg bg-gradient-to-br ${listGradient} flex items-center justify-center flex-shrink-0`}
                   >
                     <span className="text-[9px] font-semibold uppercase tracking-[0.1em] text-white/90 text-center px-1">
-                      {activeTabInfo?.shortLabel}
+                      {listLabel}
                     </span>
                   </div>
                 )}
@@ -2472,28 +2376,26 @@ export default function CatalogPage() {
 
       {/* Detail Modal */}
       {selectedItem && (() => {
-        const itemType = getItemCatalogType(selectedItem);
-        const effectiveTab = (itemType ?? (tab === "all" ? "meals" : tab)) as CatalogTab;
+        const itemType = getItemCatalogType(selectedItem) ?? "meals";
         return (
           <ItemDetailModal
             item={selectedItem}
-            tab={effectiveTab}
+            tab={itemType}
             onClose={() => setSelectedItem(null)}
             onEdit={() => setEditingItem(selectedItem)}
-            onDelete={() => handleDelete(selectedItem.id, itemType ?? undefined)}
+            onDelete={() => handleDelete(selectedItem.id, itemType)}
           />
         );
       })()}
 
       {editingItem && (() => {
-        const itemType = getItemCatalogType(editingItem);
-        const effectiveTab = (itemType ?? (tab === "all" ? "meals" : tab)) as CatalogTab;
+        const itemType = getItemCatalogType(editingItem) ?? "meals";
         return (
           <EditItemModal
             item={editingItem}
-            tab={effectiveTab}
+            tab={itemType}
             onClose={() => setEditingItem(null)}
-            onSave={(updated) => handleSaveEdited(updated, itemType ?? undefined)}
+            onSave={(updated) => handleSaveEdited(updated, itemType)}
           />
         );
       })()}
