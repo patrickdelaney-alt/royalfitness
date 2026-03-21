@@ -315,7 +315,7 @@ export default function ProfilePage() {
             </button>
           </div>
           <Link
-            href="/catalog?tab=affiliates&upload=true"
+            href="/catalog?upload=true"
             className="flex items-center gap-3 py-3 px-4 rounded-xl text-left transition-all btn-gradient"
             style={{ color: "#ffffff" }}
           >

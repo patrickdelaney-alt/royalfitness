@@ -5,7 +5,7 @@ import Link from "next/link";
 import { HiLockOpen } from "react-icons/hi2";
 import { HiExternalLink, HiX, HiLink, HiClipboardCopy, HiUpload, HiPencil } from "react-icons/hi";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
-import { getCatalogDisplayTags } from "@/lib/catalog-tags";
+import { AFFILIATE_CATEGORY_TO_DISPLAY, getCatalogDisplayTags } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 
 interface CatalogItem {
@@ -31,6 +31,7 @@ interface CatalogItem {
   videoUrl?: string | null;
   exercisesJson?: string;
   tags?: string[];
+  category?: string | null;
   [key: string]: unknown;
 }
 
@@ -47,8 +48,17 @@ const CATALOG_TYPES: { type: CatalogType; label: string }[] = [
   { type: "supplements", label: "Supps" },
   { type: "accessories", label: "Gear" },
   { type: "wellness", label: "Wellness" },
-  { type: "affiliates", label: "Affiliate" },
+  { type: "affiliates", label: "Links" }, // kept for API fetching; display resolved per-item
 ];
+
+/** For affiliate items, resolve display label from their category field */
+const getPublicItemLabel = (item: CatalogItem, type: CatalogType): string => {
+  if (type === "affiliates" && item.category) {
+    return AFFILIATE_CATEGORY_TO_DISPLAY[item.category as string] ?? "Other";
+  }
+  const info = CATALOG_TYPES.find((c) => c.type === type);
+  return info?.label ?? type;
+};
 
 const CATEGORY_GRADIENTS: Record<CatalogType, string> = {
   meals: "from-amber-700/70 to-amber-900/70",
@@ -98,7 +108,7 @@ function DetailModal({
     }
   };
 
-  const categoryInfo = CATALOG_TYPES.find((c) => c.type === type);
+  const categoryLabel = getPublicItemLabel(item, type);
   const displayTags = buildDisplayTags(item, type);
 
   return (
@@ -139,7 +149,7 @@ function DetailModal({
           <div
             className={`w-full aspect-[4/3] bg-gradient-to-br ${CATEGORY_GRADIENTS[type]} flex items-center justify-center rounded-t-2xl sm:rounded-t-2xl`}
           >
-            <span className="text-6xl">{categoryInfo?.label}</span>
+            <span className="text-6xl">{categoryLabel}</span>
           </div>
         )}
 
@@ -153,7 +163,7 @@ function DetailModal({
                 className="text-xs px-2.5 py-0.5 rounded-full"
                 style={{ background: "rgba(36,63,22,0.08)", color: "var(--brand)" }}
               >
-                {categoryInfo?.label}
+                {categoryLabel}
               </span>
             </div>
           </div>
@@ -400,7 +410,7 @@ export default function UserCatalogSection({
             <>
               <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>No catalog items yet</p>
               <Link
-                href="/catalog?tab=affiliates&upload=true"
+                href="/catalog?upload=true"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold btn-gradient"
                 style={{ color: "#ffffff" }}
               >
@@ -461,7 +471,7 @@ export default function UserCatalogSection({
                         className="text-[9px] leading-none px-1.5 py-1 rounded-full"
                         style={{ background: "rgba(36,63,22,0.8)", color: "#FDFAF5" }}
                       >
-                        {CATALOG_TYPES.find((c) => c.type === item.catalogType)?.label}
+                        {getPublicItemLabel(item, item.catalogType)}
                       </span>
                     {/* Compact tag hint */}
                     {tileTags.length > 0 && (
