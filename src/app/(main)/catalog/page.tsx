@@ -1873,6 +1873,54 @@ function ItemDetailModal({
   );
 }
 
+// ── Category Picker ───────────────────────────────────────────────────────────
+
+const CATEGORY_PICKER_OPTIONS: { key: CatalogTab; label: string; emoji: string }[] = [
+  { key: "meals",       label: "Meals",   emoji: "🍽" },
+  { key: "workouts",    label: "Workout", emoji: "💪" },
+  { key: "supplements", label: "Supps",   emoji: "💊" },
+  { key: "accessories", label: "Gear",    emoji: "⚙️" },
+  { key: "wellness",    label: "Wellness",emoji: "🧘" },
+  { key: "affiliates",  label: "Links",   emoji: "🔗" },
+];
+
+function CategoryPicker({
+  onSelect,
+  onCancel,
+}: {
+  onSelect: (cat: CatalogTab) => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div
+      className="mb-4 p-3 rounded-xl space-y-2"
+      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
+    >
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+          What are you adding?
+        </p>
+        <button onClick={onCancel} style={{ color: "var(--text-muted)" }}>
+          <HiX className="w-4 h-4" />
+        </button>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {CATEGORY_PICKER_OPTIONS.map((opt) => (
+          <button
+            key={opt.key}
+            onClick={() => onSelect(opt.key)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95"
+            style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
+          >
+            <span>{opt.emoji}</span>
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 const VALID_TABS = new Set<Tab>(["all", "meals", "workouts", "supplements", "accessories", "wellness", "affiliates"]);
@@ -1887,7 +1935,8 @@ export default function CatalogPage() {
   };
 
   const [tab, setTab] = useState<Tab>(initialTab);
-  const [showForm, setShowForm] = useState(false);
+  const [addingCategory, setAddingCategory] = useState<CatalogTab | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedItem, setSelectedItem] = useState<AnyItem | null>(null);
   const [editingItem, setEditingItem] = useState<AnyItem | null>(null);
@@ -1927,7 +1976,8 @@ export default function CatalogPage() {
 
   useEffect(() => {
     setLoading(true);
-    setShowForm(false);
+    setAddingCategory(null);
+    setShowPicker(false);
 
     if (tab === "all") {
       // Fetch all catalog types in parallel and merge into one sorted list
@@ -1971,7 +2021,7 @@ export default function CatalogPage() {
         setLoading(false);
         // Auto-open the upload form when navigating from the profile CTA
         if (uploadOnMount.current && tab === "affiliates") {
-          setShowForm(true);
+          setAddingCategory("affiliates");
           uploadOnMount.current = false;
         }
       });
@@ -2105,17 +2155,28 @@ export default function CatalogPage() {
               <HiViewList className="w-4 h-4" />
             </button>
           </div>
-          {/* Add button — hidden in "All" view since add requires a specific category */}
-          {tab !== "all" && (
-            <button
-              onClick={() => setShowForm((v) => !v)}
-              className="flex items-center gap-1.5 text-sm font-medium"
-              style={{ color: "#528531" }}
-            >
+          {/* Add button — always visible; picker appears when on "All" tab */}
+          <button
+            onClick={() => {
+              if (addingCategory !== null || showPicker) {
+                setAddingCategory(null);
+                setShowPicker(false);
+              } else if (tab === "all") {
+                setShowPicker(true);
+              } else {
+                setAddingCategory(tab as CatalogTab);
+              }
+            }}
+            className="flex items-center gap-1.5 text-sm font-medium"
+            style={{ color: "#528531" }}
+          >
+            {addingCategory !== null || showPicker ? (
+              <HiX className="w-4 h-4" />
+            ) : (
               <HiPlus className="w-4 h-4" />
-              Add
-            </button>
-          )}
+            )}
+            {addingCategory !== null || showPicker ? "Cancel" : "Add"}
+          </button>
         </div>
       </div>
 
@@ -2137,58 +2198,75 @@ export default function CatalogPage() {
         ))}
       </div>
 
-      {/* Add form — not available in "All" view */}
-      {showForm && tab !== "all" && (
+      {/* Category picker — shown when on "All" tab and user taps Add */}
+      {showPicker && tab === "all" && (
+        <CategoryPicker
+          onSelect={(cat) => {
+            setAddingCategory(cat);
+            setShowPicker(false);
+          }}
+          onCancel={() => setShowPicker(false)}
+        />
+      )}
+
+      {/* Add form — driven by addingCategory, independent of current tab */}
+      {addingCategory !== null && (
         <div className="mb-4">
-          {tab === "meals" && (
+          {addingCategory === "meals" && (
             <AddMealForm
               onAdd={(m) => {
                 setMeals((p) => [m, ...p]);
-                setShowForm(false);
+                if (tab === "all") setAllItems((p) => [{ ...m, _catalogType: "meals" as CatalogTab }, ...p]);
+                setAddingCategory(null);
               }}
             />
           )}
-          {tab === "workouts" && (
+          {addingCategory === "workouts" && (
             <AddWorkoutForm
               onAdd={(w) => {
                 setWorkouts((p) => [w, ...p]);
-                setShowForm(false);
+                if (tab === "all") setAllItems((p) => [{ ...w, _catalogType: "workouts" as CatalogTab }, ...p]);
+                setAddingCategory(null);
               }}
             />
           )}
-          {tab === "supplements" && (
+          {addingCategory === "supplements" && (
             <AddSupplementForm
               onAdd={(s) => {
                 setSupplements((p) => [s, ...p]);
-                setShowForm(false);
+                if (tab === "all") setAllItems((p) => [{ ...s, _catalogType: "supplements" as CatalogTab }, ...p]);
+                setAddingCategory(null);
               }}
             />
           )}
-          {tab === "accessories" && (
+          {addingCategory === "accessories" && (
             <AddAccessoryForm
               onAdd={(a) => {
                 setAccessories((p) => [a, ...p]);
-                setShowForm(false);
+                if (tab === "all") setAllItems((p) => [{ ...a, _catalogType: "accessories" as CatalogTab }, ...p]);
+                setAddingCategory(null);
               }}
             />
           )}
-          {tab === "wellness" && (
+          {addingCategory === "wellness" && (
             <AddWellnessForm
               onAdd={(w) => {
                 setWellness((p) => [w, ...p]);
-                setShowForm(false);
+                if (tab === "all") setAllItems((p) => [{ ...w, _catalogType: "wellness" as CatalogTab }, ...p]);
+                setAddingCategory(null);
               }}
             />
           )}
-          {tab === "affiliates" && (
+          {addingCategory === "affiliates" && (
             <AddAffiliateForm
               onAdd={(a) => {
                 setAffiliates((p) => [a, ...p]);
+                if (tab === "all") setAllItems((p) => [{ ...a, _catalogType: "affiliates" as CatalogTab }, ...p]);
               }}
               onBulkSaveComplete={async () => {
                 setTab("affiliates");
                 await refreshAffiliates();
-                setShowForm(false);
+                setAddingCategory(null);
               }}
             />
           )}
@@ -2220,14 +2298,14 @@ export default function CatalogPage() {
           {tab === "all" ? (
             <>
               <p className="text-sm font-medium" style={{ color: muted }}>Your catalog is empty</p>
-              <p className="text-xs mt-1 mb-3" style={{ color: muted }}>Select a category above to start adding items</p>
+              <p className="text-xs mt-1 mb-3" style={{ color: muted }}>Tap Add above to get started</p>
             </>
           ) : tab === "affiliates" ? (
             <>
               <p className="text-sm font-medium" style={{ color: muted }}>No affiliate links yet</p>
               <p className="text-xs mt-1 mb-3" style={{ color: muted }}>Paste multiple links at once — we&apos;ll auto-detect the brand &amp; category</p>
               <button
-                onClick={() => setShowForm(true)}
+                onClick={() => setAddingCategory("affiliates")}
                 className="text-sm font-medium px-4 py-2 rounded-xl btn-gradient"
                 style={{ color: "#ffffff" }}
               >
@@ -2241,7 +2319,7 @@ export default function CatalogPage() {
                 No {tab} saved yet
               </p>
               <button
-                onClick={() => setShowForm(true)}
+                onClick={() => setAddingCategory(tab as CatalogTab)}
                 className="mt-3 text-sm font-medium px-4 py-2 rounded-xl btn-gradient"
                 style={{ color: "#ffffff" }}
               >
