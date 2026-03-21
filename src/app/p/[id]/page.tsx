@@ -140,6 +140,11 @@ export default async function PublicPostPage({
   if (!post) notFound();
 
   const badge = TYPE_BADGE[post.type] ?? TYPE_BADGE.GENERAL;
+  const postTitle =
+    (post.type === "WORKOUT" ? post.workoutDetail?.workoutName : undefined) ??
+    (post.type === "MEAL" ? post.mealDetail?.mealName : undefined) ??
+    (post.type === "WELLNESS" ? post.wellnessDetail?.activityType : undefined) ??
+    null;
 
   return (
     <div
@@ -202,6 +207,12 @@ export default async function PublicPostPage({
           </span>
         </div>
 
+        {postTitle && (
+          <h1 className="text-lg font-semibold mb-4" style={{ color: "var(--text)" }}>
+            {postTitle}
+          </h1>
+        )}
+
         {/* Media */}
         {post.mediaUrl && (
           <div className="mb-4 rounded-xl overflow-hidden">
@@ -224,22 +235,12 @@ export default async function PublicPostPage({
 
         {post.externalContent[0] && <EmbedMedia item={post.externalContent[0]} />}
 
-        {/* Caption */}
-        {post.caption && (
-          <p className="text-sm mb-4" style={{ color: "var(--text)" }}>
-            {post.caption}
-          </p>
-        )}
-
         {/* Workout detail */}
         {post.type === "WORKOUT" && post.workoutDetail && (
           <div
             className="rounded-xl p-4 mb-4 space-y-3"
             style={{ background: "rgba(36,63,22,0.05)", border: "1px solid rgba(36,63,22,0.10)" }}
           >
-            <p className="font-semibold text-sm" style={{ color: "var(--text)" }}>
-              {post.workoutDetail.workoutName}
-            </p>
             {post.workoutDetail.durationMinutes && (
               <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                 ⏱ {post.workoutDetail.durationMinutes} mins
@@ -272,9 +273,6 @@ export default async function PublicPostPage({
             className="rounded-xl p-4 mb-4 space-y-3"
             style={{ background: "rgba(36,63,22,0.05)", border: "1px solid rgba(36,63,22,0.10)" }}
           >
-            <p className="font-semibold text-sm" style={{ color: "var(--text)" }}>
-              {post.mealDetail.mealName}
-            </p>
             {(post.mealDetail.calories || post.mealDetail.protein) && (
               <div className="flex gap-4">
                 {post.mealDetail.calories && (
@@ -312,15 +310,19 @@ export default async function PublicPostPage({
             className="rounded-xl p-4 mb-4"
             style={{ background: "rgba(36,63,22,0.05)", border: "1px solid rgba(36,63,22,0.10)" }}
           >
-            <p className="font-semibold text-sm mb-1" style={{ color: "var(--text)" }}>
-              {post.wellnessDetail.activityType}
-            </p>
             {post.wellnessDetail.durationMinutes && (
               <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                 ⏱ {post.wellnessDetail.durationMinutes} mins
               </p>
             )}
           </div>
+        )}
+
+        {/* Caption */}
+        {post.caption && (
+          <p className="text-sm mb-4" style={{ color: "var(--text)" }}>
+            {post.caption}
+          </p>
         )}
 
         {/* Stats row */}
