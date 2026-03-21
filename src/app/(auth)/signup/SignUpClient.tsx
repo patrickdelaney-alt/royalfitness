@@ -228,8 +228,18 @@ export default function SignUpClient({ appleEnabled, googleEnabled, waitlistGate
                 type="button"
                 onClick={() => handleOAuth("apple")}
                 disabled={oauthLoading !== null || loading}
-                className="w-full flex items-center justify-center gap-3 rounded-xl py-3 text-sm font-semibold transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ background: "var(--text)", color: "var(--surface)", border: "1px solid var(--border)" }}
+                className="w-full flex items-center justify-center gap-3 text-sm font-semibold transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  background: "#000000",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "12px",
+                  minHeight: "44px",
+                  paddingLeft: "16px",
+                  paddingRight: "16px",
+                  fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
+                  letterSpacing: "-0.01em",
+                }}
               >
                 <AppleIcon />
                 {oauthLoading === "apple" ? "Redirecting…" : "Continue with Apple"}

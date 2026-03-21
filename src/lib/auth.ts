@@ -49,10 +49,14 @@ if (!process.env.AUTH_URL && !process.env.NEXTAUTH_URL) {
 // across local (http) and production (https) environments.
 const COOKIE_NAME = "authjs.session-token";
 
-/** Derive a unique @username from an OAuth email address. */
+/** Derive a unique @username from an OAuth email address.
+ *  Apple "Hide My Email" generates addresses like `a1b2c3@privaterelay.appleid.com` —
+ *  those are not human-readable, so fall back to a simple "user" base. */
 async function generateUniqueUsername(email: string): Promise<string> {
-  const base =
-    email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "").toLowerCase() || "user";
+  const isPrivateRelay = email.endsWith("@privaterelay.appleid.com");
+  const base = isPrivateRelay
+    ? "user"
+    : email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "").toLowerCase() || "user";
   let username = base;
   let n = 0;
   while (await prisma.user.findUnique({ where: { username } })) {
@@ -60,6 +64,18 @@ async function generateUniqueUsername(email: string): Promise<string> {
     username = `${base}${n}`;
   }
   return username;
+}
+
+/** Derive a display name from an email when the OAuth provider didn't supply one.
+ *  Apple only sends the user's real name on the very first sign-in. */
+function deriveNameFromEmail(email: string): string {
+  if (email.endsWith("@privaterelay.appleid.com")) return "Royal Member";
+  const local = email.split("@")[0].replace(/[._-]+/g, " ");
+  return local
+    .split(" ")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ")
+    .trim() || "Royal Member";
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -168,16 +184,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (!existing) {
           const username = await generateUniqueUsername(user.email);
+          // Apple only sends the real name on the FIRST sign-in; fall back
+          // to a human-readable name derived from the email rather than "User".
+          const displayName = user.name?.trim() || deriveNameFromEmail(user.email);
           await prisma.user.create({
             data: {
               email: user.email,
-              name: user.name ?? "User",
+              name: displayName,
               username,
               avatarUrl: user.image ?? null,
               passwordHash: null,
             },
           });
         }
+        // Existing users: their profile is already set — don't overwrite it.
         return true;
       } catch (err) {
         console.error("[signIn callback]", err);
