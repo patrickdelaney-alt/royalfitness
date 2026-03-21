@@ -109,7 +109,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         try {
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email as string },
+            where: { email: (credentials.email as string).toLowerCase() },
           });
 
           if (!user || !user.passwordHash) return null;
@@ -162,9 +162,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (account?.provider === "credentials") return true;
       if (!user.email) return false;
 
+      const normalizedEmail = user.email.toLowerCase();
+
       try {
         const existing = await prisma.user.findUnique({
-          where: { email: user.email },
+          where: { email: normalizedEmail },
         });
 
         // Waitlist gate — only block NEW OAuth users (existing accounts can always sign in).
@@ -172,7 +174,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (process.env.WAITLIST_GATE_ENABLED === "true" && !existing) {
           const approved = await prisma.waitlistUser.findFirst({
             where: {
-              email: user.email.toLowerCase(),
+              email: normalizedEmail,
               status: { in: ["APPROVED", "INVITED", "ACTIVATED"] },
             },
           });
@@ -183,13 +185,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         if (!existing) {
-          const username = await generateUniqueUsername(user.email);
+          const username = await generateUniqueUsername(normalizedEmail);
           // Apple only sends the real name on the FIRST sign-in; fall back
           // to a human-readable name derived from the email rather than "User".
-          const displayName = user.name?.trim() || deriveNameFromEmail(user.email);
+          const displayName = user.name?.trim() || deriveNameFromEmail(normalizedEmail);
           await prisma.user.create({
             data: {
-              email: user.email,
+              email: normalizedEmail,
               name: displayName,
               username,
               avatarUrl: user.image ?? null,
@@ -214,7 +216,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // OAuth: look up the record we just created/found
           try {
             const dbUser = await prisma.user.findUnique({
-              where: { email: user.email },
+              where: { email: user.email.toLowerCase() },
             });
             token.id = dbUser?.id ?? "";
             token.username = dbUser?.username ?? "";

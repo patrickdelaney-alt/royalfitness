@@ -6,7 +6,8 @@ import { signUpSchema } from "@/lib/validations";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const data = signUpSchema.parse(body);
+    const rawData = signUpSchema.parse(body);
+    const data = { ...rawData, email: rawData.email.toLowerCase() };
 
     // Waitlist gate — only allow signup if the email is approved.
     // Controlled by the WAITLIST_GATE_ENABLED env var (set to "true" to enable).
