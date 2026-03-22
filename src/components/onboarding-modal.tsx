@@ -35,6 +35,7 @@ interface Props {
 
 export default function OnboardingModal({ onClose }: Props) {
   const [step, setStep] = useState(0);
+  const [showConfirmDismiss, setShowConfirmDismiss] = useState(false);
 
   const dismiss = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -48,16 +49,7 @@ export default function OnboardingModal({ onClose }: Props) {
       dismiss();
       return;
     }
-
-    if (typeof window !== "undefined") {
-      const shouldDismiss = window.confirm(
-        "Are you sure you want to close onboarding? You can revisit it later from your profile settings.",
-      );
-
-      if (shouldDismiss) {
-        dismiss();
-      }
-    }
+    setShowConfirmDismiss(true);
   }, [dismiss, step]);
 
   useEffect(() => {
@@ -169,6 +161,38 @@ export default function OnboardingModal({ onClose }: Props) {
               )}
             </div>
           </div>
+
+          {showConfirmDismiss && (
+            <div
+              className="absolute inset-0 flex items-end sm:items-center justify-center p-4"
+              style={{ background: "rgba(24,25,15,0.2)", backdropFilter: "blur(2px)" }}
+            >
+              <div className="w-full rounded-2xl card-shell">
+                <div className="card-core p-4 sm:p-5 rounded-2xl text-center">
+                  <h3 className="text-base font-semibold mb-1" style={{ color: "var(--text)" }}>
+                    Leave onboarding?
+                  </h3>
+                  <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
+                    You can revisit it later from your profile settings.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <button
+                      onClick={() => setShowConfirmDismiss(false)}
+                      className="btn-secondary w-full rounded-full py-2 text-sm font-semibold"
+                    >
+                      Continue onboarding
+                    </button>
+                    <button
+                      onClick={dismiss}
+                      className="btn-primary w-full rounded-full py-2 text-sm font-medium"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
