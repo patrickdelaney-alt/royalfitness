@@ -44,11 +44,16 @@ export async function POST(req: NextRequest) {
 
     const resetUrl = `${baseUrl}/reset-password?token=${rawToken}&email=${encodeURIComponent(normalizedEmail)}`;
 
+    console.log("[forgot-password] Using base URL:", baseUrl);
+
     await sendPasswordResetEmail(normalizedEmail, resetUrl);
 
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[forgot-password]", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "We couldn't send your reset email. Please try again or contact support." },
+      { status: 500 }
+    );
   }
 }

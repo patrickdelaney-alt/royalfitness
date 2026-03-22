@@ -5,13 +5,12 @@ export async function sendPasswordResetEmail(
   resetUrl: string
 ): Promise<void> {
   if (!process.env.RESEND_API_KEY) {
-    console.warn('[email] RESEND_API_KEY not configured, skipping email');
-    return;
+    throw new Error('[email] RESEND_API_KEY is not configured — cannot send password reset email');
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY);
 
-  const { error } = await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: 'Royal Fitness <noreply@royalwellness.app>',
     to: email,
     subject: 'Reset your Royal Fitness password',
@@ -29,6 +28,8 @@ export async function sendPasswordResetEmail(
     console.error('[email] Failed to send password reset email to', email, error);
     throw new Error(error.message);
   }
+
+  console.log('[email] Password reset email sent', { to: email, id: data?.id });
 }
 
 export async function sendInviteEmail(
@@ -43,7 +44,7 @@ export async function sendInviteEmail(
   const resend = new Resend(process.env.RESEND_API_KEY);
   const displayName = firstName ? ` ${firstName}` : '';
 
-  const { error } = await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: 'Royal Fitness <noreply@royalwellness.app>',
     to: email,
     subject: "You're approved! Welcome to Royal Fitness",
@@ -59,5 +60,7 @@ export async function sendInviteEmail(
   if (error) {
     console.error('[email] Failed to send invite email to', email, error);
     // Don't throw — just log. Admin action already completed in DB.
+  } else {
+    console.log('[email] Invite email sent', { to: email, id: data?.id });
   }
 }
