@@ -16,6 +16,8 @@ interface CatalogItem {
   link?: string | null;
   referralCode?: string | null;
   notes?: string | null;
+  description?: string | null;
+  ctaLabel?: string | null;
   brand?: string | null;
   dose?: string | null;
   schedule?: string | null;
@@ -67,6 +69,15 @@ const CATEGORY_GRADIENTS: Record<CatalogType, string> = {
   accessories: "from-stone-600/70 to-stone-800/70",
   wellness: "from-lime-700/70 to-lime-900/70",
   affiliates: "from-amber-600/70 to-yellow-800/70",
+};
+
+const getPublicCtaLabel = (item: CatalogItem): string => {
+  if (item.ctaLabel) return item.ctaLabel;
+  if (item.videoUrl && !item.link) return "Watch Video";
+  if (item.recipeSourceUrl && !item.link) return "View Recipe";
+  if (item.referralCode && item.link) return "Shop with Code";
+  if (item.link) return "View Deal";
+  return "View";
 };
 
 const buildDisplayTags = (item: CatalogItem, type: CatalogType) => {
@@ -155,9 +166,14 @@ function DetailModal({
 
         {/* Content */}
         <div className="p-5 pb-8 space-y-4" style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}>
-          {/* Title + category */}
+          {/* Title + brand + category */}
           <div>
             <h3 className="text-xl font-normal" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>{item.name}</h3>
+            {item.brand && (
+              <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>
+                by {item.brand}
+              </p>
+            )}
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
               <span
                 className="text-xs px-2.5 py-0.5 rounded-full"
@@ -165,6 +181,18 @@ function DetailModal({
               >
                 {categoryLabel}
               </span>
+              {item.type && (
+                <span className="text-xs px-2.5 py-0.5 rounded-full"
+                  style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}>
+                  {item.type}
+                </span>
+              )}
+              {item.activityType && (
+                <span className="text-xs px-2.5 py-0.5 rounded-full"
+                  style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}>
+                  {item.activityType}
+                </span>
+              )}
             </div>
           </div>
 
@@ -220,38 +248,74 @@ function DetailModal({
             return null;
           })()}
 
+          {/* Description (affiliates use description, others use notes) */}
+          {item.description && (
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+              {item.description}
+            </p>
+          )}
+
           {/* Notes */}
-          {item.notes && (
+          {item.notes && item.notes !== item.description && (
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
               {item.notes}
             </p>
           )}
 
-          {/* Referral Code */}
-          {item.referralCode && (
+          {/* Referral Code — large CTA for code-only items, inline for code+link */}
+          {item.referralCode && !item.link && (
             <div
-              className="flex items-center justify-between p-3 rounded-xl"
+              className="p-4 rounded-xl text-center"
               style={{ background: "var(--gold-subtle)", border: "1px solid var(--border-gold)" }}
             >
-              <div className="min-w-0 overflow-hidden mr-3">
-                <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                  Referral Code
-                </p>
-                <p className="text-base font-bold tracking-wider break-all" style={{ color: "var(--gold)" }}>
-                  {item.referralCode}
-                </p>
-              </div>
+              <p className="text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>
+                Use this code for a special offer
+              </p>
+              <p className="text-lg font-bold tracking-wider break-all my-1" style={{ color: "var(--gold)" }}>
+                {item.referralCode}
+              </p>
               <button
                 onClick={copyCode}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                className="w-full py-2.5 rounded-lg text-sm font-medium transition-all mt-2"
                 style={{
                   background: copied ? "rgba(34,197,94,0.12)" : "rgba(36,63,22,0.08)",
                   color: copied ? "#16a34a" : "var(--brand)",
                 }}
               >
-                <HiClipboardCopy className="w-3.5 h-3.5" />
-                {copied ? "Copied!" : "Copy"}
+                <HiClipboardCopy className="inline w-4 h-4 mr-1.5" />
+                {copied ? "Copied!" : "Copy Code"}
               </button>
+            </div>
+          )}
+          {item.referralCode && item.link && (
+            <div>
+              <p className="text-xs mb-1.5" style={{ color: "var(--text-muted)" }}>
+                Use this code for a special offer
+              </p>
+              <div
+                className="flex items-center justify-between p-3 rounded-xl"
+                style={{ background: "var(--gold-subtle)", border: "1px solid var(--border-gold)" }}
+              >
+                <div className="min-w-0 overflow-hidden mr-3">
+                  <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                    Promo Code
+                  </p>
+                  <p className="text-base font-bold tracking-wider break-all" style={{ color: "var(--gold)" }}>
+                    {item.referralCode}
+                  </p>
+                </div>
+                <button
+                  onClick={copyCode}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                  style={{
+                    background: copied ? "rgba(34,197,94,0.12)" : "rgba(36,63,22,0.08)",
+                    color: copied ? "#16a34a" : "var(--brand)",
+                  }}
+                >
+                  <HiClipboardCopy className="w-3.5 h-3.5" />
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+              </div>
             </div>
           )}
 
@@ -272,7 +336,7 @@ function DetailModal({
               style={{ color: "#FDFAF5" }}
             >
               <HiExternalLink className="w-4 h-4" />
-              {item.link ? "Shop Now" : item.videoUrl ? "Watch Video" : "View Source"}
+              {getPublicCtaLabel(item)}
             </a>
           )}
 
@@ -459,11 +523,16 @@ export default function UserCatalogSection({
                       />
                     )}
 
-                    {/* Bottom gradient overlay with name */}
+                    {/* Bottom gradient overlay with name + brand */}
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 pt-6">
                       <p className="text-[10px] font-medium text-white truncate leading-tight">
                         {item.name}
                       </p>
+                      {item.brand && (
+                        <p className="text-[9px] text-white/70 truncate leading-tight">
+                          {item.brand}
+                        </p>
+                      )}
                     </div>
 
                     <div className="absolute top-1.5 left-1.5 flex flex-col items-start gap-1">
