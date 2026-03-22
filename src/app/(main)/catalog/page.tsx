@@ -1222,15 +1222,6 @@ function AddAffiliateForm({
                   {bulkSubmitting ? "Saving..." : `Save Reviewed ${bulkItems.filter((b) => b.included).length}`}
                 </button>
               </div>
-              <button
-                onClick={handleBulkSubmit}
-                disabled={bulkSubmitting || bulkItems.filter((b) => b.included).length === 0}
-                className="w-full py-2 rounded-xl text-xs font-medium disabled:opacity-40"
-                style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}
-              >
-                <HiCheck className="inline w-3.5 h-3.5 mr-1" />
-                Save Selected (fallback)
-              </button>
             </>
           )}
         </>
@@ -1717,9 +1708,14 @@ function ItemDetailModal({
   };
 
   const getLinkLabel = (): string => {
+    if (tab === "affiliates" && (item as AffiliateItem).ctaLabel) {
+      return (item as AffiliateItem).ctaLabel!;
+    }
     if (tab === "workouts") return "Watch Video";
     if (tab === "meals") return "View Recipe";
     if (tab === "wellness") return "Open Link";
+    if (referralCode && link) return "Shop with Code";
+    if (link) return "View Deal";
     return "Shop Now";
   };
 
@@ -1780,6 +1776,13 @@ function ItemDetailModal({
 
           {/* Content */}
           <div className="p-5 space-y-4">
+            {/* Brand */}
+            {("brand" in item && (item as { brand: string | null }).brand) && (
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                by {(item as { brand: string | null }).brand}
+              </p>
+            )}
+
             {detailTags.length > 0 && (
               <SubcategoryChips tags={detailTags} />
             )}
@@ -2378,7 +2381,7 @@ export default function CatalogPage() {
                         style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}
                       >
                         <HiLink className="w-2.5 h-2.5" />
-                        Link
+                        Shop Link
                       </span>
                     )}
                   </div>
