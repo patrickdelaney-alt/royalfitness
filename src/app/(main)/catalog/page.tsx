@@ -1,110 +1,35 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import {
-  HiArrowLeft,
-  HiPlus,
-  HiTrash,
-  HiExternalLink,
-  HiX,
-  HiLink,
-  HiClipboardCopy,
-  HiPhotograph,
-  HiViewGrid,
-  HiViewList,
-} from "react-icons/hi";
+import { useEffect, useRef, useState } from "react";
+import { HiArrowLeft, HiPhotograph, HiPlus, HiViewGrid, HiViewList } from "react-icons/hi";
 import { useRouter } from "next/navigation";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-interface SavedMeal {
-  id: string;
-  name: string;
-  mealType?: string;
-  ingredients: string[];
-  calories: number | null;
-  protein: number | null;
-  carbs: number | null;
-  fat: number | null;
-  recipeSourceUrl: string | null;
-  photoUrl: string | null;
-  notes: string | null;
-  tags: string[];
-  createdAt: string;
-}
-
-interface SavedWorkout {
-  id: string;
-  name: string;
-  exercisesJson: string;
-  videoUrl: string | null;
-  notes: string | null;
-  tags: string[];
-  createdAt: string;
-}
-
-interface Supplement {
-  id: string;
-  name: string;
-  brand: string | null;
-  dose: string | null;
-  schedule: string | null;
-  notes: string | null;
-  photoUrl: string | null;
-  link: string | null;
-  referralCode: string | null;
-  tags: string[];
-  createdAt: string;
-}
-
-interface Accessory {
-  id: string;
-  name: string;
-  type: string | null;
-  link: string | null;
-  photoUrl: string | null;
-  referralCode: string | null;
-  notes: string | null;
-  tags: string[];
-  createdAt: string;
-}
-
-interface SavedWellnessItem {
-  id: string;
-  name: string;
-  activityType: string | null;
-  durationMinutes: number | null;
-  link: string | null;
-  photoUrl: string | null;
-  referralCode: string | null;
-  notes: string | null;
-  tags: string[];
-  createdAt: string;
-}
-
-type Tab = "meals" | "workouts" | "supplements" | "accessories" | "wellness";
-
-type AnyItem = SavedMeal | SavedWorkout | Supplement | Accessory | SavedWellnessItem;
+import {
+  type Accessory,
+  type CatalogItem,
+  type CatalogType,
+  CATALOG_TYPES,
+  type SavedMeal,
+  type SavedWellnessItem,
+  type SavedWorkout,
+  type Supplement,
+  getCatalogAction,
+} from "@/lib/catalog";
+import {
+  CatalogDetailModal,
+  CatalogEmptyState,
+  CatalogGridCard,
+  CatalogListCard,
+  CatalogSectionIntro,
+} from "@/components/catalog/catalog-ui";
 
 const inputCls = "input-dark w-full";
-
-const TABS: { key: Tab; label: string; emoji: string }[] = [
-  { key: "meals", label: "Meals", emoji: "🍽️" },
-  { key: "workouts", label: "Workouts", emoji: "💪" },
-  { key: "supplements", label: "Supps", emoji: "💊" },
-  { key: "accessories", label: "Gear", emoji: "⚡" },
-  { key: "wellness", label: "Wellness", emoji: "🧘" },
-];
-
-const CATEGORY_GRADIENTS: Record<Tab, string> = {
-  meals: "from-orange-600/80 to-red-700/80",
-  workouts: "from-blue-600/80 to-indigo-700/80",
-  supplements: "from-green-600/80 to-emerald-700/80",
-  accessories: "from-purple-600/80 to-pink-700/80",
-  wellness: "from-teal-600/80 to-cyan-700/80",
+const ENDPOINT_MAP: Record<CatalogType, string> = {
+  meals: "/api/catalog/meals",
+  workouts: "/api/catalog/workouts",
+  supplements: "/api/catalog/supplements",
+  accessories: "/api/catalog/accessories",
+  wellness: "/api/catalog/wellness",
 };
-
-// ── Photo Upload Component ────────────────────────────────────────────────────
 
 function PhotoUpload({
   photoUrl,
@@ -145,11 +70,11 @@ function PhotoUpload({
         onChange={handleFile}
       />
       {photoUrl ? (
-        <div className="relative w-full aspect-video rounded-xl overflow-hidden">
-          <img src={photoUrl} alt="Preview" className="w-full h-full object-cover" />
+        <div className="relative w-full aspect-video overflow-hidden rounded-xl">
+          <img src={photoUrl} alt="Preview" className="h-full w-full object-cover" />
           <button
             onClick={() => fileRef.current?.click()}
-            className="absolute bottom-2 right-2 p-1.5 rounded-lg text-xs"
+            className="absolute right-2 bottom-2 rounded-lg p-1.5 text-xs"
             style={{ background: "rgba(0,0,0,0.6)", color: "#ffffff" }}
           >
             Change
@@ -159,7 +84,7 @@ function PhotoUpload({
         <button
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
-          className="w-full py-4 rounded-xl flex flex-col items-center gap-1.5 transition-all"
+          className="flex w-full flex-col items-center gap-1.5 rounded-xl py-4 transition-all"
           style={{
             background: "rgba(120,117,255,0.06)",
             border: "1px dashed rgba(120,117,255,0.3)",
@@ -167,11 +92,11 @@ function PhotoUpload({
           }}
         >
           {uploading ? (
-            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           ) : (
             <>
-              <HiPhotograph className="w-6 h-6" />
-              <span className="text-xs font-medium">Add Photo</span>
+              <HiPhotograph className="h-6 w-6" />
+              <span className="text-xs font-medium">Add photo</span>
             </>
           )}
         </button>
@@ -180,7 +105,46 @@ function PhotoUpload({
   );
 }
 
-// ── Add Forms ─────────────────────────────────────────────────────────────────
+function FormShell({
+  error,
+  children,
+}: {
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="space-y-4 rounded-xl p-4"
+      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+    >
+      {error ? <p style={{ color: "#f87171" }} className="text-xs">{error}</p> : null}
+      {children}
+    </div>
+  );
+}
+
+function OptionalFields({
+  title = "Optional details",
+  description,
+  children,
+}: {
+  title?: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="space-y-3 rounded-xl p-3"
+      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+    >
+      <div>
+        <p className="text-sm font-semibold text-white">{title}</p>
+        <p className="mt-1 text-xs text-sub">{description}</p>
+      </div>
+      {children}
+    </div>
+  );
+}
 
 function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
   const [name, setName] = useState("");
@@ -212,7 +176,7 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean),
-          calories: calories ? parseInt(calories) : undefined,
+          calories: calories ? parseInt(calories, 10) : undefined,
           protein: protein ? parseFloat(protein) : undefined,
           carbs: carbs ? parseFloat(carbs) : undefined,
           fat: fat ? parseFloat(fat) : undefined,
@@ -227,8 +191,7 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
         setError(d.error || "Failed");
         return;
       }
-      const meal = await res.json();
-      onAdd(meal);
+      onAdd(await res.json());
     } catch {
       setError("Something went wrong");
     } finally {
@@ -237,51 +200,49 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
   };
 
   return (
-    <div
-      className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-    >
-      {error && (
-        <p className="text-xs" style={{ color: "#f87171" }}>
-          {error}
-        </p>
-      )}
+    <FormShell error={error}>
+      <div>
+        <p className="text-sm font-semibold text-white">Share a recipe or meal idea</p>
+        <p className="mt-1 text-xs text-sub">Lead with what it is, then add the recipe link and helpful details.</p>
+      </div>
       <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Meal name *" className={inputCls} />
       <input
         value={recipeSourceUrl}
         onChange={(e) => setRecipeSourceUrl(e.target.value)}
-        placeholder="Instagram / TikTok link (optional)"
+        placeholder="Recipe / Instagram / TikTok link"
         className={inputCls}
       />
-      <input
-        value={ingredients}
-        onChange={(e) => setIngredients(e.target.value)}
-        placeholder="Ingredients (comma-separated)"
-        className={inputCls}
-      />
-      <div className="grid grid-cols-2 gap-2">
-        <input type="number" value={calories} onChange={(e) => setCalories(e.target.value)} placeholder="Calories" className={inputCls} />
-        <input type="number" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="Protein (g)" className={inputCls} />
-        <input type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="Carbs (g)" className={inputCls} />
-        <input type="number" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="Fat (g)" className={inputCls} />
-      </div>
       <textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
         rows={2}
-        placeholder="Notes"
+        placeholder="Why do you recommend this?"
         className="textarea-dark w-full resize-none"
       />
+      <OptionalFields description="Add ingredients and macros if they help someone decide faster.">
+        <input
+          value={ingredients}
+          onChange={(e) => setIngredients(e.target.value)}
+          placeholder="Ingredients (comma-separated)"
+          className={inputCls}
+        />
+        <div className="grid grid-cols-2 gap-2">
+          <input type="number" value={calories} onChange={(e) => setCalories(e.target.value)} placeholder="Calories" className={inputCls} />
+          <input type="number" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="Protein (g)" className={inputCls} />
+          <input type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="Carbs (g)" className={inputCls} />
+          <input type="number" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="Fat (g)" className={inputCls} />
+        </div>
+      </OptionalFields>
       <button
         onClick={handleSubmit}
         disabled={submitting}
-        className="w-full py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
+        className="w-full rounded-xl py-2.5 text-sm font-semibold btn-gradient disabled:opacity-50"
         style={{ color: "#ffffff" }}
       >
-        {submitting ? "Saving..." : "Add Meal"}
+        {submitting ? "Saving..." : "Add meal"}
       </button>
-    </div>
+    </FormShell>
   );
 }
 
@@ -325,8 +286,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
         setError(d.error || "Failed");
         return;
       }
-      const supp = await res.json();
-      onAdd(supp);
+      onAdd(await res.json());
     } catch {
       setError("Something went wrong");
     } finally {
@@ -335,49 +295,40 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
   };
 
   return (
-    <div
-      className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-    >
-      {error && (
-        <p className="text-xs" style={{ color: "#f87171" }}>
-          {error}
-        </p>
-      )}
-      <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Supplement name *" className={inputCls} />
-      <div className="grid grid-cols-2 gap-2">
-        <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand" className={inputCls} />
-        <input value={dose} onChange={(e) => setDose(e.target.value)} placeholder="Dose (e.g. 5g)" className={inputCls} />
+    <FormShell error={error}>
+      <div>
+        <p className="text-sm font-semibold text-white">Create a clear supplement deal</p>
+        <p className="mt-1 text-xs text-sub">Add the product, link, and promo code first so viewers know exactly what to do.</p>
       </div>
-      <input value={schedule} onChange={(e) => setSchedule(e.target.value)} placeholder="Schedule (e.g. Morning)" className={inputCls} />
-      <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Product link (optional)" type="url" className={inputCls} />
-      <div className="relative">
-        <input
-          value={referralCode}
-          onChange={(e) => setReferralCode(e.target.value)}
-          placeholder="Referral / affiliate code (e.g. ROYAL20)"
-          className={inputCls}
-        />
-        {referralCode && (
-          <span
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(120,117,255,0.15)", color: "#a8a6ff" }}
-          >
-            Code
-          </span>
-        )}
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Product name *" className={inputCls} />
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Product link" type="url" className={inputCls} />
+        <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo code" className={inputCls} />
       </div>
-      <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
+      <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand" className={inputCls} />
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        rows={2}
+        placeholder="Why should someone use this?"
+        className="textarea-dark w-full resize-none"
+      />
+      <OptionalFields description="Helpful context only if it improves trust or decision-making.">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <input value={dose} onChange={(e) => setDose(e.target.value)} placeholder="Dose (e.g. 5g)" className={inputCls} />
+          <input value={schedule} onChange={(e) => setSchedule(e.target.value)} placeholder="When to take it" className={inputCls} />
+        </div>
+        <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
+      </OptionalFields>
       <button
         onClick={handleSubmit}
         disabled={submitting}
-        className="w-full py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
+        className="w-full rounded-xl py-2.5 text-sm font-semibold btn-gradient disabled:opacity-50"
         style={{ color: "#ffffff" }}
       >
-        {submitting ? "Saving..." : "Add Supplement"}
+        {submitting ? "Saving..." : "Add supplement"}
       </button>
-    </div>
+    </FormShell>
   );
 }
 
@@ -417,8 +368,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
         setError(d.error || "Failed");
         return;
       }
-      const acc = await res.json();
-      onAdd(acc);
+      onAdd(await res.json());
     } catch {
       setError("Something went wrong");
     } finally {
@@ -427,45 +377,36 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
   };
 
   return (
-    <div
-      className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-    >
-      {error && (
-        <p className="text-xs" style={{ color: "#f87171" }}>
-          {error}
-        </p>
-      )}
-      <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Accessory name *" className={inputCls} />
-      <input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (e.g. Recovery, Gear)" className={inputCls} />
-      <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Link (optional)" type="url" className={inputCls} />
-      <div className="relative">
-        <input
-          value={referralCode}
-          onChange={(e) => setReferralCode(e.target.value)}
-          placeholder="Referral / affiliate code (e.g. ROYAL20)"
-          className={inputCls}
-        />
-        {referralCode && (
-          <span
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(120,117,255,0.15)", color: "#a8a6ff" }}
-          >
-            Code
-          </span>
-        )}
+    <FormShell error={error}>
+      <div>
+        <p className="text-sm font-semibold text-white">Add a recommendation people can use</p>
+        <p className="mt-1 text-xs text-sub">Make the link and code obvious, then add a quick description for context.</p>
       </div>
-      <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Item name *" className={inputCls} />
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Product link" type="url" className={inputCls} />
+        <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo code" className={inputCls} />
+      </div>
+      <input value={type} onChange={(e) => setType(e.target.value)} placeholder="What is this? (e.g. Recovery gear)" className={inputCls} />
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        rows={2}
+        placeholder="How should someone use it?"
+        className="textarea-dark w-full resize-none"
+      />
+      <OptionalFields description="Add a photo only if it makes the recommendation easier to understand.">
+        <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
+      </OptionalFields>
       <button
         onClick={handleSubmit}
         disabled={submitting}
-        className="w-full py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
+        className="w-full rounded-xl py-2.5 text-sm font-semibold btn-gradient disabled:opacity-50"
         style={{ color: "#ffffff" }}
       >
-        {submitting ? "Saving..." : "Add Accessory"}
+        {submitting ? "Saving..." : "Add item"}
       </button>
-    </div>
+    </FormShell>
   );
 }
 
@@ -494,7 +435,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         body: JSON.stringify({
           name: name.trim(),
           activityType: activityType.trim() || undefined,
-          durationMinutes: durationMinutes ? parseInt(durationMinutes) : undefined,
+          durationMinutes: durationMinutes ? parseInt(durationMinutes, 10) : undefined,
           link: link.trim() || undefined,
           referralCode: referralCode.trim() || undefined,
           photoUrl: photoUrl || undefined,
@@ -507,8 +448,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         setError(d.error || "Failed");
         return;
       }
-      const item = await res.json();
-      onAdd(item);
+      onAdd(await res.json());
     } catch {
       setError("Something went wrong");
     } finally {
@@ -517,54 +457,45 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
   };
 
   return (
-    <div
-      className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-    >
-      {error && (
-        <p className="text-xs" style={{ color: "#f87171" }}>
-          {error}
-        </p>
-      )}
-      <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Wellness item name *" className={inputCls} />
-      <div className="grid grid-cols-2 gap-2">
-        <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="Activity type (e.g. Yoga)" className={inputCls} />
+    <FormShell error={error}>
+      <div>
+        <p className="text-sm font-semibold text-white">Share a wellness recommendation</p>
+        <p className="mt-1 text-xs text-sub">Lead with the offer or link, then explain the routine or benefit.</p>
+      </div>
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Item or program name *" className={inputCls} />
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Link" type="url" className={inputCls} />
+        <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo code" className={inputCls} />
+      </div>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="What is this? (e.g. Yoga, Sauna)" className={inputCls} />
         <input
           type="number"
           value={durationMinutes}
           onChange={(e) => setDurationMinutes(e.target.value)}
-          placeholder="Duration (min)"
+          placeholder="Duration (minutes)"
           className={inputCls}
         />
       </div>
-      <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Link (optional)" type="url" className={inputCls} />
-      <div className="relative">
-        <input
-          value={referralCode}
-          onChange={(e) => setReferralCode(e.target.value)}
-          placeholder="Referral / affiliate code (e.g. ROYAL20)"
-          className={inputCls}
-        />
-        {referralCode && (
-          <span
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(120,117,255,0.15)", color: "#a8a6ff" }}
-          >
-            Code
-          </span>
-        )}
-      </div>
-      <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        rows={2}
+        placeholder="Why do you recommend it?"
+        className="textarea-dark w-full resize-none"
+      />
+      <OptionalFields description="Only add a photo if it helps someone recognize the item or service faster.">
+        <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
+      </OptionalFields>
       <button
         onClick={handleSubmit}
         disabled={submitting}
-        className="w-full py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
+        className="w-full rounded-xl py-2.5 text-sm font-semibold btn-gradient disabled:opacity-50"
         style={{ color: "#ffffff" }}
       >
-        {submitting ? "Saving..." : "Add Wellness Item"}
+        {submitting ? "Saving..." : "Add wellness item"}
       </button>
-    </div>
+    </FormShell>
   );
 }
 
@@ -588,7 +519,7 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean)
-        .map((e) => ({ name: e, sets: [] }));
+        .map((exercise) => ({ name: exercise, sets: [] }));
       const res = await fetch("/api/catalog/workouts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -605,8 +536,7 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
         setError(d.error || "Failed");
         return;
       }
-      const workout = await res.json();
-      onAdd(workout);
+      onAdd(await res.json());
     } catch {
       setError("Something went wrong");
     } finally {
@@ -615,253 +545,46 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
   };
 
   return (
-    <div
-      className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-    >
-      {error && (
-        <p className="text-xs" style={{ color: "#f87171" }}>
-          {error}
-        </p>
-      )}
+    <FormShell error={error}>
+      <div>
+        <p className="text-sm font-semibold text-white">Save a workout people can follow</p>
+        <p className="mt-1 text-xs text-sub">Add the workout name and link first, then list the exercises.</p>
+      </div>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Workout name *" className={inputCls} />
-      <input value={exercises} onChange={(e) => setExercises(e.target.value)} placeholder="Exercises (comma-separated)" className={inputCls} />
       <input
         value={videoUrl}
         onChange={(e) => setVideoUrl(e.target.value)}
-        placeholder="YouTube / Instagram / TikTok link (optional)"
+        placeholder="Workout / YouTube / Instagram link"
         className={inputCls}
       />
-      <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        rows={2}
+        placeholder="What makes this workout useful?"
+        className="textarea-dark w-full resize-none"
+      />
+      <OptionalFields description="List exercises if someone should be able to follow the routine from the catalog alone.">
+        <input value={exercises} onChange={(e) => setExercises(e.target.value)} placeholder="Exercises (comma-separated)" className={inputCls} />
+      </OptionalFields>
       <button
         onClick={handleSubmit}
         disabled={submitting}
-        className="w-full py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
+        className="w-full rounded-xl py-2.5 text-sm font-semibold btn-gradient disabled:opacity-50"
         style={{ color: "#ffffff" }}
       >
-        {submitting ? "Saving..." : "Add Workout"}
+        {submitting ? "Saving..." : "Add workout"}
       </button>
-    </div>
+    </FormShell>
   );
 }
-
-// ── Detail Modal ──────────────────────────────────────────────────────────────
-
-function ItemDetailModal({
-  item,
-  tab,
-  onClose,
-  onDelete,
-}: {
-  item: AnyItem;
-  tab: Tab;
-  onClose: () => void;
-  onDelete: () => void;
-}) {
-  const [copied, setCopied] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const tabInfo = TABS.find((t) => t.key === tab);
-
-  const photoUrl = "photoUrl" in item ? (item as { photoUrl: string | null }).photoUrl : null;
-  const link = "link" in item ? (item as { link: string | null }).link : null;
-  const referralCode = "referralCode" in item ? (item as { referralCode: string | null }).referralCode : null;
-  const notes = "notes" in item ? (item as { notes: string | null }).notes : null;
-
-  const copyCode = () => {
-    if (referralCode) {
-      navigator.clipboard.writeText(referralCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  const handleDelete = async () => {
-    setDeleting(true);
-    onDelete();
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-      <div
-        className="relative w-full sm:max-w-md max-h-[85vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl"
-        style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 z-10 p-1.5 rounded-full"
-          style={{ background: "rgba(0,0,0,0.5)", color: "rgba(255,255,255,0.8)" }}
-        >
-          <HiX className="w-5 h-5" />
-        </button>
-
-        {/* Image */}
-        {photoUrl ? (
-          <div className="w-full aspect-square">
-            <img src={photoUrl} alt={item.name} className="w-full h-full object-cover rounded-t-2xl" />
-          </div>
-        ) : (
-          <div
-            className={`w-full aspect-[4/3] bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center rounded-t-2xl`}
-          >
-            <span className="text-6xl">{tabInfo?.emoji}</span>
-          </div>
-        )}
-
-        {/* Content */}
-        <div className="p-5 space-y-4">
-          <div>
-            <h3 className="text-xl font-bold text-white">{item.name}</h3>
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span
-                className="text-xs px-2.5 py-0.5 rounded-full"
-                style={{ background: "rgba(120,117,255,0.12)", color: "#a8a6ff" }}
-              >
-                {tabInfo?.emoji} {tabInfo?.label}
-              </span>
-              {tab === "supplements" && (item as Supplement).brand && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>
-                  {(item as Supplement).brand}
-                </span>
-              )}
-              {tab === "accessories" && (item as Accessory).type && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>
-                  {(item as Accessory).type}
-                </span>
-              )}
-              {tab === "wellness" && (item as SavedWellnessItem).activityType && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>
-                  {(item as SavedWellnessItem).activityType}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Supplement details */}
-          {tab === "supplements" && ((item as Supplement).dose || (item as Supplement).schedule) && (
-            <div className="flex gap-4 text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
-              {(item as Supplement).dose && <span>Dose: {(item as Supplement).dose}</span>}
-              {(item as Supplement).schedule && <span>Schedule: {(item as Supplement).schedule}</span>}
-            </div>
-          )}
-
-          {/* Meal macros */}
-          {tab === "meals" && ((item as SavedMeal).calories || (item as SavedMeal).protein) && (
-            <div className="flex gap-3 text-xs flex-wrap" style={{ color: "rgba(255,255,255,0.5)" }}>
-              {(item as SavedMeal).calories != null && <span>{(item as SavedMeal).calories} cal</span>}
-              {(item as SavedMeal).protein != null && <span>{(item as SavedMeal).protein}g protein</span>}
-              {(item as SavedMeal).carbs != null && <span>{(item as SavedMeal).carbs}g carbs</span>}
-              {(item as SavedMeal).fat != null && <span>{(item as SavedMeal).fat}g fat</span>}
-            </div>
-          )}
-
-          {/* Ingredients */}
-          {tab === "meals" && (item as SavedMeal).ingredients?.length > 0 && (
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
-              {(item as SavedMeal).ingredients.join(", ")}
-            </p>
-          )}
-
-          {/* Workout exercises */}
-          {tab === "workouts" &&
-            (() => {
-              try {
-                const exercises = JSON.parse((item as SavedWorkout).exercisesJson);
-                if (Array.isArray(exercises) && exercises.length > 0) {
-                  return (
-                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
-                      {exercises.map((e: { name: string }) => e.name).join(", ")}
-                    </p>
-                  );
-                }
-              } catch {
-                /* ignore */
-              }
-              return null;
-            })()}
-
-          {/* Duration */}
-          {tab === "wellness" && (item as SavedWellnessItem).durationMinutes != null && (
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
-              {(item as SavedWellnessItem).durationMinutes} minutes
-            </p>
-          )}
-
-          {/* Notes */}
-          {notes && (
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
-              {notes}
-            </p>
-          )}
-
-          {/* Referral Code */}
-          {referralCode && (
-            <div
-              className="flex items-center justify-between p-3 rounded-xl"
-              style={{ background: "rgba(120,117,255,0.08)", border: "1px solid rgba(120,117,255,0.2)" }}
-            >
-              <div>
-                <p className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  Referral Code
-                </p>
-                <p className="text-base font-bold tracking-wider" style={{ color: "#a8a6ff" }}>
-                  {referralCode}
-                </p>
-              </div>
-              <button
-                onClick={copyCode}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                style={{
-                  background: copied ? "rgba(34,197,94,0.2)" : "rgba(120,117,255,0.15)",
-                  color: copied ? "#22c55e" : "#a8a6ff",
-                }}
-              >
-                <HiClipboardCopy className="w-3.5 h-3.5" />
-                {copied ? "Copied!" : "Copy"}
-              </button>
-            </div>
-          )}
-
-          {/* Link button */}
-          {(link || (tab === "meals" && (item as SavedMeal).recipeSourceUrl) || (tab === "workouts" && (item as SavedWorkout).videoUrl)) && (
-            <a
-              href={link || (tab === "meals" ? (item as SavedMeal).recipeSourceUrl : (item as SavedWorkout).videoUrl) || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold btn-gradient transition-all"
-              style={{ color: "#ffffff" }}
-            >
-              <HiExternalLink className="w-4 h-4" />
-              {link ? "Shop Now" : tab === "workouts" ? "Watch Video" : "View Source"}
-            </a>
-          )}
-
-          {/* Delete */}
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium transition-all"
-            style={{ background: "rgba(248,113,113,0.1)", color: "#f87171", border: "1px solid rgba(248,113,113,0.2)" }}
-          >
-            <HiTrash className="w-4 h-4" />
-            {deleting ? "Deleting..." : "Delete Item"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function CatalogPage() {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("meals");
+  const [tab, setTab] = useState<CatalogType>("meals");
   const [showForm, setShowForm] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [selectedItem, setSelectedItem] = useState<AnyItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<CatalogItem | null>(null);
 
   const [meals, setMeals] = useState<SavedMeal[]>([]);
   const [workouts, setWorkouts] = useState<SavedWorkout[]>([]);
@@ -870,18 +593,8 @@ export default function CatalogPage() {
   const [wellness, setWellness] = useState<SavedWellnessItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const endpointMap: Record<Tab, string> = {
-    meals: "/api/catalog/meals",
-    workouts: "/api/catalog/workouts",
-    supplements: "/api/catalog/supplements",
-    accessories: "/api/catalog/accessories",
-    wellness: "/api/catalog/wellness",
-  };
-
   useEffect(() => {
-    setLoading(true);
-    setShowForm(false);
-    fetch(endpointMap[tab])
+    fetch(ENDPOINT_MAP[tab])
       .then((r) => r.json())
       .then((data) => {
         if (tab === "meals") setMeals(Array.isArray(data) ? data : []);
@@ -892,65 +605,51 @@ export default function CatalogPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
+  const items: CatalogItem[] =
+    tab === "meals"
+      ? meals
+      : tab === "workouts"
+        ? workouts
+        : tab === "supplements"
+          ? supplements
+          : tab === "accessories"
+            ? accessories
+            : wellness;
+
+  const actionReadyCount = items.filter((item) => getCatalogAction(item, tab).kind !== "none").length;
+
   const handleDelete = async (id: string) => {
-    const res = await fetch(`${endpointMap[tab]}?id=${id}`, { method: "DELETE" });
+    const res = await fetch(`${ENDPOINT_MAP[tab]}?id=${id}`, { method: "DELETE" });
     if (res.ok) {
       if (tab === "meals") setMeals((p) => p.filter((m) => m.id !== id));
       else if (tab === "workouts") setWorkouts((p) => p.filter((w) => w.id !== id));
       else if (tab === "supplements") setSupplements((p) => p.filter((s) => s.id !== id));
       else if (tab === "accessories") setAccessories((p) => p.filter((a) => a.id !== id));
-      else if (tab === "wellness") setWellness((p) => p.filter((w) => w.id !== id));
+      else setWellness((p) => p.filter((w) => w.id !== id));
     }
     setSelectedItem(null);
   };
 
-  const currentItems = (): AnyItem[] => {
-    if (tab === "meals") return meals;
-    if (tab === "workouts") return workouts;
-    if (tab === "supplements") return supplements;
-    if (tab === "accessories") return accessories;
-    if (tab === "wellness") return wellness;
-    return [];
-  };
-
-  const items = currentItems();
-  const muted = "rgba(255,255,255,0.4)";
-
-  const getItemPhotoUrl = (item: AnyItem): string | null => {
-    if ("photoUrl" in item) return (item as { photoUrl: string | null }).photoUrl;
-    return null;
-  };
-
-  const getItemLink = (item: AnyItem): string | null => {
-    if ("link" in item) return (item as { link: string | null }).link;
-    return null;
-  };
-
-  const getItemReferralCode = (item: AnyItem): string | null => {
-    if ("referralCode" in item) return (item as { referralCode: string | null }).referralCode;
-    return null;
-  };
-
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+    <div className="mx-auto max-w-lg px-4 pt-4 pb-8" style={{ color: "#ffffff" }}>
+      <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="p-2 rounded-xl"
+            className="rounded-xl p-2"
             style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)" }}
           >
-            <HiArrowLeft className="w-5 h-5" />
+            <HiArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-lg font-bold">My Catalog</h1>
+          <div>
+            <h1 className="text-lg font-bold">My Catalog</h1>
+            <p className="text-xs text-sub">Curated recommendations, deals, workouts, and recipes.</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          {/* View toggle */}
-          <div className="flex rounded-lg overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+          <div className="flex overflow-hidden rounded-lg" style={{ background: "rgba(255,255,255,0.06)" }}>
             <button
               onClick={() => setViewMode("grid")}
               className="p-1.5 transition-all"
@@ -959,7 +658,7 @@ export default function CatalogPage() {
                 color: viewMode === "grid" ? "#a8a6ff" : "rgba(255,255,255,0.3)",
               }}
             >
-              <HiViewGrid className="w-4 h-4" />
+              <HiViewGrid className="h-4 w-4" />
             </button>
             <button
               onClick={() => setViewMode("list")}
@@ -969,78 +668,81 @@ export default function CatalogPage() {
                 color: viewMode === "list" ? "#a8a6ff" : "rgba(255,255,255,0.3)",
               }}
             >
-              <HiViewList className="w-4 h-4" />
+              <HiViewList className="h-4 w-4" />
             </button>
           </div>
-          {/* Add button */}
-          <button
-            onClick={() => setShowForm((v) => !v)}
-            className="flex items-center gap-1.5 text-sm font-medium"
-            style={{ color: "#a8a6ff" }}
-          >
-            <HiPlus className="w-4 h-4" />
-            Add
+          <button onClick={() => setShowForm((v) => !v)} className="flex items-center gap-1.5 text-sm font-medium" style={{ color: "#a8a6ff" }}>
+            <HiPlus className="h-4 w-4" />
+            {showForm ? "Close" : "Add"}
           </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 mb-4 overflow-x-auto pb-1">
-        {TABS.map((t) => (
+      <CatalogSectionIntro
+        title="Catalog"
+        subtitle="Help people understand the item fast, then give them a clear next step."
+        countLabel={actionReadyCount > 0 ? `${actionReadyCount} ready to use` : null}
+      />
+
+      <div className="mb-4 flex gap-1 overflow-x-auto pb-1">
+        {CATALOG_TYPES.map((catalogTab) => (
           <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all"
+            key={catalogTab.type}
+            onClick={() => {
+              setLoading(true);
+              setShowForm(false);
+              setTab(catalogTab.type);
+            }}
+            className="whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-all"
             style={
-              tab === t.key
+              tab === catalogTab.type
                 ? { background: "linear-gradient(135deg, #6360e8, #9b98ff)", color: "#ffffff" }
                 : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
             }
           >
-            {t.emoji} {t.label}
+            {catalogTab.emoji} {catalogTab.label}
           </button>
         ))}
       </div>
 
-      {/* Add form */}
       {showForm && (
         <div className="mb-4">
           {tab === "meals" && (
             <AddMealForm
-              onAdd={(m) => {
-                setMeals((p) => [m, ...p]);
+              onAdd={(item) => {
+                setMeals((p) => [item, ...p]);
                 setShowForm(false);
               }}
             />
           )}
           {tab === "workouts" && (
             <AddWorkoutForm
-              onAdd={(w) => {
-                setWorkouts((p) => [w, ...p]);
+              onAdd={(item) => {
+                setWorkouts((p) => [item, ...p]);
                 setShowForm(false);
               }}
             />
           )}
           {tab === "supplements" && (
             <AddSupplementForm
-              onAdd={(s) => {
-                setSupplements((p) => [s, ...p]);
+              onAdd={(item) => {
+                setSupplements((p) => [item, ...p]);
                 setShowForm(false);
               }}
             />
           )}
           {tab === "accessories" && (
             <AddAccessoryForm
-              onAdd={(a) => {
-                setAccessories((p) => [a, ...p]);
+              onAdd={(item) => {
+                setAccessories((p) => [item, ...p]);
                 setShowForm(false);
               }}
             />
           )}
           {tab === "wellness" && (
             <AddWellnessForm
-              onAdd={(w) => {
-                setWellness((p) => [w, ...p]);
+              onAdd={(item) => {
+                setWellness((p) => [item, ...p]);
                 setShowForm(false);
               }}
             />
@@ -1048,139 +750,54 @@ export default function CatalogPage() {
         </div>
       )}
 
-      {/* Content */}
       {loading ? (
         viewMode === "grid" ? (
           <div className="grid grid-cols-3 gap-0.5">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <div key={i} className="aspect-square rounded-sm animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
+            {Array.from({ length: 9 }).map((_, index) => (
+              <div key={index} className="aspect-square rounded-sm animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
             ))}
           </div>
         ) : (
           <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
+            {[1, 2, 3].map((index) => (
+              <div key={index} className="h-20 rounded-xl animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
             ))}
           </div>
         )
       ) : items.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-3xl mb-2">{TABS.find((t) => t.key === tab)?.emoji}</p>
-          <p className="text-sm" style={{ color: muted }}>
-            No {tab} saved yet
-          </p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="mt-3 text-sm font-medium px-4 py-2 rounded-xl btn-gradient"
-            style={{ color: "#ffffff" }}
-          >
-            <HiPlus className="w-4 h-4 inline mr-1" />
-            Add your first {tab === "accessories" ? "accessory" : tab.slice(0, -1)}
-          </button>
-        </div>
+        <CatalogEmptyState
+          type={tab}
+          title={`No ${tab} saved yet`}
+          description="Start with the item name, then add a link or code if people should use it right away."
+          action={
+            <button
+              onClick={() => setShowForm(true)}
+              className="rounded-xl px-4 py-2 text-sm font-medium btn-gradient"
+              style={{ color: "#ffffff" }}
+            >
+              <HiPlus className="mr-1 inline h-4 w-4" />
+              Add your first {tab === "accessories" ? "item" : tab.slice(0, -1)}
+            </button>
+          }
+        />
       ) : viewMode === "grid" ? (
-        /* ── Grid View ── */
         <div className="grid grid-cols-3 gap-0.5">
           {items.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setSelectedItem(item)}
-              className="relative aspect-square overflow-hidden rounded-sm group"
-            >
-              {getItemPhotoUrl(item) ? (
-                <img
-                  src={getItemPhotoUrl(item)!}
-                  alt={item.name}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                />
-              ) : (
-                <div
-                  className={`w-full h-full bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center`}
-                >
-                  <span className="text-3xl opacity-80">{TABS.find((t) => t.key === tab)?.emoji}</span>
-                </div>
-              )}
-
-              {/* Bottom gradient overlay with name */}
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 pt-6">
-                <p className="text-[10px] font-medium text-white truncate leading-tight">{item.name}</p>
-              </div>
-
-              {/* Link/referral badge */}
-              {(getItemLink(item) || getItemReferralCode(item)) && (
-                <div className="absolute top-1.5 right-1.5 p-1 rounded-full" style={{ background: "rgba(120,117,255,0.85)" }}>
-                  <HiLink className="w-2.5 h-2.5 text-white" />
-                </div>
-              )}
-
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-            </button>
+            <CatalogGridCard key={item.id} item={item} type={tab} onSelect={() => setSelectedItem(item)} />
           ))}
         </div>
       ) : (
-        /* ── List View ── */
         <div className="space-y-2">
           {items.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setSelectedItem(item)}
-              className="flex items-center gap-3 p-3 rounded-xl w-full text-left transition-all"
-              style={{ background: "#13141f", border: "1px solid rgba(255,255,255,0.08)" }}
-            >
-              {/* Thumbnail */}
-              {getItemPhotoUrl(item) ? (
-                <img
-                  src={getItemPhotoUrl(item)!}
-                  alt={item.name}
-                  className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
-                />
-              ) : (
-                <div
-                  className={`w-14 h-14 rounded-lg bg-gradient-to-br ${CATEGORY_GRADIENTS[tab]} flex items-center justify-center flex-shrink-0`}
-                >
-                  <span className="text-xl">{TABS.find((t) => t.key === tab)?.emoji}</span>
-                </div>
-              )}
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm truncate">{item.name}</p>
-                {"notes" in item && (item as { notes: string | null }).notes && (
-                  <p className="text-xs truncate mt-0.5" style={{ color: muted }}>
-                    {(item as { notes: string | null }).notes}
-                  </p>
-                )}
-                <div className="flex gap-1.5 mt-1 flex-wrap">
-                  {getItemReferralCode(item) && (
-                    <span
-                      className="text-[10px] px-2 py-0.5 rounded-full"
-                      style={{ background: "rgba(120,117,255,0.12)", color: "#a8a6ff" }}
-                    >
-                      Code: {getItemReferralCode(item)}
-                    </span>
-                  )}
-                  {getItemLink(item) && !getItemReferralCode(item) && (
-                    <span
-                      className="text-[10px] px-2 py-0.5 rounded-full flex items-center gap-0.5"
-                      style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}
-                    >
-                      <HiLink className="w-2.5 h-2.5" />
-                      Link
-                    </span>
-                  )}
-                </div>
-              </div>
-            </button>
+            <CatalogListCard key={item.id} item={item} type={tab} onSelect={() => setSelectedItem(item)} />
           ))}
         </div>
       )}
 
-      {/* Detail Modal */}
       {selectedItem && (
-        <ItemDetailModal
+        <CatalogDetailModal
           item={selectedItem}
-          tab={tab}
+          type={tab}
           onClose={() => setSelectedItem(null)}
           onDelete={() => handleDelete(selectedItem.id)}
         />
