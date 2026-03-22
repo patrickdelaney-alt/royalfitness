@@ -18,6 +18,7 @@ interface CatalogItem {
   notes?: string | null;
   description?: string | null;
   ctaLabel?: string | null;
+  logoUrl?: string | null;
   brand?: string | null;
   dose?: string | null;
   schedule?: string | null;
@@ -34,6 +35,7 @@ interface CatalogItem {
   exercisesJson?: string;
   tags?: string[];
   category?: string | null;
+  subcategoryTags?: string[];
   [key: string]: unknown;
 }
 
@@ -76,13 +78,14 @@ const getPublicCtaLabel = (item: CatalogItem): string => {
   if (item.videoUrl && !item.link) return "Watch Video";
   if (item.recipeSourceUrl && !item.link) return "View Recipe";
   if (item.referralCode && item.link) return "Shop with Code";
-  if (item.link) return "View Deal";
-  return "View";
+  if (item.link) return "Open Link";
+  return "View Deal";
 };
 
 const buildDisplayTags = (item: CatalogItem, type: CatalogType) => {
   return getCatalogDisplayTags({
     tags: item.tags,
+    subcategoryTags: type === "affiliates" ? item.subcategoryTags : null,
     brand: item.brand,
     type: type === "accessories" ? item.type : null,
     activityType: type === "wellness" ? item.activityType : null,
@@ -148,10 +151,10 @@ function DetailModal({
         </button>
 
         {/* Image */}
-        {item.photoUrl ? (
+        {item.photoUrl || item.logoUrl ? (
           <div className="w-full aspect-square">
             <img
-              src={item.photoUrl}
+              src={item.photoUrl || item.logoUrl || ""}
               alt={item.name}
               className="w-full h-full object-cover rounded-t-2xl sm:rounded-t-2xl"
             />
@@ -520,9 +523,9 @@ export default function UserCatalogSection({
                     onClick={() => setSelectedItem(item)}
                     className="relative aspect-square overflow-hidden rounded-sm group"
                   >
-                    {item.photoUrl ? (
+                    {item.photoUrl || item.logoUrl ? (
                       <img
-                        src={item.photoUrl}
+                        src={item.photoUrl || item.logoUrl || ""}
                         alt={item.name}
                         className="w-full h-full object-cover transition-transform group-hover:scale-105"
                       />

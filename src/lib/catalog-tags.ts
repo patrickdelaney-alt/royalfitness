@@ -66,18 +66,20 @@ export const AFFILIATE_TO_CATALOG_TYPE: Record<string, string> = {
 
 export const getCatalogDisplayTags = ({
   tags,
+  subcategoryTags,
   brand,
   type,
   activityType,
   categoryLabel,
 }: {
   tags?: string[] | null;
+  subcategoryTags?: string[] | null;
   brand?: string | null;
   type?: string | null;
   activityType?: string | null;
   categoryLabel?: string | null;
 }) => {
-  const explicitTags = dedupeTags(tags ?? []);
+  const explicitTags = dedupeTags([...(tags ?? []), ...(subcategoryTags ?? [])]);
 
   if (explicitTags.length > 0) {
     return explicitTags;
