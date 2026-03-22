@@ -140,7 +140,7 @@ const CATALOG_TAB_LABELS: Record<CatalogTab, string> = {
   supplements: "Supps",
   accessories: "Gear",
   wellness: "Wellness",
-  affiliates: "Links", // fallback; affiliate items resolve via AFFILIATE_CATEGORY_TO_DISPLAY
+  affiliates: "Deals", // fallback; affiliate items resolve via AFFILIATE_CATEGORY_TO_DISPLAY
 };
 
 /** For affiliate items, resolve display label from their AffiliateCategory */
@@ -832,6 +832,7 @@ function AddAffiliateForm({
   const [referralCode, setReferralCode] = useState("");
   const [category, setCategory] = useState("OTHER");
   const [description, setDescription] = useState("");
+  const [ctaLabel, setCtaLabel] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [tagsText, setTagsText] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -1034,6 +1035,7 @@ function AddAffiliateForm({
           link: link.trim() || undefined,
           referralCode: referralCode.trim() || undefined,
           category,
+          ctaLabel: ctaLabel.trim() || undefined,
           photoUrl: photoUrl || undefined,
           tags: parsedTags,
         }),
@@ -1259,6 +1261,7 @@ function AddAffiliateForm({
               </span>
             )}
           </div>
+          <input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder="Primary CTA label (optional)" className={inputCls} />
           <select value={category} onChange={(e) => setCategory(e.target.value)} className="select-dark w-full">
             {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1591,6 +1594,9 @@ function EditItemModal({
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
+              <input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder="Primary CTA label (optional)" className={inputCls} />
+              <input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="Logo image URL (optional)" className={inputCls} />
+              <input value={subcategoryTagsText} onChange={(e) => setSubcategoryTagsText(e.target.value)} placeholder="Subcategory tags (comma-separated, optional)" className={inputCls} />
             </>
           )}
 
@@ -1680,6 +1686,7 @@ function ItemDetailModal({
   const tabGradient = getItemGradient(item, tab);
   const detailTags = getCatalogDisplayTags({
     tags: item.tags,
+    subcategoryTags: tab === "affiliates" ? (item as AffiliateItem).subcategoryTags : null,
     brand: tab === "supplements" || tab === "affiliates" ? (item as Supplement | AffiliateItem).brand : null,
     type: tab === "accessories" ? (item as Accessory).type : null,
     activityType: tab === "wellness" ? (item as SavedWellnessItem).activityType : null,
@@ -1690,6 +1697,7 @@ function ItemDetailModal({
   });
 
   const photoUrl = "photoUrl" in item ? (item as { photoUrl: string | null }).photoUrl : null;
+  const logoUrl = tab === "affiliates" ? (item as AffiliateItem).logoUrl : null;
   const link = "link" in item ? (item as { link: string | null }).link : null;
   const referralCode = "referralCode" in item ? (item as { referralCode: string | null }).referralCode : null;
   const notes = "notes" in item ? (item as { notes: string | null }).notes : null;
@@ -1715,8 +1723,8 @@ function ItemDetailModal({
     if (tab === "meals") return "View Recipe";
     if (tab === "wellness") return "Open Link";
     if (referralCode && link) return "Shop with Code";
-    if (link) return "View Deal";
-    return "Shop Now";
+    if (link) return "Open Link";
+    return "View Deal";
   };
 
   const itemLink =
@@ -1758,9 +1766,9 @@ function ItemDetailModal({
         {/* Scrollable body */}
         <div className="overflow-y-auto overscroll-contain flex-1" style={{ WebkitOverflowScrolling: "touch" }}>
           {/* Image / logo */}
-          {photoUrl ? (
+          {photoUrl || logoUrl ? (
             <div className="w-full aspect-[4/3]">
-              <img src={photoUrl} alt={item.name} className="w-full h-full object-cover" />
+              <img src={(photoUrl || logoUrl)!} alt={item.name} className="w-full h-full object-cover" />
             </div>
           ) : tab === "affiliates" ? (
             <SiteLogo url={link} name={item.name} gradient={tabGradient} />
@@ -1859,7 +1867,7 @@ function ItemDetailModal({
               >
                 <div className="min-w-0 overflow-hidden mr-3">
                   <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                    Promo / Referral Code
+                    Promo Code
                   </p>
                   <p className="text-base font-bold tracking-wider break-all" style={{ color: "#528531" }}>
                     {referralCode}
@@ -1874,7 +1882,7 @@ function ItemDetailModal({
                   }}
                 >
                   <HiClipboardCopy className="w-3.5 h-3.5" />
-                  {copied ? "Copied!" : "Copy"}
+                  {copied ? "Copied!" : "Copy Code"}
                 </button>
               </div>
             )}
@@ -2081,7 +2089,8 @@ export default function CatalogPage() {
   const muted = "var(--text-muted)";
 
   const getItemPhotoUrl = (item: AnyItem): string | null => {
-    if ("photoUrl" in item) return (item as { photoUrl: string | null }).photoUrl;
+    if ("photoUrl" in item && (item as { photoUrl: string | null }).photoUrl) return (item as { photoUrl: string | null }).photoUrl;
+    if ("logoUrl" in item) return (item as { logoUrl: string | null }).logoUrl;
     return null;
   };
 
@@ -2099,6 +2108,7 @@ export default function CatalogPage() {
     const effectiveTab = getItemCatalogType(item) ?? "meals";
     return getCatalogDisplayTags({
       tags: item.tags,
+      subcategoryTags: effectiveTab === "affiliates" && "subcategoryTags" in item ? item.subcategoryTags as string[] : null,
       brand: effectiveTab === "supplements" || effectiveTab === "affiliates" ? ("brand" in item ? item.brand : null) : null,
       type: effectiveTab === "accessories" && "type" in item ? item.type : null,
       activityType: effectiveTab === "wellness" && "activityType" in item ? item.activityType : null,
@@ -2267,7 +2277,6 @@ export default function CatalogPage() {
         /* ── Grid View ── */
         <div className="grid grid-cols-3 gap-0.5">
           {items.map((item) => {
-            const tileTags = getDisplayTags(item);
             const itemCatalogType = getItemCatalogType(item) ?? "meals";
             const tileGradient = getItemGradient(item, itemCatalogType);
             const tileShortLabel = getItemDisplayLabel(item, itemCatalogType);
@@ -2382,7 +2391,7 @@ export default function CatalogPage() {
                         style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}
                       >
                         <HiLink className="w-2.5 h-2.5" />
-                        Shop Link
+                        Open Link
                       </span>
                     )}
                   </div>
