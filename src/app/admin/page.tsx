@@ -377,6 +377,71 @@ function WaitlistTab() {
   );
 }
 
+// ─── Test Email section ───────────────────────────────────────────
+
+function TestEmailSection() {
+  const [to, setTo] = useState("");
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  async function handleSend() {
+    if (!to) return;
+    setSending(true);
+    setResult(null);
+    try {
+      const res = await fetch("/api/admin/test-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setResult({ ok: true, message: `Email sent! Resend ID: ${data.emailId}` });
+        setTo("");
+      } else {
+        setResult({ ok: false, message: data.error ?? "Failed to send" });
+      }
+    } catch {
+      setResult({ ok: false, message: "Network error" });
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div className="rounded-2xl p-5 mb-8" style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}>
+      <h2 className="text-sm font-bold mb-1">Test Email Delivery</h2>
+      <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>
+        Send a test email to verify Resend is working correctly.
+      </p>
+      <div className="flex gap-2">
+        <input
+          type="email"
+          value={to}
+          onChange={(e) => setTo(e.target.value)}
+          placeholder="recipient@example.com"
+          className="flex-1 text-sm px-3 py-2 rounded-xl outline-none"
+          style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" }}
+          onKeyDown={(e) => e.key === "Enter" && handleSend()}
+        />
+        <button
+          onClick={handleSend}
+          disabled={sending || !to}
+          className="text-sm px-4 py-2 rounded-xl font-semibold disabled:opacity-50"
+          style={{ background: "var(--brand)", color: "#fff" }}
+        >
+          {sending ? "Sending…" : "Send Test"}
+        </button>
+      </div>
+      {result && (
+        <p className="text-xs mt-3 font-medium" style={{ color: result.ok ? "#528531" : "#c0392b" }}>
+          {result.ok ? "✓ " : "✗ "}{result.message}
+        </p>
+      )}
+    </div>
+  );
+}
+
 // ─── Main admin page ──────────────────────────────────────────────
 
 export default function AdminPage() {
@@ -500,6 +565,8 @@ export default function AdminPage() {
       {/* ── App Users tab ─────────────────────────────────────────── */}
       {tab === "users" && (
         <>
+          <TestEmailSection />
+
           <div className="grid grid-cols-3 gap-3 mb-8">
             {[
               { label: "Total Users", value: totalUserCount },
