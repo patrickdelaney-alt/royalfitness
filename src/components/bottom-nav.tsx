@@ -6,6 +6,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { HiHome, HiChartBar, HiPlusCircle, HiUser } from "react-icons/hi";
 import { HiBell } from "react-icons/hi2";
+import { BOTTOM_NAV_HEIGHT } from "@/components/bottom-nav.constants";
 
 // Explore is intentionally NOT here — it lives as a search icon in the feed
 // header (FeedContent.tsx), which is the standard pattern (Instagram, etc.).
@@ -66,8 +67,10 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center border-t"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t"
       style={{
+        height: BOTTOM_NAV_HEIGHT,
+        paddingBottom: "env(safe-area-inset-bottom)",
         background: "rgba(253,250,245,0.85)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
@@ -75,61 +78,63 @@ export function BottomNav() {
         boxShadow: "0 -1px 8px rgba(24,25,15,0.04), inset 0 1px 0 rgba(255,255,255,0.7)",
       }}
     >
-      {tabs.map((tab) => {
-        const isActive = pathname.startsWith(tab.href);
-        let href = tab.href;
-        if (tab.href === "/create" && pathname.startsWith("/feed") && feedFilter && feedFilter !== "ALL") {
-          href = `/create?type=${feedFilter}`;
-        }
+      <div className="flex h-16 items-center">
+        {tabs.map((tab) => {
+          const isActive = pathname.startsWith(tab.href);
+          let href = tab.href;
+          if (tab.href === "/create" && pathname.startsWith("/feed") && feedFilter && feedFilter !== "ALL") {
+            href = `/create?type=${feedFilter}`;
+          }
 
-        // Create tab gets a distinct pill style to stand out as the primary action
-        if (tab.href === "/create") {
+          // Create tab gets a distinct pill style to stand out as the primary action
+          if (tab.href === "/create") {
+            return (
+              <Link
+                key={tab.href}
+                href={href}
+                className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
+                aria-label="Create post"
+              >
+                <div
+                  className="flex h-7 w-11 items-center justify-center rounded-full btn-primary"
+                  style={{ padding: 0, boxShadow: "0 2px 8px rgba(36,63,22,0.20)" }}
+                >
+                  <tab.icon className="h-5 w-5" style={{ color: "#FDFAF5" }} />
+                </div>
+              </Link>
+            );
+          }
+
           return (
             <Link
               key={tab.href}
               href={href}
-              className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
-              aria-label="Create post"
-            >
-              <div
-                className="flex items-center justify-center w-11 h-7 rounded-full btn-primary"
-                style={{ padding: 0, boxShadow: "0 2px 8px rgba(36,63,22,0.20)" }}
-              >
-                <tab.icon className="h-5 w-5" style={{ color: "#FDFAF5" }} />
-              </div>
-            </Link>
-          );
-        }
-
-        return (
-          <Link
-            key={tab.href}
-            href={href}
-            className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-semibold"
-            style={{
-              color: isActive ? "var(--brand)" : "var(--text-muted)",
-              transition: "color 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
-            }}
-          >
-            {isActive && <div className="nav-tab-pill" />}
-            <div
-              className="relative"
+              className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-semibold"
               style={{
-                transform: isActive ? "scale(1.12)" : "scale(1)",
-                transition: "transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
+                color: isActive ? "var(--brand)" : "var(--text-muted)",
+                transition: "color 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
               }}
             >
-              <tab.icon className="h-[22px] w-[22px]" />
-              {tab.href === "/notifications" && unreadCount > 0 && (
-                <span className="absolute -top-1.5 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
-              )}
-            </div>
-            <span>{tab.label}</span>
-          </Link>
-        );
-      })}
+              {isActive && <div className="nav-tab-pill" />}
+              <div
+                className="relative"
+                style={{
+                  transform: isActive ? "scale(1.12)" : "scale(1)",
+                  transition: "transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
+                }}
+              >
+                <tab.icon className="h-[22px] w-[22px]" />
+                {tab.href === "/notifications" && unreadCount > 0 && (
+                  <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </div>
+              <span>{tab.label}</span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

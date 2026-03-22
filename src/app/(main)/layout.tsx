@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { safeAuth } from "@/lib/safe-auth";
 import { BottomNav } from "@/components/bottom-nav";
+import { BOTTOM_NAV_HEIGHT } from "@/components/bottom-nav.constants";
 
 // Auth check requires request headers — never cache this layout statically.
 export const dynamic = "force-dynamic";
@@ -23,13 +24,13 @@ export default async function MainLayout({
         className="flex-1 overflow-y-auto"
         style={{
           paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: "calc(4rem + env(safe-area-inset-bottom))",
+          paddingBottom: BOTTOM_NAV_HEIGHT,
           WebkitOverflowScrolling: "touch",
         }}
       >
         {children}
       </main>
-      <Suspense fallback={<div className="h-16" />}>
+      <Suspense fallback={<div style={{ height: BOTTOM_NAV_HEIGHT }} />}>
         <BottomNav />
       </Suspense>
     </div>
