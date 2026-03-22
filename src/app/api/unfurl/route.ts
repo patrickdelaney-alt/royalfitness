@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeAuth } from "@/lib/safe-auth";
 
+type ParsedMetadata = {
+  ogImage: string | null;
+  twitterImage: string | null;
+  iconCandidates: string[];
+};
+
 function extractMetaTag(html: string, property: string): string | null {
   // Match both property="og:xxx" and name="og:xxx" variants
   const patterns = [
@@ -34,6 +40,83 @@ function extractMetaTag(html: string, property: string): string | null {
 function extractTitle(html: string): string | null {
   const match = html.match(/<title[^>]*>([^<]*)<\/title>/i);
   return match?.[1]?.trim() || null;
+}
+
+function normalizeUrl(candidate: string | null, baseUrl: string): string | null {
+  if (!candidate) return null;
+  const trimmed = candidate.trim();
+  if (!trimmed) return null;
+
+  try {
+    return new URL(trimmed, baseUrl).href;
+  } catch {
+    return null;
+  }
+}
+
+function parseLinkAttributes(tag: string): Record<string, string> {
+  const attributes: Record<string, string> = {};
+  const attrRegex = /([a-zA-Z:-]+)\s*=\s*["']([^"']*)["']/g;
+  let match: RegExpExecArray | null = null;
+
+  while ((match = attrRegex.exec(tag)) !== null) {
+    attributes[match[1].toLowerCase()] = match[2];
+  }
+
+  return attributes;
+}
+
+function extractMetadata(html: string): ParsedMetadata {
+  const iconCandidates: string[] = [];
+  const seen = new Set<string>();
+  const linkTagRegex = /<link\b[^>]*>/gi;
+  let linkMatch: RegExpExecArray | null = null;
+
+  while ((linkMatch = linkTagRegex.exec(html)) !== null) {
+    const attributes = parseLinkAttributes(linkMatch[0]);
+    const rel = (attributes.rel || "").toLowerCase();
+    const href = attributes.href;
+    if (!href) continue;
+
+    const relValues = rel.split(/\s+/).filter(Boolean);
+    const isIconCandidate =
+      relValues.includes("icon") ||
+      (relValues.includes("shortcut") && relValues.includes("icon")) ||
+      relValues.includes("apple-touch-icon");
+
+    if (isIconCandidate && !seen.has(href)) {
+      seen.add(href);
+      iconCandidates.push(href);
+    }
+  }
+
+  return {
+    ogImage: extractMetaTag(html, "og:image"),
+    twitterImage: extractMetaTag(html, "twitter:image"),
+    iconCandidates,
+  };
+}
+
+async function getScreenshotFallbackUrl(targetUrl: string): Promise<string | null> {
+  const screenshotProvider = process.env.UNFURL_SCREENSHOT_SERVICE_URL;
+  if (!screenshotProvider) return null;
+
+  try {
+    const screenshotRequestUrl = new URL(screenshotProvider);
+    screenshotRequestUrl.searchParams.set("url", targetUrl);
+    const response = await fetch(screenshotRequestUrl.toString(), {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) return null;
+
+    const payload = (await response.json()) as { imageUrl?: unknown };
+    return typeof payload.imageUrl === "string" ? payload.imageUrl : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -73,6 +156,7 @@ export async function POST(req: NextRequest) {
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     let html: string;
+    let fetchedPageUrl = parsedUrl.href;
     try {
       const response = await fetch(url, {
         signal: controller.signal,
@@ -84,24 +168,24 @@ export async function POST(req: NextRequest) {
       });
 
       if (!response.ok) {
-        return NextResponse.json(
-          { error: `Failed to fetch URL: ${response.status}` },
-          { status: 422 }
-        );
+        return NextResponse.json({
+          title: null,
+          description: null,
+          imageUrl: null,
+          siteName: null,
+        });
       }
 
+      fetchedPageUrl = response.url || parsedUrl.href;
       html = await response.text();
     } catch (fetchError) {
-      if (fetchError instanceof Error && fetchError.name === "AbortError") {
-        return NextResponse.json(
-          { error: "Request timed out" },
-          { status: 408 }
-        );
-      }
-      return NextResponse.json(
-        { error: "Failed to fetch URL" },
-        { status: 422 }
-      );
+      console.warn("POST /api/unfurl fetch warning:", fetchError);
+      return NextResponse.json({
+        title: null,
+        description: null,
+        imageUrl: null,
+        siteName: null,
+      });
     } finally {
       clearTimeout(timeoutId);
     }
@@ -112,13 +196,28 @@ export async function POST(req: NextRequest) {
       extractMetaTag(html, "og:description") ||
       extractMetaTag(html, "description") ||
       null;
-    const imageUrl = extractMetaTag(html, "og:image") || null;
     const siteName = extractMetaTag(html, "og:site_name") || null;
+    const parsedMetadata = extractMetadata(html);
+    const normalizedOgImage = normalizeUrl(parsedMetadata.ogImage, fetchedPageUrl);
+    const normalizedTwitterImage = normalizeUrl(
+      parsedMetadata.twitterImage,
+      fetchedPageUrl
+    );
+    const normalizedIconCandidate =
+      parsedMetadata.iconCandidates
+        .map((candidate) => normalizeUrl(candidate, fetchedPageUrl))
+        .find((candidate): candidate is string => Boolean(candidate)) || null;
+    const resolvedImageUrl =
+      normalizedOgImage ||
+      normalizedTwitterImage ||
+      normalizedIconCandidate ||
+      (await getScreenshotFallbackUrl(fetchedPageUrl)) ||
+      null;
 
     return NextResponse.json({
       title,
       description,
-      imageUrl,
+      imageUrl: resolvedImageUrl,
       siteName,
     });
   } catch (error) {
