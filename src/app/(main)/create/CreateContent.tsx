@@ -445,6 +445,8 @@ export default function CreatePostContent() {
   const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isFromSession = searchParams.get("fromSession") === "1";
+  const editPostId = searchParams.get("editPostId");
+  const isEditingPost = Boolean(editPostId);
 
   const initialType = ((): PostType => {
     const param = searchParams.get("type")?.toUpperCase();
@@ -485,6 +487,7 @@ export default function CreatePostContent() {
   const [pendingDraft, setPendingDraft] = useState<CreateDraftV1 | null>(null);
   const [draftReady, setDraftReady] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [hydratingEditPost, setHydratingEditPost] = useState(false);
   const lastAutosaveAtRef = useRef<number>(0);
   const lastDraftSignatureRef = useRef<string>("");
 
@@ -883,6 +886,10 @@ export default function CreatePostContent() {
   };
 
   useEffect(() => {
+    if (isEditingPost) {
+      setDraftReady(true);
+      return;
+    }
     try {
       const raw = localStorage.getItem(CREATE_DRAFT_STORAGE_KEY);
       if (!raw) {
@@ -901,7 +908,7 @@ export default function CreatePostContent() {
     } finally {
       setDraftReady(true);
     }
-  }, []);
+  }, [isEditingPost]);
 
   const applyDraft = useCallback((draft: CreateDraftV1) => {
     setType(draft.type);
@@ -944,6 +951,99 @@ export default function CreatePostContent() {
     setEmbedPreview(draft.payload.embed.embedPreview);
   }, []);
 
+  useEffect(() => {
+    if (!editPostId) return;
+
+    const loadEditPost = async () => {
+      setHydratingEditPost(true);
+      setError("");
+      try {
+        const res = await fetch(`/api/posts/${editPostId}`);
+        if (!res.ok) {
+          throw new Error("Failed to load post for editing");
+        }
+        const post = await res.json();
+
+        setType(post.type);
+        setCaption(post.caption ?? "");
+        setVisibility(post.visibility);
+        setMediaUrl(post.mediaUrl ?? null);
+        setMediaPreview(post.mediaUrl ?? null);
+        setCheckInGymId(post.gym?.id ?? null);
+        setCheckInGymName(post.gym?.name ?? "");
+
+        const existingEmbed = post.externalContent?.[0];
+        if (existingEmbed) {
+          const embedParts = String(existingEmbed.description ?? "").split(":");
+          const provider = embedParts[1];
+          const contentId = embedParts[2];
+          if (["instagram", "tiktok", "youtube"].includes(provider) && contentId) {
+            setEmbedPreview({
+              provider: provider as EmbedProvider,
+              url: existingEmbed.url,
+              contentId,
+              title: existingEmbed.title ?? undefined,
+              thumbnailUrl: existingEmbed.imageUrl ?? undefined,
+            });
+            setEmbedInput(existingEmbed.url);
+          }
+        }
+
+        if (post.type === "WORKOUT" && post.workoutDetail) {
+          setWorkoutName(post.workoutDetail.workoutName ?? "");
+          setEditingName(true);
+          setSelectedMuscles(post.workoutDetail.muscleGroups ?? []);
+          setIsClass(Boolean(post.workoutDetail.isClass));
+          setDurationMinutes(post.workoutDetail.durationMinutes ? String(post.workoutDetail.durationMinutes) : "");
+          setPerceivedExertion(post.workoutDetail.perceivedExertion ? String(post.workoutDetail.perceivedExertion) : "");
+          setEnergy(post.workoutDetail.moodAfter ?? 7);
+          setPostTiming(post.workoutDetail.postTiming ?? "AFTER");
+          setShowWorkoutAdvanced(true);
+          setExercises(
+            Array.isArray(post.workoutDetail.exercises)
+              ? post.workoutDetail.exercises.map((exercise: { name: string; sets?: Array<{ reps: number | null; weight: number | null; unit: string | null; rpe: number | null }> }) => ({
+                  name: exercise.name ?? "",
+                  sets:
+                    Array.isArray(exercise.sets) && exercise.sets.length > 0
+                      ? exercise.sets.map((set) => ({
+                          reps: set.reps != null ? String(set.reps) : "",
+                          weight: set.weight != null ? String(set.weight) : "",
+                          unit: set.unit || "lbs",
+                          rpe: set.rpe != null ? String(set.rpe) : "",
+                        }))
+                      : [emptySet()],
+                }))
+              : []
+          );
+        }
+
+        if (post.type === "MEAL" && post.mealDetail) {
+          setMealName(post.mealDetail.mealName ?? "");
+          setMealType(post.mealDetail.mealType ?? "snack");
+          setIngredients(Array.isArray(post.mealDetail.ingredients) ? post.mealDetail.ingredients.join(", ") : "");
+          setCalories(post.mealDetail.calories != null ? String(post.mealDetail.calories) : "");
+          setProtein(post.mealDetail.protein != null ? String(post.mealDetail.protein) : "");
+          setCarbs(post.mealDetail.carbs != null ? String(post.mealDetail.carbs) : "");
+          setFat(post.mealDetail.fat != null ? String(post.mealDetail.fat) : "");
+        }
+
+        if (post.type === "WELLNESS" && post.wellnessDetail) {
+          setActivityType(post.wellnessDetail.activityType ?? "");
+          setWellnessDuration(post.wellnessDetail.durationMinutes != null ? String(post.wellnessDetail.durationMinutes) : "");
+          setIntensity(post.wellnessDetail.intensity != null ? String(post.wellnessDetail.intensity) : "");
+          setWellnessMood(post.wellnessDetail.moodAfter ?? 7);
+        }
+      } catch (loadError) {
+        const message = loadError instanceof Error ? loadError.message : "Failed to load post for editing";
+        setError(message);
+      } finally {
+        setHydratingEditPost(false);
+      }
+    };
+
+    void loadEditPost();
+  }, [editPostId]);
+
   const handleResumeDraft = useCallback(() => {
     if (!pendingDraft) return;
     applyDraft(pendingDraft);
@@ -956,7 +1056,7 @@ export default function CreatePostContent() {
   }, [clearDraft]);
 
   useEffect(() => {
-    if (!draftReady || pendingDraft || submitting || successPost) return;
+    if (isEditingPost || !draftReady || pendingDraft || submitting || successPost) return;
     const draft = buildDraft();
     const signature = JSON.stringify(draft);
     if (signature === lastDraftSignatureRef.current) return;
@@ -972,7 +1072,7 @@ export default function CreatePostContent() {
       }
     }, AUTOSAVE_DEBOUNCE_MS);
     return () => window.clearTimeout(timer);
-  }, [buildDraft, draftReady, pendingDraft, submitting, successPost]);
+  }, [buildDraft, draftReady, isEditingPost, pendingDraft, submitting, successPost]);
 
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -1106,15 +1206,27 @@ export default function CreatePostContent() {
         body.gymId = checkInGymId;
       }
 
-      const res = await fetch("/api/posts", {
-        method: "POST",
+      const endpoint = isEditingPost && editPostId ? `/api/posts/${editPostId}` : "/api/posts";
+      const res = await fetch(endpoint, {
+        method: isEditingPost ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          ...body,
+          externalUrl: embedPreview?.url ?? "",
+        }),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "Failed to create post");
+        setError(data.error || (isEditingPost ? "Failed to update post" : "Failed to create post"));
+        return;
+      }
+
+      if (isEditingPost && editPostId) {
+        successNotification();
+        clearDraft();
+        toast.success("Post updated");
+        router.push(`/p/${editPostId}`);
         return;
       }
 
@@ -1245,10 +1357,16 @@ export default function CreatePostContent() {
         >
           <HiArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-lg font-bold">New Post</h1>
+        <h1 className="text-lg font-bold">{isEditingPost ? "Edit Post" : "New Post"}</h1>
       </div>
 
-      {pendingDraft && (
+      {hydratingEditPost && (
+        <div className="mb-4 rounded-xl p-3 text-sm" style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}>
+          Loading your post details...
+        </div>
+      )}
+
+      {pendingDraft && !isEditingPost && (
         <div
           className="mb-4 p-4 rounded-2xl flex items-center justify-between gap-3"
           style={{ background: "rgba(36,63,22,0.08)", border: "1px solid rgba(82,133,49,0.25)" }}
