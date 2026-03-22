@@ -2067,8 +2067,9 @@ export default function CatalogPage() {
 
   const handleSaveEdited = (updated: AnyItem, itemCatalogType?: CatalogTab) => {
     const effectiveTab = itemCatalogType ?? "meals";
-    setAllItems((p) => p.map((item) => (item.id === updated.id ? ({ ...updated, _catalogType: effectiveTab } as AnyItemWithType) : item)));
-    setSelectedItem(updated);
+    const updatedWithType = { ...updated, _catalogType: effectiveTab } as AnyItemWithType;
+    setAllItems((p) => p.map((item) => (item.id === updated.id ? updatedWithType : item)));
+    setSelectedItem(updatedWithType);
   };
 
   const getItemCatalogType = (item: AnyItem): CatalogTab | null => {
