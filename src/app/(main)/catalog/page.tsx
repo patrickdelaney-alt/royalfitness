@@ -1729,10 +1729,13 @@ function ItemDetailModal({
     (tab === "workouts" ? (item as SavedWorkout).videoUrl : null);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:pb-0"
+      onClick={onClose}
+    >
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div
-        className="relative w-full sm:max-w-md flex flex-col max-h-[85vh] rounded-t-2xl sm:rounded-2xl overflow-hidden"
+        className="relative w-full sm:max-w-md flex flex-col max-h-[85dvh] sm:max-h-[85vh] rounded-t-2xl sm:rounded-2xl overflow-hidden"
         style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -1900,7 +1903,7 @@ function ItemDetailModal({
           className="flex gap-2 px-4 py-3 shrink-0"
           style={{
             borderTop: "1px solid rgba(36,63,22,0.08)",
-            paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+            paddingBottom: "calc(1rem + env(safe-area-inset-bottom))",
           }}
         >
           <button
