@@ -113,7 +113,11 @@ export async function PATCH(
     const userId = session.user.id;
 
     const body = await req.json();
-    const { caption, visibility, workoutName, mealName, activityType } = body;
+    const {
+      caption, visibility, gymId,
+      workoutName, muscleGroups, isClass, durationMinutes, perceivedExertion, moodAfter, postTiming, exercises,
+      mealName, activityType,
+    } = body;
 
     if (
       visibility !== undefined &&
@@ -139,15 +143,50 @@ export async function PATCH(
       data: {
         ...(caption !== undefined ? { caption: caption || null } : {}),
         ...(visibility !== undefined ? { visibility } : {}),
+        ...(gymId !== undefined ? { gymId: gymId || null } : {}),
       },
     });
 
-    if (workoutName !== undefined && post.type === "WORKOUT") {
-      await prisma.workoutDetail.update({
-        where: { postId: id },
-        data: { workoutName },
-      });
+    if (post.type === "WORKOUT") {
+      const workoutDetail = await prisma.workoutDetail.findUnique({ where: { postId: id } });
+      if (workoutDetail) {
+        await prisma.workoutDetail.update({
+          where: { postId: id },
+          data: {
+            ...(workoutName !== undefined ? { workoutName } : {}),
+            ...(muscleGroups !== undefined ? { muscleGroups } : {}),
+            ...(isClass !== undefined ? { isClass } : {}),
+            ...(durationMinutes !== undefined ? { durationMinutes } : {}),
+            ...(perceivedExertion !== undefined ? { perceivedExertion } : {}),
+            ...(moodAfter !== undefined ? { moodAfter } : {}),
+            ...(postTiming !== undefined ? { postTiming } : {}),
+          },
+        });
+
+        if (exercises !== undefined) {
+          await prisma.exercise.deleteMany({ where: { workoutDetailId: workoutDetail.id } });
+          for (const ex of exercises as Array<{ name: string; sortOrder?: number; sets: Array<{ reps?: number | null; weight?: number | null; unit?: string; rpe?: number | null; sortOrder?: number }> }>) {
+            await prisma.exercise.create({
+              data: {
+                workoutDetailId: workoutDetail.id,
+                name: ex.name,
+                sortOrder: ex.sortOrder ?? 0,
+                sets: {
+                  create: ex.sets.map((s, j) => ({
+                    reps: s.reps ?? null,
+                    weight: s.weight ?? null,
+                    unit: s.unit ?? "lbs",
+                    rpe: s.rpe ?? null,
+                    sortOrder: s.sortOrder ?? j,
+                  })),
+                },
+              },
+            });
+          }
+        }
+      }
     }
+
     if (mealName !== undefined && post.type === "MEAL") {
       await prisma.mealDetail.update({
         where: { postId: id },
