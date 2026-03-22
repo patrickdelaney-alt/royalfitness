@@ -1613,7 +1613,13 @@ function EditItemModal({
         </div>
 
         {/* Sticky footer */}
-        <div className="px-4 py-3 shrink-0" style={{ borderTop: "1px solid rgba(36,63,22,0.08)" }}>
+        <div
+          className="px-4 py-3 shrink-0"
+          style={{
+            borderTop: "1px solid rgba(36,63,22,0.08)",
+            paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+          }}
+        >
           <button
             onClick={handleSubmit}
             disabled={submitting}
@@ -1890,7 +1896,13 @@ function ItemDetailModal({
         </div>
 
         {/* Sticky footer — Edit + Delete always visible */}
-        <div className="flex gap-2 px-4 py-3 shrink-0" style={{ borderTop: "1px solid rgba(36,63,22,0.08)" }}>
+        <div
+          className="flex gap-2 px-4 py-3 shrink-0"
+          style={{
+            borderTop: "1px solid rgba(36,63,22,0.08)",
+            paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+          }}
+        >
           <button
             onClick={onEdit}
             className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
