@@ -6,7 +6,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { HiHome, HiChartBar, HiPlusCircle, HiUser } from "react-icons/hi";
 import { HiBell } from "react-icons/hi2";
-import { BOTTOM_NAV_HEIGHT } from "@/components/bottom-nav.constants";
+import { BOTTOM_NAV_BASE_HEIGHT_REM, BOTTOM_NAV_HEIGHT } from "@/components/bottom-nav.constants";
 
 // Explore is intentionally NOT here — it lives as a search icon in the feed
 // header (FeedContent.tsx), which is the standard pattern (Instagram, etc.).
@@ -70,7 +70,6 @@ export function BottomNav() {
       className="fixed bottom-0 left-0 right-0 z-50 border-t"
       style={{
         height: BOTTOM_NAV_HEIGHT,
-        paddingBottom: "env(safe-area-inset-bottom)",
         background: "rgba(253,250,245,0.85)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
@@ -78,7 +77,10 @@ export function BottomNav() {
         boxShadow: "0 -1px 8px rgba(24,25,15,0.04), inset 0 1px 0 rgba(255,255,255,0.7)",
       }}
     >
-      <div className="flex h-16 items-center">
+      <div
+        className="flex items-center"
+        style={{ height: `${BOTTOM_NAV_BASE_HEIGHT_REM}rem` }}
+      >
         {tabs.map((tab) => {
           const isActive = pathname.startsWith(tab.href);
           let href = tab.href;
