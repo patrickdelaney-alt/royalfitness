@@ -1083,6 +1083,7 @@ function AddAffiliateForm({
   const [enriching, setEnriching] = useState(false);
   const [linkEnriching, setLinkEnriching] = useState(false);
   const [linkEnrichError, setLinkEnrichError] = useState("");
+  const [linkEnrichStatus, setLinkEnrichStatus] = useState("");
   const singleEnrichRequestIdRef = useRef(0);
 
   // Parse bulk text and enrich with URL metadata
@@ -1161,14 +1162,21 @@ function AddAffiliateForm({
       try {
         const enriched = await enrichCatalogLink(trimmedUrl);
         if (requestId !== singleEnrichRequestIdRef.current) return;
+        const enrichedFields: string[] = [];
         if (!name.trim() && enriched.title) {
           setName(enriched.title);
+          enrichedFields.push("name");
         }
         if (!brand.trim() && enriched.siteName) {
           setBrand(enriched.siteName);
+          enrichedFields.push("brand");
         }
         if (!photoUploadedManually && enriched.imageUrl) {
           setPhotoUrl(enriched.imageUrl);
+          enrichedFields.push("photo");
+        }
+        if (enrichedFields.length > 0) {
+          setLinkEnrichStatus(`Auto-filled ${enrichedFields.join(" · ")} from link`);
         }
       } catch {
         if (requestId !== singleEnrichRequestIdRef.current) return;
@@ -1268,6 +1276,7 @@ function AddAffiliateForm({
     if (mode !== "single") {
       setLinkEnriching(false);
       setLinkEnrichError("");
+      setLinkEnrichStatus("");
       singleEnrichRequestIdRef.current += 1;
       return;
     }
@@ -1275,6 +1284,7 @@ function AddAffiliateForm({
     if (!trimmedUrl) {
       setLinkEnriching(false);
       setLinkEnrichError("");
+      setLinkEnrichStatus("");
       singleEnrichRequestIdRef.current += 1;
       return;
     }
@@ -1289,10 +1299,14 @@ function AddAffiliateForm({
     if (!rawText.trim()) return;
     import("@/lib/affiliate-parser").then(({ parseAffiliateInput, suggestCategory }) => {
       const result = parseAffiliateInput(rawText);
-      if (result.urls.length > 0 && !link) setLink(result.urls[0]);
+      const detectedLink = result.urls[0]?.trim();
+      if (detectedLink) {
+        if (!link.trim()) setLink(detectedLink);
+        void runSingleLinkEnrichment(detectedLink);
+      }
       if (result.codes.length > 0 && !referralCode) setReferralCode(result.codes[0]);
       if (result.brand && !brand) setBrand(result.brand);
-      const suggested = suggestCategory(rawText, result.urls[0]);
+      const suggested = suggestCategory(rawText, detectedLink);
       if (suggested !== "OTHER" && category === "OTHER") setCategory(suggested);
     });
   };
@@ -1552,6 +1566,11 @@ function AddAffiliateForm({
             </div>
             {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
             {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
+            {!linkEnriching && !linkEnrichError && linkEnrichStatus && (
+              <span className="inline-flex text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: "rgba(82,133,49,0.14)", color: "#528531" }}>
+                {linkEnrichStatus}
+              </span>
+            )}
           </div>
           <div className="relative">
             <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Discount / promo code (e.g. ROYAL20)" className={inputCls} />
