@@ -607,6 +607,7 @@ export default function CreatePostContent() {
   const [gymSearchLoading, setGymSearchLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
   const [showAddGym, setShowAddGym] = useState(false);
+  const [showWorkoutGymPicker, setShowWorkoutGymPicker] = useState(false);
   const [newGymName, setNewGymName] = useState("");
   const [newGymAddress, setNewGymAddress] = useState("");
   const [newGymLat, setNewGymLat] = useState<number | null>(null);
@@ -1058,6 +1059,10 @@ export default function CreatePostContent() {
                 })),
             })),
         };
+        // Include gym location if tagged (optional)
+        if (checkInGymId) {
+          body.gymId = checkInGymId;
+        }
       }
 
       if (type === "MEAL") {
@@ -1305,7 +1310,7 @@ export default function CreatePostContent() {
             className="mt-3 text-xs font-semibold px-3 py-1.5 rounded-lg"
             style={{ background: "rgba(36,63,22,0.10)", color: "var(--text)" }}
           >
-            {showWorkoutAdvanced ? "Hide details" : "Add muscles, sets & more"}
+            {showWorkoutAdvanced ? "Hide exercises & details" : "Add exercises & details"}
           </button>
         </div>
       )}
@@ -1654,9 +1659,7 @@ export default function CreatePostContent() {
               </button>
             )}
 
-            {(showWorkoutAdvanced || !isFromSession) && (
-              <>
-            {/* 1. Muscle group selector */}
+            {/* 1. Muscle group selector — always visible */}
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
                 Target Muscles
@@ -1692,7 +1695,7 @@ export default function CreatePostContent() {
               </div>
             </div>
 
-            {/* 2. Workout Name */}
+            {/* 2. Workout Name — always visible */}
             <div>
               <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>
                 Workout Name *
@@ -1709,13 +1712,13 @@ export default function CreatePostContent() {
               />
             </div>
 
-            {/* 3. Media (only shown here for manual / non-session posts; session posts get it hoisted above) */}
+            {/* 3. Media — session posts have it hoisted above; show here for manual posts */}
             {!isFromSession && <MediaBlock {...mediaProps} />}
 
-            {/* 4. Energy slider */}
+            {/* 4. Energy slider — always visible */}
             <EnergySlider value={energy} onChange={setEnergy} />
 
-            {/* 5. Caption */}
+            {/* 5. Caption — always visible */}
             <div>
               <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Caption</label>
               <textarea
@@ -1727,6 +1730,182 @@ export default function CreatePostContent() {
               />
             </div>
 
+            {/* 6. Gym location — optional, available for all workout posting methods */}
+            <div>
+              {checkInGymId ? (
+                <div
+                  className="flex items-center justify-between px-4 py-3 rounded-2xl"
+                  style={{ background: "rgba(82,133,49,0.08)", border: "1px solid rgba(82,133,49,0.3)" }}
+                >
+                  <div className="flex items-center gap-3">
+                    <HiLocationMarker className="w-5 h-5 flex-shrink-0" style={{ color: "#528531" }} />
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: "#528531" }}>{checkInGymName}</p>
+                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>Gym tagged</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setCheckInGymId(null); setCheckInGymName(""); setShowWorkoutGymPicker(false); }}
+                    className="text-xs px-3 py-1.5 rounded-lg transition-colors"
+                    style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowWorkoutGymPicker((v) => !v);
+                      if (!showWorkoutGymPicker && gymSearchResults.length === 0) searchGyms("");
+                    }}
+                    className="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-2xl w-full text-left transition-all"
+                    style={
+                      showWorkoutGymPicker
+                        ? { background: "rgba(82,133,49,0.08)", border: "1px solid rgba(82,133,49,0.3)", color: "#528531" }
+                        : { background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.08)", color: "var(--text-muted)" }
+                    }
+                  >
+                    <HiLocationMarker className="w-4 h-4 flex-shrink-0" />
+                    <span>{showWorkoutGymPicker ? "Searching gyms..." : "Tag gym location (optional)"}</span>
+                    <span className="ml-auto text-xs">{showWorkoutGymPicker ? "▲" : "▼"}</span>
+                  </button>
+
+                  {showWorkoutGymPicker && (
+                    <div className="mt-2 space-y-3">
+                      {/* Location + Search row */}
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={requestLocation}
+                          disabled={locationLoading}
+                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-60 flex-shrink-0"
+                          style={{ background: "rgba(82,133,49,0.10)", border: "1px solid rgba(82,133,49,0.25)", color: "#528531" }}
+                        >
+                          <HiLocationMarker className="w-4 h-4 flex-shrink-0" />
+                          {locationLoading ? "Locating..." : "Near me"}
+                        </button>
+                        <div className="relative flex-1">
+                          <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--text-muted)" }} />
+                          <input
+                            type="text"
+                            value={gymSearchQuery}
+                            onChange={(e) => {
+                              setGymSearchQuery(e.target.value);
+                              searchGyms(e.target.value);
+                            }}
+                            placeholder="Search gyms..."
+                            className="input-dark w-full pl-9"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Gym results */}
+                      {gymSearchLoading ? (
+                        <p className="text-xs text-center py-3" style={{ color: "var(--text-muted)" }}>
+                          Searching...
+                        </p>
+                      ) : gymSearchResults.length > 0 ? (
+                        <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                          {gymSearchResults.map((gym) => (
+                            <button
+                              key={gym.id}
+                              type="button"
+                              onClick={() => { setCheckInGymId(gym.id); setCheckInGymName(gym.name); setShowWorkoutGymPicker(false); }}
+                              className="w-full text-left px-3.5 py-3 rounded-xl transition-all"
+                              style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.07)", color: "var(--text)" }}
+                            >
+                              <p className="text-sm font-medium leading-tight">{gym.name}</p>
+                              {gym.address && (
+                                <p className="text-xs mt-0.5 truncate" style={{ color: "var(--text-muted)" }}>{gym.address}</p>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      ) : gymSearchQuery.trim() ? (
+                        <p className="text-xs text-center py-3" style={{ color: "var(--text-muted)" }}>
+                          No gyms found for &ldquo;{gymSearchQuery}&rdquo;
+                        </p>
+                      ) : null}
+
+                      {/* Add new gym toggle */}
+                      <button
+                        type="button"
+                        onClick={() => setShowAddGym((v) => !v)}
+                        className="flex items-center gap-1.5 text-xs font-medium transition-colors"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        <HiPlus className="w-3.5 h-3.5" />
+                        {showAddGym ? "Cancel" : "Add a new gym"}
+                      </button>
+
+                      {/* Add gym form */}
+                      {showAddGym && (
+                        <div
+                          className="space-y-2.5 p-3.5 rounded-xl"
+                          style={{ background: "rgba(36,63,22,0.03)", border: "1px solid rgba(36,63,22,0.10)" }}
+                        >
+                          <input
+                            type="text"
+                            value={newGymName}
+                            onChange={(e) => setNewGymName(e.target.value)}
+                            placeholder="Gym name (e.g. Tribeca Equinox)"
+                            className="input-dark w-full"
+                          />
+                          <input
+                            type="text"
+                            value={newGymAddress}
+                            onChange={(e) => setNewGymAddress(e.target.value)}
+                            placeholder="Address (optional)"
+                            className="input-dark w-full"
+                          />
+                          {newGymLat == null ? (
+                            <button
+                              type="button"
+                              onClick={requestLocation}
+                              disabled={locationLoading}
+                              className="flex items-center gap-1.5 text-xs transition-colors disabled:opacity-60"
+                              style={{ color: "#528531" }}
+                            >
+                              <HiLocationMarker className="w-3.5 h-3.5" />
+                              {locationLoading ? "Getting location..." : "Tag location (optional)"}
+                            </button>
+                          ) : (
+                            <p className="text-xs flex items-center gap-1" style={{ color: "#528531" }}>
+                              <HiLocationMarker className="w-3.5 h-3.5" />
+                              Location tagged
+                              <button
+                                type="button"
+                                onClick={() => { setNewGymLat(null); setNewGymLng(null); }}
+                                className="ml-1"
+                                style={{ color: "var(--text-muted)" }}
+                              >
+                                <HiX className="w-3 h-3" />
+                              </button>
+                            </p>
+                          )}
+                          <button
+                            type="button"
+                            onClick={handleAddGym}
+                            disabled={addingGym || !newGymName.trim()}
+                            className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all btn-gradient disabled:opacity-50"
+                            style={{ color: "var(--text)" }}
+                          >
+                            {addingGym ? "Adding..." : "Add Gym"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* 7. Exercises, duration, group class — behind toggle for live sessions */}
+            {(showWorkoutAdvanced || !isFromSession) && (
+              <>
             {/* Group class toggle */}
             <label className="flex items-center gap-2 text-sm cursor-pointer">
               <input
@@ -1839,7 +2018,7 @@ export default function CreatePostContent() {
 
             {isFromSession && !showWorkoutAdvanced && (
               <div className="text-xs px-3 py-2 rounded-xl" style={{ background: "rgba(36,63,22,0.03)", color: "var(--text-muted)", border: "1px dashed rgba(36,63,22,0.12)" }}>
-                Posting now uses your live session summary. Tap &ldquo;Add muscles, sets &amp; more&rdquo; above to log muscles targeted and exercise sets.
+                Tap &ldquo;Add exercises &amp; details&rdquo; above to log sets, duration, and more.
               </div>
             )}
           </>
