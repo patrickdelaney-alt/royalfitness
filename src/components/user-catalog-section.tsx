@@ -129,7 +129,7 @@ function DetailModal({
     >
       <div className="absolute inset-0 backdrop-blur-sm" style={{ background: "rgba(24,25,15,0.5)" }} />
       <div
-        className="relative w-full sm:max-w-md max-h-[85vh] overflow-y-auto overscroll-y-contain rounded-t-2xl sm:rounded-2xl"
+        className="relative w-full sm:max-w-md max-h-[calc(100dvh-1rem)] overflow-y-auto overscroll-y-contain rounded-t-2xl sm:rounded-2xl pb-[env(safe-area-inset-bottom)]"
         style={{
           background: "var(--surface)",
           border: "1px solid var(--border)",
@@ -165,7 +165,7 @@ function DetailModal({
         )}
 
         {/* Content */}
-        <div className="p-5 pb-8 space-y-4" style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}>
+        <div className="p-5 pb-8 space-y-4" style={{ paddingBottom: "calc(2.75rem + env(safe-area-inset-bottom))" }}>
           {/* Title + brand + category */}
           <div>
             <h3 className="text-xl font-normal" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>{item.name}</h3>
@@ -319,38 +319,47 @@ function DetailModal({
             </div>
           )}
 
-          {/* Shop / Link button */}
-          {(item.link || item.recipeSourceUrl || item.videoUrl) && (
-            <a
-              href={item.link || item.recipeSourceUrl || item.videoUrl || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => {
-                const url = item.link || item.recipeSourceUrl || item.videoUrl;
-                if (url && isCapacitorNative()) {
-                  e.preventDefault();
-                  openExternalLink(url);
-                }
-              }}
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold btn-gradient transition-all"
-              style={{ color: "#FDFAF5" }}
-            >
-              <HiExternalLink className="w-4 h-4" />
-              {getPublicCtaLabel(item)}
-            </a>
-          )}
+          {/* Shop / Link button + own profile actions */}
+          <div
+            className="sticky bottom-0 -mx-5 mt-2 px-5 pt-3 space-y-3"
+            style={{
+              background: "var(--surface)",
+              borderTop: "1px solid var(--border)",
+              paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+            }}
+          >
+            {(item.link || item.recipeSourceUrl || item.videoUrl) && (
+              <a
+                href={item.link || item.recipeSourceUrl || item.videoUrl || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  const url = item.link || item.recipeSourceUrl || item.videoUrl;
+                  if (url && isCapacitorNative()) {
+                    e.preventDefault();
+                    openExternalLink(url);
+                  }
+                }}
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold btn-gradient transition-all"
+                style={{ color: "#FDFAF5" }}
+              >
+                <HiExternalLink className="w-4 h-4" />
+                {getPublicCtaLabel(item)}
+              </a>
+            )}
 
-          {/* Edit / Delete shortcut for own profile */}
-          {isOwnProfile && (
-            <Link
-              href="/catalog"
-              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium"
-              style={{ background: "rgba(82,133,49,0.08)", color: "#528531", border: "1px solid rgba(82,133,49,0.18)" }}
-            >
-              <HiPencil className="w-4 h-4" />
-              Edit or Delete in My Catalog
-            </Link>
-          )}
+            {/* Edit / Delete shortcut for own profile */}
+            {isOwnProfile && (
+              <Link
+                href="/catalog"
+                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium"
+                style={{ background: "rgba(82,133,49,0.08)", color: "#528531", border: "1px solid rgba(82,133,49,0.18)" }}
+              >
+                <HiPencil className="w-4 h-4" />
+                Edit or Delete in My Catalog
+              </Link>
+            )}
+          </div>
 
         </div>
       </div>
