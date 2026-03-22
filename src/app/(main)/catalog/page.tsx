@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   HiArrowLeft,
   HiCheck,
@@ -124,6 +124,40 @@ const TAG_LIMITS = {
   maxCount: 12,
   maxLength: 24,
 };
+
+interface LinkEnrichmentResult {
+  title: string | null;
+  siteName: string | null;
+  imageUrl: string | null;
+}
+
+const normalizeEnrichmentField = (value: unknown): string | null => {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
+
+async function enrichCatalogLink(url: string): Promise<LinkEnrichmentResult> {
+  const trimmedUrl = url.trim();
+  if (!trimmedUrl) {
+    return { title: null, siteName: null, imageUrl: null };
+  }
+
+  const res = await fetch("/api/unfurl", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url: trimmedUrl }),
+  });
+  if (!res.ok) {
+    throw new Error("Failed to fetch link preview");
+  }
+  const data = await res.json();
+  return {
+    title: normalizeEnrichmentField(data?.title),
+    siteName: normalizeEnrichmentField(data?.siteName),
+    imageUrl: normalizeEnrichmentField(data?.imageUrl),
+  };
+}
 
 const CATEGORY_GRADIENTS: Record<CatalogTab, string> = {
   meals: "from-orange-600/80 to-red-700/80",
@@ -399,8 +433,61 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
   const [link, setLink] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoUploadedManually, setPhotoUploadedManually] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [linkEnriching, setLinkEnriching] = useState(false);
+  const [linkEnrichError, setLinkEnrichError] = useState("");
+  const enrichRequestIdRef = useRef(0);
+
+  const runLinkEnrichment = useCallback(
+    async (rawUrl: string) => {
+      const trimmedUrl = rawUrl.trim();
+      if (!trimmedUrl) {
+        setLinkEnriching(false);
+        setLinkEnrichError("");
+        return;
+      }
+      const requestId = ++enrichRequestIdRef.current;
+      setLinkEnriching(true);
+      setLinkEnrichError("");
+      try {
+        const enriched = await enrichCatalogLink(trimmedUrl);
+        if (requestId !== enrichRequestIdRef.current) return;
+        if (!name.trim() && enriched.title) {
+          setName(enriched.title);
+        }
+        if (!brand.trim() && enriched.siteName) {
+          setBrand(enriched.siteName);
+        }
+        if (!photoUploadedManually && enriched.imageUrl) {
+          setPhotoUrl(enriched.imageUrl);
+        }
+      } catch {
+        if (requestId !== enrichRequestIdRef.current) return;
+        setLinkEnrichError("Couldn’t fetch preview. You can still save.");
+      } finally {
+        if (requestId === enrichRequestIdRef.current) {
+          setLinkEnriching(false);
+        }
+      }
+    },
+    [brand, name, photoUploadedManually]
+  );
+
+  useEffect(() => {
+    const trimmedUrl = link.trim();
+    if (!trimmedUrl) {
+      setLinkEnriching(false);
+      setLinkEnrichError("");
+      enrichRequestIdRef.current += 1;
+      return;
+    }
+    const timeout = window.setTimeout(() => {
+      void runLinkEnrichment(trimmedUrl);
+    }, 450);
+    return () => window.clearTimeout(timeout);
+  }, [link, runLinkEnrichment]);
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -455,14 +542,31 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
           {error}
         </p>
       )}
-      <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
+      <PhotoUpload
+        photoUrl={photoUrl}
+        onUpload={(url) => {
+          setPhotoUploadedManually(true);
+          setPhotoUrl(url);
+        }}
+      />
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Supplement name *" className={inputCls} />
       <div className="grid grid-cols-2 gap-2">
         <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand" className={inputCls} />
         <input value={dose} onChange={(e) => setDose(e.target.value)} placeholder="Dose (e.g. 5g)" className={inputCls} />
       </div>
       <input value={schedule} onChange={(e) => setSchedule(e.target.value)} placeholder="Schedule (e.g. Morning)" className={inputCls} />
-      <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Product link (optional)" type="url" className={inputCls} />
+      <div className="space-y-1">
+        <input
+          value={link}
+          onChange={(e) => setLink(e.target.value)}
+          onBlur={() => void runLinkEnrichment(link)}
+          placeholder="Product link (optional)"
+          type="url"
+          className={inputCls}
+        />
+        {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
+        {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
+      </div>
       <div className="relative">
         <input
           value={referralCode}
@@ -499,10 +603,60 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
   const [link, setLink] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoUploadedManually, setPhotoUploadedManually] = useState(false);
   const [notes, setNotes] = useState("");
   const [tagsText, setTagsText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [linkEnriching, setLinkEnriching] = useState(false);
+  const [linkEnrichError, setLinkEnrichError] = useState("");
+  const enrichRequestIdRef = useRef(0);
+
+  const runLinkEnrichment = useCallback(
+    async (rawUrl: string) => {
+      const trimmedUrl = rawUrl.trim();
+      if (!trimmedUrl) {
+        setLinkEnriching(false);
+        setLinkEnrichError("");
+        return;
+      }
+      const requestId = ++enrichRequestIdRef.current;
+      setLinkEnriching(true);
+      setLinkEnrichError("");
+      try {
+        const enriched = await enrichCatalogLink(trimmedUrl);
+        if (requestId !== enrichRequestIdRef.current) return;
+        if (!name.trim() && enriched.title) {
+          setName(enriched.title);
+        }
+        if (!photoUploadedManually && enriched.imageUrl) {
+          setPhotoUrl(enriched.imageUrl);
+        }
+      } catch {
+        if (requestId !== enrichRequestIdRef.current) return;
+        setLinkEnrichError("Couldn’t fetch preview. You can still save.");
+      } finally {
+        if (requestId === enrichRequestIdRef.current) {
+          setLinkEnriching(false);
+        }
+      }
+    },
+    [name, photoUploadedManually]
+  );
+
+  useEffect(() => {
+    const trimmedUrl = link.trim();
+    if (!trimmedUrl) {
+      setLinkEnriching(false);
+      setLinkEnrichError("");
+      enrichRequestIdRef.current += 1;
+      return;
+    }
+    const timeout = window.setTimeout(() => {
+      void runLinkEnrichment(trimmedUrl);
+    }, 450);
+    return () => window.clearTimeout(timeout);
+  }, [link, runLinkEnrichment]);
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -555,10 +709,27 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
           {error}
         </p>
       )}
-      <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
+      <PhotoUpload
+        photoUrl={photoUrl}
+        onUpload={(url) => {
+          setPhotoUploadedManually(true);
+          setPhotoUrl(url);
+        }}
+      />
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Accessory name *" className={inputCls} />
       <input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (e.g. Recovery, Gear)" className={inputCls} />
-      <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Link (optional)" type="url" className={inputCls} />
+      <div className="space-y-1">
+        <input
+          value={link}
+          onChange={(e) => setLink(e.target.value)}
+          onBlur={() => void runLinkEnrichment(link)}
+          placeholder="Link (optional)"
+          type="url"
+          className={inputCls}
+        />
+        {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
+        {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
+      </div>
       <div className="relative">
         <input
           value={referralCode}
@@ -596,10 +767,60 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
   const [link, setLink] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoUploadedManually, setPhotoUploadedManually] = useState(false);
   const [notes, setNotes] = useState("");
   const [tagsText, setTagsText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [linkEnriching, setLinkEnriching] = useState(false);
+  const [linkEnrichError, setLinkEnrichError] = useState("");
+  const enrichRequestIdRef = useRef(0);
+
+  const runLinkEnrichment = useCallback(
+    async (rawUrl: string) => {
+      const trimmedUrl = rawUrl.trim();
+      if (!trimmedUrl) {
+        setLinkEnriching(false);
+        setLinkEnrichError("");
+        return;
+      }
+      const requestId = ++enrichRequestIdRef.current;
+      setLinkEnriching(true);
+      setLinkEnrichError("");
+      try {
+        const enriched = await enrichCatalogLink(trimmedUrl);
+        if (requestId !== enrichRequestIdRef.current) return;
+        if (!name.trim() && enriched.title) {
+          setName(enriched.title);
+        }
+        if (!photoUploadedManually && enriched.imageUrl) {
+          setPhotoUrl(enriched.imageUrl);
+        }
+      } catch {
+        if (requestId !== enrichRequestIdRef.current) return;
+        setLinkEnrichError("Couldn’t fetch preview. You can still save.");
+      } finally {
+        if (requestId === enrichRequestIdRef.current) {
+          setLinkEnriching(false);
+        }
+      }
+    },
+    [name, photoUploadedManually]
+  );
+
+  useEffect(() => {
+    const trimmedUrl = link.trim();
+    if (!trimmedUrl) {
+      setLinkEnriching(false);
+      setLinkEnrichError("");
+      enrichRequestIdRef.current += 1;
+      return;
+    }
+    const timeout = window.setTimeout(() => {
+      void runLinkEnrichment(trimmedUrl);
+    }, 450);
+    return () => window.clearTimeout(timeout);
+  }, [link, runLinkEnrichment]);
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -653,7 +874,13 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
           {error}
         </p>
       )}
-      <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
+      <PhotoUpload
+        photoUrl={photoUrl}
+        onUpload={(url) => {
+          setPhotoUploadedManually(true);
+          setPhotoUrl(url);
+        }}
+      />
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Wellness item name *" className={inputCls} />
       <div className="grid grid-cols-2 gap-2">
         <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="Activity type (e.g. Yoga)" className={inputCls} />
@@ -665,7 +892,18 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
           className={inputCls}
         />
       </div>
-      <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Link (optional)" type="url" className={inputCls} />
+      <div className="space-y-1">
+        <input
+          value={link}
+          onChange={(e) => setLink(e.target.value)}
+          onBlur={() => void runLinkEnrichment(link)}
+          placeholder="Link (optional)"
+          type="url"
+          className={inputCls}
+        />
+        {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
+        {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
+      </div>
       <div className="relative">
         <input
           value={referralCode}
@@ -834,6 +1072,7 @@ function AddAffiliateForm({
   const [description, setDescription] = useState("");
   const [ctaLabel, setCtaLabel] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoUploadedManually, setPhotoUploadedManually] = useState(false);
   const [tagsText, setTagsText] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -842,6 +1081,9 @@ function AddAffiliateForm({
   const CONF_MAP: Record<string, number> = { high: 0.9, medium: 0.65, low: 0.35 };
 
   const [enriching, setEnriching] = useState(false);
+  const [linkEnriching, setLinkEnriching] = useState(false);
+  const [linkEnrichError, setLinkEnrichError] = useState("");
+  const singleEnrichRequestIdRef = useRef(0);
 
   // Parse bulk text and enrich with URL metadata
   const handleBulkParse = async () => {
@@ -859,28 +1101,21 @@ function AddAffiliateForm({
     for (const d of detected) {
       if (d.link) {
         try {
-          const res = await fetch("/api/unfurl", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url: d.link }),
-          });
-          if (res.ok) {
-            const meta = await res.json();
-            // Use og:title if the current name is just a domain or generic
-            if (meta.title) {
-              const domainOnly = (() => {
-                try { return new URL(d.link!).hostname.replace(/^www\./, ""); } catch { return ""; }
-              })();
-              if (!d.name || d.name === domainOnly || d.name.length < 3) {
-                d.name = meta.title;
-              }
+          const meta = await enrichCatalogLink(d.link);
+          // Use og:title if the current name is just a domain or generic
+          if (meta.title) {
+            const domainOnly = (() => {
+              try { return new URL(d.link!).hostname.replace(/^www\./, ""); } catch { return ""; }
+            })();
+            if (!d.name || d.name === domainOnly || d.name.length < 3) {
+              d.name = meta.title;
             }
-            if (meta.imageUrl && !d.logoUrl) {
-              d.logoUrl = meta.imageUrl;
-            }
-            if (meta.siteName && !d.brand) {
-              d.brand = meta.siteName;
-            }
+          }
+          if (meta.imageUrl && !d.logoUrl) {
+            d.logoUrl = meta.imageUrl;
+          }
+          if (meta.siteName && !d.brand) {
+            d.brand = meta.siteName;
           }
         } catch { /* continue enriching other items */ }
       }
@@ -911,6 +1146,41 @@ function AddAffiliateForm({
     setBulkParsed(true);
     setReviewIndex(0);
   };
+
+  const runSingleLinkEnrichment = useCallback(
+    async (rawUrl: string) => {
+      const trimmedUrl = rawUrl.trim();
+      if (!trimmedUrl || mode !== "single") {
+        setLinkEnriching(false);
+        setLinkEnrichError("");
+        return;
+      }
+      const requestId = ++singleEnrichRequestIdRef.current;
+      setLinkEnriching(true);
+      setLinkEnrichError("");
+      try {
+        const enriched = await enrichCatalogLink(trimmedUrl);
+        if (requestId !== singleEnrichRequestIdRef.current) return;
+        if (!name.trim() && enriched.title) {
+          setName(enriched.title);
+        }
+        if (!brand.trim() && enriched.siteName) {
+          setBrand(enriched.siteName);
+        }
+        if (!photoUploadedManually && enriched.imageUrl) {
+          setPhotoUrl(enriched.imageUrl);
+        }
+      } catch {
+        if (requestId !== singleEnrichRequestIdRef.current) return;
+        setLinkEnrichError("Couldn’t fetch preview. You can still save.");
+      } finally {
+        if (requestId === singleEnrichRequestIdRef.current) {
+          setLinkEnriching(false);
+        }
+      }
+    },
+    [brand, mode, name, photoUploadedManually]
+  );
 
   const updateBulkItem = (index: number, field: keyof BulkItem, value: string | boolean | null | number) => {
     setBulkItems((prev) =>
@@ -993,6 +1263,26 @@ function AddAffiliateForm({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [bulkParsed, mode, bulkItems.length]);
+
+  useEffect(() => {
+    if (mode !== "single") {
+      setLinkEnriching(false);
+      setLinkEnrichError("");
+      singleEnrichRequestIdRef.current += 1;
+      return;
+    }
+    const trimmedUrl = link.trim();
+    if (!trimmedUrl) {
+      setLinkEnriching(false);
+      setLinkEnrichError("");
+      singleEnrichRequestIdRef.current += 1;
+      return;
+    }
+    const timeout = window.setTimeout(() => {
+      void runSingleLinkEnrichment(trimmedUrl);
+    }, 450);
+    return () => window.clearTimeout(timeout);
+  }, [link, mode, runSingleLinkEnrichment]);
 
   // Single item smart-paste
   const handleSingleParse = () => {
@@ -1245,13 +1535,23 @@ function AddAffiliateForm({
           </div>
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Item name *" className={inputCls} />
           <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand name (optional)" className={inputCls} />
-          <div className="relative">
-            <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Affiliate / referral link" className={inputCls} />
-            {link && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.15)", color: "#528531" }}>
-                Link
-              </span>
-            )}
+          <div className="space-y-1">
+            <div className="relative">
+              <input
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                onBlur={() => void runSingleLinkEnrichment(link)}
+                placeholder="Affiliate / referral link"
+                className={inputCls}
+              />
+              {link && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.15)", color: "#528531" }}>
+                  Link
+                </span>
+              )}
+            </div>
+            {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
+            {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
           </div>
           <div className="relative">
             <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Discount / promo code (e.g. ROYAL20)" className={inputCls} />
@@ -1268,7 +1568,13 @@ function AddAffiliateForm({
             ))}
           </select>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} placeholder="Description (optional)" className="textarea-dark w-full resize-none" />
-          <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
+          <PhotoUpload
+            photoUrl={photoUrl}
+            onUpload={(url) => {
+              setPhotoUploadedManually(true);
+              setPhotoUrl(url);
+            }}
+          />
           <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
           <button
             onClick={handleSingleSubmit}
