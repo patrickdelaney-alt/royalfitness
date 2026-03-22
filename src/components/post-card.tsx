@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare, HiX, HiExternalLink, HiClipboardCopy } from "react-icons/hi";
 import { lightImpact } from "@/lib/haptics";
@@ -681,6 +682,7 @@ function FullPostCard({
   const [moderationLoading, setModerationLoading] = useState(false);
 
   const badge = TYPE_BADGE[post.type];
+  const router = useRouter();
   const isOwner = !!currentUserId && currentUserId === post.author.id;
   const primaryTitle =
     post.type === "WORKOUT" ? post.workoutDetail?.workoutName :
@@ -982,7 +984,10 @@ function FullPostCard({
                   style={{ background: "#FDFAF5", border: "1px solid rgba(36,63,22,0.10)" }}
                 >
                   <button
-                    onClick={() => { setShowEditModal(true); setShowOwnerMenu(false); }}
+                    onClick={() => {
+                      router.push(`/create?editPostId=${post.id}`);
+                      setShowOwnerMenu(false);
+                    }}
                     className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-white/5"
                     style={{ color: "#18190F" }}
                   >

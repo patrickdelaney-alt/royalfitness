@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
+import { createPostSchema } from "@/lib/validations";
+import { parseEmbedUrl } from "@/lib/embed-parser";
 
 // GET /api/posts/[id] — Get a single post by ID
 export async function GET(
@@ -113,14 +115,6 @@ export async function PATCH(
     const userId = session.user.id;
 
     const body = await req.json();
-    const { caption, visibility, workoutName, mealName, activityType } = body;
-
-    if (
-      visibility !== undefined &&
-      !["PUBLIC", "FOLLOWERS", "PRIVATE"].includes(visibility)
-    ) {
-      return NextResponse.json({ error: "Invalid visibility" }, { status: 400 });
-    }
 
     const post = await prisma.post.findUnique({
       where: { id },
@@ -134,32 +128,143 @@ export async function PATCH(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    await prisma.post.update({
-      where: { id },
-      data: {
-        ...(caption !== undefined ? { caption: caption || null } : {}),
-        ...(visibility !== undefined ? { visibility } : {}),
-      },
-    });
+    const parsed = createPostSchema
+      .omit({ type: true, postDate: true, tags: true, affiliate: true })
+      .partial()
+      .safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+    const data = parsed.data;
 
-    if (workoutName !== undefined && post.type === "WORKOUT") {
-      await prisma.workoutDetail.update({
-        where: { postId: id },
-        data: { workoutName },
-      });
+    if (data.gymId) {
+      const gym = await prisma.gym.findUnique({ where: { id: data.gymId } });
+      if (!gym) {
+        return NextResponse.json({ error: "Gym not found" }, { status: 404 });
+      }
     }
-    if (mealName !== undefined && post.type === "MEAL") {
-      await prisma.mealDetail.update({
-        where: { postId: id },
-        data: { mealName },
-      });
+
+    const parsedEmbed = data.embed ? parseEmbedUrl(data.embed.url) : null;
+    if (data.embed && !parsedEmbed) {
+      return NextResponse.json(
+        { error: "Unsupported or invalid embed URL" },
+        { status: 400 }
+      );
     }
-    if (activityType !== undefined && post.type === "WELLNESS") {
-      await prisma.wellnessDetail.update({
-        where: { postId: id },
-        data: { activityType },
-      });
+    if (data.embed && parsedEmbed && data.embed.provider !== parsedEmbed.provider) {
+      return NextResponse.json(
+        { error: "Embed provider does not match URL" },
+        { status: 400 }
+      );
     }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.post.update({
+        where: { id },
+        data: {
+          ...(data.caption !== undefined ? { caption: data.caption || null } : {}),
+          ...(data.visibility !== undefined ? { visibility: data.visibility } : {}),
+          ...(data.mediaUrl !== undefined ? { mediaUrl: data.mediaUrl || null } : {}),
+          ...(data.gymId !== undefined ? { gymId: data.gymId || null } : {}),
+        },
+      });
+
+      if (post.type === "WORKOUT" && data.workout) {
+        await tx.workoutDetail.update({
+          where: { postId: id },
+          data: {
+            workoutName: data.workout.workoutName,
+            isClass: data.workout.isClass,
+            muscleGroups: data.workout.muscleGroups,
+            durationMinutes: data.workout.durationMinutes,
+            perceivedExertion: data.workout.perceivedExertion,
+            moodAfter: data.workout.moodAfter,
+            notes: data.workout.notes,
+            postTiming: data.workout.postTiming,
+            exercises: {
+              deleteMany: {},
+              create: data.workout.exercises.map((exercise, exerciseIndex) => ({
+                name: exercise.name,
+                sortOrder: exerciseIndex,
+                sets: {
+                  create: exercise.sets.map((set, setIndex) => ({
+                    reps: set.reps,
+                    weight: set.weight,
+                    unit: set.unit,
+                    rpe: set.rpe,
+                    sortOrder: setIndex,
+                  })),
+                },
+              })),
+            },
+          },
+        });
+      }
+
+      if (post.type === "MEAL" && data.meal) {
+        await tx.mealDetail.update({
+          where: { postId: id },
+          data: {
+            mealName: data.meal.mealName,
+            mealType: data.meal.mealType,
+            ingredients: data.meal.ingredients,
+            calories: data.meal.calories,
+            protein: data.meal.protein,
+            carbs: data.meal.carbs,
+            fat: data.meal.fat,
+            recipeSourceUrl: data.meal.recipeSourceUrl || null,
+            saveToCatalog: data.meal.saveToCatalog,
+          },
+        });
+      }
+
+      if (post.type === "WELLNESS" && data.wellness) {
+        await tx.wellnessDetail.update({
+          where: { postId: id },
+          data: {
+            activityType: data.wellness.activityType,
+            durationMinutes: data.wellness.durationMinutes,
+            intensity: data.wellness.intensity,
+            moodAfter: data.wellness.moodAfter,
+            notes: data.wellness.notes,
+          },
+        });
+      }
+
+      if (data.embed) {
+        await tx.externalContent.deleteMany({ where: { postId: id } });
+        if (parsedEmbed) {
+          await tx.externalContent.create({
+            data: {
+              postId: id,
+              url: parsedEmbed.url,
+              title: data.embed.title,
+              imageUrl: data.embed.thumbnailUrl,
+              siteName:
+                parsedEmbed.provider === "youtube"
+                  ? "YouTube"
+                  : parsedEmbed.provider === "instagram"
+                    ? "Instagram"
+                    : "TikTok",
+              description: `embed:${parsedEmbed.provider}:${parsedEmbed.contentId}`,
+            },
+          });
+        }
+      } else if (data.externalUrl !== undefined) {
+        await tx.externalContent.deleteMany({ where: { postId: id } });
+        if (data.externalUrl) {
+          await tx.externalContent.create({
+            data: {
+              postId: id,
+              url: data.externalUrl,
+            },
+          });
+        }
+      }
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
