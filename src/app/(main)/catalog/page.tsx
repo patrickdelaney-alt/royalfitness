@@ -131,6 +131,8 @@ interface LinkEnrichmentResult {
   imageUrl: string | null;
 }
 
+type PhotoSource = "none" | "auto" | "manual";
+
 const normalizeEnrichmentField = (value: unknown): string | null => {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
@@ -238,9 +240,11 @@ function TagsInput({
 
 function PhotoUpload({
   photoUrl,
+  photoSource,
   onUpload,
 }: {
   photoUrl: string | null;
+  photoSource?: PhotoSource;
   onUpload: (url: string) => void;
 }) {
   const [uploading, setUploading] = useState(false);
@@ -275,15 +279,27 @@ function PhotoUpload({
         onChange={handleFile}
       />
       {photoUrl ? (
-        <div className="relative w-full aspect-video rounded-xl overflow-hidden">
-          <img src={photoUrl} alt="Preview" className="w-full h-full object-cover" />
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="absolute bottom-2 right-2 p-1.5 rounded-lg text-xs"
-            style={{ background: "rgba(24,25,15,0.15)", color: "#ffffff" }}
-          >
-            Change
-          </button>
+        <div className="space-y-2">
+          <div className="relative w-full aspect-video rounded-xl overflow-hidden">
+            <img src={photoUrl} alt="Preview" className="w-full h-full object-cover" />
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="absolute bottom-2 right-2 p-1.5 rounded-lg text-xs"
+              style={{ background: "rgba(24,25,15,0.15)", color: "#ffffff" }}
+            >
+              Change
+            </button>
+          </div>
+          {photoSource === "auto" && (
+            <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+              Auto from link
+            </p>
+          )}
+          {photoSource === "manual" && (
+            <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+              Uploaded by you
+            </p>
+          )}
         </div>
       ) : (
         <button
@@ -323,6 +339,7 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
   const [tagsText, setTagsText] = useState("");
   const [recipeSourceUrl, setRecipeSourceUrl] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoSource, setPhotoSource] = useState<PhotoSource>("none");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -383,7 +400,14 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
           {error}
         </p>
       )}
-      <PhotoUpload photoUrl={photoUrl} onUpload={setPhotoUrl} />
+      <PhotoUpload
+        photoUrl={photoUrl}
+        photoSource={photoSource}
+        onUpload={(url) => {
+          setPhotoUrl(url);
+          setPhotoSource("manual");
+        }}
+      />
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Meal name *" className={inputCls} />
       <input
         value={recipeSourceUrl}
@@ -433,7 +457,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
   const [link, setLink] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const [photoUploadedManually, setPhotoUploadedManually] = useState(false);
+  const [photoSource, setPhotoSource] = useState<PhotoSource>("none");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [linkEnriching, setLinkEnriching] = useState(false);
@@ -441,7 +465,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
   const enrichRequestIdRef = useRef(0);
 
   const runLinkEnrichment = useCallback(
-    async (rawUrl: string) => {
+    async (rawUrl: string, options?: { forcePhotoRefresh?: boolean }) => {
       const trimmedUrl = rawUrl.trim();
       if (!trimmedUrl) {
         setLinkEnriching(false);
@@ -460,8 +484,9 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
         if (!brand.trim() && enriched.siteName) {
           setBrand(enriched.siteName);
         }
-        if (!photoUploadedManually && enriched.imageUrl) {
+        if (enriched.imageUrl && (options?.forcePhotoRefresh || photoSource !== "manual")) {
           setPhotoUrl(enriched.imageUrl);
+          setPhotoSource("auto");
         }
       } catch {
         if (requestId !== enrichRequestIdRef.current) return;
@@ -472,7 +497,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
         }
       }
     },
-    [brand, name, photoUploadedManually]
+    [brand, name, photoSource]
   );
 
   useEffect(() => {
@@ -544,9 +569,10 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
       )}
       <PhotoUpload
         photoUrl={photoUrl}
+        photoSource={photoSource}
         onUpload={(url) => {
-          setPhotoUploadedManually(true);
           setPhotoUrl(url);
+          setPhotoSource("manual");
         }}
       />
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Supplement name *" className={inputCls} />
@@ -556,6 +582,20 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
       </div>
       <input value={schedule} onChange={(e) => setSchedule(e.target.value)} placeholder="Schedule (e.g. Morning)" className={inputCls} />
       <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+            Product link
+          </span>
+          <button
+            type="button"
+            onClick={() => void runLinkEnrichment(link, { forcePhotoRefresh: true })}
+            disabled={!link.trim() || linkEnriching}
+            className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
+            style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+          >
+            Refresh from link preview
+          </button>
+        </div>
         <input
           value={link}
           onChange={(e) => setLink(e.target.value)}
@@ -603,7 +643,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
   const [link, setLink] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const [photoUploadedManually, setPhotoUploadedManually] = useState(false);
+  const [photoSource, setPhotoSource] = useState<PhotoSource>("none");
   const [notes, setNotes] = useState("");
   const [tagsText, setTagsText] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -613,7 +653,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
   const enrichRequestIdRef = useRef(0);
 
   const runLinkEnrichment = useCallback(
-    async (rawUrl: string) => {
+    async (rawUrl: string, options?: { forcePhotoRefresh?: boolean }) => {
       const trimmedUrl = rawUrl.trim();
       if (!trimmedUrl) {
         setLinkEnriching(false);
@@ -629,8 +669,9 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
         if (!name.trim() && enriched.title) {
           setName(enriched.title);
         }
-        if (!photoUploadedManually && enriched.imageUrl) {
+        if (enriched.imageUrl && (options?.forcePhotoRefresh || photoSource !== "manual")) {
           setPhotoUrl(enriched.imageUrl);
+          setPhotoSource("auto");
         }
       } catch {
         if (requestId !== enrichRequestIdRef.current) return;
@@ -641,7 +682,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
         }
       }
     },
-    [name, photoUploadedManually]
+    [name, photoSource]
   );
 
   useEffect(() => {
@@ -711,14 +752,29 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
       )}
       <PhotoUpload
         photoUrl={photoUrl}
+        photoSource={photoSource}
         onUpload={(url) => {
-          setPhotoUploadedManually(true);
           setPhotoUrl(url);
+          setPhotoSource("manual");
         }}
       />
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Accessory name *" className={inputCls} />
       <input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (e.g. Recovery, Gear)" className={inputCls} />
       <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+            Link
+          </span>
+          <button
+            type="button"
+            onClick={() => void runLinkEnrichment(link, { forcePhotoRefresh: true })}
+            disabled={!link.trim() || linkEnriching}
+            className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
+            style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+          >
+            Refresh from link preview
+          </button>
+        </div>
         <input
           value={link}
           onChange={(e) => setLink(e.target.value)}
@@ -767,7 +823,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
   const [link, setLink] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const [photoUploadedManually, setPhotoUploadedManually] = useState(false);
+  const [photoSource, setPhotoSource] = useState<PhotoSource>("none");
   const [notes, setNotes] = useState("");
   const [tagsText, setTagsText] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -777,7 +833,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
   const enrichRequestIdRef = useRef(0);
 
   const runLinkEnrichment = useCallback(
-    async (rawUrl: string) => {
+    async (rawUrl: string, options?: { forcePhotoRefresh?: boolean }) => {
       const trimmedUrl = rawUrl.trim();
       if (!trimmedUrl) {
         setLinkEnriching(false);
@@ -793,8 +849,9 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         if (!name.trim() && enriched.title) {
           setName(enriched.title);
         }
-        if (!photoUploadedManually && enriched.imageUrl) {
+        if (enriched.imageUrl && (options?.forcePhotoRefresh || photoSource !== "manual")) {
           setPhotoUrl(enriched.imageUrl);
+          setPhotoSource("auto");
         }
       } catch {
         if (requestId !== enrichRequestIdRef.current) return;
@@ -805,7 +862,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         }
       }
     },
-    [name, photoUploadedManually]
+    [name, photoSource]
   );
 
   useEffect(() => {
@@ -876,9 +933,10 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
       )}
       <PhotoUpload
         photoUrl={photoUrl}
+        photoSource={photoSource}
         onUpload={(url) => {
-          setPhotoUploadedManually(true);
           setPhotoUrl(url);
+          setPhotoSource("manual");
         }}
       />
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Wellness item name *" className={inputCls} />
@@ -893,6 +951,20 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         />
       </div>
       <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+            Link
+          </span>
+          <button
+            type="button"
+            onClick={() => void runLinkEnrichment(link, { forcePhotoRefresh: true })}
+            disabled={!link.trim() || linkEnriching}
+            className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
+            style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+          >
+            Refresh from link preview
+          </button>
+        </div>
         <input
           value={link}
           onChange={(e) => setLink(e.target.value)}
@@ -1072,7 +1144,7 @@ function AddAffiliateForm({
   const [description, setDescription] = useState("");
   const [ctaLabel, setCtaLabel] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const [photoUploadedManually, setPhotoUploadedManually] = useState(false);
+  const [photoSource, setPhotoSource] = useState<PhotoSource>("none");
   const [tagsText, setTagsText] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -1148,7 +1220,7 @@ function AddAffiliateForm({
   };
 
   const runSingleLinkEnrichment = useCallback(
-    async (rawUrl: string) => {
+    async (rawUrl: string, options?: { forcePhotoRefresh?: boolean }) => {
       const trimmedUrl = rawUrl.trim();
       if (!trimmedUrl || mode !== "single") {
         setLinkEnriching(false);
@@ -1167,8 +1239,9 @@ function AddAffiliateForm({
         if (!brand.trim() && enriched.siteName) {
           setBrand(enriched.siteName);
         }
-        if (!photoUploadedManually && enriched.imageUrl) {
+        if (enriched.imageUrl && (options?.forcePhotoRefresh || photoSource !== "manual")) {
           setPhotoUrl(enriched.imageUrl);
+          setPhotoSource("auto");
         }
       } catch {
         if (requestId !== singleEnrichRequestIdRef.current) return;
@@ -1179,7 +1252,7 @@ function AddAffiliateForm({
         }
       }
     },
-    [brand, mode, name, photoUploadedManually]
+    [brand, mode, name, photoSource]
   );
 
   const updateBulkItem = (index: number, field: keyof BulkItem, value: string | boolean | null | number) => {
@@ -1536,6 +1609,20 @@ function AddAffiliateForm({
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Item name *" className={inputCls} />
           <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand name (optional)" className={inputCls} />
           <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+                Affiliate link
+              </span>
+              <button
+                type="button"
+                onClick={() => void runSingleLinkEnrichment(link, { forcePhotoRefresh: true })}
+                disabled={!link.trim() || linkEnriching}
+                className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
+                style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+              >
+                Refresh from link preview
+              </button>
+            </div>
             <div className="relative">
               <input
                 value={link}
@@ -1570,9 +1657,10 @@ function AddAffiliateForm({
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} placeholder="Description (optional)" className="textarea-dark w-full resize-none" />
           <PhotoUpload
             photoUrl={photoUrl}
+            photoSource={photoSource}
             onUpload={(url) => {
-              setPhotoUploadedManually(true);
               setPhotoUrl(url);
+              setPhotoSource("manual");
             }}
           />
           <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
