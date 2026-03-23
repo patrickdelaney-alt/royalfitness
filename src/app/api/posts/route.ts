@@ -1,9 +1,140 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
-import { createPostSchema } from "@/lib/validations";
+import { createPostSchema, CATALOG_ITEM_TYPES } from "@/lib/validations";
 import { checkAndAwardAchievements } from "@/lib/achievements";
 import { parseEmbedUrl } from "@/lib/embed-parser";
+
+// ── Catalog item snapshot resolver ────────────────────────────────────────────
+// Looks up a catalog item by ID and type, verifies ownership, returns snapshot.
+// Bypass prevention: keyed to item ID (not content) — edits cannot fool the guard.
+
+interface CatalogSnapshot {
+  title: string;
+  brand: string | null;
+  description: string | null;
+  photoUrl: string | null;
+  link: string | null;
+  referralCode: string | null;
+  category: string | null;
+  ctaLabel: string | null;
+}
+
+async function resolveCatalogItemSnapshot(
+  itemId: string,
+  itemType: (typeof CATALOG_ITEM_TYPES)[number],
+  userId: string
+): Promise<CatalogSnapshot | null> {
+  switch (itemType) {
+    case "MEAL": {
+      const item = await prisma.savedMeal.findFirst({
+        where: { id: itemId, userId },
+        select: { name: true, notes: true, photoUrl: true, recipeSourceUrl: true },
+      });
+      if (!item) return null;
+      return {
+        title: item.name,
+        brand: null,
+        description: item.notes ?? null,
+        photoUrl: item.photoUrl ?? null,
+        link: item.recipeSourceUrl ?? null,
+        referralCode: null,
+        category: "MEAL",
+        ctaLabel: item.recipeSourceUrl ? "View Recipe" : null,
+      };
+    }
+    case "WORKOUT": {
+      const item = await prisma.savedWorkout.findFirst({
+        where: { id: itemId, userId },
+        select: { name: true, notes: true, videoUrl: true },
+      });
+      if (!item) return null;
+      return {
+        title: item.name,
+        brand: null,
+        description: item.notes ?? null,
+        photoUrl: null,
+        link: item.videoUrl ?? null,
+        referralCode: null,
+        category: "WORKOUT",
+        ctaLabel: item.videoUrl ? "Watch Video" : null,
+      };
+    }
+    case "SUPPLEMENT": {
+      const item = await prisma.supplement.findFirst({
+        where: { id: itemId, userId },
+        select: { name: true, brand: true, notes: true, photoUrl: true, link: true, referralCode: true },
+      });
+      if (!item) return null;
+      return {
+        title: item.name,
+        brand: item.brand ?? null,
+        description: item.notes ?? null,
+        photoUrl: item.photoUrl ?? null,
+        link: item.link ?? null,
+        referralCode: item.referralCode ?? null,
+        category: "SUPPLEMENT",
+        ctaLabel: item.link ? "Shop Now" : null,
+      };
+    }
+    case "ACCESSORY": {
+      const item = await prisma.wellnessAccessory.findFirst({
+        where: { id: itemId, userId },
+        select: { name: true, notes: true, photoUrl: true, link: true, referralCode: true },
+      });
+      if (!item) return null;
+      return {
+        title: item.name,
+        brand: null,
+        description: item.notes ?? null,
+        photoUrl: item.photoUrl ?? null,
+        link: item.link ?? null,
+        referralCode: item.referralCode ?? null,
+        category: "ACCESSORY",
+        ctaLabel: item.link ? "Shop Now" : null,
+      };
+    }
+    case "WELLNESS": {
+      const item = await prisma.savedWellness.findFirst({
+        where: { id: itemId, userId },
+        select: { name: true, notes: true, photoUrl: true, link: true, referralCode: true },
+      });
+      if (!item) return null;
+      return {
+        title: item.name,
+        brand: null,
+        description: item.notes ?? null,
+        photoUrl: item.photoUrl ?? null,
+        link: item.link ?? null,
+        referralCode: item.referralCode ?? null,
+        category: "WELLNESS",
+        ctaLabel: item.link ? "Learn More" : null,
+      };
+    }
+    case "AFFILIATE": {
+      const item = await prisma.affiliateItem.findFirst({
+        where: { id: itemId, userId },
+        select: {
+          name: true, brand: true, description: true, photoUrl: true,
+          link: true, referralCode: true, category: true, ctaLabel: true,
+        },
+      });
+      if (!item) return null;
+      return {
+        title: item.name,
+        brand: item.brand ?? null,
+        description: item.description ?? null,
+        photoUrl: item.photoUrl ?? null,
+        link: item.link ?? null,
+        referralCode: item.referralCode ?? null,
+        category: item.category,
+        ctaLabel: item.ctaLabel ?? (item.link ? "Shop Now" : null),
+      };
+    }
+    default:
+      return null;
+  }
+}
 
 // GET /api/posts — Feed with cursor-based pagination and filters
 export async function GET(req: NextRequest) {
@@ -14,7 +145,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = req.nextUrl;
     const cursor = searchParams.get("cursor") || undefined;
     const limit = Math.min(Math.max(parseInt(searchParams.get("limit") || "20", 10), 1), 50);
-    const type = searchParams.get("type") as "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN" | "AFFILIATE" | null;
+    const type = searchParams.get("type") as "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN" | "AFFILIATE" | "CATALOG_SHARE" | null;
     const gymId = searchParams.get("gymId") || undefined;
 
     // Build where clause
@@ -22,7 +153,7 @@ export async function GET(req: NextRequest) {
     const where: Record<string, any> = {};
 
     // Filter by post type
-    if (type && ["WORKOUT", "MEAL", "WELLNESS", "GENERAL", "CHECKIN", "AFFILIATE"].includes(type)) {
+    if (type && ["WORKOUT", "MEAL", "WELLNESS", "GENERAL", "CHECKIN", "AFFILIATE", "CATALOG_SHARE"].includes(type)) {
       where.type = type;
     }
 
@@ -92,6 +223,7 @@ export async function GET(req: NextRequest) {
       mealDetail: true,
       wellnessDetail: true,
       affiliateDetail: true,
+      catalogShareDetail: true,
       gym: { select: { id: true, name: true } },
       externalContent: true,
       _count: { select: { likes: true, comments: true } },
@@ -201,6 +333,56 @@ export async function POST(req: NextRequest) {
         { error: "A gym is required for check-in posts" },
         { status: 400 }
       );
+    }
+
+    // CATALOG_SHARE posts require catalogShare fields
+    if (data.type === "CATALOG_SHARE" && !data.catalogShare) {
+      return NextResponse.json(
+        { error: "Catalog item reference is required for catalog share posts" },
+        { status: 400 }
+      );
+    }
+
+    // ── Anti-spam check for CATALOG_SHARE ────────────────────────────────────
+    // Current rule: one share per user per catalog item per UTC calendar day.
+    // This check happens BEFORE the transaction so we can return early cleanly.
+    //
+    // To change to rolling 24-hour window:
+    //   Replace sharedDate: todayUTC with createdAt: { gte: new Date(Date.now() - 86_400_000) }
+    //
+    // The guard is keyed to catalogItemId (the item's DB id), not its content,
+    // so tiny edits to the catalog item cannot bypass this rule.
+    let catalogSnapshot: Awaited<ReturnType<typeof resolveCatalogItemSnapshot>> = null;
+    let todayUTC: Date | null = null;
+
+    if (data.type === "CATALOG_SHARE" && data.catalogShare) {
+      const { catalogItemId, catalogItemType } = data.catalogShare;
+
+      todayUTC = new Date();
+      todayUTC.setUTCHours(0, 0, 0, 0);
+
+      const existingShare = await prisma.catalogShareCooldown.findFirst({
+        where: { userId, catalogItemId, catalogItemType, sharedDate: todayUTC },
+      });
+
+      if (existingShare) {
+        return NextResponse.json(
+          {
+            error: "You've already shared this item today. Come back tomorrow to share it again.",
+            code: "ALREADY_SHARED_TODAY",
+          },
+          { status: 409 }
+        );
+      }
+
+      // Look up catalog item and build immutable snapshot
+      catalogSnapshot = await resolveCatalogItemSnapshot(catalogItemId, catalogItemType, userId);
+      if (!catalogSnapshot) {
+        return NextResponse.json(
+          { error: "Catalog item not found or does not belong to you" },
+          { status: 404 }
+        );
+      }
     }
 
     // Verify gym exists if gymId is provided
@@ -324,6 +506,37 @@ export async function POST(req: NextRequest) {
         });
       }
 
+      // Create catalog share detail + anti-spam guard (atomic with post creation)
+      if (data.type === "CATALOG_SHARE" && data.catalogShare && catalogSnapshot && todayUTC) {
+        await tx.catalogShareDetail.create({
+          data: {
+            postId: newPost.id,
+            catalogItemId: data.catalogShare.catalogItemId,
+            catalogItemType: data.catalogShare.catalogItemType,
+            title: catalogSnapshot.title,
+            brand: catalogSnapshot.brand,
+            description: catalogSnapshot.description,
+            photoUrl: catalogSnapshot.photoUrl,
+            link: catalogSnapshot.link,
+            referralCode: catalogSnapshot.referralCode,
+            category: catalogSnapshot.category,
+            ctaLabel: catalogSnapshot.ctaLabel,
+          },
+        });
+
+        // Write the anti-spam guard inside the same transaction.
+        // If the post creation fails for any reason, this record is also rolled back,
+        // ensuring the user is never incorrectly blocked from sharing again today.
+        await tx.catalogShareCooldown.create({
+          data: {
+            userId,
+            catalogItemId: data.catalogShare.catalogItemId,
+            catalogItemType: data.catalogShare.catalogItemType,
+            sharedDate: todayUTC,
+          },
+        });
+      }
+
       // Create external content if URL is provided
       if (data.embed && parsedEmbed) {
         await tx.externalContent.create({
@@ -368,6 +581,7 @@ export async function POST(req: NextRequest) {
           mealDetail: true,
           wellnessDetail: true,
           affiliateDetail: true,
+          catalogShareDetail: true,
           gym: { select: { id: true, name: true } },
           externalContent: true,
           _count: { select: { likes: true, comments: true } },
