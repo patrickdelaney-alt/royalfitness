@@ -7,6 +7,8 @@ type ParsedMetadata = {
   iconCandidates: string[];
 };
 
+type ImageSource = "screenshot" | "og" | "twitter" | "icon" | null;
+
 function extractMetaTag(html: string, property: string): string | null {
   // Match both property="og:xxx" and name="og:xxx" variants
   const patterns = [
@@ -148,7 +150,11 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { url } = body;
+    const { url, preferScreenshot } = body as {
+      url?: unknown;
+      preferScreenshot?: unknown;
+    };
+    const shouldPreferScreenshot = preferScreenshot === true;
 
     if (!url || typeof url !== "string") {
       return NextResponse.json(
@@ -174,7 +180,7 @@ export async function POST(req: NextRequest) {
 
     // For TikTok, use the public oEmbed API for reliable thumbnail + title
     const isTikTok = /tiktok\.com/.test(parsedUrl.hostname);
-    if (isTikTok) {
+    if (isTikTok && !shouldPreferScreenshot) {
       const oembed = await fetchTikTokOEmbed(url);
       if (oembed.imageUrl) {
         return NextResponse.json({
@@ -182,6 +188,7 @@ export async function POST(req: NextRequest) {
           description: null,
           imageUrl: oembed.imageUrl,
           siteName: "TikTok",
+          imageSource: null,
         });
       }
     }
@@ -208,6 +215,7 @@ export async function POST(req: NextRequest) {
           description: null,
           imageUrl: null,
           siteName: null,
+          imageSource: null,
         });
       }
 
@@ -220,6 +228,7 @@ export async function POST(req: NextRequest) {
         description: null,
         imageUrl: null,
         siteName: null,
+        imageSource: null,
       });
     } finally {
       clearTimeout(timeoutId);
@@ -242,18 +251,46 @@ export async function POST(req: NextRequest) {
       parsedMetadata.iconCandidates
         .map((candidate) => normalizeUrl(candidate, fetchedPageUrl))
         .find((candidate): candidate is string => Boolean(candidate)) || null;
-    const resolvedImageUrl =
-      normalizedOgImage ||
-      normalizedTwitterImage ||
-      normalizedIconCandidate ||
-      (await getScreenshotFallbackUrl(fetchedPageUrl)) ||
-      null;
+    let resolvedImageUrl: string | null = null;
+    let imageSource: ImageSource = null;
+
+    if (shouldPreferScreenshot) {
+      const screenshotUrl = await getScreenshotFallbackUrl(fetchedPageUrl);
+      if (screenshotUrl) {
+        resolvedImageUrl = screenshotUrl;
+        imageSource = "screenshot";
+      }
+    }
+
+    if (!resolvedImageUrl && normalizedOgImage) {
+      resolvedImageUrl = normalizedOgImage;
+      imageSource = "og";
+    }
+
+    if (!resolvedImageUrl && normalizedTwitterImage) {
+      resolvedImageUrl = normalizedTwitterImage;
+      imageSource = "twitter";
+    }
+
+    if (!resolvedImageUrl && normalizedIconCandidate) {
+      resolvedImageUrl = normalizedIconCandidate;
+      imageSource = "icon";
+    }
+
+    if (!resolvedImageUrl) {
+      const screenshotUrl = await getScreenshotFallbackUrl(fetchedPageUrl);
+      if (screenshotUrl) {
+        resolvedImageUrl = screenshotUrl;
+        imageSource = "screenshot";
+      }
+    }
 
     return NextResponse.json({
       title,
       description,
       imageUrl: resolvedImageUrl,
       siteName,
+      imageSource,
     });
   } catch (error) {
     console.error("POST /api/unfurl error:", error);
