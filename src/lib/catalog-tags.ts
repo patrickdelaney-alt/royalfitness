@@ -1,3 +1,62 @@
+/* ── Shared catalog configuration ────────────────────────────────────── */
+
+export const CATALOG_TABS = [
+  "meals", "workouts", "supplements", "accessories", "wellness", "affiliates",
+] as const;
+
+export type CatalogTab = (typeof CATALOG_TABS)[number];
+
+export const CATALOG_ENDPOINTS: Record<CatalogTab, string> = {
+  meals: "/api/catalog/meals",
+  workouts: "/api/catalog/workouts",
+  supplements: "/api/catalog/supplements",
+  accessories: "/api/catalog/accessories",
+  wellness: "/api/catalog/wellness",
+  affiliates: "/api/catalog/affiliates",
+};
+
+/** Labels shown on the owner's catalog page */
+export const CATALOG_TAB_LABELS: Record<CatalogTab, string> = {
+  meals: "Meals",
+  workouts: "Workout",
+  supplements: "Supps",
+  accessories: "Gear",
+  wellness: "Wellness",
+  affiliates: "Deals",
+};
+
+/** Labels shown on public profile pages */
+export const PUBLIC_TAB_LABELS: Record<CatalogTab, string> = {
+  meals: "Meals",
+  workouts: "Workouts",
+  supplements: "Supps",
+  accessories: "Gear",
+  wellness: "Wellness",
+  affiliates: "Links",
+};
+
+/** Gradients used on the owner's catalog page */
+export const CATALOG_PAGE_GRADIENTS: Record<CatalogTab, string> = {
+  meals: "from-orange-600/80 to-red-700/80",
+  workouts: "from-blue-600/80 to-indigo-700/80",
+  supplements: "from-green-600/80 to-emerald-700/80",
+  accessories: "from-purple-600/80 to-pink-700/80",
+  wellness: "from-teal-600/80 to-cyan-700/80",
+  affiliates: "from-amber-600/80 to-yellow-700/80",
+};
+
+/** Gradients used on public profile pages */
+export const PUBLIC_PAGE_GRADIENTS: Record<CatalogTab, string> = {
+  meals: "from-amber-700/70 to-amber-900/70",
+  workouts: "from-green-800/70 to-green-950/70",
+  supplements: "from-emerald-700/70 to-emerald-900/70",
+  accessories: "from-stone-600/70 to-stone-800/70",
+  wellness: "from-lime-700/70 to-lime-900/70",
+  affiliates: "from-amber-600/70 to-yellow-800/70",
+};
+
+/* ── Affiliate category mappings ────────────────────────────────────── */
+
 export const AFFILIATE_CATEGORY_LABELS: Record<string, string> = {
   SUPPLEMENTS: "Supplements",
   WELLNESS_ACCESSORIES: "Wellness",
@@ -91,4 +150,19 @@ export const getCatalogDisplayTags = ({
     activityType ?? "",
     categoryLabel ?? "",
   ]);
+};
+
+/* ── Shared affiliate helpers ───────────────────────────────────────── */
+
+/** Resolve a user-friendly display label for an affiliate category */
+export const getAffiliateDisplayLabel = (category: string): string =>
+  AFFILIATE_CATEGORY_TO_DISPLAY[category] ?? "Other";
+
+/** Resolve the gradient class for an affiliate category using the given gradient map */
+export const getAffiliateGradient = (
+  category: string,
+  gradients: Record<CatalogTab, string>,
+): string => {
+  const mapped = AFFILIATE_TO_CATALOG_TYPE[category] as CatalogTab | undefined;
+  return gradients[mapped ?? "accessories"];
 };
