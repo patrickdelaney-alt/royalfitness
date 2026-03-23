@@ -21,8 +21,8 @@ export default function SignInPage() {
   return (
     <Suspense fallback={<SignInSkeleton />}>
       <SignInClient
-        appleEnabled={!!process.env.APPLE_CLIENT_ID}
-        googleEnabled={!!process.env.GOOGLE_CLIENT_ID}
+        appleEnabled={!!process.env.APPLE_CLIENT_ID && !!process.env.APPLE_CLIENT_SECRET}
+        googleEnabled={!!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET}
       />
     </Suspense>
   );

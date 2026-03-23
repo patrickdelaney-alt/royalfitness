@@ -137,7 +137,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
 
     // Apple Sign In — enabled when APPLE_CLIENT_ID + APPLE_CLIENT_SECRET are set
-    ...(process.env.APPLE_CLIENT_ID
+    ...(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET
       ? [
           Apple({
             clientId: process.env.APPLE_CLIENT_ID,
@@ -147,7 +147,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       : []),
 
     // Google Sign In — enabled when GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET are set
-    ...(process.env.GOOGLE_CLIENT_ID
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
       ? [
           Google({
             clientId: process.env.GOOGLE_CLIENT_ID,
