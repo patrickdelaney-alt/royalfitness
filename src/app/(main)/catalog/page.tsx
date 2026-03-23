@@ -153,7 +153,7 @@ async function enrichCatalogLink(url: string): Promise<LinkEnrichmentResult> {
   const res = await fetch("/api/unfurl", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url: trimmedUrl }),
+    body: JSON.stringify({ url: trimmedUrl, preferScreenshot: true }),
   });
   if (!res.ok) {
     throw new Error("Failed to fetch link preview");
@@ -278,7 +278,7 @@ function PhotoUpload({
           </div>
           {photoSource === "auto" && (
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-              Auto from link
+              Auto: landing page preview
             </p>
           )}
           {photoSource === "manual" && (
