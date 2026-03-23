@@ -127,7 +127,10 @@ export function BottomNav() {
               >
                 <tab.icon className="h-[22px] w-[22px]" />
                 {tab.href === "/notifications" && unreadCount > 0 && (
-                  <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                  <span
+                    className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold"
+                    style={{ background: "var(--gold)", color: "var(--surface)" }}
+                  >
                     {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
                 )}

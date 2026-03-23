@@ -152,7 +152,7 @@ export default function FollowListModal({
             <h2 className="font-normal text-base" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>{title}</h2>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-full"
+              className="p-1.5 rounded-full hover:bg-[--surface-2]"
               style={{ color: "var(--text-muted)", transition: "background 0.3s cubic-bezier(0.32, 0.72, 0, 1)" }}
             >
               <HiXMark className="w-5 h-5" />
@@ -188,7 +188,7 @@ export default function FollowListModal({
                   key={user.id}
                   href={`/profile/${user.username}`}
                   onClick={onClose}
-                  className="flex items-center gap-3 px-4 py-3"
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-[--surface-2]"
                   style={{ transition: "background 0.3s cubic-bezier(0.32, 0.72, 0, 1)" }}
                 >
                   {user.avatarUrl ? (
