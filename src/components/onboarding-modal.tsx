@@ -76,8 +76,8 @@ export default function OnboardingModal({ onClose }: Props) {
         }
       }}
     >
-      <div className="relative w-full max-w-sm rounded-t-2xl sm:rounded-2xl card-shell" style={{ borderRadius: "32px 32px 0 0" }}>
-        <div className="card-core p-6 pb-8 sm:rounded-2xl" style={{ borderRadius: "28px 28px 0 0" }}>
+      <div className="relative w-full max-w-sm rounded-t-[32px] sm:rounded-[32px] card-shell">
+        <div className="card-core p-6 pb-8 rounded-t-[28px] sm:rounded-[28px]">
           {/* Close button */}
           <button
             onClick={requestDismiss}
@@ -167,8 +167,8 @@ export default function OnboardingModal({ onClose }: Props) {
               className="absolute inset-0 flex items-end sm:items-center justify-center p-4"
               style={{ background: "rgba(24,25,15,0.2)", backdropFilter: "blur(2px)" }}
             >
-              <div className="w-full rounded-2xl card-shell">
-                <div className="card-core p-4 sm:p-5 rounded-2xl text-center">
+              <div className="w-full rounded-t-[32px] sm:rounded-[32px] card-shell">
+                <div className="card-core p-4 sm:p-5 rounded-t-[28px] sm:rounded-[28px] text-center">
                   <h3 className="text-base font-semibold mb-1" style={{ color: "var(--text)" }}>
                     Leave onboarding?
                   </h3>
