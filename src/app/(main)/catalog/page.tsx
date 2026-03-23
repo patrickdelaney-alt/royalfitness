@@ -16,7 +16,9 @@ import {
   HiViewGrid,
   HiViewList,
   HiPencil,
+  HiShare,
 } from "react-icons/hi";
+import ShareCatalogModal, { type CatalogItemType as ShareCatalogItemType, type ShareCatalogItem } from "@/components/share-catalog-modal";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
 import {
@@ -2173,12 +2175,14 @@ function ItemDetailModal({
   onClose,
   onEdit,
   onDelete,
+  onShare,
 }: {
   item: AnyItem;
   tab: CatalogTab;
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onShare?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -2409,31 +2413,48 @@ function ItemDetailModal({
           </div>
         </div>
 
-        {/* Sticky footer — Edit + Delete always visible */}
+        {/* Sticky footer — Share + Edit + Delete */}
         <div
-          className="flex gap-2 px-4 py-3 shrink-0"
+          className="px-4 py-3 shrink-0 space-y-2"
           style={{
             borderTop: "1px solid rgba(36,63,22,0.08)",
             paddingBottom: "calc(1rem + env(safe-area-inset-bottom))",
           }}
         >
-          <button
-            onClick={onEdit}
-            className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
-            style={{ background: "rgba(82,133,49,0.12)", color: "#528531", border: "1px solid rgba(82,133,49,0.25)" }}
-          >
-            <HiPencil className="w-4 h-4" />
-            Edit
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
-            style={{ background: "rgba(248,113,113,0.1)", color: "#f87171", border: "1px solid rgba(248,113,113,0.2)" }}
-          >
-            <HiTrash className="w-4 h-4" />
-            {deleting ? "Deleting…" : "Delete"}
-          </button>
+          {/* Share to Feed — primary CTA */}
+          {onShare && (
+            <button
+              onClick={() => { onClose(); onShare(); }}
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold transition-all"
+              style={{
+                background: "linear-gradient(135deg, #243F16 0%, #3A6122 100%)",
+                color: "#FDFAF5",
+                boxShadow: "0 2px 10px rgba(36,63,22,0.25)",
+              }}
+            >
+              <HiShare className="w-4 h-4" />
+              Share to Feed
+            </button>
+          )}
+          <div className="flex gap-2">
+            <button
+              onClick={onEdit}
+              className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
+              style={{ background: "rgba(82,133,49,0.12)", color: "#528531", border: "1px solid rgba(82,133,49,0.25)" }}
+            >
+              <HiPencil className="w-4 h-4" />
+              Edit
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
+              style={{ background: "rgba(248,113,113,0.1)", color: "#f87171", border: "1px solid rgba(248,113,113,0.2)" }}
+            >
+              <HiTrash className="w-4 h-4" />
+              {deleting ? "Deleting…" : "Delete"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -2491,10 +2512,24 @@ export default function CatalogPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedItem, setSelectedItem] = useState<AnyItem | null>(null);
   const [editingItem, setEditingItem] = useState<AnyItem | null>(null);
+  const [sharingItem, setSharingItem] = useState<ShareCatalogItem | null>(null);
+
+  // Maps catalog tab names to the CatalogItemType enum used by the share API
+  const tabToShareType = (tab: CatalogTab): ShareCatalogItemType => {
+    const MAP: Record<CatalogTab, ShareCatalogItemType> = {
+      meals: "MEAL",
+      workouts: "WORKOUT",
+      supplements: "SUPPLEMENT",
+      accessories: "ACCESSORY",
+      wellness: "WELLNESS",
+      affiliates: "AFFILIATE",
+    };
+    return MAP[tab];
+  };
 
   // Lock body scroll when any modal is open
   useEffect(() => {
-    if (selectedItem || editingItem) {
+    if (selectedItem || editingItem || sharingItem) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -2502,7 +2537,7 @@ export default function CatalogPage() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [selectedItem, editingItem]);
+  }, [selectedItem, editingItem, sharingItem]);
 
   // Ref to track if we should auto-open the upload form on first load (from ?upload=true)
   const uploadOnMount = useRef(searchParams.get("upload") === "true");
@@ -2905,6 +2940,15 @@ export default function CatalogPage() {
               setEditingItem(storedItem);
             }}
             onDelete={() => handleDelete(selectedItem.id, itemType)}
+            onShare={() => {
+              setSharingItem({
+                id: selectedItem.id,
+                catalogType: tabToShareType(itemType),
+                name: selectedItem.name,
+                photoUrl: getItemPhotoUrl(selectedItem),
+                brand: "brand" in selectedItem ? (selectedItem as { brand: string | null }).brand : null,
+              });
+            }}
           />
         );
       })()}
@@ -2921,6 +2965,15 @@ export default function CatalogPage() {
           />
         );
       })()}
+
+      {/* Share to Feed Modal */}
+      {sharingItem && (
+        <ShareCatalogModal
+          item={sharingItem}
+          onClose={() => setSharingItem(null)}
+          onSuccess={() => setSharingItem(null)}
+        />
+      )}
     </div>
   );
 }

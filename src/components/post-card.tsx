@@ -117,6 +117,20 @@ interface AffiliateDetail {
   affiliateItemId: string | null;
 }
 
+interface CatalogShareDetail {
+  id: string;
+  catalogItemId: string;
+  catalogItemType: string;
+  title: string;
+  brand: string | null;
+  description: string | null;
+  photoUrl: string | null;
+  link: string | null;
+  referralCode: string | null;
+  category: string | null;
+  ctaLabel: string | null;
+}
+
 interface Comment {
   id: string;
   text: string;
@@ -131,7 +145,7 @@ interface Gym {
 
 export interface Post {
   id: string;
-  type: "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN" | "AFFILIATE";
+  type: "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN" | "AFFILIATE" | "CATALOG_SHARE";
   caption: string | null;
   mediaUrl: string | null;
   visibility: string;
@@ -142,6 +156,7 @@ export interface Post {
   mealDetail: MealDetail | null;
   wellnessDetail: WellnessDetail | null;
   affiliateDetail: AffiliateDetail | null;
+  catalogShareDetail: CatalogShareDetail | null;
   externalContent?: ExternalContentItem[];
   gym: Gym | null;
   likedByMe: boolean;
@@ -154,12 +169,13 @@ export interface Post {
 // ── badge colours (warm light theme) ──────────────────────────────────────────
 
 const TYPE_BADGE: Record<Post["type"], { bg: string; text: string; label: string; emoji: string }> = {
-  WORKOUT: { bg: "rgba(13,31,140,0.10)",   text: "#0D1F8C", label: "Workout",   emoji: "💪" },
-  MEAL:    { bg: "rgba(42,184,208,0.12)",   text: "#1A7B8A", label: "Meal",      emoji: "🥗" },
-  WELLNESS:{ bg: "rgba(26,107,42,0.12)",    text: "#1A6B2A", label: "Wellness",  emoji: "🧘" },
-  GENERAL: { bg: "rgba(36,63,22,0.10)",     text: "#7A7560", label: "General",   emoji: "⭐" },
-  CHECKIN:   { bg: "rgba(212,115,90,0.12)", text: "#A85A42", label: "Check-in",  emoji: "📍" },
-  AFFILIATE: { bg: "rgba(154,123,46,0.12)", text: "#9A7B2E", label: "Affiliate", emoji: "🔗" },
+  WORKOUT:       { bg: "rgba(13,31,140,0.10)",   text: "#0D1F8C", label: "Workout",      emoji: "💪" },
+  MEAL:          { bg: "rgba(42,184,208,0.12)",   text: "#1A7B8A", label: "Meal",         emoji: "🥗" },
+  WELLNESS:      { bg: "rgba(26,107,42,0.12)",    text: "#1A6B2A", label: "Wellness",     emoji: "🧘" },
+  GENERAL:       { bg: "rgba(36,63,22,0.10)",     text: "#7A7560", label: "General",      emoji: "⭐" },
+  CHECKIN:       { bg: "rgba(212,115,90,0.12)",   text: "#A85A42", label: "Check-in",     emoji: "📍" },
+  AFFILIATE:     { bg: "rgba(154,123,46,0.12)",   text: "#9A7B2E", label: "Affiliate",    emoji: "🔗" },
+  CATALOG_SHARE: { bg: "rgba(154,123,46,0.15)",   text: "#9A7B2E", label: "Shared Item",  emoji: "✨" },
 };
 
 // ── mood label ────────────────────────────────────────────────────────────────
@@ -440,6 +456,121 @@ function AffiliateSection({ detail, hideTitle = false }: { detail: AffiliateDeta
   );
 }
 
+// ── CatalogShareSection ──────────────────────────────────────────────────────
+// Renders a shared catalog item as a rich product card within a feed post.
+// Designed to be monetization-friendly: image hero → brand → title → CTA.
+
+const CATALOG_TYPE_LABELS: Record<string, string> = {
+  MEAL: "Meal", WORKOUT: "Workout", SUPPLEMENT: "Supplement",
+  ACCESSORY: "Accessory", WELLNESS: "Wellness", AFFILIATE: "Product",
+};
+
+function CatalogShareSection({ detail }: { detail: CatalogShareDetail }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyCode = () => {
+    if (detail.referralCode) {
+      navigator.clipboard.writeText(detail.referralCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  };
+
+  const ctaText = detail.ctaLabel ?? "Shop Now";
+  const typeLabel = CATALOG_TYPE_LABELS[detail.catalogItemType] ?? detail.catalogItemType;
+
+  return (
+    <div
+      className="mt-3 rounded-2xl overflow-hidden"
+      style={{ border: "1px solid rgba(154,123,46,0.22)" }}
+    >
+      {/* Product image hero */}
+      {detail.photoUrl && (
+        <div className="w-full overflow-hidden" style={{ maxHeight: "200px" }}>
+          <img
+            src={detail.photoUrl}
+            alt={detail.title}
+            loading="lazy"
+            className="w-full object-cover"
+            style={{ maxHeight: "200px" }}
+          />
+        </div>
+      )}
+
+      {/* Product info body */}
+      <div className="p-4 space-y-2.5" style={{ background: "rgba(154,123,46,0.05)" }}>
+        {/* Type chip + brand */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span
+            className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
+            style={{ background: "rgba(154,123,46,0.14)", color: "#9A7B2E" }}
+          >
+            {typeLabel}
+          </span>
+          {detail.brand && (
+            <span className="text-xs font-semibold" style={{ color: "#9A7B2E" }}>
+              {detail.brand}
+            </span>
+          )}
+        </div>
+
+        {/* Title */}
+        <p className="font-semibold leading-snug text-foreground" style={{ fontSize: "15px" }}>
+          {detail.title}
+        </p>
+
+        {/* Description */}
+        {detail.description && (
+          <p
+            className="text-sm leading-relaxed line-clamp-2"
+            style={{ color: "var(--text-muted)" }}
+          >
+            {detail.description}
+          </p>
+        )}
+
+        {/* CTA row */}
+        {(detail.link || detail.referralCode) && (
+          <div className="flex items-stretch gap-2 pt-0.5">
+            {detail.link && (
+              <a
+                href={detail.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  if (isCapacitorNative()) {
+                    e.preventDefault();
+                    openExternalLink(detail.link!);
+                  }
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 btn-gradient"
+                style={{ color: "#FDFAF5" }}
+              >
+                <HiExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
+                {ctaText}
+              </a>
+            )}
+            {detail.referralCode && (
+              <button
+                onClick={handleCopyCode}
+                className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 border flex-shrink-0"
+                style={{
+                  background: copied ? "rgba(34,197,94,0.08)" : "rgba(154,123,46,0.08)",
+                  borderColor: copied ? "rgba(34,197,94,0.25)" : "rgba(154,123,46,0.22)",
+                  color: copied ? "#16a34a" : "#9A7B2E",
+                }}
+              >
+                <HiClipboardCopy className="w-3.5 h-3.5 flex-shrink-0" />
+                {copied ? "Copied!" : detail.referralCode}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── WorkoutBadgeCard ─────────────────────────────────────────────────────────
 
 function WorkoutBadgeCard({ badge }: { badge: BadgeData }) {
@@ -681,6 +812,7 @@ function FullPostCard({
     post.type === "MEAL" ? post.mealDetail?.mealName :
     post.type === "WELLNESS" ? post.wellnessDetail?.activityType :
     post.type === "AFFILIATE" ? post.affiliateDetail?.title :
+    post.type === "CATALOG_SHARE" ? post.catalogShareDetail?.title :
     null;
 
   // ── like toggle ──
@@ -866,11 +998,12 @@ function FullPostCard({
   return (
     <article
       className={`rounded-xl border card-hover ${
-        post.type === "WORKOUT"   ? "type-border-workout"   :
-        post.type === "MEAL"      ? "type-border-meal"      :
-        post.type === "WELLNESS"  ? "type-border-wellness"  :
-        post.type === "AFFILIATE" ? "type-border-meal"      :
-                                    "type-border-general"
+        post.type === "WORKOUT"       ? "type-border-workout"   :
+        post.type === "MEAL"          ? "type-border-meal"      :
+        post.type === "WELLNESS"      ? "type-border-wellness"  :
+        post.type === "AFFILIATE"     ? "type-border-meal"      :
+        post.type === "CATALOG_SHARE" ? "type-border-meal"      :
+                                        "type-border-general"
       }`}
       style={{ background: "#FDFAF5", borderColor: "rgba(36,63,22,0.10)" }}
     >
@@ -1223,7 +1356,8 @@ function FullPostCard({
 
       {/* ── body ── */}
       <div className="px-4 pb-3">
-        {primaryTitle && (
+        {/* Title shown inline for non-catalog-share types; CATALOG_SHARE renders title inside its own card */}
+        {primaryTitle && post.type !== "CATALOG_SHARE" && (
           <p className="text-sm text-foreground whitespace-pre-wrap mt-1 mb-1">
             {primaryTitle}
           </p>
@@ -1252,10 +1386,11 @@ function FullPostCard({
 
         {post.externalContent?.[0] && <EmbedMedia item={post.externalContent[0]} />}
 
-        {post.type === "WORKOUT"   && post.workoutDetail   && <WorkoutSection detail={post.workoutDetail} hideTitle={!!primaryTitle} />}
-        {post.type === "MEAL"      && post.mealDetail      && <MealSection detail={post.mealDetail} hideTitle={!!primaryTitle} />}
-        {post.type === "WELLNESS"  && post.wellnessDetail  && <WellnessSection detail={post.wellnessDetail} hideTitle={!!primaryTitle} />}
-        {post.type === "AFFILIATE" && post.affiliateDetail && <AffiliateSection detail={post.affiliateDetail} hideTitle={!!primaryTitle} />}
+        {post.type === "WORKOUT"       && post.workoutDetail      && <WorkoutSection detail={post.workoutDetail} hideTitle={!!primaryTitle} />}
+        {post.type === "MEAL"          && post.mealDetail         && <MealSection detail={post.mealDetail} hideTitle={!!primaryTitle} />}
+        {post.type === "WELLNESS"      && post.wellnessDetail     && <WellnessSection detail={post.wellnessDetail} hideTitle={!!primaryTitle} />}
+        {post.type === "AFFILIATE"     && post.affiliateDetail    && <AffiliateSection detail={post.affiliateDetail} hideTitle={!!primaryTitle} />}
+        {post.type === "CATALOG_SHARE" && post.catalogShareDetail && <CatalogShareSection detail={post.catalogShareDetail} />}
 
         {post.caption && (
           <p className="text-sm text-foreground whitespace-pre-wrap mt-3 mb-1">

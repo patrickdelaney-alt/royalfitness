@@ -9,7 +9,15 @@ import PostCard, { Post } from "@/components/post-card";
 import RecommendationCard from "@/components/recommendation-card";
 import OnboardingModal, { shouldShowOnboarding } from "@/components/onboarding-modal";
 
-const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS"] as const;
+const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS", "CATALOG_SHARE"] as const;
+
+const POST_TYPE_LABELS: Record<string, string> = {
+  ALL: "All",
+  WORKOUT: "Workouts",
+  MEAL: "Meals",
+  WELLNESS: "Wellness",
+  CATALOG_SHARE: "Shared",
+};
 
 
 export default function FeedContent() {
@@ -176,13 +184,7 @@ export default function FeedContent() {
                 transition: "all 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
               }}
             >
-              {type === "ALL"
-                ? "All"
-                : type === "WORKOUT"
-                ? "Workouts"
-                : type === "MEAL"
-                ? "Meals"
-                : "Wellness"}
+              {POST_TYPE_LABELS[type] ?? type}
             </button>
           );
         })}

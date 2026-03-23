@@ -21,8 +21,12 @@ export const AFFILIATE_CATEGORIES = [
   "RECOVERY_TOOLS", "APPAREL", "NUTRITION", "TECH_WEARABLES", "OTHER",
 ] as const;
 
+export const CATALOG_ITEM_TYPES = [
+  "MEAL", "WORKOUT", "SUPPLEMENT", "ACCESSORY", "WELLNESS", "AFFILIATE",
+] as const;
+
 export const createPostSchema = z.object({
-  type: z.enum(["WORKOUT", "MEAL", "WELLNESS", "GENERAL", "CHECKIN", "AFFILIATE"]),
+  type: z.enum(["WORKOUT", "MEAL", "WELLNESS", "GENERAL", "CHECKIN", "AFFILIATE", "CATALOG_SHARE"]),
   caption: z.string().max(2000).optional(),
   visibility: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]).default("PUBLIC"),
   tags: z.array(z.string().max(50)).max(10).default([]),
@@ -96,6 +100,14 @@ export const createPostSchema = z.object({
       link: z.string().url().optional().or(z.literal("")),
       referralCode: z.string().max(100).optional(),
       category: z.enum(AFFILIATE_CATEGORIES).default("OTHER"),
+    })
+    .optional(),
+
+  // Catalog share fields (required when type === "CATALOG_SHARE")
+  catalogShare: z
+    .object({
+      catalogItemId: z.string().min(1),
+      catalogItemType: z.enum(CATALOG_ITEM_TYPES),
     })
     .optional(),
 

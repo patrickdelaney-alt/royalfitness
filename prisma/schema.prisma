@@ -129,6 +129,16 @@ enum PostType {
   GENERAL
   CHECKIN
   AFFILIATE
+  CATALOG_SHARE
+}
+
+enum CatalogItemType {
+  MEAL
+  WORKOUT
+  SUPPLEMENT
+  ACCESSORY
+  WELLNESS
+  AFFILIATE
 }
 
 enum Visibility {
@@ -159,10 +169,11 @@ model Post {
   gymId       String?
   gym         Gym?       @relation(fields: [gymId], references: [id])
 
-  workoutDetail    WorkoutDetail?
-  mealDetail       MealDetail?
-  wellnessDetail   WellnessDetail?
-  affiliateDetail  AffiliateDetail?
+  workoutDetail      WorkoutDetail?
+  mealDetail         MealDetail?
+  wellnessDetail     WellnessDetail?
+  affiliateDetail    AffiliateDetail?
+  catalogShareDetail CatalogShareDetail?
 
   comments    Comment[]
   likes       Like[]
@@ -446,6 +457,49 @@ model AffiliateItem {
   logoUrl              String?
   enrichmentConfidence String?
   needsReview          Boolean   @default(false)
+}
+
+// ─── CATALOG SHARE ───────────────────────────────────────────────
+
+// Immutable snapshot of catalog item data captured at share time.
+// Stays valid even if the source item is later edited or deleted.
+model CatalogShareDetail {
+  id              String          @id @default(cuid())
+  postId          String          @unique
+  post            Post            @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Source reference — not a foreign key because the item lives in one
+  // of several different catalog tables (SavedMeal, AffiliateItem, etc.)
+  catalogItemId   String
+  catalogItemType CatalogItemType
+
+  // Snapshot fields (immutable after creation)
+  title           String
+  brand           String?
+  description     String?
+  photoUrl        String?
+  link            String?
+  referralCode    String?
+  category        String?        // AffiliateCategory value as string; null for non-affiliate types
+  ctaLabel        String?        // e.g. "Shop Now", "Get Code"
+
+  @@index([catalogItemId, catalogItemType])
+}
+
+// Anti-spam guard — one record per user per catalog item per calendar day.
+// Unique constraint enforces the limit at the DB level.
+// To switch to a rolling 24-hour window: query by createdAt >= now()-24h
+// To add max-N-per-day: count records for userId+sharedDate and compare to a constant.
+model CatalogShareCooldown {
+  id              String          @id @default(cuid())
+  userId          String
+  catalogItemId   String
+  catalogItemType CatalogItemType
+  sharedDate      DateTime        @db.Date   // UTC calendar day only (no time)
+  createdAt       DateTime        @default(now())
+
+  @@unique([userId, catalogItemId, catalogItemType, sharedDate])
+  @@index([userId, sharedDate])
 }
 
 // ─── ACHIEVEMENTS ────────────────────────────────────────────────
