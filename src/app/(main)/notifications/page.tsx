@@ -253,7 +253,7 @@ export default function NotificationsPage() {
                     void markNotificationAsRead(notification.id);
                   }
                 }}
-                className={`flex items-start gap-3 p-3 rounded-xl transition-colors hover:bg-white/5 ${
+                className={`flex items-start gap-3 p-3 rounded-xl transition-colors hover:bg-black/5 ${
                   !notification.read ? "bg-primary/5" : ""
                 }`}
               >
