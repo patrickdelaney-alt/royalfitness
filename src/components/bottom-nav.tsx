@@ -67,7 +67,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t"
       style={{
         height: BOTTOM_NAV_HEIGHT,
         background: "rgba(253,250,245,0.85)",
