@@ -256,6 +256,7 @@ export default function StatsPage() {
       setLoading(true);
       try {
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        // Personal stats page intentionally uses self scope only (no cross-user `userId`).
         const res = await fetch(`/api/stats?period=${period}&tz=${encodeURIComponent(tz)}`);
         if (res.ok) setStats(await res.json());
       } catch {

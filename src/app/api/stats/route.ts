@@ -23,7 +23,31 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = req.nextUrl;
     const period = searchParams.get("period") ?? "week";
-    const userId = searchParams.get("userId") ?? session.user.id;
+    // Access scope:
+    // - Default is strict self-only stats for the authenticated user.
+    // - A cross-user `userId` is only allowed for admins or users with a public profile.
+    const requestedUserId = searchParams.get("userId");
+    let userId = session.user.id;
+
+    if (requestedUserId && requestedUserId !== session.user.id) {
+      const isAdmin =
+        !!session.user.email && session.user.email === process.env.ADMIN_EMAIL;
+
+      if (!isAdmin) {
+        const targetUser = await prisma.user.findUnique({
+          where: { id: requestedUserId },
+          select: { isPrivate: true },
+        });
+
+        const hasPublicStatsOptIn = !!targetUser && !targetUser.isPrivate;
+        if (!hasPublicStatsOptIn) {
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
+      }
+
+      userId = requestedUserId;
+    }
+
     const tz = safeTimeZone(searchParams.get("tz"));
 
     // Calculate period boundaries in user's timezone, converted to UTC
