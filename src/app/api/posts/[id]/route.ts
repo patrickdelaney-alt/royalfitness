@@ -178,7 +178,8 @@ export async function PATCH(
       );
     }
 
-    await prisma.$transaction(async (tx) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await prisma.$transaction(async (tx: any) => {
       await tx.post.update({
         where: { id },
         data: {
@@ -252,7 +253,7 @@ export async function PATCH(
               fat: data.meal.fat,
               recipeSourceUrl: data.meal.recipeSourceUrl || null,
               photoUrl: data.mediaUrl ?? post.mediaUrl ?? null,
-              tags: data.tags ?? post.tags,
+              tags: post.tags,
             },
             select: { id: true },
           });
@@ -269,7 +270,7 @@ export async function PATCH(
                 fat: data.meal.fat,
                 recipeSourceUrl: data.meal.recipeSourceUrl || null,
                 photoUrl: data.mediaUrl ?? post.mediaUrl ?? null,
-                tags: data.tags ?? post.tags,
+                tags: post.tags,
               },
             });
           }
