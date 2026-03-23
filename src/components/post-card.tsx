@@ -988,14 +988,14 @@ function FullPostCard({
                       router.push(`/create?editPostId=${post.id}`);
                       setShowOwnerMenu(false);
                     }}
-                    className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-white/5"
+                    className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-black/5"
                     style={{ color: "#18190F" }}
                   >
                     Edit post
                   </button>
                   <button
                     onClick={() => { setShowDeleteConfirm(true); setShowOwnerMenu(false); }}
-                    className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-white/5"
+                    className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-black/5"
                     style={{ color: "#f87171" }}
                   >
                     Delete post
@@ -1030,14 +1030,14 @@ function FullPostCard({
                 >
                   <button
                     onClick={() => { setShowReportModal(true); setShowModerationMenu(false); }}
-                    className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-white/5"
+                    className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-black/5"
                     style={{ color: "#18190F" }}
                   >
                     Report post
                   </button>
                   <button
                     onClick={() => { setShowBlockConfirm(true); setShowModerationMenu(false); }}
-                    className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-white/5"
+                    className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-black/5"
                     style={{ color: "#f87171" }}
                   >
                     Block @{post.author.username}
