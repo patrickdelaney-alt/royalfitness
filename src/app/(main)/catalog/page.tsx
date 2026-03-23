@@ -127,6 +127,7 @@ type AnyItem = SavedMeal | SavedWorkout | Supplement | Accessory | SavedWellness
 type AnyItemWithType = AnyItem & { _catalogType: CatalogTab };
 
 const inputCls = "input-dark w-full";
+const CATALOG_GUIDE_DISMISSED_KEY = "rf_catalog_guide_dismissed_v1";
 const TAG_LIMITS = {
   maxCount: 12,
   maxLength: 24,
@@ -2509,6 +2510,7 @@ export default function CatalogPage() {
 
   const [addingCategory, setAddingCategory] = useState<CatalogTab | null>(null);
   const [showPicker, setShowPicker] = useState(false);
+  const [showQuickGuide, setShowQuickGuide] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedItem, setSelectedItem] = useState<AnyItem | null>(null);
   const [editingItem, setEditingItem] = useState<AnyItem | null>(null);
@@ -2580,6 +2582,19 @@ export default function CatalogPage() {
     fetchAllItems();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const dismissed = window.localStorage.getItem(CATALOG_GUIDE_DISMISSED_KEY);
+    setShowQuickGuide(dismissed !== "1");
+  }, []);
+
+  const dismissQuickGuide = () => {
+    setShowQuickGuide(false);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(CATALOG_GUIDE_DISMISSED_KEY, "1");
+    }
+  };
 
   const handleDelete = async (id: string, itemCatalogType?: CatalogTab) => {
     if (!itemCatalogType) {
@@ -2703,6 +2718,30 @@ export default function CatalogPage() {
         </div>
       </div>
 
+      {showQuickGuide && (
+        <div
+          className="mb-4 p-3.5 rounded-xl space-y-2"
+          style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
+        >
+          <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+            New to Catalog? Start here:
+          </p>
+          <ol className="space-y-1 text-xs list-decimal pl-4" style={{ color: "var(--text-muted)" }}>
+            <li>Tap <span style={{ color: "#528531", fontWeight: 600 }}>Add</span> and choose what you want to save.</li>
+            <li>For referral links, choose <span style={{ color: "#528531", fontWeight: 600 }}>Affiliate</span> and paste a link or promo code.</li>
+            <li>Open any saved item and tap <span style={{ color: "#528531", fontWeight: 600 }}>Share to Feed</span>.</li>
+          </ol>
+          <button
+            type="button"
+            onClick={dismissQuickGuide}
+            className="text-xs font-medium px-2.5 py-1.5 rounded-lg"
+            style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
+          >
+            Got it
+          </button>
+        </div>
+      )}
+
       {/* Category picker */}
       {showPicker && (
         <CategoryPicker
@@ -2795,6 +2834,17 @@ export default function CatalogPage() {
           </div>
           <p className="text-sm font-medium" style={{ color: muted }}>Your catalog is empty</p>
           <p className="text-xs mt-1 mb-3" style={{ color: muted }}>Tap Add above to get started</p>
+          <button
+            type="button"
+            onClick={() => {
+              setAddingCategory("affiliates");
+              setShowPicker(false);
+            }}
+            className="text-xs font-semibold px-3 py-2 rounded-lg"
+            style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
+          >
+            Add referral link
+          </button>
         </div>
       ) : viewMode === "grid" ? (
         /* ── Grid View ── */
