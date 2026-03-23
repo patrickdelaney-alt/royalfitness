@@ -21,11 +21,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
 import {
   AFFILIATE_CATEGORY_LABELS,
-  AFFILIATE_CATEGORY_TO_DISPLAY,
-  AFFILIATE_TO_CATALOG_TYPE,
   dedupeTags,
   getCatalogDisplayTags,
   parseTagsText,
+  type CatalogTab,
+  CATALOG_ENDPOINTS,
+  CATALOG_TAB_LABELS,
+  CATALOG_PAGE_GRADIENTS,
+  getAffiliateDisplayLabel,
+  getAffiliateGradient,
 } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 
@@ -114,8 +118,6 @@ interface AffiliateItem {
   needsReview: boolean;
 }
 
-type CatalogTab = "meals" | "workouts" | "supplements" | "accessories" | "wellness" | "affiliates";
-
 type AnyItem = SavedMeal | SavedWorkout | Supplement | Accessory | SavedWellnessItem | AffiliateItem;
 type AnyItemWithType = AnyItem & { _catalogType: CatalogTab };
 
@@ -161,28 +163,10 @@ async function enrichCatalogLink(url: string): Promise<LinkEnrichmentResult> {
   };
 }
 
-const CATEGORY_GRADIENTS: Record<CatalogTab, string> = {
-  meals: "from-orange-600/80 to-red-700/80",
-  workouts: "from-blue-600/80 to-indigo-700/80",
-  supplements: "from-green-600/80 to-emerald-700/80",
-  accessories: "from-purple-600/80 to-pink-700/80",
-  wellness: "from-teal-600/80 to-cyan-700/80",
-  affiliates: "from-amber-600/80 to-yellow-700/80",
-};
-
-const CATALOG_TAB_LABELS: Record<CatalogTab, string> = {
-  meals: "Meals",
-  workouts: "Workout",
-  supplements: "Supps",
-  accessories: "Gear",
-  wellness: "Wellness",
-  affiliates: "Deals", // fallback; affiliate items resolve via AFFILIATE_CATEGORY_TO_DISPLAY
-};
-
 /** For affiliate items, resolve display label from their AffiliateCategory */
 const getItemDisplayLabel = (item: AnyItem, catalogType: CatalogTab): string => {
   if (catalogType === "affiliates" && "category" in item) {
-    return AFFILIATE_CATEGORY_TO_DISPLAY[(item as AffiliateItem).category] ?? "Other";
+    return getAffiliateDisplayLabel((item as AffiliateItem).category);
   }
   return CATALOG_TAB_LABELS[catalogType];
 };
@@ -190,10 +174,9 @@ const getItemDisplayLabel = (item: AnyItem, catalogType: CatalogTab): string => 
 /** For affiliate items, resolve gradient from their mapped catalog type */
 const getItemGradient = (item: AnyItem, catalogType: CatalogTab): string => {
   if (catalogType === "affiliates" && "category" in item) {
-    const mapped = AFFILIATE_TO_CATALOG_TYPE[(item as AffiliateItem).category] as CatalogTab | undefined;
-    return CATEGORY_GRADIENTS[mapped ?? "accessories"];
+    return getAffiliateGradient((item as AffiliateItem).category, CATALOG_PAGE_GRADIENTS);
   }
-  return CATEGORY_GRADIENTS[catalogType];
+  return CATALOG_PAGE_GRADIENTS[catalogType];
 };
 
 const getTagValidationError = (tags: string[]) => {
@@ -2412,21 +2395,12 @@ export default function CatalogPage() {
   const [allItems, setAllItems] = useState<AnyItemWithType[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const endpointMap: Record<CatalogTab, string> = {
-    meals: "/api/catalog/meals",
-    workouts: "/api/catalog/workouts",
-    supplements: "/api/catalog/supplements",
-    accessories: "/api/catalog/accessories",
-    wellness: "/api/catalog/wellness",
-    affiliates: "/api/catalog/affiliates",
-  };
-
   const fetchAllItems = () => {
     setLoading(true);
     const catalogTabs: CatalogTab[] = ["affiliates", "meals", "workouts", "supplements", "accessories", "wellness"];
     Promise.all(
       catalogTabs.map((t) =>
-        fetch(endpointMap[t])
+        fetch(CATALOG_ENDPOINTS[t])
           .then((r) => r.json())
           .then((data) => {
             const items: AnyItem[] = Array.isArray(data) ? data : [];
@@ -2459,8 +2433,11 @@ export default function CatalogPage() {
   }, []);
 
   const handleDelete = async (id: string, itemCatalogType?: CatalogTab) => {
-    const effectiveTab = itemCatalogType ?? "meals";
-    const res = await fetch(`${endpointMap[effectiveTab]}?id=${id}`, { method: "DELETE" });
+    if (!itemCatalogType) {
+      console.error(`[catalog] Cannot delete item ${id}: missing _catalogType`);
+      return;
+    }
+    const res = await fetch(`${CATALOG_ENDPOINTS[itemCatalogType]}?id=${id}`, { method: "DELETE" });
     if (res.ok) {
       setAllItems((p) => p.filter((m) => m.id !== id));
     }
@@ -2468,8 +2445,11 @@ export default function CatalogPage() {
   };
 
   const handleSaveEdited = (updated: AnyItem, itemCatalogType?: CatalogTab) => {
-    const effectiveTab = itemCatalogType ?? "meals";
-    const updatedWithType = { ...updated, _catalogType: effectiveTab } as AnyItemWithType;
+    if (!itemCatalogType) {
+      console.error(`[catalog] Cannot save item ${updated.id}: missing _catalogType`);
+      return;
+    }
+    const updatedWithType = { ...updated, _catalogType: itemCatalogType } as AnyItemWithType;
     setAllItems((p) => p.map((item) => (item.id === updated.id ? updatedWithType : item)));
     setSelectedItem(updatedWithType);
   };
@@ -2499,7 +2479,7 @@ export default function CatalogPage() {
   };
 
   const getDisplayTags = (item: AnyItem): string[] => {
-    const effectiveTab = getItemCatalogType(item) ?? "meals";
+    const effectiveTab = getItemCatalogType(item);
     return getCatalogDisplayTags({
       tags: item.tags,
       subcategoryTags: effectiveTab === "affiliates" && "subcategoryTags" in item ? item.subcategoryTags as string[] : null,
@@ -2798,7 +2778,8 @@ export default function CatalogPage() {
 
       {/* Detail Modal */}
       {selectedItem && (() => {
-        const itemType = getItemCatalogType(selectedItem) ?? "meals";
+        const itemType = getItemCatalogType(selectedItem);
+        if (!itemType) return null;
         return (
           <ItemDetailModal
             item={selectedItem}
@@ -2811,7 +2792,8 @@ export default function CatalogPage() {
       })()}
 
       {editingItem && (() => {
-        const itemType = getItemCatalogType(editingItem) ?? "meals";
+        const itemType = getItemCatalogType(editingItem);
+        if (!itemType) return null;
         return (
           <EditItemModal
             item={editingItem}

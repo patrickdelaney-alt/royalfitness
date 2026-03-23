@@ -5,7 +5,14 @@ import Link from "next/link";
 import { HiLockOpen } from "react-icons/hi2";
 import { HiExternalLink, HiX, HiLink, HiClipboardCopy, HiUpload, HiPencil } from "react-icons/hi";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
-import { AFFILIATE_CATEGORY_TO_DISPLAY, getCatalogDisplayTags } from "@/lib/catalog-tags";
+import {
+  type CatalogTab,
+  CATALOG_TABS,
+  PUBLIC_TAB_LABELS,
+  PUBLIC_PAGE_GRADIENTS,
+  getCatalogDisplayTags,
+  getAffiliateDisplayLabel,
+} from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 
 interface CatalogItem {
@@ -44,33 +51,17 @@ interface UserCatalogSectionProps {
   isOwnProfile: boolean;
 }
 
-type CatalogType = "meals" | "workouts" | "supplements" | "accessories" | "wellness" | "affiliates";
+type CatalogType = CatalogTab;
 
-const CATALOG_TYPES: { type: CatalogType; label: string }[] = [
-  { type: "meals", label: "Meals" },
-  { type: "workouts", label: "Workouts" },
-  { type: "supplements", label: "Supps" },
-  { type: "accessories", label: "Gear" },
-  { type: "wellness", label: "Wellness" },
-  { type: "affiliates", label: "Links" }, // kept for API fetching; display resolved per-item
-];
+const CATALOG_TYPES: { type: CatalogType; label: string }[] =
+  CATALOG_TABS.map((t) => ({ type: t, label: PUBLIC_TAB_LABELS[t] }));
 
 /** For affiliate items, resolve display label from their category field */
 const getPublicItemLabel = (item: CatalogItem, type: CatalogType): string => {
   if (type === "affiliates" && item.category) {
-    return AFFILIATE_CATEGORY_TO_DISPLAY[item.category as string] ?? "Other";
+    return getAffiliateDisplayLabel(item.category as string);
   }
-  const info = CATALOG_TYPES.find((c) => c.type === type);
-  return info?.label ?? type;
-};
-
-const CATEGORY_GRADIENTS: Record<CatalogType, string> = {
-  meals: "from-amber-700/70 to-amber-900/70",
-  workouts: "from-green-800/70 to-green-950/70",
-  supplements: "from-emerald-700/70 to-emerald-900/70",
-  accessories: "from-stone-600/70 to-stone-800/70",
-  wellness: "from-lime-700/70 to-lime-900/70",
-  affiliates: "from-amber-600/70 to-yellow-800/70",
+  return PUBLIC_TAB_LABELS[type];
 };
 
 const getPublicCtaLabel = (item: CatalogItem): string => {
@@ -161,7 +152,7 @@ function DetailModal({
           </div>
         ) : (
           <div
-            className={`w-full aspect-[4/3] bg-gradient-to-br ${CATEGORY_GRADIENTS[type]} flex items-center justify-center rounded-t-2xl sm:rounded-t-2xl`}
+            className={`w-full aspect-[4/3] bg-gradient-to-br ${PUBLIC_PAGE_GRADIENTS[type]} flex items-center justify-center rounded-t-2xl sm:rounded-t-2xl`}
           >
             <span className="text-6xl">{categoryLabel}</span>
           </div>
@@ -531,7 +522,7 @@ export default function UserCatalogSection({
                       />
                     ) : (
                       <div
-                        className={`w-full h-full bg-gradient-to-br ${CATEGORY_GRADIENTS[item.catalogType as CatalogType]} flex items-center justify-center`}
+                        className={`w-full h-full bg-gradient-to-br ${PUBLIC_PAGE_GRADIENTS[item.catalogType as CatalogType]} flex items-center justify-center`}
                       />
                     )}
 
