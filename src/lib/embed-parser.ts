@@ -39,15 +39,25 @@ function parseTikTok(url: URL): ParsedEmbed | null {
   if (host !== "tiktok.com" && host !== "vm.tiktok.com") return null;
 
   const parts = url.pathname.split("/").filter(Boolean);
-  const videoIndex = parts.indexOf("video");
-  const contentId = videoIndex >= 0 ? parts[videoIndex + 1] : null;
-  if (!contentId) return null;
 
-  return {
-    provider: "tiktok",
-    url: normalizeUrl(url),
-    contentId,
-  };
+  // Standard format: /@username/video/{id}
+  const videoIndex = parts.indexOf("video");
+  if (videoIndex >= 0 && parts[videoIndex + 1]) {
+    return { provider: "tiktok", url: normalizeUrl(url), contentId: parts[videoIndex + 1] };
+  }
+
+  // Short link: vm.tiktok.com/{code}
+  if (host === "vm.tiktok.com" && parts[0]) {
+    return { provider: "tiktok", url: normalizeUrl(url), contentId: parts[0] };
+  }
+
+  // Share link: tiktok.com/t/{code}
+  const tIndex = parts.indexOf("t");
+  if (tIndex >= 0 && parts[tIndex + 1]) {
+    return { provider: "tiktok", url: normalizeUrl(url), contentId: parts[tIndex + 1] };
+  }
+
+  return null;
 }
 
 function parseYouTube(url: URL): ParsedEmbed | null {
