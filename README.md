@@ -92,3 +92,18 @@ To learn more about Next.js, take a look at the following resources:
 - [Vercel Deployment Documentation](https://nextjs.org/docs/app/building-your-application/deploying)
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Health Endpoint (`/api/health`)
+
+The health endpoint is intentionally minimal for production safety.
+
+- **Public/unauthorized response**: always `{ "status": "ok" }`.
+- **Detailed diagnostics** are only available when all conditions are true:
+  1. `NODE_ENV` is not `production`
+  2. `HEALTH_DIAGNOSTICS_ENABLED=true`
+  3. Caller is authorized by either:
+     - `x-health-token` header matching `HEALTH_INTERNAL_TOKEN`, or
+     - authenticated admin session (`safeAuth` user email equals `ADMIN_EMAIL`)
+- **Production behavior**: diagnostics are never returned, even for authorized callers.
+
+This endpoint no longer returns environment configuration flags, connection string previews, raw error details, or user counts.
