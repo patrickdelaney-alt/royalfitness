@@ -2,6 +2,7 @@
  * Pure utility functions for parsing raw affiliate/referral input text.
  * No external dependencies — regex and string matching only.
  */
+import { AFFILIATE_CATEGORY_LABELS } from "@/lib/catalog-tags";
 
 export type AffiliateCategory =
   | "SUPPLEMENTS"
@@ -376,13 +377,13 @@ export function parseBulkAffiliateInput(rawText: string): DetectedAffiliateItem[
 }
 
 const CATEGORY_LABEL_MAP: Record<AffiliateCategory, string> = {
-  SUPPLEMENTS: "Supplements",
-  WELLNESS_ACCESSORIES: "Wellness",
-  GYM_ACCESSORIES: "Gym Gear",
-  RECOVERY_TOOLS: "Recovery",
-  APPAREL: "Apparel",
-  NUTRITION: "Nutrition",
-  TECH_WEARABLES: "Tech",
+  SUPPLEMENTS: AFFILIATE_CATEGORY_LABELS.SUPPLEMENTS,
+  WELLNESS_ACCESSORIES: AFFILIATE_CATEGORY_LABELS.WELLNESS_ACCESSORIES,
+  GYM_ACCESSORIES: AFFILIATE_CATEGORY_LABELS.GYM_ACCESSORIES,
+  RECOVERY_TOOLS: AFFILIATE_CATEGORY_LABELS.RECOVERY_TOOLS,
+  APPAREL: AFFILIATE_CATEGORY_LABELS.APPAREL,
+  NUTRITION: AFFILIATE_CATEGORY_LABELS.NUTRITION,
+  TECH_WEARABLES: AFFILIATE_CATEGORY_LABELS.TECH_WEARABLES,
   OTHER: "",
 };
 
