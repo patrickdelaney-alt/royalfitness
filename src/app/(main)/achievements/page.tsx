@@ -38,7 +38,7 @@ function ProgressRing({ progress, size = 48 }: { progress: number; size?: number
         cy={size / 2}
         r={r}
         fill="none"
-        stroke="rgba(36,63,22,0.10)"
+        stroke="rgba(13,31,140,0.12)"
         strokeWidth={3}
       />
       <circle
@@ -46,7 +46,7 @@ function ProgressRing({ progress, size = 48 }: { progress: number; size?: number
         cy={size / 2}
         r={r}
         fill="none"
-        stroke="rgba(82,133,49,0.6)"
+        stroke="rgba(42,184,208,0.65)"
         strokeWidth={3}
         strokeDasharray={`${dash} ${circ}`}
         strokeLinecap="round"
@@ -64,10 +64,10 @@ function AchievementCard({ achievement }: { achievement: AchievementResult }) {
       style={{
         background: earned
           ? achievement.gradient
-          : "rgba(36,63,22,0.04)",
+          : "rgba(13,31,140,0.04)",
         border: earned
           ? "none"
-          : "1px solid rgba(36,63,22,0.10)",
+          : "1px solid rgba(13,31,140,0.10)",
         opacity: earned ? 1 : 0.7,
       }}
     >
@@ -132,13 +132,13 @@ function AchievementCard({ achievement }: { achievement: AchievementResult }) {
       {!earned && achievement.progress > 0 && (
         <div
           className="w-full h-1 rounded-full overflow-hidden mt-1"
-          style={{ background: "rgba(36,63,22,0.10)" }}
+          style={{ background: "rgba(13,31,140,0.10)" }}
         >
           <div
             className="h-full rounded-full"
             style={{
               width: `${achievement.progress * 100}%`,
-              background: "var(--brand)",
+              background: "#0D1F8C",
             }}
           />
         </div>

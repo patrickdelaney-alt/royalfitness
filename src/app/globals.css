@@ -512,9 +512,9 @@ html {
 
 /* ── Post type left-border accents ───────────────────────────────────────── */
 
-.type-border-workout  { border-left: 2.5px solid rgba(36,63,22,0.50) !important; }
-.type-border-meal     { border-left: 2.5px solid rgba(154,123,46,0.50) !important; }
-.type-border-wellness { border-left: 2.5px solid rgba(82,133,49,0.50) !important; }
+.type-border-workout  { border-left: 2.5px solid rgba(13,31,140,0.50) !important; }
+.type-border-meal     { border-left: 2.5px solid rgba(42,184,208,0.55) !important; }
+.type-border-wellness { border-left: 2.5px solid rgba(26,107,42,0.50) !important; }
 .type-border-general  { border-left: 2.5px solid rgba(36,63,22,0.12) !important; }
 
 /* ── Glassmorphism card — restyled as warm surface ───────────────────────── */
