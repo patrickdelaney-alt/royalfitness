@@ -448,10 +448,35 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
   const [error, setError] = useState("");
   const [linkEnriching, setLinkEnriching] = useState(false);
   const [linkEnrichError, setLinkEnrichError] = useState("");
+  const [nameTouched, setNameTouched] = useState(false);
+  const [brandTouched, setBrandTouched] = useState(false);
+  const [photoTouched, setPhotoTouched] = useState(false);
   const enrichRequestIdRef = useRef(0);
+  const nameTouchedRef = useRef(nameTouched);
+  const brandTouchedRef = useRef(brandTouched);
+  const photoTouchedRef = useRef(photoTouched);
+  const photoSourceRef = useRef(photoSource);
+
+  useEffect(() => {
+    nameTouchedRef.current = nameTouched;
+  }, [nameTouched]);
+  useEffect(() => {
+    brandTouchedRef.current = brandTouched;
+  }, [brandTouched]);
+  useEffect(() => {
+    photoTouchedRef.current = photoTouched;
+  }, [photoTouched]);
+  useEffect(() => {
+    photoSourceRef.current = photoSource;
+  }, [photoSource]);
 
   const runLinkEnrichment = useCallback(
-    async (rawUrl: string, options?: { forcePhotoRefresh?: boolean }) => {
+    async (
+      rawUrl: string,
+      options?: {
+        overwriteTouched?: boolean;
+      }
+    ) => {
       const trimmedUrl = rawUrl.trim();
       if (!trimmedUrl) {
         setLinkEnriching(false);
@@ -464,13 +489,13 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
       try {
         const enriched = await enrichCatalogLink(trimmedUrl);
         if (requestId !== enrichRequestIdRef.current) return;
-        if (!name.trim() && enriched.title) {
+        if (enriched.title && (!nameTouchedRef.current || options?.overwriteTouched)) {
           setName(enriched.title);
         }
-        if (!brand.trim() && enriched.siteName) {
+        if (enriched.siteName && (!brandTouchedRef.current || options?.overwriteTouched)) {
           setBrand(enriched.siteName);
         }
-        if (enriched.imageUrl && (options?.forcePhotoRefresh || photoSource !== "manual")) {
+        if (enriched.imageUrl && (!photoTouchedRef.current || options?.overwriteTouched) && photoSourceRef.current !== "manual") {
           setPhotoUrl(enriched.imageUrl);
           setPhotoSource("auto");
         }
@@ -483,7 +508,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
         }
       }
     },
-    [brand, name, photoSource]
+    []
   );
 
   useEffect(() => {
@@ -557,13 +582,30 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
         photoUrl={photoUrl}
         photoSource={photoSource}
         onUpload={(url) => {
+          setPhotoTouched(true);
           setPhotoUrl(url);
           setPhotoSource("manual");
         }}
       />
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Supplement name *" className={inputCls} />
+      <input
+        value={name}
+        onChange={(e) => {
+          setNameTouched(true);
+          setName(e.target.value);
+        }}
+        placeholder="Supplement name *"
+        className={inputCls}
+      />
       <div className="grid grid-cols-2 gap-2">
-        <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand" className={inputCls} />
+        <input
+          value={brand}
+          onChange={(e) => {
+            setBrandTouched(true);
+            setBrand(e.target.value);
+          }}
+          placeholder="Brand"
+          className={inputCls}
+        />
         <input value={dose} onChange={(e) => setDose(e.target.value)} placeholder="Dose (e.g. 5g)" className={inputCls} />
       </div>
       <input value={schedule} onChange={(e) => setSchedule(e.target.value)} placeholder="Schedule (e.g. Morning)" className={inputCls} />
@@ -574,12 +616,21 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
           </span>
           <button
             type="button"
-            onClick={() => void runLinkEnrichment(link, { forcePhotoRefresh: true })}
+            onClick={() => void runLinkEnrichment(link)}
             disabled={!link.trim() || linkEnriching}
             className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
             style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
           >
-            Refresh from link preview
+            Re-apply link preview
+          </button>
+          <button
+            type="button"
+            onClick={() => void runLinkEnrichment(link, { overwriteTouched: true })}
+            disabled={!link.trim() || linkEnriching}
+            className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
+            style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+          >
+            Replace with preview data
           </button>
         </div>
         <input
@@ -636,10 +687,30 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
   const [error, setError] = useState("");
   const [linkEnriching, setLinkEnriching] = useState(false);
   const [linkEnrichError, setLinkEnrichError] = useState("");
+  const [nameTouched, setNameTouched] = useState(false);
+  const [photoTouched, setPhotoTouched] = useState(false);
   const enrichRequestIdRef = useRef(0);
+  const nameTouchedRef = useRef(nameTouched);
+  const photoTouchedRef = useRef(photoTouched);
+  const photoSourceRef = useRef(photoSource);
+
+  useEffect(() => {
+    nameTouchedRef.current = nameTouched;
+  }, [nameTouched]);
+  useEffect(() => {
+    photoTouchedRef.current = photoTouched;
+  }, [photoTouched]);
+  useEffect(() => {
+    photoSourceRef.current = photoSource;
+  }, [photoSource]);
 
   const runLinkEnrichment = useCallback(
-    async (rawUrl: string, options?: { forcePhotoRefresh?: boolean }) => {
+    async (
+      rawUrl: string,
+      options?: {
+        overwriteTouched?: boolean;
+      }
+    ) => {
       const trimmedUrl = rawUrl.trim();
       if (!trimmedUrl) {
         setLinkEnriching(false);
@@ -652,10 +723,10 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
       try {
         const enriched = await enrichCatalogLink(trimmedUrl);
         if (requestId !== enrichRequestIdRef.current) return;
-        if (!name.trim() && enriched.title) {
+        if (enriched.title && (!nameTouchedRef.current || options?.overwriteTouched)) {
           setName(enriched.title);
         }
-        if (enriched.imageUrl && (options?.forcePhotoRefresh || photoSource !== "manual")) {
+        if (enriched.imageUrl && (!photoTouchedRef.current || options?.overwriteTouched) && photoSourceRef.current !== "manual") {
           setPhotoUrl(enriched.imageUrl);
           setPhotoSource("auto");
         }
@@ -668,7 +739,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
         }
       }
     },
-    [name, photoSource]
+    []
   );
 
   useEffect(() => {
@@ -740,11 +811,20 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
         photoUrl={photoUrl}
         photoSource={photoSource}
         onUpload={(url) => {
+          setPhotoTouched(true);
           setPhotoUrl(url);
           setPhotoSource("manual");
         }}
       />
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Accessory name *" className={inputCls} />
+      <input
+        value={name}
+        onChange={(e) => {
+          setNameTouched(true);
+          setName(e.target.value);
+        }}
+        placeholder="Accessory name *"
+        className={inputCls}
+      />
       <input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (e.g. Recovery, Gear)" className={inputCls} />
       <div className="space-y-1">
         <div className="flex items-center gap-2">
@@ -753,12 +833,21 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
           </span>
           <button
             type="button"
-            onClick={() => void runLinkEnrichment(link, { forcePhotoRefresh: true })}
+            onClick={() => void runLinkEnrichment(link)}
             disabled={!link.trim() || linkEnriching}
             className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
             style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
           >
-            Refresh from link preview
+            Re-apply link preview
+          </button>
+          <button
+            type="button"
+            onClick={() => void runLinkEnrichment(link, { overwriteTouched: true })}
+            disabled={!link.trim() || linkEnriching}
+            className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
+            style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+          >
+            Replace with preview data
           </button>
         </div>
         <input
@@ -816,10 +905,30 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
   const [error, setError] = useState("");
   const [linkEnriching, setLinkEnriching] = useState(false);
   const [linkEnrichError, setLinkEnrichError] = useState("");
+  const [nameTouched, setNameTouched] = useState(false);
+  const [photoTouched, setPhotoTouched] = useState(false);
   const enrichRequestIdRef = useRef(0);
+  const nameTouchedRef = useRef(nameTouched);
+  const photoTouchedRef = useRef(photoTouched);
+  const photoSourceRef = useRef(photoSource);
+
+  useEffect(() => {
+    nameTouchedRef.current = nameTouched;
+  }, [nameTouched]);
+  useEffect(() => {
+    photoTouchedRef.current = photoTouched;
+  }, [photoTouched]);
+  useEffect(() => {
+    photoSourceRef.current = photoSource;
+  }, [photoSource]);
 
   const runLinkEnrichment = useCallback(
-    async (rawUrl: string, options?: { forcePhotoRefresh?: boolean }) => {
+    async (
+      rawUrl: string,
+      options?: {
+        overwriteTouched?: boolean;
+      }
+    ) => {
       const trimmedUrl = rawUrl.trim();
       if (!trimmedUrl) {
         setLinkEnriching(false);
@@ -832,10 +941,10 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
       try {
         const enriched = await enrichCatalogLink(trimmedUrl);
         if (requestId !== enrichRequestIdRef.current) return;
-        if (!name.trim() && enriched.title) {
+        if (enriched.title && (!nameTouchedRef.current || options?.overwriteTouched)) {
           setName(enriched.title);
         }
-        if (enriched.imageUrl && (options?.forcePhotoRefresh || photoSource !== "manual")) {
+        if (enriched.imageUrl && (!photoTouchedRef.current || options?.overwriteTouched) && photoSourceRef.current !== "manual") {
           setPhotoUrl(enriched.imageUrl);
           setPhotoSource("auto");
         }
@@ -848,7 +957,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         }
       }
     },
-    [name, photoSource]
+    []
   );
 
   useEffect(() => {
@@ -921,11 +1030,20 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         photoUrl={photoUrl}
         photoSource={photoSource}
         onUpload={(url) => {
+          setPhotoTouched(true);
           setPhotoUrl(url);
           setPhotoSource("manual");
         }}
       />
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Wellness item name *" className={inputCls} />
+      <input
+        value={name}
+        onChange={(e) => {
+          setNameTouched(true);
+          setName(e.target.value);
+        }}
+        placeholder="Wellness item name *"
+        className={inputCls}
+      />
       <div className="grid grid-cols-2 gap-2">
         <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="Activity type (e.g. Yoga)" className={inputCls} />
         <input
@@ -943,12 +1061,21 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
           </span>
           <button
             type="button"
-            onClick={() => void runLinkEnrichment(link, { forcePhotoRefresh: true })}
+            onClick={() => void runLinkEnrichment(link)}
             disabled={!link.trim() || linkEnriching}
             className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
             style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
           >
-            Refresh from link preview
+            Re-apply link preview
+          </button>
+          <button
+            type="button"
+            onClick={() => void runLinkEnrichment(link, { overwriteTouched: true })}
+            disabled={!link.trim() || linkEnriching}
+            className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
+            style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+          >
+            Replace with preview data
           </button>
         </div>
         <input
