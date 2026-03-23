@@ -119,6 +119,27 @@ async function getScreenshotFallbackUrl(targetUrl: string): Promise<string | nul
   }
 }
 
+async function fetchTikTokOEmbed(url: string): Promise<{ title: string | null; imageUrl: string | null }> {
+  try {
+    const oembedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(oembedUrl, {
+      signal: controller.signal,
+      headers: { "User-Agent": "RoyalFitness-Unfurl/1.0" },
+    });
+    clearTimeout(timeoutId);
+    if (!res.ok) return { title: null, imageUrl: null };
+    const data = await res.json() as { title?: string; thumbnail_url?: string };
+    return {
+      title: typeof data.title === "string" ? data.title : null,
+      imageUrl: typeof data.thumbnail_url === "string" ? data.thumbnail_url : null,
+    };
+  } catch {
+    return { title: null, imageUrl: null };
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await safeAuth();
@@ -149,6 +170,20 @@ export async function POST(req: NextRequest) {
         { error: "Only HTTP and HTTPS URLs are supported" },
         { status: 400 }
       );
+    }
+
+    // For TikTok, use the public oEmbed API for reliable thumbnail + title
+    const isTikTok = /tiktok\.com/.test(parsedUrl.hostname);
+    if (isTikTok) {
+      const oembed = await fetchTikTokOEmbed(url);
+      if (oembed.imageUrl) {
+        return NextResponse.json({
+          title: oembed.title,
+          description: null,
+          imageUrl: oembed.imageUrl,
+          siteName: "TikTok",
+        });
+      }
     }
 
     // Fetch with timeout

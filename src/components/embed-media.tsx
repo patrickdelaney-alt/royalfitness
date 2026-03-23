@@ -61,17 +61,49 @@ export default function EmbedMedia({ item }: { item: ExternalContentItem }) {
   }
 
   const label = (meta.provider || item.siteName || "Link").toString();
+
+  const externalLinkProps = {
+    href: item.url,
+    target: "_blank" as const,
+    rel: "noreferrer",
+    onClick: (e: React.MouseEvent<HTMLAnchorElement>) => {
+      if (isCapacitorNative()) {
+        e.preventDefault();
+        openExternalLink(item.url);
+      }
+    },
+  };
+
+  // TikTok / Instagram: show thumbnail with external link-out
+  if ((meta.provider === "tiktok" || meta.provider === "instagram") && item.imageUrl) {
+    return (
+      <a
+        {...externalLinkProps}
+        className="mt-2 block rounded-lg overflow-hidden relative"
+        style={{ border: "1px solid var(--border)" }}
+      >
+        <img
+          src={item.imageUrl}
+          alt={item.title || label}
+          className="w-full object-cover"
+        />
+        <div
+          className="absolute bottom-0 left-0 right-0 px-3 py-2"
+          style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.65))" }}
+        >
+          <p className="text-xs font-semibold uppercase" style={{ color: "rgba(255,255,255,0.85)" }}>{label}</p>
+          {item.title && (
+            <p className="text-sm truncate" style={{ color: "#fff" }}>{item.title}</p>
+          )}
+        </div>
+      </a>
+    );
+  }
+
+  // Fallback: plain link card (no thumbnail available)
   return (
     <a
-      href={item.url}
-      target="_blank"
-      rel="noreferrer"
-      onClick={(e) => {
-        if (isCapacitorNative()) {
-          e.preventDefault();
-          openExternalLink(item.url);
-        }
-      }}
+      {...externalLinkProps}
       className="mt-2 block rounded-lg p-3"
       style={{ background: "rgba(36,63,22,0.04)", border: "1px solid var(--border)" }}
     >
