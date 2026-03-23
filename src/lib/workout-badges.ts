@@ -6,7 +6,7 @@
 const WORKOUT_BADGES: Record<string, { names: string[]; emoji: string; gradient: string }> = {
   glutes: {
     emoji: "🍑",
-    gradient: "linear-gradient(135deg, #db2777, #7c3aed)",
+    gradient: "linear-gradient(135deg, #0D1F8C, #C04870)",
     names: [
       "Booty Blaster",
       "Peach Punisher",
@@ -37,7 +37,7 @@ const WORKOUT_BADGES: Record<string, { names: string[]; emoji: string; gradient:
   },
   legs: {
     emoji: "🦵",
-    gradient: "linear-gradient(135deg, #7c3aed, #4f46e5)",
+    gradient: "linear-gradient(135deg, #0D1F8C, #2AB8D0)",
     names: [
       "Leg Day Legend",
       "Quad Crusher",
@@ -68,7 +68,7 @@ const WORKOUT_BADGES: Record<string, { names: string[]; emoji: string; gradient:
   },
   chest: {
     emoji: "💪",
-    gradient: "linear-gradient(135deg, #2563eb, #4f46e5)",
+    gradient: "linear-gradient(135deg, #1A6B2A, #0D1F8C)",
     names: [
       "Chest Champion",
       "Pec Pulverizer",
@@ -99,7 +99,7 @@ const WORKOUT_BADGES: Record<string, { names: string[]; emoji: string; gradient:
   },
   back: {
     emoji: "🏋️",
-    gradient: "linear-gradient(135deg, #0369a1, #1d4ed8)",
+    gradient: "linear-gradient(135deg, #081260, #0D1F8C)",
     names: [
       "Back Attacker",
       "Lat Legend",
@@ -130,7 +130,7 @@ const WORKOUT_BADGES: Record<string, { names: string[]; emoji: string; gradient:
   },
   shoulders: {
     emoji: "🎯",
-    gradient: "linear-gradient(135deg, #d97706, #dc2626)",
+    gradient: "linear-gradient(135deg, #D4735A, #0D1F8C)",
     names: [
       "Boulder Shoulders",
       "Delt Destroyer",
@@ -161,7 +161,7 @@ const WORKOUT_BADGES: Record<string, { names: string[]; emoji: string; gradient:
   },
   arms: {
     emoji: "💪",
-    gradient: "linear-gradient(135deg, #ea580c, #dc2626)",
+    gradient: "linear-gradient(135deg, #D4735A, #C04870)",
     names: [
       "Gun Show",
       "Bicep Bandit",
@@ -192,7 +192,7 @@ const WORKOUT_BADGES: Record<string, { names: string[]; emoji: string; gradient:
   },
   core: {
     emoji: "🔥",
-    gradient: "linear-gradient(135deg, #ca8a04, #d97706)",
+    gradient: "linear-gradient(135deg, #1A6B2A, #2AB8D0)",
     names: [
       "Core Commander",
       "Ab Assassin",
@@ -223,7 +223,7 @@ const WORKOUT_BADGES: Record<string, { names: string[]; emoji: string; gradient:
   },
   cardio: {
     emoji: "🏃",
-    gradient: "linear-gradient(135deg, #dc2626, #db2777)",
+    gradient: "linear-gradient(135deg, #C04870, #D4735A)",
     names: [
       "Cardio Crusher",
       "Sweat Machine",
@@ -254,9 +254,10 @@ const WORKOUT_BADGES: Record<string, { names: string[]; emoji: string; gradient:
   },
 };
 
-const MEAL_BADGES: Record<string, { names: string[]; emoji: string }> = {
+const MEAL_BADGES: Record<string, { names: string[]; emoji: string; gradient: string }> = {
   breakfast: {
     emoji: "🌅",
+    gradient: "linear-gradient(135deg, #2AB8D0, #0D1F8C)",
     names: [
       "Morning Macro Master",
       "Sunrise Fueler",
@@ -287,6 +288,7 @@ const MEAL_BADGES: Record<string, { names: string[]; emoji: string }> = {
   },
   lunch: {
     emoji: "☀️",
+    gradient: "linear-gradient(135deg, #1A6B2A, #2AB8D0)",
     names: [
       "Midday Muscle Maker",
       "Noon Nourisher",
@@ -317,6 +319,7 @@ const MEAL_BADGES: Record<string, { names: string[]; emoji: string }> = {
   },
   dinner: {
     emoji: "🌙",
+    gradient: "linear-gradient(135deg, #081260, #0D1F8C)",
     names: [
       "Evening Elite Eater",
       "Dinner Dominator",
@@ -347,6 +350,7 @@ const MEAL_BADGES: Record<string, { names: string[]; emoji: string }> = {
   },
   snack: {
     emoji: "⚡",
+    gradient: "linear-gradient(135deg, #D4735A, #E8977A)",
     names: [
       "Snack Strategist",
       "Gains Grazer",
@@ -379,7 +383,7 @@ const MEAL_BADGES: Record<string, { names: string[]; emoji: string }> = {
 
 const WELLNESS_BADGES: { names: string[]; emoji: string; gradient: string } = {
   emoji: "🧘",
-  gradient: "linear-gradient(135deg, #7c3aed, #6d28d9)",
+  gradient: "linear-gradient(135deg, #0D1F8C, #1A6B2A)",
   names: [
     "Zen Warrior",
     "Recovery Royalty",
@@ -472,7 +476,7 @@ export function getPostBadge(post: PostForBadge): BadgeData | null {
     return {
       name: group.names[idx],
       emoji: group.emoji,
-      gradient: "linear-gradient(135deg, #16a34a, #059669)",
+      gradient: group.gradient,
       subtitle: mealName,
     };
   }

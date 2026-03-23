@@ -153,12 +153,12 @@ export interface Post {
 // ── badge colours (warm light theme) ──────────────────────────────────────────
 
 const TYPE_BADGE: Record<Post["type"], { bg: string; text: string; label: string; emoji: string }> = {
-  WORKOUT: { bg: "rgba(36,63,22,0.10)", text: "#528531", label: "Workout",  emoji: "💪" },
-  MEAL:    { bg: "rgba(154,123,46,0.12)",   text: "#9A7B2E", label: "Meal",     emoji: "🥗" },
-  WELLNESS:{ bg: "rgba(82,133,49,0.12)",  text: "#528531", label: "Wellness", emoji: "🧘" },
-  GENERAL: { bg: "rgba(36,63,22,0.10)", text: "#7A7560", label: "General", emoji: "⭐" },
-  CHECKIN:   { bg: "rgba(154,123,46,0.10)",  text: "#9A7B2E", label: "Check-in",  emoji: "📍" },
-  AFFILIATE: { bg: "rgba(154,123,46,0.12)",  text: "#9A7B2E", label: "Affiliate", emoji: "🔗" },
+  WORKOUT: { bg: "rgba(13,31,140,0.10)",   text: "#0D1F8C", label: "Workout",   emoji: "💪" },
+  MEAL:    { bg: "rgba(42,184,208,0.12)",   text: "#1A7B8A", label: "Meal",      emoji: "🥗" },
+  WELLNESS:{ bg: "rgba(26,107,42,0.12)",    text: "#1A6B2A", label: "Wellness",  emoji: "🧘" },
+  GENERAL: { bg: "rgba(36,63,22,0.10)",     text: "#7A7560", label: "General",   emoji: "⭐" },
+  CHECKIN:   { bg: "rgba(212,115,90,0.12)", text: "#A85A42", label: "Check-in",  emoji: "📍" },
+  AFFILIATE: { bg: "rgba(154,123,46,0.12)", text: "#9A7B2E", label: "Affiliate", emoji: "🔗" },
 };
 
 // ── mood label ────────────────────────────────────────────────────────────────
