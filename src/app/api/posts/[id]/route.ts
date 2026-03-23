@@ -118,7 +118,24 @@ export async function PATCH(
 
     const post = await prisma.post.findUnique({
       where: { id },
-      select: { authorId: true, type: true },
+      select: {
+        authorId: true,
+        type: true,
+        mediaUrl: true,
+        tags: true,
+        mealDetail: {
+          select: {
+            mealName: true,
+            ingredients: true,
+            calories: true,
+            protein: true,
+            carbs: true,
+            fat: true,
+            recipeSourceUrl: true,
+            saveToCatalog: true,
+          },
+        },
+      },
     });
 
     if (!post) {
@@ -161,7 +178,8 @@ export async function PATCH(
       );
     }
 
-    await prisma.$transaction(async (tx) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await prisma.$transaction(async (tx: any) => {
       await tx.post.update({
         where: { id },
         data: {
@@ -205,6 +223,9 @@ export async function PATCH(
       }
 
       if (post.type === "MEAL" && data.meal) {
+        const previousSaveToCatalog = post.mealDetail?.saveToCatalog ?? false;
+        const nextSaveToCatalog = data.meal.saveToCatalog;
+
         await tx.mealDetail.update({
           where: { postId: id },
           data: {
@@ -219,6 +240,56 @@ export async function PATCH(
             saveToCatalog: data.meal.saveToCatalog,
           },
         });
+
+        if (!previousSaveToCatalog && nextSaveToCatalog) {
+          const existingSavedMeal = await tx.savedMeal.findFirst({
+            where: {
+              userId,
+              name: data.meal.mealName,
+              ingredients: data.meal.ingredients,
+              calories: data.meal.calories,
+              protein: data.meal.protein,
+              carbs: data.meal.carbs,
+              fat: data.meal.fat,
+              recipeSourceUrl: data.meal.recipeSourceUrl || null,
+              photoUrl: data.mediaUrl ?? post.mediaUrl ?? null,
+              tags: post.tags,
+            },
+            select: { id: true },
+          });
+
+          if (!existingSavedMeal) {
+            await tx.savedMeal.create({
+              data: {
+                userId,
+                name: data.meal.mealName,
+                ingredients: data.meal.ingredients,
+                calories: data.meal.calories,
+                protein: data.meal.protein,
+                carbs: data.meal.carbs,
+                fat: data.meal.fat,
+                recipeSourceUrl: data.meal.recipeSourceUrl || null,
+                photoUrl: data.mediaUrl ?? post.mediaUrl ?? null,
+                tags: post.tags,
+              },
+            });
+          }
+        } else if (previousSaveToCatalog && !nextSaveToCatalog) {
+          await tx.savedMeal.deleteMany({
+            where: {
+              userId,
+              name: post.mealDetail?.mealName,
+              ingredients: post.mealDetail?.ingredients,
+              calories: post.mealDetail?.calories,
+              protein: post.mealDetail?.protein,
+              carbs: post.mealDetail?.carbs,
+              fat: post.mealDetail?.fat,
+              recipeSourceUrl: post.mealDetail?.recipeSourceUrl || null,
+              photoUrl: post.mediaUrl ?? null,
+              tags: post.tags,
+            },
+          });
+        }
       }
 
       if (post.type === "WELLNESS" && data.wellness) {
