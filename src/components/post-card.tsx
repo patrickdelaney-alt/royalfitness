@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare, HiX, HiExternalLink, HiClipboardCopy } from "react-icons/hi";
 import { lightImpact } from "@/lib/haptics";
+import { AFFILIATE_CATEGORY_LABELS } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
 import EmbedMedia, { type ExternalContentItem } from "@/components/embed-media";
@@ -363,17 +364,6 @@ function WellnessSection({ detail, hideTitle = false }: { detail: WellnessDetail
     </div>
   );
 }
-
-const AFFILIATE_CATEGORY_LABELS: Record<string, string> = {
-  SUPPLEMENTS: "Supplements",
-  WELLNESS_ACCESSORIES: "Wellness",
-  GYM_ACCESSORIES: "Gym Gear",
-  RECOVERY_TOOLS: "Recovery",
-  APPAREL: "Apparel",
-  NUTRITION: "Nutrition",
-  TECH_WEARABLES: "Tech",
-  OTHER: "Other",
-};
 
 function AffiliateSection({ detail, hideTitle = false }: { detail: AffiliateDetail; hideTitle?: boolean }) {
   const [copied, setCopied] = useState(false);

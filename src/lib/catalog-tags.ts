@@ -6,53 +6,115 @@ export const CATALOG_TABS = [
 
 export type CatalogTab = (typeof CATALOG_TABS)[number];
 
+type CatalogTabConfig = {
+  endpoint: string;
+  labels: {
+    owner: string;
+    public: string;
+    picker: string;
+  };
+  gradients: {
+    owner: string;
+    public: string;
+  };
+  emoji: string;
+};
+
+export const CATALOG_TAB_CONFIG: Record<CatalogTab, CatalogTabConfig> = {
+  meals: {
+    endpoint: "/api/catalog/meals",
+    labels: { owner: "Meals", public: "Meals", picker: "Meals" },
+    gradients: { owner: "from-orange-600/80 to-red-700/80", public: "from-amber-700/70 to-amber-900/70" },
+    emoji: "🍽",
+  },
+  workouts: {
+    endpoint: "/api/catalog/workouts",
+    labels: { owner: "Workout", public: "Workouts", picker: "Workout" },
+    gradients: { owner: "from-blue-600/80 to-indigo-700/80", public: "from-green-800/70 to-green-950/70" },
+    emoji: "💪",
+  },
+  supplements: {
+    endpoint: "/api/catalog/supplements",
+    labels: { owner: "Supps", public: "Supps", picker: "Supps" },
+    gradients: { owner: "from-green-600/80 to-emerald-700/80", public: "from-emerald-700/70 to-emerald-900/70" },
+    emoji: "💊",
+  },
+  accessories: {
+    endpoint: "/api/catalog/accessories",
+    labels: { owner: "Gear", public: "Gear", picker: "Gear" },
+    gradients: { owner: "from-purple-600/80 to-pink-700/80", public: "from-stone-600/70 to-stone-800/70" },
+    emoji: "⚙️",
+  },
+  wellness: {
+    endpoint: "/api/catalog/wellness",
+    labels: { owner: "Wellness", public: "Wellness", picker: "Wellness" },
+    gradients: { owner: "from-teal-600/80 to-cyan-700/80", public: "from-lime-700/70 to-lime-900/70" },
+    emoji: "🧘",
+  },
+  affiliates: {
+    endpoint: "/api/catalog/affiliates",
+    labels: { owner: "Deals", public: "Links", picker: "Import Links" },
+    gradients: { owner: "from-amber-600/80 to-yellow-700/80", public: "from-amber-600/70 to-yellow-800/70" },
+    emoji: "📋",
+  },
+};
+
+export const CATALOG_FETCH_ORDER: CatalogTab[] = [
+  "affiliates",
+  "meals",
+  "workouts",
+  "supplements",
+  "accessories",
+  "wellness",
+];
+
 export const CATALOG_ENDPOINTS: Record<CatalogTab, string> = {
-  meals: "/api/catalog/meals",
-  workouts: "/api/catalog/workouts",
-  supplements: "/api/catalog/supplements",
-  accessories: "/api/catalog/accessories",
-  wellness: "/api/catalog/wellness",
-  affiliates: "/api/catalog/affiliates",
+  meals: CATALOG_TAB_CONFIG.meals.endpoint,
+  workouts: CATALOG_TAB_CONFIG.workouts.endpoint,
+  supplements: CATALOG_TAB_CONFIG.supplements.endpoint,
+  accessories: CATALOG_TAB_CONFIG.accessories.endpoint,
+  wellness: CATALOG_TAB_CONFIG.wellness.endpoint,
+  affiliates: CATALOG_TAB_CONFIG.affiliates.endpoint,
 };
 
 /** Labels shown on the owner's catalog page */
 export const CATALOG_TAB_LABELS: Record<CatalogTab, string> = {
-  meals: "Meals",
-  workouts: "Workout",
-  supplements: "Supps",
-  accessories: "Gear",
-  wellness: "Wellness",
-  affiliates: "Deals",
+  meals: CATALOG_TAB_CONFIG.meals.labels.owner,
+  workouts: CATALOG_TAB_CONFIG.workouts.labels.owner,
+  supplements: CATALOG_TAB_CONFIG.supplements.labels.owner,
+  accessories: CATALOG_TAB_CONFIG.accessories.labels.owner,
+  wellness: CATALOG_TAB_CONFIG.wellness.labels.owner,
+  affiliates: CATALOG_TAB_CONFIG.affiliates.labels.owner,
 };
 
 /** Labels shown on public profile pages */
 export const PUBLIC_TAB_LABELS: Record<CatalogTab, string> = {
-  meals: "Meals",
-  workouts: "Workouts",
-  supplements: "Supps",
-  accessories: "Gear",
-  wellness: "Wellness",
-  affiliates: "Links",
+  meals: CATALOG_TAB_CONFIG.meals.labels.public,
+  workouts: CATALOG_TAB_CONFIG.workouts.labels.public,
+  supplements: CATALOG_TAB_CONFIG.supplements.labels.public,
+  accessories: CATALOG_TAB_CONFIG.accessories.labels.public,
+  wellness: CATALOG_TAB_CONFIG.wellness.labels.public,
+  affiliates: CATALOG_TAB_CONFIG.affiliates.labels.public,
 };
 
 /** Gradients used on the owner's catalog page */
 export const CATALOG_PAGE_GRADIENTS: Record<CatalogTab, string> = {
-  meals: "from-orange-600/80 to-red-700/80",
-  workouts: "from-blue-600/80 to-indigo-700/80",
-  supplements: "from-green-600/80 to-emerald-700/80",
-  accessories: "from-purple-600/80 to-pink-700/80",
-  wellness: "from-teal-600/80 to-cyan-700/80",
-  affiliates: "from-amber-600/80 to-yellow-700/80",
+  meals: CATALOG_TAB_CONFIG.meals.gradients.owner,
+  workouts: CATALOG_TAB_CONFIG.workouts.gradients.owner,
+  supplements: CATALOG_TAB_CONFIG.supplements.gradients.owner,
+  accessories: CATALOG_TAB_CONFIG.accessories.gradients.owner,
+  wellness: CATALOG_TAB_CONFIG.wellness.gradients.owner,
+  affiliates: CATALOG_TAB_CONFIG.affiliates.gradients.owner,
 };
 
 /** Gradients used on public profile pages */
 export const PUBLIC_PAGE_GRADIENTS: Record<CatalogTab, string> = {
-  meals: "from-amber-700/70 to-amber-900/70",
-  workouts: "from-green-800/70 to-green-950/70",
-  supplements: "from-emerald-700/70 to-emerald-900/70",
-  accessories: "from-stone-600/70 to-stone-800/70",
-  wellness: "from-lime-700/70 to-lime-900/70",
-  affiliates: "from-amber-600/70 to-yellow-800/70",
+  meals: CATALOG_TAB_CONFIG.meals.gradients.public,
+  workouts: CATALOG_TAB_CONFIG.workouts.gradients.public,
+  supplements: CATALOG_TAB_CONFIG.supplements.gradients.public,
+  accessories: CATALOG_TAB_CONFIG.accessories.gradients.public,
+  wellness: CATALOG_TAB_CONFIG.wellness.gradients.public,
+  affiliates: CATALOG_TAB_CONFIG.affiliates.gradients.public,
 };
 
 /* ── Affiliate category mappings ────────────────────────────────────── */
@@ -66,6 +128,21 @@ export const AFFILIATE_CATEGORY_LABELS: Record<string, string> = {
   NUTRITION: "Nutrition",
   TECH_WEARABLES: "Tech",
 };
+
+export const AFFILIATE_CATEGORY_OPTIONS: { value: string; label: string }[] = [
+  { value: "SUPPLEMENTS", label: "Supps" },
+  { value: "NUTRITION", label: "Meals" },
+  { value: "GYM_ACCESSORIES", label: "Gear" },
+  { value: "WELLNESS_ACCESSORIES", label: "Wellness" },
+  { value: "OTHER", label: "Other" },
+];
+
+export const CATALOG_CATEGORY_PICKER_OPTIONS: { key: CatalogTab; label: string; emoji: string }[] =
+  CATALOG_TABS.map((tab) => ({
+    key: tab,
+    label: CATALOG_TAB_CONFIG[tab].labels.picker,
+    emoji: CATALOG_TAB_CONFIG[tab].emoji,
+  }));
 
 export const normalizeTagLabel = (value: string) =>
   value
@@ -166,3 +243,6 @@ export const getAffiliateGradient = (
   const mapped = AFFILIATE_TO_CATALOG_TYPE[category] as CatalogTab | undefined;
   return gradients[mapped ?? "accessories"];
 };
+
+export const getUserCatalogEndpoint = (username: string, tab: CatalogTab) =>
+  `/api/users/${encodeURIComponent(username)}/catalogs/${tab}`;
