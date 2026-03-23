@@ -456,20 +456,22 @@ function WorkoutBadgeCard({ badge }: { badge: BadgeData }) {
   return (
     <div
       className="mt-2 rounded-xl overflow-hidden flex flex-col items-center justify-center py-8 px-4 gap-2"
-      style={{ background: badge.gradient, minHeight: "180px" }}
+      style={{ background: badge.gradient, minHeight: "180px", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.14)" }}
     >
-      <span style={{ fontSize: "64px", lineHeight: 1, filter: "drop-shadow(0 2px 8px rgba(24,25,15,0.09))" }}>
+      <span style={{ fontSize: "64px", lineHeight: 1, filter: "drop-shadow(0 2px 8px rgba(8,18,96,0.18))" }}>
         {badge.emoji}
       </span>
+      <div style={{ width: "40%", height: "1px", background: "rgba(255,255,255,0.22)", borderRadius: "999px" }} />
       <p
-        className="font-bold tracking-wide text-center mt-2"
-        style={{ color: "#FDFAF5", fontSize: "20px", textShadow: "0 1px 4px rgba(24,25,15,0.09)", letterSpacing: "0.04em" }}
+        className="font-bold text-center mt-2"
+        style={{ color: "#FDFAF5", fontSize: "22px", fontFamily: "var(--font-display)", fontStyle: "italic",
+                 letterSpacing: "0.08em", textShadow: "0 1px 6px rgba(8,18,96,0.25)" }}
       >
         {badge.name.toUpperCase()}
       </p>
       <p
         className="text-center"
-        style={{ color: "rgba(253,250,245,0.8)", fontSize: "13px" }}
+        style={{ color: "rgba(253,250,245,0.75)", fontSize: "13px" }}
       >
         {badge.subtitle}
       </p>
