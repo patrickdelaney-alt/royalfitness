@@ -107,7 +107,7 @@ export const createPostSchema = z.object({
       url: z.string().url(),
       contentId: z.string().min(1).max(200),
       title: z.string().max(300).optional(),
-      thumbnailUrl: z.string().url().optional(),
+      thumbnailUrl: z.string().url().optional().or(z.literal("")),
     })
     .optional(),
 });

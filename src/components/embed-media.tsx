@@ -60,6 +60,23 @@ export default function EmbedMedia({ item }: { item: ExternalContentItem }) {
     );
   }
 
+  if (meta.provider === "tiktok" && meta.contentId) {
+    return (
+      <div className="mt-2 rounded-lg overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+        <div className="relative" style={{ paddingBottom: "177.78%", height: 0 }}>
+          <iframe
+            src={`https://www.tiktok.com/embed/v2/${meta.contentId}`}
+            title={item.title || "TikTok video"}
+            className="absolute inset-0 w-full h-full"
+            allow="autoplay; fullscreen"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        </div>
+      </div>
+    );
+  }
+
   const label = (meta.provider || item.siteName || "Link").toString();
 
   const externalLinkProps = {
@@ -74,8 +91,8 @@ export default function EmbedMedia({ item }: { item: ExternalContentItem }) {
     },
   };
 
-  // TikTok / Instagram: show thumbnail with external link-out
-  if ((meta.provider === "tiktok" || meta.provider === "instagram") && item.imageUrl) {
+  // Instagram: show thumbnail with external link-out (iframe not supported by Instagram)
+  if (meta.provider === "instagram" && item.imageUrl) {
     return (
       <a
         {...externalLinkProps}
