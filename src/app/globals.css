@@ -554,3 +554,64 @@ html {
               transform 0.9s cubic-bezier(0.16,1,0.3,1);
 }
 .reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ── Reduced Motion ──────────────────────────────────────────────────────── */
+/* WCAG 2.1 SC 2.3.3 — suppresses motion for users with vestibular disorders  */
+
+@media (prefers-reduced-motion: reduce) {
+
+  /* Stop infinite shimmer — highest priority (runs indefinitely) */
+  .skeleton-shimmer {
+    animation: none;
+    background: var(--surface-2);
+    background-size: unset;
+  }
+
+  /* Stop entry animation — large translateY(24px) is a vestibular trigger */
+  .animate-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Stop scroll-reveal transition — large translateY(32px) trigger */
+  .reveal,
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  /* Remove card hover lifts */
+  .card-hover,
+  .card-shell {
+    transition: none;
+  }
+  .card-hover:hover,
+  .card-shell:hover {
+    transform: none;
+  }
+
+  /* Remove button scale — keep color feedback at 0.1s */
+  .btn-primary {
+    transition: background 0.1s, box-shadow 0.1s;
+  }
+  .btn-primary:hover,
+  .btn-primary:active {
+    transform: none;
+  }
+
+  .btn-secondary {
+    transition: background 0.1s, border-color 0.1s;
+  }
+  .btn-secondary:hover,
+  .btn-secondary:active {
+    transform: none;
+  }
+
+  /* Remove nav element transitions */
+  .nav-tab-pill,
+  .nav-pill {
+    transition: none;
+  }
+}
