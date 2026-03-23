@@ -12,7 +12,6 @@ import {
   PUBLIC_PAGE_GRADIENTS,
   getCatalogDisplayTags,
   getAffiliateDisplayLabel,
-  getUserCatalogEndpoint,
 } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 
@@ -379,7 +378,7 @@ export default function UserCatalogSection({
       const requests = CATALOG_TYPES.map(async ({ type }) => {
         const params = new URLSearchParams({ limit: "30" });
         const res = await fetch(
-          `${getUserCatalogEndpoint(username, type)}?${params}`
+          `/api/users/${encodeURIComponent(username)}/catalogs/${type}?${params}`
         );
 
         if (res.status === 403) {

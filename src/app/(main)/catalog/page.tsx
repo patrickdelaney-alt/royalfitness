@@ -21,18 +21,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
 import {
   AFFILIATE_CATEGORY_LABELS,
-  AFFILIATE_CATEGORY_OPTIONS,
-  CATALOG_CATEGORY_PICKER_OPTIONS,
-  CATALOG_FETCH_ORDER,
-  CATALOG_ENDPOINTS,
-  CATALOG_PAGE_GRADIENTS,
-  CATALOG_TAB_LABELS,
   dedupeTags,
-  getAffiliateDisplayLabel,
-  getAffiliateGradient,
   getCatalogDisplayTags,
   parseTagsText,
   type CatalogTab,
+  CATALOG_ENDPOINTS,
+  CATALOG_TAB_LABELS,
+  CATALOG_PAGE_GRADIENTS,
+  getAffiliateDisplayLabel,
+  getAffiliateGradient,
 } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 
@@ -343,7 +340,7 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
     setSubmitting(true);
     setError("");
     try {
-      const res = await fetch(CATALOG_ENDPOINTS.meals, {
+      const res = await fetch("/api/catalog/meals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -514,7 +511,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
     setSubmitting(true);
     setError("");
     try {
-      const res = await fetch(CATALOG_ENDPOINTS.supplements, {
+      const res = await fetch("/api/catalog/supplements", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -699,7 +696,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
     setSubmitting(true);
     setError("");
     try {
-      const res = await fetch(CATALOG_ENDPOINTS.accessories, {
+      const res = await fetch("/api/catalog/accessories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -879,7 +876,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
     setSubmitting(true);
     setError("");
     try {
-      const res = await fetch(CATALOG_ENDPOINTS.wellness, {
+      const res = await fetch("/api/catalog/wellness", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1020,7 +1017,7 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
         .map((s) => s.trim())
         .filter(Boolean)
         .map((e) => ({ name: e, sets: [] }));
-      const res = await fetch(CATALOG_ENDPOINTS.workouts, {
+      const res = await fetch("/api/catalog/workouts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1079,6 +1076,13 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
 
 // ── Add Affiliate Form ────────────────────────────────────────────────────────
 
+const AFFILIATE_CATEGORY_OPTIONS = [
+  { value: "SUPPLEMENTS", label: "Supps" },
+  { value: "NUTRITION", label: "Meals" },
+  { value: "GYM_ACCESSORIES", label: "Gear" },
+  { value: "WELLNESS_ACCESSORIES", label: "Wellness" },
+  { value: "OTHER", label: "Other" },
+];
 
 interface BulkItem {
   id: string;
@@ -1261,7 +1265,7 @@ function AddAffiliateForm({
     let savedCount = 0;
     for (const item of toSave) {
       try {
-        const res = await fetch(CATALOG_ENDPOINTS.affiliates, {
+        const res = await fetch("/api/catalog/affiliates", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -1367,7 +1371,7 @@ function AddAffiliateForm({
     setSubmitting(true);
     setError("");
     try {
-      const res = await fetch(CATALOG_ENDPOINTS.affiliates, {
+      const res = await fetch("/api/catalog/affiliates", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1861,7 +1865,7 @@ function EditItemModal({
     setSubmitting(true);
     setError("");
     try {
-      const res = await fetch(`${CATALOG_ENDPOINTS[tab]}?id=${item.id}`, {
+      const res = await fetch(`/api/catalog/${tab}?id=${item.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -2315,6 +2319,14 @@ function ItemDetailModal({
 
 // ── Category Picker ───────────────────────────────────────────────────────────
 
+const CATEGORY_PICKER_OPTIONS: { key: CatalogTab; label: string; emoji: string }[] = [
+  { key: "meals",       label: "Meals",        emoji: "🍽" },
+  { key: "workouts",    label: "Workout",      emoji: "💪" },
+  { key: "supplements", label: "Supps",        emoji: "💊" },
+  { key: "accessories", label: "Gear",         emoji: "⚙️" },
+  { key: "wellness",    label: "Wellness",     emoji: "🧘" },
+  { key: "affiliates",  label: "Import Links", emoji: "📋" },
+];
 
 function CategoryPicker({
   onSelect,
@@ -2337,7 +2349,7 @@ function CategoryPicker({
         </button>
       </div>
       <div className="flex flex-wrap gap-2">
-        {CATALOG_CATEGORY_PICKER_OPTIONS.map((opt) => (
+        {CATEGORY_PICKER_OPTIONS.map((opt) => (
           <button
             key={opt.key}
             onClick={() => onSelect(opt.key)}
@@ -2385,8 +2397,9 @@ export default function CatalogPage() {
 
   const fetchAllItems = () => {
     setLoading(true);
+    const catalogTabs: CatalogTab[] = ["affiliates", "meals", "workouts", "supplements", "accessories", "wellness"];
     Promise.all(
-      CATALOG_FETCH_ORDER.map((t) =>
+      catalogTabs.map((t) =>
         fetch(CATALOG_ENDPOINTS[t])
           .then((r) => r.json())
           .then((data) => {
