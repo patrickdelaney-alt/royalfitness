@@ -73,12 +73,17 @@ export async function POST(
     });
 
     if (existingLike) {
-      // Already liked — return the existing like
-      const likesCount = await prisma.like.count({ where: { postId } });
-      return NextResponse.json({
-        liked: true,
-        likesCount,
+      // Already liked — remove the like (toggle)
+      await prisma.like.delete({
+        where: {
+          userId_postId: { userId, postId },
+        },
       });
+      const likesCount = await prisma.like.count({ where: { postId } });
+      return NextResponse.json(
+        { liked: false, likesCount },
+        { status: 200 }
+      );
     }
 
     // Create the like
