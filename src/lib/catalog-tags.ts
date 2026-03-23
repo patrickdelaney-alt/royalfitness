@@ -79,22 +79,22 @@ export const CATALOG_ENDPOINTS: Record<CatalogTab, string> = {
 
 /** Labels shown on the owner's catalog page */
 export const CATALOG_TAB_LABELS: Record<CatalogTab, string> = {
-  meals: CATALOG_TAB_CONFIG.meals.labels.owner,
-  workouts: CATALOG_TAB_CONFIG.workouts.labels.owner,
-  supplements: CATALOG_TAB_CONFIG.supplements.labels.owner,
-  accessories: CATALOG_TAB_CONFIG.accessories.labels.owner,
-  wellness: CATALOG_TAB_CONFIG.wellness.labels.owner,
-  affiliates: CATALOG_TAB_CONFIG.affiliates.labels.owner,
+  meals: "Meals",
+  workouts: "Workouts",
+  supplements: "Supps",
+  accessories: "Gear",
+  wellness: "Wellness",
+  affiliates: "Affiliate Links",
 };
 
 /** Labels shown on public profile pages */
 export const PUBLIC_TAB_LABELS: Record<CatalogTab, string> = {
-  meals: CATALOG_TAB_CONFIG.meals.labels.public,
-  workouts: CATALOG_TAB_CONFIG.workouts.labels.public,
-  supplements: CATALOG_TAB_CONFIG.supplements.labels.public,
-  accessories: CATALOG_TAB_CONFIG.accessories.labels.public,
-  wellness: CATALOG_TAB_CONFIG.wellness.labels.public,
-  affiliates: CATALOG_TAB_CONFIG.affiliates.labels.public,
+  meals: "Meals",
+  workouts: "Workouts",
+  supplements: "Supps",
+  accessories: "Gear",
+  wellness: "Wellness",
+  affiliates: "Affiliate Links",
 };
 
 /** Gradients used on the owner's catalog page */
