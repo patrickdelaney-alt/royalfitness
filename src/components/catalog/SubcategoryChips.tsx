@@ -27,7 +27,7 @@ export function SubcategoryChips({
             color: "var(--text-muted)",
           }}
         >
-          #{tag}
+          {tag}
         </span>
       ))}
     </div>
