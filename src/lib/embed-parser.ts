@@ -22,7 +22,7 @@ function parseInstagram(url: URL): ParsedEmbed | null {
   if (parts.length < 2) return null;
 
   const kind = parts[0];
-  if (kind !== "p" && kind !== "reel") return null;
+  if (kind !== "p" && kind !== "reel" && kind !== "tv") return null;
 
   const contentId = parts[1];
   if (!contentId) return null;

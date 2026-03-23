@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { compressImage } from "@/lib/compress-image";
 import { successNotification } from "@/lib/haptics";
 import { parseEmbedUrl, type EmbedProvider } from "@/lib/embed-parser";
+import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 
 type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN";
 
@@ -392,6 +393,7 @@ function MoodSlider({ value, onChange }: { value: number; onChange: (v: number) 
 // ── Media Upload Block (shared across types) ─────────────────
 function MediaBlock({
   mediaPreview, uploading, onRemove, onFileClick, fileInputRef, onFileChange,
+  embedPreview, onClearEmbed,
 }: {
   mediaPreview: string | null;
   uploading: boolean;
@@ -399,7 +401,67 @@ function MediaBlock({
   onFileClick: () => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  embedPreview?: { provider: EmbedProvider; url: string; title?: string; thumbnailUrl?: string } | null;
+  onClearEmbed?: () => void;
 }) {
+  // Instagram / TikTok embed: show thumbnail card in the media slot
+  if (embedPreview && (embedPreview.provider === "instagram" || embedPreview.provider === "tiktok")) {
+    const isInstagram = embedPreview.provider === "instagram";
+    return (
+      <div>
+        <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Photo / Video</label>
+        <div className="relative rounded-xl overflow-hidden" style={{ border: "1px solid rgba(36,63,22,0.10)" }}>
+          {embedPreview.thumbnailUrl ? (
+            <img src={embedPreview.thumbnailUrl} alt={embedPreview.title || embedPreview.provider} className="w-full max-h-60 object-cover" />
+          ) : (
+            <div
+              className="w-full h-48 flex flex-col items-center justify-center gap-2"
+              style={{
+                background: isInstagram
+                  ? "linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)"
+                  : "#010101",
+              }}
+            >
+              <span className="text-white text-base font-bold capitalize">{embedPreview.provider}</span>
+              {embedPreview.title && (
+                <span className="text-white/80 text-sm px-6 text-center line-clamp-2">{embedPreview.title}</span>
+              )}
+            </div>
+          )}
+          {/* Full-area tap target to open externally */}
+          <a
+            href={embedPreview.url}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => {
+              if (isCapacitorNative()) {
+                e.preventDefault();
+                openExternalLink(embedPreview.url);
+              }
+            }}
+            className="absolute inset-0"
+            aria-label={`Open in ${embedPreview.provider}`}
+          />
+          {/* Provider badge */}
+          <div
+            className="absolute bottom-0 left-0 right-0 px-3 py-2"
+            style={{ background: "linear-gradient(transparent,rgba(0,0,0,0.65))" }}
+          >
+            <p className="text-xs font-semibold uppercase text-white">{embedPreview.provider}</p>
+          </div>
+          {/* Remove button */}
+          <button
+            type="button"
+            onClick={onClearEmbed}
+            className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
+          >
+            <HiX className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Photo / Video</label>
@@ -859,7 +921,15 @@ export default function CreatePostContent() {
       if (res.ok) {
         const unfurl = await res.json();
         title = unfurl.title || undefined;
-        thumbnailUrl = unfurl.imageUrl || undefined;
+        const rawImage: string | null = unfurl.imageUrl || null;
+        // Only accept thumbnails from known trusted CDNs to avoid storing
+        // login-page or placeholder images returned by redirected fetches.
+        const trustedThumbnail =
+          rawImage &&
+          /^https?:\/\/.*(cdninstagram\.com|fbcdn\.net|tiktokcdn\.com|tiktok\.com|ytimg\.com|ggpht\.com|googleusercontent\.com)/.test(rawImage)
+            ? rawImage
+            : undefined;
+        thumbnailUrl = trustedThumbnail;
       }
 
       setEmbedPreview({
@@ -1248,6 +1318,8 @@ export default function CreatePostContent() {
     onFileClick: () => fileInputRef.current?.click(),
     fileInputRef,
     onFileChange: handleFileChange,
+    embedPreview,
+    onClearEmbed: clearEmbed,
   };
 
   const TYPE_LABELS: Record<PostType, string> = {
@@ -2261,7 +2333,8 @@ export default function CreatePostContent() {
               {embedLoading ? "Adding..." : "Add"}
             </button>
           </div>
-          {embedPreview && (
+          {/* YouTube: show full card below input. Instagram/TikTok: shown in media area above. */}
+          {embedPreview && embedPreview.provider === "youtube" && (
             <div className="mt-2 rounded-xl p-3" style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}>
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -2282,6 +2355,14 @@ export default function CreatePostContent() {
                 </button>
               </div>
             </div>
+          )}
+          {embedPreview && (embedPreview.provider === "instagram" || embedPreview.provider === "tiktok") && (
+            <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
+              Preview shown in photo area above.{" "}
+              <button type="button" onClick={clearEmbed} className="underline" style={{ color: "var(--brand-light)" }}>
+                Remove
+              </button>
+            </p>
           )}
         </div>
 
