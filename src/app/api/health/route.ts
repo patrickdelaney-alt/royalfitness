@@ -1,42 +1,57 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { safeAuth } from "@/lib/safe-auth";
 
-// Temporary diagnostic endpoint — remove after debugging
-export async function GET() {
-  const info: Record<string, unknown> = {
-    DATABASE_URL_set: !!process.env.DATABASE_URL,
-    DATABASE_URL_preview: process.env.DATABASE_URL
-      ? process.env.DATABASE_URL.replace(/:\/\/[^@]+@/, "://<credentials>@").slice(0, 80)
-      : null,
-    AUTH_SECRET_set: !!process.env.AUTH_SECRET,
-    AUTH_URL_set: !!process.env.AUTH_URL,
-    NEXTAUTH_URL_set: !!process.env.NEXTAUTH_URL,
-    VERCEL_URL: process.env.VERCEL_URL ?? null,
-  };
+const PUBLIC_HEALTH_RESPONSE = { status: "ok" };
 
-  try {
-    const userCount = await prisma.user.count();
-    info.db_status = "ok";
-    info.user_count = userCount;
-  } catch (err) {
-    info.db_status = "error";
-    info.db_error =
-      err instanceof Error
-        ? { message: err.message, name: err.name }
-        : String(err);
+function isAdmin(email: string | null | undefined): boolean {
+  return !!email && email === process.env.ADMIN_EMAIL;
+}
+
+function hasValidInternalToken(req: NextRequest): boolean {
+  const configuredToken = process.env.HEALTH_INTERNAL_TOKEN;
+  if (!configuredToken) {
+    return false;
   }
 
-  try {
+  return req.headers.get("x-health-token") === configuredToken;
+}
+
+function diagnosticsAllowedInEnv(): boolean {
+  return (
+    process.env.NODE_ENV !== "production" &&
+    process.env.HEALTH_DIAGNOSTICS_ENABLED === "true"
+  );
+}
+
+export async function GET(req: NextRequest) {
+  if (!diagnosticsAllowedInEnv()) {
+    return NextResponse.json(PUBLIC_HEALTH_RESPONSE);
+  }
+
+  const internalTokenAuthorized = hasValidInternalToken(req);
+  let adminAuthorized = false;
+
+  if (!internalTokenAuthorized) {
     const session = await safeAuth();
-    info.auth_status = session ? "authenticated" : "unauthenticated";
-  } catch (err) {
-    info.auth_status = "error";
-    info.auth_error =
-      err instanceof Error
-        ? { message: err.message, name: err.name }
-        : String(err);
+    adminAuthorized = isAdmin(session?.user?.email);
   }
 
-  return NextResponse.json(info);
+  if (!internalTokenAuthorized && !adminAuthorized) {
+    return NextResponse.json(PUBLIC_HEALTH_RESPONSE);
+  }
+
+  let dbStatus: "ok" | "error" = "ok";
+  try {
+    await prisma.user.count();
+  } catch {
+    dbStatus = "error";
+  }
+
+  return NextResponse.json({
+    status: dbStatus === "ok" ? "ok" : "degraded",
+    diagnostics: {
+      db_status: dbStatus,
+    },
+  });
 }
