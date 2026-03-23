@@ -2772,7 +2772,11 @@ export default function CatalogPage() {
             item={selectedItem}
             tab={itemType}
             onClose={() => setSelectedItem(null)}
-            onEdit={() => setEditingItem(selectedItem)}
+            onEdit={() => {
+              const storedItem = selectedItem;
+              setSelectedItem(null);
+              setEditingItem(storedItem);
+            }}
             onDelete={() => handleDelete(selectedItem.id, itemType)}
           />
         );
