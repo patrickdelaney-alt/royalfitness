@@ -9,14 +9,17 @@ import PostCard, { Post } from "@/components/post-card";
 import RecommendationCard from "@/components/recommendation-card";
 import OnboardingModal, { shouldShowOnboarding } from "@/components/onboarding-modal";
 
-const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS", "CATALOG_SHARE"] as const;
+const VISIBLE_POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS"] as const;
+type VisiblePostType = (typeof VISIBLE_POST_TYPES)[number];
+
+const isVisiblePostType = (value: string | null): value is VisiblePostType =>
+  !!value && VISIBLE_POST_TYPES.includes(value as VisiblePostType);
 
 const POST_TYPE_LABELS: Record<string, string> = {
   ALL: "All",
   WORKOUT: "Workouts",
   MEAL: "Meals",
   WELLNESS: "Wellness",
-  CATALOG_SHARE: "Shared",
 };
 
 
@@ -29,7 +32,9 @@ export default function FeedContent() {
   const [error, setError] = useState(false);
   const [cursor, setCursor] = useState<string | undefined>();
   const [hasMore, setHasMore] = useState(true);
-  const [filter, setFilter] = useState<string>(searchParams.get("filter") || "ALL");
+  const [filter, setFilter] = useState<VisiblePostType>(
+    isVisiblePostType(searchParams.get("filter")) ? searchParams.get("filter") : "ALL"
+  );
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -47,6 +52,26 @@ export default function FeedContent() {
       setShowOnboarding(true);
     }
   }, [searchParams]);
+
+  // Keep visible filter state in sync with URL and normalize invalid values.
+  useEffect(() => {
+    const rawFilter = searchParams.get("filter");
+
+    if (!rawFilter) {
+      if (filter !== "ALL") setFilter("ALL");
+      return;
+    }
+
+    if (!isVisiblePostType(rawFilter)) {
+      if (filter !== "ALL") setFilter("ALL");
+      router.replace("/feed", { scroll: false });
+      return;
+    }
+
+    if (filter !== rawFilter) {
+      setFilter(rawFilter);
+    }
+  }, [filter, router, searchParams]);
 
   const handleDeletePost = useCallback((id: string) => {
     setPosts((prev) => prev.filter((p) => p.id !== id));
@@ -156,7 +181,7 @@ export default function FeedContent() {
 
       {/* Filter chips */}
       <div className="flex gap-2 overflow-x-auto pb-3 mb-2" style={{ scrollbarWidth: "none" }}>
-        {POST_TYPES.map((type) => {
+        {VISIBLE_POST_TYPES.map((type) => {
           const isActive = filter === type;
           return (
             <button
