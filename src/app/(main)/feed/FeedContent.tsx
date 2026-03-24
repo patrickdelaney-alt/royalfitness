@@ -51,6 +51,18 @@ export default function FeedContent() {
     }
   }, [searchParams]);
 
+  // Keep filter state and URL in sync, and normalize unsupported legacy filters.
+  useEffect(() => {
+    const normalized = normalizeFilter(searchParams.get("filter"));
+    if (normalized !== filter) {
+      setFilter(normalized);
+    }
+
+    if (searchParams.get("filter") && normalized === "ALL") {
+      router.replace("/feed", { scroll: false });
+    }
+  }, [filter, router, searchParams]);
+
   const handleDeletePost = useCallback((id: string) => {
     setPosts((prev) => prev.filter((p) => p.id !== id));
   }, []);
