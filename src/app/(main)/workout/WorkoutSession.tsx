@@ -192,10 +192,14 @@ export default function WorkoutSession() {
       ...session,
       pausedAt: session.pausedAt ?? Date.now(),
     };
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ ...frozenSession, _finalElapsedMs: finalMs })
-    );
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ ...frozenSession, _finalElapsedMs: finalMs })
+      );
+    } catch {
+      // Storage unavailable or full — navigate anyway; user can fill details manually
+    }
 
     toast.success("Great workout! Logging your session...", {
       icon: "🏁",

@@ -587,10 +587,9 @@ export default function CreatePostContent() {
                 (session.totalPausedMs as number)
             );
 
-      if (session.workoutName) {
-        setWorkoutName(session.workoutName as string);
-        setEditingName(true);
-      }
+      const sessionName = (session.workoutName as string | undefined)?.trim();
+      setWorkoutName(sessionName || "Today's Workout");
+      setEditingName(true);
       if (session.notes) setCaption(session.notes as string);
 
       const mins = Math.max(1, Math.round(elapsed / 60000));
@@ -960,6 +959,14 @@ export default function CreatePostContent() {
       setDraftReady(true);
       return;
     }
+    // A live session pre-fills all relevant fields; an old draft is stale by
+    // comparison. Discard it so the "Resume draft?" banner never appears and
+    // autosave is not blocked while pendingDraft is set.
+    if (isFromSession) {
+      try { localStorage.removeItem(CREATE_DRAFT_STORAGE_KEY); } catch { /* ignore */ }
+      setDraftReady(true);
+      return;
+    }
     try {
       const raw = localStorage.getItem(CREATE_DRAFT_STORAGE_KEY);
       if (!raw) {
@@ -978,7 +985,7 @@ export default function CreatePostContent() {
     } finally {
       setDraftReady(true);
     }
-  }, [isEditingPost]);
+  }, [isEditingPost, isFromSession]);
 
   const applyDraft = useCallback((draft: CreateDraftV1) => {
     setType(draft.type);
