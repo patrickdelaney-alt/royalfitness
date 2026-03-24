@@ -9,14 +9,17 @@ import PostCard, { Post } from "@/components/post-card";
 import RecommendationCard from "@/components/recommendation-card";
 import OnboardingModal, { shouldShowOnboarding } from "@/components/onboarding-modal";
 
-const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS", "CATALOG_SHARE"] as const;
+const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS"] as const;
+type PostTypeFilter = typeof POST_TYPES[number];
+
+const normalizeFilter = (value: string | null): PostTypeFilter =>
+  POST_TYPES.includes((value ?? "") as PostTypeFilter) ? ((value ?? "ALL") as PostTypeFilter) : "ALL";
 
 const POST_TYPE_LABELS: Record<string, string> = {
   ALL: "All",
   WORKOUT: "Workouts",
   MEAL: "Meals",
   WELLNESS: "Wellness",
-  CATALOG_SHARE: "Shared",
 };
 
 
@@ -29,7 +32,7 @@ export default function FeedContent() {
   const [error, setError] = useState(false);
   const [cursor, setCursor] = useState<string | undefined>();
   const [hasMore, setHasMore] = useState(true);
-  const [filter, setFilter] = useState<string>(searchParams.get("filter") || "ALL");
+  const [filter, setFilter] = useState<PostTypeFilter>(normalizeFilter(searchParams.get("filter")));
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
