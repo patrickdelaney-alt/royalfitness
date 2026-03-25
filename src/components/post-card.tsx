@@ -468,12 +468,23 @@ const CATALOG_TYPE_LABELS: Record<string, string> = {
 function CatalogShareSection({ detail }: { detail: CatalogShareDetail }) {
   const [copied, setCopied] = useState(false);
 
-  const handleCopyCode = () => {
-    if (detail.referralCode) {
-      navigator.clipboard.writeText(detail.referralCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+  const handleCopyCode = async () => {
+    if (!detail.referralCode) return;
+    try {
+      await navigator.clipboard.writeText(detail.referralCode);
+    } catch {
+      // Fallback for older browsers / non-secure contexts
+      const el = document.createElement("textarea");
+      el.value = detail.referralCode;
+      el.style.cssText = "position:fixed;top:-9999px;left:-9999px;opacity:0";
+      document.body.appendChild(el);
+      el.focus();
+      el.select();
+      try { document.execCommand("copy"); } catch { /* silent */ }
+      document.body.removeChild(el);
     }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
   };
 
   const ctaText = detail.ctaLabel ?? "Shop Now";
