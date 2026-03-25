@@ -488,6 +488,9 @@ function CatalogShareSection({ detail }: { detail: CatalogShareDetail }) {
   };
 
   const ctaText = detail.ctaLabel ?? "Shop Now";
+  const hasLink = typeof detail.link === "string" && detail.link.trim().length > 0;
+  const shareLink = hasLink ? detail.link!.trim() : undefined;
+  const hasReferralCode = typeof detail.referralCode === "string" && detail.referralCode.trim().length > 0;
   const typeLabel = CATALOG_TYPE_LABELS[detail.catalogItemType] ?? detail.catalogItemType;
 
   return (
@@ -541,30 +544,30 @@ function CatalogShareSection({ detail }: { detail: CatalogShareDetail }) {
         )}
 
         {/* CTA row */}
-        {(detail.link || detail.referralCode) && (
-          <div className="flex items-stretch gap-2 pt-0.5">
-            {detail.link && (
+        {(hasLink || hasReferralCode) && (
+          <div className="space-y-2 pt-0.5">
+            {hasLink && (
               <a
-                href={detail.link}
+                href={shareLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => {
-                  if (isCapacitorNative()) {
+                  if (shareLink && isCapacitorNative()) {
                     e.preventDefault();
-                    openExternalLink(detail.link!);
+                    openExternalLink(shareLink);
                   }
                 }}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 btn-gradient"
+                className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 btn-gradient"
                 style={{ color: "#FDFAF5" }}
               >
                 <HiExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
                 {ctaText}
               </a>
             )}
-            {detail.referralCode && (
+            {hasReferralCode && (
               <button
                 onClick={handleCopyCode}
-                className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 border flex-shrink-0"
+                className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 border"
                 style={{
                   background: copied ? "rgba(34,197,94,0.08)" : "rgba(154,123,46,0.08)",
                   borderColor: copied ? "rgba(34,197,94,0.25)" : "rgba(154,123,46,0.22)",
@@ -572,7 +575,7 @@ function CatalogShareSection({ detail }: { detail: CatalogShareDetail }) {
                 }}
               >
                 <HiClipboardCopy className="w-3.5 h-3.5 flex-shrink-0" />
-                {copied ? "Copied!" : detail.referralCode}
+                {copied ? "Copied!" : "Copy Code"}
               </button>
             )}
           </div>
