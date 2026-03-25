@@ -166,7 +166,7 @@ export default function ShareCatalogModal({
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:items-center sm:pb-0"
       style={{ background: "rgba(24,25,15,0.55)", backdropFilter: "blur(4px)" }}
       onClick={handleBackdropClick}
     >
@@ -372,10 +372,11 @@ export default function ShareCatalogModal({
             {/* ── Sticky footer — always above the keyboard ── */}
             {showForm && (
               <div
-                className="flex-shrink-0 px-6 pt-3 pb-6 space-y-3"
+                className="flex-shrink-0 px-6 pt-3 space-y-3"
                 style={{
                   borderTop: "1px solid rgba(36,63,22,0.08)",
                   background: "#FDFAF5",
+                  paddingBottom: "calc(1rem + env(safe-area-inset-bottom))",
                 }}
               >
                 {/* Inline error */}
