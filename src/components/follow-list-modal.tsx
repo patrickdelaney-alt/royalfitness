@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { HiXMark, HiUserCircle } from "react-icons/hi2";
+import BottomSheetShell from "@/components/layout/BottomSheetShell";
 
 interface FollowUser {
   id: string;
@@ -125,26 +126,19 @@ export default function FollowListModal({
   const title = type === "followers" ? "Followers" : "Following";
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40"
-        style={{ background: "rgba(24,25,15,0.5)" }}
-        onClick={onClose}
-      />
-
-      {/* Sheet */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl"
-        style={{
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-          maxHeight: "75vh",
-          boxShadow: "var(--shadow-lg)",
-        }}
-      >
-        {/* Handle + header */}
-        <div className="flex-shrink-0">
+    <BottomSheetShell
+      onClose={onClose}
+      lockBodyScroll
+      panelClassName="rounded-t-2xl sm:max-w-md"
+      panelStyle={{
+        background: "var(--surface)",
+        border: "1px solid var(--border)",
+        maxHeight: "75vh",
+        boxShadow: "var(--shadow-lg)",
+      }}
+      backdropStyle={{ background: "rgba(24,25,15,0.5)" }}
+      header={
+        <>
           <div className="flex justify-center pt-3 pb-1">
             <div className="sheet-handle" />
           </div>
@@ -158,10 +152,11 @@ export default function FollowListModal({
               <HiXMark className="w-5 h-5" />
             </button>
           </div>
-        </div>
-
-        {/* Scrollable list */}
-        <div className="flex-1 overflow-y-auto min-h-0">
+        </>
+      }
+      bodyClassName="flex-1 min-h-0"
+    >
+      <div className="flex-1 overflow-y-auto min-h-0">
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <div
@@ -230,8 +225,7 @@ export default function FollowListModal({
               <div ref={sentinelRef} className="h-1" />
             </div>
           )}
-        </div>
       </div>
-    </>
+    </BottomSheetShell>
   );
 }

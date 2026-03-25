@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { HiX, HiShare, HiCalendar, HiExclamation, HiPhotograph } from "react-icons/hi";
 import toast from "react-hot-toast";
-import { fixedCtaBottomOffset, sheetBottomPadding } from "@/components/layout/bottom-inset";
+import BottomSheetShell from "@/components/layout/BottomSheetShell";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -96,14 +96,6 @@ export default function ShareCatalogModal({
     return () => { cancelled = true; };
   }, [item.id, item.catalogType]);
 
-  // ── Dismiss on backdrop click ───────────────────────────────────────────────
-  const handleBackdropClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.target === e.currentTarget && !loading) onClose();
-    },
-    [loading, onClose]
-  );
-
   // ── Submit ──────────────────────────────────────────────────────────────────
   const handleShare = useCallback(async () => {
     if (loading || alreadySharedToday) return;
@@ -166,20 +158,16 @@ export default function ShareCatalogModal({
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center pb-[var(--fixed-cta-bottom-offset)] sm:items-center sm:pb-0"
-      style={{
-        ["--fixed-cta-bottom-offset" as string]: fixedCtaBottomOffset,
-        background: "rgba(24,25,15,0.55)",
-        backdropFilter: "blur(4px)",
+    <BottomSheetShell
+      onClose={() => {
+        if (!loading) onClose();
       }}
-      onClick={handleBackdropClick}
+      lockBodyScroll
+      panelClassName="max-w-sm"
+      panelStyle={{ maxHeight: "92dvh" }}
+      backdropStyle={{ background: "rgba(24,25,15,0.55)", backdropFilter: "blur(4px)" }}
+      bodyClassName="overflow-hidden"
     >
-      {/* Sheet wrapper — flex column so footer stays pinned */}
-      <div
-        className="relative w-full max-w-sm flex flex-col"
-        style={{ maxHeight: "92dvh" }}
-      >
         {/* Outer bezel */}
         <div
           className="rounded-t-[32px] sm:rounded-[32px] p-[2px] flex flex-col overflow-hidden"
@@ -381,7 +369,6 @@ export default function ShareCatalogModal({
                 style={{
                   borderTop: "1px solid rgba(36,63,22,0.08)",
                   background: "#FDFAF5",
-                  paddingBottom: sheetBottomPadding,
                 }}
               >
                 {/* Inline error */}
@@ -424,7 +411,6 @@ export default function ShareCatalogModal({
             )}
           </div>
         </div>
-      </div>
-    </div>
+    </BottomSheetShell>
   );
 }

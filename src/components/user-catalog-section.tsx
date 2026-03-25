@@ -5,6 +5,7 @@ import Link from "next/link";
 import { HiLockOpen } from "react-icons/hi2";
 import { HiExternalLink, HiX, HiLink, HiClipboardCopy, HiUpload, HiPencil } from "react-icons/hi";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
+import BottomSheetShell from "@/components/layout/BottomSheetShell";
 import {
   type CatalogTab,
   CATALOG_TABS,
@@ -15,7 +16,7 @@ import {
   getUserCatalogEndpoint,
 } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
-import { contentBottomPadding, fixedCtaBottomOffset, sheetBottomPadding } from "@/components/layout/bottom-inset";
+import { contentBottomPadding } from "@/components/layout/bottom-inset";
 
 interface CatalogItem {
   id: string;
@@ -98,15 +99,6 @@ function DetailModal({
 }) {
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-    };
-  }, []);
-
   const copyCode = () => {
     if (item.referralCode) {
       navigator.clipboard.writeText(item.referralCode);
@@ -119,21 +111,21 @@ function DetailModal({
   const displayTags = buildDisplayTags(item, type);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pb-[var(--fixed-cta-bottom-offset)] sm:pb-0"
-      style={{ ["--fixed-cta-bottom-offset" as string]: fixedCtaBottomOffset }}
-      onClick={onClose}
+    <BottomSheetShell
+      onClose={onClose}
+      lockBodyScroll
+      panelClassName="sm:max-w-md max-h-[calc(100dvh-1rem)] rounded-t-2xl sm:rounded-2xl"
+      panelStyle={{
+        background: "var(--surface)",
+        border: "1px solid var(--border)",
+        boxShadow: "var(--shadow-lg)",
+      }}
+      backdropClassName="backdrop-blur-sm"
+      backdropStyle={{ background: "rgba(24,25,15,0.5)" }}
+      bodyClassName="overflow-hidden"
     >
-      <div className="absolute inset-0 backdrop-blur-sm" style={{ background: "rgba(24,25,15,0.5)" }} />
       <div
-        className="relative w-full sm:max-w-md max-h-[calc(100dvh-1rem)] overflow-y-auto overscroll-y-contain rounded-t-2xl sm:rounded-2xl"
-        style={{
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-          WebkitOverflowScrolling: "touch",
-          boxShadow: "var(--shadow-lg)",
-        }}
-        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-h-[calc(100dvh-1rem)] overflow-y-auto overscroll-y-contain rounded-t-2xl sm:rounded-2xl"
       >
         {/* Close button */}
         <button
@@ -322,7 +314,6 @@ function DetailModal({
             style={{
               background: "var(--surface)",
               borderTop: "1px solid var(--border)",
-              paddingBottom: sheetBottomPadding,
             }}
           >
             {(item.link || item.recipeSourceUrl || item.videoUrl) && (
@@ -360,7 +351,7 @@ function DetailModal({
 
         </div>
       </div>
-    </div>
+    </BottomSheetShell>
   );
 }
 
