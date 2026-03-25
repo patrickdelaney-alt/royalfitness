@@ -19,6 +19,7 @@ import {
   HiShare,
 } from "react-icons/hi";
 import ShareCatalogModal, { type CatalogItemType as ShareCatalogItemType, type ShareCatalogItem } from "@/components/share-catalog-modal";
+import BottomSheetShell from "@/components/layout/BottomSheetShell";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
 import {
@@ -37,7 +38,7 @@ import {
   type CatalogTab,
 } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
-import { fixedCtaBottomOffset, sheetBottomPadding } from "@/components/layout/bottom-inset";
+import { sheetBottomPadding } from "@/components/layout/bottom-inset";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -2239,17 +2240,15 @@ function ItemDetailModal({
     (tab === "workouts" ? (item as SavedWorkout).videoUrl : null);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pb-[var(--fixed-cta-bottom-offset)] sm:pb-0"
-      style={{ ["--fixed-cta-bottom-offset" as string]: fixedCtaBottomOffset }}
-      onClick={onClose}
+    <BottomSheetShell
+      onClose={onClose}
+      lockBodyScroll
+      panelClassName="sm:max-w-md rounded-t-2xl sm:rounded-2xl max-h-[85dvh] sm:max-h-[85vh]"
+      panelStyle={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
+      backdropClassName="bg-black/70 backdrop-blur-sm"
+      bodyClassName="overflow-hidden"
     >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-      <div
-        className="relative w-full sm:max-w-md flex flex-col max-h-[85dvh] sm:max-h-[85vh] rounded-t-2xl sm:rounded-2xl overflow-hidden"
-        style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="relative w-full flex flex-col max-h-[85dvh] sm:max-h-[85vh] rounded-t-2xl sm:rounded-2xl overflow-hidden">
         {/* Sticky header */}
         <div className="flex items-center justify-between px-4 py-3 shrink-0" style={{ borderBottom: "1px solid rgba(36,63,22,0.08)" }}>
           <div className="flex items-center gap-2 min-w-0">
@@ -2460,7 +2459,7 @@ function ItemDetailModal({
           </div>
         </div>
       </div>
-    </div>
+    </BottomSheetShell>
   );
 }
 
