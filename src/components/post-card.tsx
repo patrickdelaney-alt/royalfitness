@@ -489,6 +489,7 @@ function CatalogShareSection({ detail }: { detail: CatalogShareDetail }) {
 
   const ctaText = detail.ctaLabel ?? "Shop Now";
   const hasLink = typeof detail.link === "string" && detail.link.trim().length > 0;
+  const shareLink = hasLink ? detail.link!.trim() : undefined;
   const hasReferralCode = typeof detail.referralCode === "string" && detail.referralCode.trim().length > 0;
   const typeLabel = CATALOG_TYPE_LABELS[detail.catalogItemType] ?? detail.catalogItemType;
 
@@ -547,13 +548,13 @@ function CatalogShareSection({ detail }: { detail: CatalogShareDetail }) {
           <div className="space-y-2 pt-0.5">
             {hasLink && (
               <a
-                href={detail.link}
+                href={shareLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => {
-                  if (isCapacitorNative()) {
+                  if (shareLink && isCapacitorNative()) {
                     e.preventDefault();
-                    openExternalLink(detail.link!);
+                    openExternalLink(shareLink);
                   }
                 }}
                 className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 btn-gradient"
