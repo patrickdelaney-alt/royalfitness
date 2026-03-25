@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { HiX, HiShare, HiCalendar, HiExclamation, HiPhotograph } from "react-icons/hi";
 import toast from "react-hot-toast";
+import { fixedCtaBottomOffset, sheetBottomPadding } from "@/components/layout/bottom-inset";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -166,8 +167,12 @@ export default function ShareCatalogModal({
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:items-center sm:pb-0"
-      style={{ background: "rgba(24,25,15,0.55)", backdropFilter: "blur(4px)" }}
+      className="fixed inset-0 z-50 flex items-end justify-center pb-[var(--fixed-cta-bottom-offset)] sm:items-center sm:pb-0"
+      style={{
+        ["--fixed-cta-bottom-offset" as string]: fixedCtaBottomOffset,
+        background: "rgba(24,25,15,0.55)",
+        backdropFilter: "blur(4px)",
+      }}
       onClick={handleBackdropClick}
     >
       {/* Sheet wrapper — flex column so footer stays pinned */}
@@ -376,7 +381,7 @@ export default function ShareCatalogModal({
                 style={{
                   borderTop: "1px solid rgba(36,63,22,0.08)",
                   background: "#FDFAF5",
-                  paddingBottom: "calc(1rem + env(safe-area-inset-bottom))",
+                  paddingBottom: sheetBottomPadding,
                 }}
               >
                 {/* Inline error */}

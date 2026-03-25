@@ -37,6 +37,7 @@ import {
   type CatalogTab,
 } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
+import { fixedCtaBottomOffset, sheetBottomPadding } from "@/components/layout/bottom-inset";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -2117,7 +2118,7 @@ function EditItemModal({
           className="px-4 py-3 shrink-0"
           style={{
             borderTop: "1px solid rgba(36,63,22,0.08)",
-            paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+            paddingBottom: sheetBottomPadding,
           }}
         >
           <button
@@ -2239,7 +2240,8 @@ function ItemDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:pb-0"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pb-[var(--fixed-cta-bottom-offset)] sm:pb-0"
+      style={{ ["--fixed-cta-bottom-offset" as string]: fixedCtaBottomOffset }}
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
@@ -2419,7 +2421,7 @@ function ItemDetailModal({
           className="px-4 py-3 shrink-0 space-y-2"
           style={{
             borderTop: "1px solid rgba(36,63,22,0.08)",
-            paddingBottom: "calc(1rem + env(safe-area-inset-bottom))",
+            paddingBottom: sheetBottomPadding,
           }}
         >
           {/* Share to Feed — primary CTA */}

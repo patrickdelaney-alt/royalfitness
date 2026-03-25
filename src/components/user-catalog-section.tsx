@@ -15,6 +15,7 @@ import {
   getUserCatalogEndpoint,
 } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
+import { contentBottomPadding, fixedCtaBottomOffset, sheetBottomPadding } from "@/components/layout/bottom-inset";
 
 interface CatalogItem {
   id: string;
@@ -119,12 +120,13 @@ function DetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pb-[var(--fixed-cta-bottom-offset)] sm:pb-0"
+      style={{ ["--fixed-cta-bottom-offset" as string]: fixedCtaBottomOffset }}
       onClick={onClose}
     >
       <div className="absolute inset-0 backdrop-blur-sm" style={{ background: "rgba(24,25,15,0.5)" }} />
       <div
-        className="relative w-full sm:max-w-md max-h-[calc(100dvh-1rem)] overflow-y-auto overscroll-y-contain rounded-t-2xl sm:rounded-2xl pb-[env(safe-area-inset-bottom)]"
+        className="relative w-full sm:max-w-md max-h-[calc(100dvh-1rem)] overflow-y-auto overscroll-y-contain rounded-t-2xl sm:rounded-2xl"
         style={{
           background: "var(--surface)",
           border: "1px solid var(--border)",
@@ -160,7 +162,7 @@ function DetailModal({
         )}
 
         {/* Content */}
-        <div className="p-5 pb-8 space-y-4" style={{ paddingBottom: "calc(2.75rem + env(safe-area-inset-bottom))" }}>
+        <div className="p-5 pb-8 space-y-4" style={{ paddingBottom: contentBottomPadding }}>
           {/* Title + brand + category */}
           <div>
             <h3 className="text-xl font-normal" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>{item.name}</h3>
@@ -320,7 +322,7 @@ function DetailModal({
             style={{
               background: "var(--surface)",
               borderTop: "1px solid var(--border)",
-              paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+              paddingBottom: sheetBottomPadding,
             }}
           >
             {(item.link || item.recipeSourceUrl || item.videoUrl) && (
