@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { lookup } from "node:dns/promises";
+import { isIP } from "node:net";
 import { safeAuth } from "@/lib/safe-auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 type ParsedMetadata = {
   ogImage: string | null;
@@ -8,6 +11,59 @@ type ParsedMetadata = {
 };
 
 type ImageSource = "screenshot" | "og" | "twitter" | "icon" | null;
+
+function isBlockedHostname(hostname: string): boolean {
+  const normalized = hostname.toLowerCase();
+  if (normalized === "localhost") return true;
+  if (normalized.endsWith(".localhost") || normalized.endsWith(".local")) return true;
+  return false;
+}
+
+function isPrivateOrLocalIp(address: string): boolean {
+  const version = isIP(address);
+  if (version === 4) {
+    const [a, b] = address.split(".").map(Number);
+    if (a === 10 || a === 127 || a === 0) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    return false;
+  }
+
+  if (version === 6) {
+    const normalized = address.toLowerCase();
+    return (
+      normalized === "::1" ||
+      normalized === "::" ||
+      normalized.startsWith("fc") ||
+      normalized.startsWith("fd") ||
+      normalized.startsWith("fe80") ||
+      normalized.startsWith("::ffff:127.") ||
+      normalized.startsWith("::ffff:10.") ||
+      normalized.startsWith("::ffff:192.168.") ||
+      /^::ffff:172\.(1[6-9]|2[0-9]|3[0-1])\./.test(normalized)
+    );
+  }
+
+  return true;
+}
+
+async function assertSafeTarget(url: URL): Promise<boolean> {
+  if (!['http:', 'https:'].includes(url.protocol)) return false;
+  if (isBlockedHostname(url.hostname)) return false;
+
+  if (isIP(url.hostname)) {
+    return !isPrivateOrLocalIp(url.hostname);
+  }
+
+  try {
+    const records = await lookup(url.hostname, { all: true, verbatim: true });
+    if (!records.length) return false;
+    return records.every((record) => !isPrivateOrLocalIp(record.address));
+  } catch {
+    return false;
+  }
+}
 
 function extractMetaTag(html: string, property: string): string | null {
   // Match both property="og:xxx" and name="og:xxx" variants
@@ -143,6 +199,14 @@ async function fetchTikTokOEmbed(url: string): Promise<{ title: string | null; i
 }
 
 export async function POST(req: NextRequest) {
+  const rateLimit = checkRateLimit(req, "unfurl", 60, 60 * 1000);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } }
+    );
+  }
+
   try {
     const session = await safeAuth();
     if (!session?.user?.id) {
@@ -176,6 +240,10 @@ export async function POST(req: NextRequest) {
         { error: "Only HTTP and HTTPS URLs are supported" },
         { status: 400 }
       );
+    }
+
+    if (!(await assertSafeTarget(parsedUrl))) {
+      return NextResponse.json({ error: "URL is not allowed" }, { status: 400 });
     }
 
     // For TikTok, use the public oEmbed API for reliable thumbnail + title
@@ -220,6 +288,17 @@ export async function POST(req: NextRequest) {
       }
 
       fetchedPageUrl = response.url || parsedUrl.href;
+      let fetchedUrl: URL;
+      try {
+        fetchedUrl = new URL(fetchedPageUrl);
+      } catch {
+        return NextResponse.json({ error: "Invalid redirect target" }, { status: 400 });
+      }
+
+      if (!(await assertSafeTarget(fetchedUrl))) {
+        return NextResponse.json({ error: "URL is not allowed" }, { status: 400 });
+      }
+
       html = await response.text();
     } catch (fetchError) {
       console.warn("POST /api/unfurl fetch warning:", fetchError);

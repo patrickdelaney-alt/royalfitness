@@ -2,8 +2,17 @@ import { createHash, randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendPasswordResetEmail } from "@/lib/email";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  const rateLimit = checkRateLimit(req, "auth-forgot-password", 5, 10 * 60 * 1000);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { ok: true },
+      { status: 200, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } }
+    );
+  }
+
   try {
     const { email } = await req.json();
     if (!email || typeof email !== "string") {
@@ -44,7 +53,6 @@ export async function POST(req: NextRequest) {
 
     const resetUrl = `${baseUrl}/reset-password?token=${rawToken}&email=${encodeURIComponent(normalizedEmail)}`;
 
-    console.log("[forgot-password] Using base URL:", baseUrl);
 
     await sendPasswordResetEmail(normalizedEmail, resetUrl);
 
