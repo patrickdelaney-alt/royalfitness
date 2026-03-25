@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import EmbedMedia from "@/components/embed-media";
+import { contentBottomPadding, sheetBottomPadding } from "@/components/layout/bottom-inset";
 
 // ── data fetching ─────────────────────────────────────────────────────────────
 
@@ -173,7 +174,7 @@ export default async function PublicPostPage({
       </header>
 
       {/* Post content */}
-      <main className="flex-1 max-w-lg mx-auto w-full px-4 pt-6 pb-32">
+      <main className="flex-1 max-w-lg mx-auto w-full px-4 pt-6" style={{ paddingBottom: contentBottomPadding }}>
         {/* Author row */}
         <div className="flex items-center gap-3 mb-4">
           {post.author.avatarUrl ? (
@@ -338,11 +339,12 @@ export default async function PublicPostPage({
 
       {/* CTA banner */}
       <div
-        className="fixed bottom-0 left-0 right-0 px-4 py-4 flex items-center gap-3"
+        className="fixed bottom-0 left-0 right-0 px-4 pt-4 flex items-center gap-3"
         style={{
           background: "linear-gradient(to top, rgba(246,241,233,0.98) 0%, rgba(246,241,233,0.85) 100%)",
           backdropFilter: "blur(12px)",
           borderTop: "1px solid rgba(36,63,22,0.10)",
+          paddingBottom: sheetBottomPadding,
         }}
       >
         <div className="flex-1 min-w-0">

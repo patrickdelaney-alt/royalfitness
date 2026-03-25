@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { HiArrowLeft, HiPlus, HiTrash, HiCheck, HiPlay, HiPause, HiFlag } from "react-icons/hi";
 import toast from "react-hot-toast";
+import { contentBottomPadding, fixedCtaBottomOffset } from "@/components/layout/bottom-inset";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -323,7 +324,7 @@ export default function WorkoutSession() {
       </div>
 
       {/* ── Body ── */}
-      <div className="flex-1 overflow-y-auto px-4 pb-40 space-y-5">
+      <div className="flex-1 overflow-y-auto px-4 space-y-5" style={{ paddingBottom: contentBottomPadding }}>
 
         {/* Workout Name */}
         <div>
@@ -480,8 +481,9 @@ export default function WorkoutSession() {
 
       {/* ── Sticky Finish Button ── */}
       <div
-        className="fixed bottom-16 left-0 right-0 px-4 pb-4 pt-4"
+        className="fixed left-0 right-0 px-4 pb-4 pt-4"
         style={{
+          bottom: fixedCtaBottomOffset,
           background: "linear-gradient(to top, var(--bg) 70%, transparent)",
         }}
       >
@@ -502,8 +504,12 @@ export default function WorkoutSession() {
       {/* ── Abandon Confirm Modal ── */}
       {showAbandon && (
         <div
-          className="fixed inset-0 z-[70] flex items-end justify-center p-4 pb-[calc(4rem+env(safe-area-inset-bottom))]"
-          style={{ background: "rgba(24,25,15,0.15)", backdropFilter: "blur(8px)" }}
+          className="fixed inset-0 z-[70] flex items-end justify-center p-4"
+          style={{
+            background: "rgba(24,25,15,0.15)",
+            backdropFilter: "blur(8px)",
+            paddingBottom: fixedCtaBottomOffset,
+          }}
           onClick={() => setShowAbandon(false)}
         >
           <div
