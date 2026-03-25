@@ -19,13 +19,12 @@ export default async function MainLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-[100dvh] flex-col bg-background">
       <main
-        className="flex-1 overflow-y-auto"
+        className="flex-1"
         style={{
           paddingTop: "env(safe-area-inset-top)",
           paddingBottom: BOTTOM_NAV_HEIGHT,
-          WebkitOverflowScrolling: "touch",
         }}
       >
         {children}
