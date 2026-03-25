@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { HiXMark, HiUserCircle } from "react-icons/hi2";
+import { fixedCtaBottomOffset, sheetBottomPadding } from "@/components/layout/bottom-inset";
 
 interface FollowUser {
   id: string;
@@ -141,6 +142,7 @@ export default function FollowListModal({
           border: "1px solid var(--border)",
           maxHeight: "75vh",
           boxShadow: "var(--shadow-lg)",
+          bottom: fixedCtaBottomOffset,
         }}
       >
         {/* Handle + header */}
@@ -161,7 +163,7 @@ export default function FollowListModal({
         </div>
 
         {/* Scrollable list */}
-        <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="flex-1 overflow-y-auto min-h-0" style={{ paddingBottom: sheetBottomPadding }}>
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <div

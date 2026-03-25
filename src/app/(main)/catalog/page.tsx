@@ -38,6 +38,7 @@ import {
 } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 import { fixedCtaBottomOffset, sheetBottomPadding } from "@/components/layout/bottom-inset";
+import { BottomCtaBar, BottomCtaRow } from "@/components/layout/bottom-cta";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -2417,13 +2418,7 @@ function ItemDetailModal({
         </div>
 
         {/* Sticky footer — Share + Edit + Delete */}
-        <div
-          className="px-4 py-3 shrink-0 space-y-2"
-          style={{
-            borderTop: "1px solid rgba(36,63,22,0.08)",
-            paddingBottom: sheetBottomPadding,
-          }}
-        >
+        <BottomCtaBar className="space-y-2">
           {/* Share to Feed — primary CTA */}
           {onShare && (
             <button
@@ -2439,10 +2434,10 @@ function ItemDetailModal({
               Share to Feed
             </button>
           )}
-          <div className="flex gap-2">
+          <BottomCtaRow>
             <button
               onClick={onEdit}
-              className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
+              className="min-w-[120px] flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
               style={{ background: "rgba(82,133,49,0.12)", color: "#528531", border: "1px solid rgba(82,133,49,0.25)" }}
             >
               <HiPencil className="w-4 h-4" />
@@ -2451,14 +2446,14 @@ function ItemDetailModal({
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
+              className="min-w-[120px] flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
               style={{ background: "rgba(248,113,113,0.1)", color: "#f87171", border: "1px solid rgba(248,113,113,0.2)" }}
             >
               <HiTrash className="w-4 h-4" />
               {deleting ? "Deleting…" : "Delete"}
             </button>
-          </div>
-        </div>
+          </BottomCtaRow>
+        </BottomCtaBar>
       </div>
     </div>
   );

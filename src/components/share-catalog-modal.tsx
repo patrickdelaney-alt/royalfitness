@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { HiX, HiShare, HiCalendar, HiExclamation, HiPhotograph } from "react-icons/hi";
 import toast from "react-hot-toast";
-import { fixedCtaBottomOffset, sheetBottomPadding } from "@/components/layout/bottom-inset";
+import { fixedCtaBottomOffset } from "@/components/layout/bottom-inset";
+import { BottomCtaBar, BottomCtaRow } from "@/components/layout/bottom-cta";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -353,12 +354,12 @@ export default function ShareCatalogModal({
                     >
                       Visibility
                     </label>
-                    <div className="flex gap-2">
+                    <BottomCtaRow>
                       {VISIBILITY_OPTIONS.map((opt) => (
                         <button
                           key={opt.value}
                           onClick={() => setVisibility(opt.value)}
-                          className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200"
+                          className="min-w-[96px] flex-1 px-2 py-2.5 rounded-xl text-xs font-semibold leading-tight text-center transition-all duration-200"
                           style={
                             visibility === opt.value
                               ? { background: "#243F16", color: "#FDFAF5", boxShadow: "0 2px 8px rgba(36,63,22,0.28)" }
@@ -368,7 +369,7 @@ export default function ShareCatalogModal({
                           {opt.label}
                         </button>
                       ))}
-                    </div>
+                    </BottomCtaRow>
                   </div>
                 </>
               )}
@@ -376,14 +377,7 @@ export default function ShareCatalogModal({
 
             {/* ── Sticky footer — always above the keyboard ── */}
             {showForm && (
-              <div
-                className="flex-shrink-0 px-6 pt-3 space-y-3"
-                style={{
-                  borderTop: "1px solid rgba(36,63,22,0.08)",
-                  background: "#FDFAF5",
-                  paddingBottom: sheetBottomPadding,
-                }}
-              >
+              <BottomCtaBar className="px-6 space-y-3" style={{ background: "#FDFAF5" }}>
                 {/* Inline error */}
                 {error && (
                   <div
@@ -420,7 +414,7 @@ export default function ShareCatalogModal({
                     </>
                   )}
                 </button>
-              </div>
+              </BottomCtaBar>
             )}
           </div>
         </div>

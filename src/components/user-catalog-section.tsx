@@ -15,7 +15,8 @@ import {
   getUserCatalogEndpoint,
 } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
-import { contentBottomPadding, fixedCtaBottomOffset, sheetBottomPadding } from "@/components/layout/bottom-inset";
+import { contentBottomPadding, fixedCtaBottomOffset } from "@/components/layout/bottom-inset";
+import { BottomCtaBar } from "@/components/layout/bottom-cta";
 
 interface CatalogItem {
   id: string;
@@ -317,13 +318,9 @@ function DetailModal({
           )}
 
           {/* Shop / Link button + own profile actions */}
-          <div
-            className="sticky bottom-0 -mx-5 mt-2 px-5 pt-3 space-y-3"
-            style={{
-              background: "var(--surface)",
-              borderTop: "1px solid var(--border)",
-              paddingBottom: sheetBottomPadding,
-            }}
+          <BottomCtaBar
+            className="sticky bottom-0 -mx-5 mt-2 px-5 space-y-3"
+            style={{ borderTop: "1px solid var(--border)" }}
           >
             {(item.link || item.recipeSourceUrl || item.videoUrl) && (
               <a
@@ -356,7 +353,7 @@ function DetailModal({
                 Edit or Delete in My Catalog
               </Link>
             )}
-          </div>
+          </BottomCtaBar>
 
         </div>
       </div>
