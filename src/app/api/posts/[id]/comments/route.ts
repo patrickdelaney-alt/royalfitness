@@ -81,8 +81,8 @@ export async function GET(
 
     let nextCursor: string | undefined;
     if (comments.length > limit) {
-      const nextItem = comments.pop();
-      nextCursor = nextItem?.id;
+      comments.pop();
+      nextCursor = comments[comments.length - 1]?.id;
     }
 
     return NextResponse.json({
