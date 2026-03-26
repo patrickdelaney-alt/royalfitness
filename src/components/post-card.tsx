@@ -797,6 +797,8 @@ function FullPostCard({
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [commentCount, setCommentCount] = useState(post._count.comments);
@@ -870,6 +872,7 @@ function FullPostCard({
       if (res.ok) {
         const data = await res.json();
         setComments(data.comments ?? []);
+        setNextCursor(data.nextCursor);
       }
     } catch {
       // silent fail
@@ -885,6 +888,27 @@ function FullPostCard({
       loadComments();
     }
   }, [showComments, commentsLoaded, loadComments]);
+
+  // ── load more comments ──
+
+  const loadMoreComments = useCallback(async () => {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(
+        `/api/posts/${post.id}/comments?limit=10&cursor=${nextCursor}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setComments((prev) => [...prev, ...(data.comments ?? [])]);
+        setNextCursor(data.nextCursor);
+      }
+    } catch {
+      // silent fail
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [nextCursor, loadingMore, post.id]);
 
   // ── add comment ──
 
@@ -1529,6 +1553,16 @@ function FullPostCard({
               </div>
             </div>
           ))}
+
+          {nextCursor && (
+            <button
+              onClick={loadMoreComments}
+              disabled={loadingMore}
+              className="text-xs text-muted-dim hover:text-foreground transition-colors disabled:opacity-50"
+            >
+              {loadingMore ? "Loading…" : "Load more comments"}
+            </button>
+          )}
         </div>
       )}
     </article>
