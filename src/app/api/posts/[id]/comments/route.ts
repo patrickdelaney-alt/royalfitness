@@ -15,6 +15,7 @@ export async function GET(
 
     const { searchParams } = req.nextUrl;
     const cursor = searchParams.get("cursor") || undefined;
+    const skip = cursor ? Math.max(0, parseInt(cursor, 10)) : 0;
     const limit = Math.min(
       Math.max(parseInt(searchParams.get("limit") || "20", 10), 1),
       50
@@ -70,7 +71,7 @@ export async function GET(
     const comments = await prisma.comment.findMany({
       where: { postId },
       take: limit + 1,
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      skip,
       orderBy: { createdAt: "asc" },
       include: {
         author: {
@@ -82,7 +83,7 @@ export async function GET(
     let nextCursor: string | undefined;
     if (comments.length > limit) {
       comments.pop();
-      nextCursor = comments[comments.length - 1]?.id;
+      nextCursor = String(skip + limit);
     }
 
     return NextResponse.json({
