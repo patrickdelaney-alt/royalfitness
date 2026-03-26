@@ -40,19 +40,18 @@ const ICON_COLOR_MAP = {
   FOLLOW_REQUEST: "text-amber-500",
 };
 
-function getNotificationText(notification: Notification): string {
-  const name = notification.actor.name || notification.actor.username;
+function getNotificationAction(notification: Notification): string {
   switch (notification.type) {
     case "LIKE":
-      return `${name} liked your post`;
+      return "liked your post";
     case "COMMENT":
-      return `${name} commented on your post`;
+      return "commented on your post";
     case "FOLLOW":
-      return `${name} started following you`;
+      return "started following you";
     case "FOLLOW_REQUEST":
-      return `${name} requested to follow you`;
+      return "requested to follow you";
     default:
-      return `${name} interacted with your content`;
+      return "interacted with your content";
   }
 }
 
@@ -281,9 +280,7 @@ export default function NotificationsPage() {
                     <span className="font-semibold">
                       {notification.actor.username}
                     </span>{" "}
-                    {getNotificationText(notification).split(
-                      notification.actor.name || notification.actor.username
-                    )[1]}
+                    {getNotificationAction(notification)}
                   </p>
                   {notification.post?.caption && (
                     <p className="text-xs text-muted mt-0.5 truncate">
