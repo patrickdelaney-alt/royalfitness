@@ -7,6 +7,7 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import { getUserToday, utcToLocalDateStr, addDaysToDateStr } from "@/lib/timezone";
 
 export interface AchievementDef {
   key: string;
@@ -395,7 +396,8 @@ export const CATEGORY_META: Record<
 
 export async function checkAndAwardAchievements(
   userId: string,
-  prisma: PrismaClient
+  prisma: PrismaClient,
+  timeZone = "UTC"
 ): Promise<string[]> {
   // Gather all stats in parallel
   const [
@@ -470,7 +472,8 @@ export async function checkAndAwardAchievements(
 
   // Compute streak (days with at least one post, consecutive back from today)
   const { longestStreak, currentStreak } = computeStreaks(
-    streakData.map((p) => p.createdAt)
+    streakData.map((p) => p.createdAt),
+    timeZone
   );
 
   const wellnessMinutes = wellnessMinutesResult._sum.durationMinutes ?? 0;
@@ -509,20 +512,20 @@ export async function checkAndAwardAchievements(
   return newlyEarned;
 }
 
-function computeStreaks(dates: Date[]): {
+function computeStreaks(dates: Date[], timeZone = "UTC"): {
   currentStreak: number;
   longestStreak: number;
 } {
   if (dates.length === 0) return { currentStreak: 0, longestStreak: 0 };
 
-  // Normalize to unique date strings (YYYY-MM-DD)
+  // Normalize to unique date strings (YYYY-MM-DD) in the user's timezone
   const daySet = new Set(
-    dates.map((d) => d.toISOString().split("T")[0])
+    dates.map((d) => utcToLocalDateStr(d, timeZone))
   );
   const days = [...daySet].sort().reverse(); // newest first
 
-  const today = new Date().toISOString().split("T")[0];
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+  const today = getUserToday(timeZone);
+  const yesterday = addDaysToDateStr(today, -1);
 
   // Current streak: consecutive from today or yesterday
   let currentStreak = 0;
@@ -531,7 +534,7 @@ function computeStreaks(dates: Date[]): {
     const startDate = new Date(startFrom + "T12:00:00Z");
     let cursor = startDate;
     for (const day of days) {
-      const expected = cursor.toISOString().split("T")[0];
+      const expected = utcToLocalDateStr(cursor, timeZone);
       if (day === expected) {
         currentStreak++;
         cursor = new Date(cursor.getTime() - 86400000);
