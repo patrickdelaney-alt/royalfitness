@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import WaitlistForm from "./WaitlistForm";
-import { FaApple } from "react-icons/fa";
 
 export const metadata = {
   title: "Join the Waitlist — Royal",
@@ -42,20 +41,7 @@ export default function WaitlistPage() {
         </div>
       </div>
 
-      {/* App Store CTA */}
-      <div className="mt-5 w-full max-w-sm">
-        <a
-          href="https://apps.apple.com/us/app/royal-fitness-wellness/id6759988491"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-primary w-full justify-center"
-        >
-          <FaApple size={17} />
-          Download on the App Store
-        </a>
-      </div>
-
-      <p className="mt-6 text-xs" style={{ color: "var(--text-muted)" }}>
+      <p className="mt-8 text-xs" style={{ color: "var(--text-muted)" }}>
         &copy; {new Date().getFullYear()} RoyalWellness
       </p>
     </div>
