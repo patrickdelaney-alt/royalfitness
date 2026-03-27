@@ -116,7 +116,9 @@ export default function FeedContent() {
           toast.error("Failed to load more posts.");
         }
       } finally {
-        setLoading(false);
+        if (reset) {
+          setLoading(false);
+        }
         setLoadingMore(false);
       }
     },
