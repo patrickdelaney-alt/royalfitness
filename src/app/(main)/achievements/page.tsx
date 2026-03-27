@@ -165,7 +165,8 @@ export default function AchievementsPage() {
   const [activeCategory, setActiveCategory] = useState<Category | "all">("all");
 
   useEffect(() => {
-    fetch("/api/achievements")
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    fetch(`/api/achievements?tz=${encodeURIComponent(tz)}`)
       .then((r) => r.json())
       .then((data) => {
         setAchievements(data.achievements ?? []);

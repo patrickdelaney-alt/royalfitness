@@ -8,6 +8,7 @@ import {
   checkAndAwardAchievements,
   type AchievementStats,
 } from "@/lib/achievements";
+import { safeTimeZone, getUserToday, utcToLocalDateStr, addDaysToDateStr } from "@/lib/timezone";
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,13 +19,14 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = req.nextUrl;
     const targetUserId = searchParams.get("userId") ?? session.user.id;
+    const tz = safeTimeZone(searchParams.get("tz"));
 
     // Only allow viewing other users' achievements if it's your own profile
     const viewingOwn = targetUserId === session.user.id;
 
     // Run the checker to award any new achievements (own profile only)
     if (viewingOwn) {
-      await checkAndAwardAchievements(targetUserId, prisma).catch(() => {});
+      await checkAndAwardAchievements(targetUserId, prisma, tz).catch(() => {});
     }
 
     // Fetch earned achievements
@@ -103,15 +105,13 @@ export async function GET(req: NextRequest) {
         postedTypes.has("WELLNESS") &&
         postedTypes.has("GENERAL");
 
-      // Streak calc
+      // Streak calc (timezone-aware)
       const daySet = new Set(
-        recentPosts.map((p) => p.createdAt.toISOString().split("T")[0])
+        recentPosts.map((p) => utcToLocalDateStr(p.createdAt, tz))
       );
       const days = [...daySet].sort().reverse();
-      const today = new Date().toISOString().split("T")[0];
-      const yesterday = new Date(Date.now() - 86400000)
-        .toISOString()
-        .split("T")[0];
+      const today = getUserToday(tz);
+      const yesterday = addDaysToDateStr(today, -1);
       let currentStreak = 0;
       if (days[0] === today || days[0] === yesterday) {
         const startDate = new Date(
@@ -119,7 +119,7 @@ export async function GET(req: NextRequest) {
         );
         let cursor = startDate;
         for (const day of days) {
-          if (day === cursor.toISOString().split("T")[0]) {
+          if (day === utcToLocalDateStr(cursor, tz)) {
             currentStreak++;
             cursor = new Date(cursor.getTime() - 86400000);
           } else break;
