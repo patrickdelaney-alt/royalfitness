@@ -310,6 +310,24 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
           Sign up
         </Link>
       </p>
+
+      {/* App Store download */}
+      <div className="mt-5">
+        <div className="relative mb-5">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-surface" />
+          </div>
+        </div>
+        <a
+          href="https://apps.apple.com/us/app/royal-fitness-wellness/id6759988491"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-primary w-full justify-center"
+        >
+          <AppleIcon />
+          Download on the App Store
+        </a>
+      </div>
     </div>
   );
 }
