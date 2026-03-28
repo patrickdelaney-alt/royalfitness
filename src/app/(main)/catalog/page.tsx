@@ -17,6 +17,8 @@ import {
   HiViewList,
   HiPencil,
   HiShare,
+  HiBookmark,
+  HiOutlineBookmark,
 } from "react-icons/hi";
 import ShareCatalogModal, { type CatalogItemType as ShareCatalogItemType, type ShareCatalogItem } from "@/components/share-catalog-modal";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -130,10 +132,7 @@ type AnyItemWithType = AnyItem & { _catalogType: CatalogTab };
 
 const inputCls = "input-dark w-full";
 const CATALOG_GUIDE_DISMISSED_KEY = "rf_catalog_guide_dismissed_v1";
-const TAG_LIMITS = {
-  maxCount: 12,
-  maxLength: 24,
-};
+const CATALOG_PINNED_KEY = "rf_catalog_pinned_v1";
 
 interface LinkEnrichmentResult {
   title: string | null;
@@ -187,45 +186,6 @@ const getItemGradient = (item: AnyItem, catalogType: CatalogTab): string => {
   return CATALOG_PAGE_GRADIENTS[catalogType];
 };
 
-const getTagValidationError = (tags: string[]) => {
-  if (tags.length > TAG_LIMITS.maxCount) {
-    return `Use up to ${TAG_LIMITS.maxCount} tags`;
-  }
-  const overLimitTag = tags.find((tag) => tag.length > TAG_LIMITS.maxLength);
-  if (overLimitTag) {
-    return `Each tag must be ${TAG_LIMITS.maxLength} chars or fewer`;
-  }
-  return "";
-};
-
-function TagsInput({
-  tagsText,
-  setTagsText,
-}: {
-  tagsText: string;
-  setTagsText: (value: string) => void;
-}) {
-  const parsedTags = dedupeTags(parseTagsText(tagsText));
-  const validationError = getTagValidationError(parsedTags);
-
-  return (
-    <div className="space-y-1">
-      <input
-        value={tagsText}
-        onChange={(e) => setTagsText(e.target.value)}
-        placeholder="Tags (comma-separated)"
-        className={inputCls}
-      />
-      <div className="flex items-center justify-between gap-2 text-[11px]" style={{ color: "var(--text-muted)" }}>
-        <span>
-          {parsedTags.length}/{TAG_LIMITS.maxCount} tags · {TAG_LIMITS.maxLength} chars max
-        </span>
-        {validationError ? <span style={{ color: "#f87171" }}>{validationError}</span> : null}
-      </div>
-      <SubcategoryChips tags={parsedTags} />
-    </div>
-  );
-}
 
 // ── Photo Upload Component ────────────────────────────────────────────────────
 
@@ -327,7 +287,6 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
   const [carbs, setCarbs] = useState("");
   const [fat, setFat] = useState("");
   const [notes, setNotes] = useState("");
-  const [tagsText, setTagsText] = useState("");
   const [recipeSourceUrl, setRecipeSourceUrl] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoSource, setPhotoSource] = useState<PhotoSource>("none");
@@ -337,12 +296,6 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
   const handleSubmit = async () => {
     if (!name.trim()) {
       setError("Name required");
-      return;
-    }
-    const parsedTags = dedupeTags(parseTagsText(tagsText));
-    const tagsError = getTagValidationError(parsedTags);
-    if (tagsError) {
-      setError(tagsError);
       return;
     }
     setSubmitting(true);
@@ -364,7 +317,6 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
           recipeSourceUrl: recipeSourceUrl.trim() || undefined,
           photoUrl: photoUrl || undefined,
           notes: notes.trim() || undefined,
-          tags: parsedTags,
         }),
       });
       if (!res.ok) {
@@ -425,7 +377,6 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
         placeholder="Notes"
         className="textarea-dark w-full resize-none"
       />
-      <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
       <button
         onClick={handleSubmit}
         disabled={submitting}
@@ -444,7 +395,6 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
   const [dose, setDose] = useState("");
   const [schedule, setSchedule] = useState("");
   const [notes, setNotes] = useState("");
-  const [tagsText, setTagsText] = useState("");
   const [link, setLink] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
@@ -453,24 +403,11 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
   const [error, setError] = useState("");
   const [linkEnriching, setLinkEnriching] = useState(false);
   const [linkEnrichError, setLinkEnrichError] = useState("");
-  const [nameTouched, setNameTouched] = useState(false);
-  const [brandTouched, setBrandTouched] = useState(false);
-  const [photoTouched, setPhotoTouched] = useState(false);
   const enrichRequestIdRef = useRef(0);
-  const nameTouchedRef = useRef(nameTouched);
-  const brandTouchedRef = useRef(brandTouched);
-  const photoTouchedRef = useRef(photoTouched);
+  const nameTouchedRef = useRef(false);
+  const brandTouchedRef = useRef(false);
   const photoSourceRef = useRef(photoSource);
 
-  useEffect(() => {
-    nameTouchedRef.current = nameTouched;
-  }, [nameTouched]);
-  useEffect(() => {
-    brandTouchedRef.current = brandTouched;
-  }, [brandTouched]);
-  useEffect(() => {
-    photoTouchedRef.current = photoTouched;
-  }, [photoTouched]);
   useEffect(() => {
     photoSourceRef.current = photoSource;
   }, [photoSource]);
@@ -500,7 +437,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
         if (enriched.siteName && (!brandTouchedRef.current || options?.overwriteTouched)) {
           setBrand(enriched.siteName);
         }
-        if (enriched.imageUrl && (!photoTouchedRef.current || options?.overwriteTouched) && photoSourceRef.current !== "manual") {
+        if (enriched.imageUrl && (options?.overwriteTouched || photoSourceRef.current !== "manual")) {
           setPhotoUrl(enriched.imageUrl);
           setPhotoSource("auto");
         }
@@ -535,12 +472,6 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
       setError("Name required");
       return;
     }
-    const parsedTags = dedupeTags(parseTagsText(tagsText));
-    const tagsError = getTagValidationError(parsedTags);
-    if (tagsError) {
-      setError(tagsError);
-      return;
-    }
     setSubmitting(true);
     setError("");
     try {
@@ -556,7 +487,6 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
           link: link.trim() || undefined,
           referralCode: referralCode.trim() || undefined,
           photoUrl: photoUrl || undefined,
-          tags: parsedTags,
         }),
       });
       if (!res.ok) {
@@ -587,7 +517,6 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
         photoUrl={photoUrl}
         photoSource={photoSource}
         onUpload={(url) => {
-          setPhotoTouched(true);
           setPhotoUrl(url);
           setPhotoSource("manual");
         }}
@@ -595,7 +524,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
       <input
         value={name}
         onChange={(e) => {
-          setNameTouched(true);
+          nameTouchedRef.current = true;
           setName(e.target.value);
         }}
         placeholder="Supplement name *"
@@ -605,7 +534,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
         <input
           value={brand}
           onChange={(e) => {
-            setBrandTouched(true);
+            brandTouchedRef.current = true;
             setBrand(e.target.value);
           }}
           placeholder="Brand"
@@ -641,7 +570,6 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
         <input
           value={link}
           onChange={(e) => setLink(e.target.value)}
-          onBlur={() => void runLinkEnrichment(link)}
           placeholder="Product link (optional)"
           type="url"
           className={inputCls}
@@ -666,7 +594,6 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
         )}
       </div>
       <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
-      <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
       <button
         onClick={handleSubmit}
         disabled={submitting}
@@ -687,24 +614,14 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoSource, setPhotoSource] = useState<PhotoSource>("none");
   const [notes, setNotes] = useState("");
-  const [tagsText, setTagsText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [linkEnriching, setLinkEnriching] = useState(false);
   const [linkEnrichError, setLinkEnrichError] = useState("");
-  const [nameTouched, setNameTouched] = useState(false);
-  const [photoTouched, setPhotoTouched] = useState(false);
   const enrichRequestIdRef = useRef(0);
-  const nameTouchedRef = useRef(nameTouched);
-  const photoTouchedRef = useRef(photoTouched);
+  const nameTouchedRef = useRef(false);
   const photoSourceRef = useRef(photoSource);
 
-  useEffect(() => {
-    nameTouchedRef.current = nameTouched;
-  }, [nameTouched]);
-  useEffect(() => {
-    photoTouchedRef.current = photoTouched;
-  }, [photoTouched]);
   useEffect(() => {
     photoSourceRef.current = photoSource;
   }, [photoSource]);
@@ -731,7 +648,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
         if (enriched.title && (!nameTouchedRef.current || options?.overwriteTouched)) {
           setName(enriched.title);
         }
-        if (enriched.imageUrl && (!photoTouchedRef.current || options?.overwriteTouched) && photoSourceRef.current !== "manual") {
+        if (enriched.imageUrl && (options?.overwriteTouched || photoSourceRef.current !== "manual")) {
           setPhotoUrl(enriched.imageUrl);
           setPhotoSource("auto");
         }
@@ -766,12 +683,6 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
       setError("Name required");
       return;
     }
-    const parsedTags = dedupeTags(parseTagsText(tagsText));
-    const tagsError = getTagValidationError(parsedTags);
-    if (tagsError) {
-      setError(tagsError);
-      return;
-    }
     setSubmitting(true);
     setError("");
     try {
@@ -785,7 +696,6 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
           referralCode: referralCode.trim() || undefined,
           photoUrl: photoUrl || undefined,
           notes: notes.trim() || undefined,
-          tags: parsedTags,
         }),
       });
       if (!res.ok) {
@@ -816,7 +726,6 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
         photoUrl={photoUrl}
         photoSource={photoSource}
         onUpload={(url) => {
-          setPhotoTouched(true);
           setPhotoUrl(url);
           setPhotoSource("manual");
         }}
@@ -824,7 +733,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
       <input
         value={name}
         onChange={(e) => {
-          setNameTouched(true);
+          nameTouchedRef.current = true;
           setName(e.target.value);
         }}
         placeholder="Accessory name *"
@@ -858,7 +767,6 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
         <input
           value={link}
           onChange={(e) => setLink(e.target.value)}
-          onBlur={() => void runLinkEnrichment(link)}
           placeholder="Link (optional)"
           type="url"
           className={inputCls}
@@ -883,7 +791,6 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
         )}
       </div>
       <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
-      <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
       <button
         onClick={handleSubmit}
         disabled={submitting}
@@ -905,24 +812,14 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoSource, setPhotoSource] = useState<PhotoSource>("none");
   const [notes, setNotes] = useState("");
-  const [tagsText, setTagsText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [linkEnriching, setLinkEnriching] = useState(false);
   const [linkEnrichError, setLinkEnrichError] = useState("");
-  const [nameTouched, setNameTouched] = useState(false);
-  const [photoTouched, setPhotoTouched] = useState(false);
   const enrichRequestIdRef = useRef(0);
-  const nameTouchedRef = useRef(nameTouched);
-  const photoTouchedRef = useRef(photoTouched);
+  const nameTouchedRef = useRef(false);
   const photoSourceRef = useRef(photoSource);
 
-  useEffect(() => {
-    nameTouchedRef.current = nameTouched;
-  }, [nameTouched]);
-  useEffect(() => {
-    photoTouchedRef.current = photoTouched;
-  }, [photoTouched]);
   useEffect(() => {
     photoSourceRef.current = photoSource;
   }, [photoSource]);
@@ -949,7 +846,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         if (enriched.title && (!nameTouchedRef.current || options?.overwriteTouched)) {
           setName(enriched.title);
         }
-        if (enriched.imageUrl && (!photoTouchedRef.current || options?.overwriteTouched) && photoSourceRef.current !== "manual") {
+        if (enriched.imageUrl && (options?.overwriteTouched || photoSourceRef.current !== "manual")) {
           setPhotoUrl(enriched.imageUrl);
           setPhotoSource("auto");
         }
@@ -984,12 +881,6 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
       setError("Name required");
       return;
     }
-    const parsedTags = dedupeTags(parseTagsText(tagsText));
-    const tagsError = getTagValidationError(parsedTags);
-    if (tagsError) {
-      setError(tagsError);
-      return;
-    }
     setSubmitting(true);
     setError("");
     try {
@@ -1004,7 +895,6 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
           referralCode: referralCode.trim() || undefined,
           photoUrl: photoUrl || undefined,
           notes: notes.trim() || undefined,
-          tags: parsedTags,
         }),
       });
       if (!res.ok) {
@@ -1035,7 +925,6 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         photoUrl={photoUrl}
         photoSource={photoSource}
         onUpload={(url) => {
-          setPhotoTouched(true);
           setPhotoUrl(url);
           setPhotoSource("manual");
         }}
@@ -1043,7 +932,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
       <input
         value={name}
         onChange={(e) => {
-          setNameTouched(true);
+          nameTouchedRef.current = true;
           setName(e.target.value);
         }}
         placeholder="Wellness item name *"
@@ -1086,7 +975,6 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         <input
           value={link}
           onChange={(e) => setLink(e.target.value)}
-          onBlur={() => void runLinkEnrichment(link)}
           placeholder="Link (optional)"
           type="url"
           className={inputCls}
@@ -1111,7 +999,6 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         )}
       </div>
       <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
-      <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
       <button
         onClick={handleSubmit}
         disabled={submitting}
@@ -1129,19 +1016,12 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
   const [exercises, setExercises] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [notes, setNotes] = useState("");
-  const [tagsText, setTagsText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async () => {
     if (!name.trim()) {
       setError("Name required");
-      return;
-    }
-    const parsedTags = dedupeTags(parseTagsText(tagsText));
-    const tagsError = getTagValidationError(parsedTags);
-    if (tagsError) {
-      setError(tagsError);
       return;
     }
     setSubmitting(true);
@@ -1160,7 +1040,6 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
           exercisesJson: JSON.stringify(exerciseList),
           videoUrl: videoUrl.trim() || undefined,
           notes: notes.trim() || undefined,
-          tags: parsedTags,
         }),
       });
       if (!res.ok) {
@@ -1196,7 +1075,6 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
         className={inputCls}
       />
       <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
-      <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
       <button
         onClick={handleSubmit}
         disabled={submitting}
@@ -1256,7 +1134,6 @@ function AddAffiliateForm({
   const [ctaLabel, setCtaLabel] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoSource, setPhotoSource] = useState<PhotoSource>("none");
-  const [tagsText, setTagsText] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const [error, setError] = useState("");
@@ -1267,6 +1144,9 @@ function AddAffiliateForm({
   const [linkEnriching, setLinkEnriching] = useState(false);
   const [linkEnrichError, setLinkEnrichError] = useState("");
   const singleEnrichRequestIdRef = useRef(0);
+  const singleNameTouchedRef = useRef(false);
+  const singleBrandTouchedRef = useRef(false);
+  const singlePhotoSourceRef = useRef<PhotoSource>("none");
 
   // Parse bulk text and enrich with URL metadata
   const handleBulkParse = async () => {
@@ -1344,15 +1224,16 @@ function AddAffiliateForm({
       try {
         const enriched = await enrichCatalogLink(trimmedUrl);
         if (requestId !== singleEnrichRequestIdRef.current) return;
-        if (!name.trim() && enriched.title) {
+        if (enriched.title && !singleNameTouchedRef.current) {
           setName(enriched.title);
         }
-        if (!brand.trim() && enriched.siteName) {
+        if (enriched.siteName && !singleBrandTouchedRef.current) {
           setBrand(enriched.siteName);
         }
-        if (enriched.imageUrl && (options?.forcePhotoRefresh || photoSource !== "manual")) {
+        if (enriched.imageUrl && (options?.forcePhotoRefresh || singlePhotoSourceRef.current !== "manual")) {
           setPhotoUrl(enriched.imageUrl);
           setPhotoSource("auto");
+          singlePhotoSourceRef.current = "auto";
         }
       } catch {
         if (requestId !== singleEnrichRequestIdRef.current) return;
@@ -1363,7 +1244,7 @@ function AddAffiliateForm({
         }
       }
     },
-    [brand, mode, name, photoSource]
+    [mode]
   );
 
   const updateBulkItem = (index: number, field: keyof BulkItem, value: string | boolean | null | number) => {
@@ -1403,7 +1284,6 @@ function AddAffiliateForm({
             referralCode: item.referralCode?.trim() || undefined,
             category: item.category,
             photoUrl: item.photoUrl?.trim() || undefined,
-            tags: dedupeTags(parseTagsText(item.tagsText)),
             subcategoryTags: dedupeTags(parseTagsText(item.tagsText)),
             logoUrl: item.photoUrl?.trim() || undefined,
             enrichmentConfidence: item.confidence >= 0.75 ? "high" : item.confidence >= 0.55 ? "medium" : "low",
@@ -1490,12 +1370,6 @@ function AddAffiliateForm({
       setError("Add a link or code");
       return;
     }
-    const parsedTags = dedupeTags(parseTagsText(tagsText));
-    const tagsError = getTagValidationError(parsedTags);
-    if (tagsError) {
-      setError(tagsError);
-      return;
-    }
     setSubmitting(true);
     setError("");
     try {
@@ -1511,7 +1385,6 @@ function AddAffiliateForm({
           category,
           ctaLabel: ctaLabel.trim() || undefined,
           photoUrl: photoUrl || undefined,
-          tags: parsedTags,
         }),
       });
       if (!res.ok) {
@@ -1634,7 +1507,6 @@ function AddAffiliateForm({
                         <input value={item.referralCode ?? ""} onChange={(e) => updateBulkItem(activeIndex, "referralCode", e.target.value)} placeholder="Code" className={inputCls} />
                       </div>
                       <input value={item.photoUrl ?? ""} onChange={(e) => updateBulkItem(activeIndex, "photoUrl", e.target.value)} placeholder="Logo image URL" className={inputCls} />
-                      <input value={item.tagsText} onChange={(e) => updateBulkItem(activeIndex, "tagsText", e.target.value)} placeholder="Tags (comma-separated)" className={inputCls} />
                       {item.confidence < 0.55 && item.included && (
                         <label className="flex items-start gap-2 text-xs" style={{ color: "#f87171" }}>
                           <input
@@ -1717,8 +1589,8 @@ function AddAffiliateForm({
               We&apos;ll auto-detect links, codes, and categories
             </p>
           </div>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Item name *" className={inputCls} />
-          <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand name (optional)" className={inputCls} />
+          <input value={name} onChange={(e) => { singleNameTouchedRef.current = true; setName(e.target.value); }} placeholder="Item name *" className={inputCls} />
+          <input value={brand} onChange={(e) => { singleBrandTouchedRef.current = true; setBrand(e.target.value); }} placeholder="Brand name (optional)" className={inputCls} />
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
@@ -1738,7 +1610,6 @@ function AddAffiliateForm({
               <input
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
-                onBlur={() => void runSingleLinkEnrichment(link)}
                 placeholder="Affiliate / referral link"
                 className={inputCls}
               />
@@ -1772,9 +1643,9 @@ function AddAffiliateForm({
             onUpload={(url) => {
               setPhotoUrl(url);
               setPhotoSource("manual");
+              singlePhotoSourceRef.current = "manual";
             }}
           />
-          <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
           <button
             onClick={handleSingleSubmit}
             disabled={submitting}
@@ -1877,7 +1748,6 @@ function EditItemModal({
       : ("notes" in item ? (item as { notes: string | null }).notes : "") ?? ""
   );
   const [photoUrl, setPhotoUrl] = useState(("photoUrl" in item ? (item as { photoUrl: string | null }).photoUrl : "") ?? "");
-  const [tagsText, setTagsText] = useState((item.tags ?? []).join(", "));
   const [affiliateCategory, setAffiliateCategory] = useState(
     tab === "affiliates" ? (item as AffiliateItem).category : "OTHER"
   );
@@ -1899,13 +1769,6 @@ function EditItemModal({
       return;
     }
 
-    const parsedTags = dedupeTags(parseTagsText(tagsText));
-    const tagsError = getTagValidationError(parsedTags);
-    if (tagsError) {
-      setError(tagsError);
-      return;
-    }
-
     if (tab === "workouts") {
       try {
         JSON.parse(exercisesJson || "[]");
@@ -1923,7 +1786,6 @@ function EditItemModal({
     };
 
     addIfChanged("name", name.trim(), item.name);
-    addIfChanged("tags", parsedTags, item.tags ?? []);
 
     if (tab === "meals") {
       const original = item as SavedMeal;
@@ -2110,7 +1972,6 @@ function EditItemModal({
             <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand name (optional)" className={inputCls} />
           )}
           {tab !== "workouts" && <PhotoUpload photoUrl={photoUrl || null} onUpload={setPhotoUrl} />}
-          <TagsInput tagsText={tagsText} setTagsText={setTagsText} />
           {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
         </div>
 
@@ -2179,6 +2040,8 @@ function ItemDetailModal({
   onEdit,
   onDelete,
   onShare,
+  isPinned,
+  onTogglePin,
 }: {
   item: AnyItem;
   tab: CatalogTab;
@@ -2186,6 +2049,8 @@ function ItemDetailModal({
   onEdit: () => void;
   onDelete: () => void;
   onShare?: () => void;
+  isPinned?: boolean;
+  onTogglePin?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -2417,7 +2282,7 @@ function ItemDetailModal({
           </div>
         </div>
 
-        {/* Sticky footer — Share + Edit + Delete */}
+        {/* Sticky footer — Share + Edit + Delete + Pin */}
         <BottomCtaBar className="space-y-2">
           {/* Share to Feed — primary CTA */}
           {onShare && (
@@ -2437,16 +2302,29 @@ function ItemDetailModal({
           <BottomCtaRow>
             <button
               onClick={onEdit}
-              className="min-w-[120px] flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
+              className="min-w-[100px] flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
               style={{ background: "rgba(82,133,49,0.12)", color: "#528531", border: "1px solid rgba(82,133,49,0.25)" }}
             >
               <HiPencil className="w-4 h-4" />
               Edit
             </button>
+            {onTogglePin && (
+              <button
+                onClick={onTogglePin}
+                className="min-w-[100px] flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
+                style={isPinned
+                  ? { background: "rgba(154,123,46,0.15)", color: "#9A7B2E", border: "1px solid rgba(154,123,46,0.3)" }
+                  : { background: "rgba(36,63,22,0.06)", color: "var(--text-muted)", border: "1px solid rgba(36,63,22,0.12)" }
+                }
+              >
+                {isPinned ? <HiBookmark className="w-4 h-4" /> : <HiOutlineBookmark className="w-4 h-4" />}
+                {isPinned ? "Pinned" : "Pin"}
+              </button>
+            )}
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="min-w-[120px] flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
+              className="min-w-[100px] flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
               style={{ background: "rgba(248,113,113,0.1)", color: "#f87171", border: "1px solid rgba(248,113,113,0.2)" }}
             >
               <HiTrash className="w-4 h-4" />
@@ -2512,6 +2390,7 @@ export default function CatalogPage() {
   const [selectedItem, setSelectedItem] = useState<AnyItem | null>(null);
   const [editingItem, setEditingItem] = useState<AnyItem | null>(null);
   const [sharingItem, setSharingItem] = useState<ShareCatalogItem | null>(null);
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
 
   // Maps catalog tab names to the CatalogItemType enum used by the share API
   const tabToShareType = (tab: CatalogTab): ShareCatalogItemType => {
@@ -2586,6 +2465,29 @@ export default function CatalogPage() {
     setShowQuickGuide(dismissed !== "1");
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const stored = JSON.parse(window.localStorage.getItem(CATALOG_PINNED_KEY) ?? "[]");
+      if (Array.isArray(stored)) setPinnedIds(new Set(stored as string[]));
+    } catch { /* ignore */ }
+  }, []);
+
+  const togglePin = (itemId: string) => {
+    setPinnedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(itemId)) {
+        next.delete(itemId);
+      } else {
+        next.add(itemId);
+      }
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(CATALOG_PINNED_KEY, JSON.stringify([...next]));
+      }
+      return next;
+    });
+  };
+
   const dismissQuickGuide = () => {
     setShowQuickGuide(false);
     if (typeof window !== "undefined") {
@@ -2620,7 +2522,11 @@ export default function CatalogPage() {
     return null;
   };
 
-  const items = allItems as AnyItem[];
+  const items = [...allItems].sort((a, b) => {
+    const aPinned = pinnedIds.has(a.id) ? 1 : 0;
+    const bPinned = pinnedIds.has(b.id) ? 1 : 0;
+    return bPinned - aPinned;
+  }) as AnyItem[];
   const muted = "var(--text-muted)";
 
   const getItemPhotoUrl = (item: AnyItem): string | null => {
@@ -2887,8 +2793,15 @@ export default function CatalogPage() {
                   </span>
                 </div>
 
+                {/* Pin badge */}
+                {pinnedIds.has(item.id) && (
+                  <div className="absolute top-1.5 right-1.5 p-1 rounded-full" style={{ background: "rgba(154,123,46,0.9)" }}>
+                    <HiBookmark className="w-2.5 h-2.5 text-white" />
+                  </div>
+                )}
+
                 {/* Link/referral badge */}
-                {(getItemLink(item) || getItemReferralCode(item)) && (
+                {!pinnedIds.has(item.id) && (getItemLink(item) || getItemReferralCode(item)) && (
                   <div className="absolute top-1.5 right-1.5 p-1 rounded-full" style={{ background: "rgba(36,63,22,0.85)" }}>
                     <HiLink className="w-2.5 h-2.5 text-white" />
                   </div>
@@ -2939,7 +2852,12 @@ export default function CatalogPage() {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm truncate">{item.name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-semibold text-sm truncate">{item.name}</p>
+                    {pinnedIds.has(item.id) && (
+                      <HiBookmark className="w-3 h-3 shrink-0" style={{ color: "#9A7B2E" }} />
+                    )}
+                  </div>
                   {"notes" in item && (item as { notes: string | null }).notes && (
                     <p className="text-xs truncate mt-0.5" style={{ color: muted }}>
                       {(item as { notes: string | null }).notes}
@@ -2996,6 +2914,8 @@ export default function CatalogPage() {
                 brand: "brand" in selectedItem ? (selectedItem as { brand: string | null }).brand : null,
               });
             }}
+            isPinned={pinnedIds.has(selectedItem.id)}
+            onTogglePin={() => togglePin(selectedItem.id)}
           />
         );
       })()}
