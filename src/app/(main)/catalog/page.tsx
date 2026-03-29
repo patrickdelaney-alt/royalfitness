@@ -2627,7 +2627,7 @@ export default function CatalogPage() {
           style={{ background: "rgba(36,63,22,0.05)", border: "1px solid rgba(36,63,22,0.12)" }}
         >
           <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--text)" }}>
-            Turn your recommendations into income
+            Turn your recommendations into royalties
           </p>
           <p className="text-xs mb-3" style={{ color: "var(--text-muted)" }}>
             Add your referral links once. Earn every time a follower clicks.
@@ -2636,7 +2636,7 @@ export default function CatalogPage() {
             {[
               <>Tap <span style={{ color: "#528531", fontWeight: 600 }}>Add</span> and select <span style={{ color: "#528531", fontWeight: 600 }}>Referral Link</span>, then paste your link or promo code.</>,
               <>Add a photo and description so it looks great when shared to the feed.</>,
-              <>Open any saved item and tap <span style={{ color: "#528531", fontWeight: 600 }}>Share to Feed</span> — your followers see it, you earn commissions.</>,
+              <>Open any saved item and tap <span style={{ color: "#528531", fontWeight: 600 }}>Share to Feed</span> — your followers see it, you earn royalties.</>,
             ].map((step, i) => (
               <div key={i} className="flex items-start gap-2.5">
                 <span
@@ -2764,9 +2764,9 @@ export default function CatalogPage() {
               Catalog
             </span>
           </div>
-          <p className="text-base font-semibold mb-1" style={{ color: "var(--text)" }}>Your catalog is your storefront</p>
-          <p className="text-xs leading-relaxed mb-4 max-w-xs mx-auto" style={{ color: muted }}>
-            Save your referral links and codes for products you already use. Share them to your feed and earn commissions when followers click through.
+          <p className="text-sm font-medium" style={{ color: muted }}>Your catalog is empty</p>
+          <p className="text-xs leading-relaxed mb-4 max-w-xs mx-auto mt-1" style={{ color: muted }}>
+            Save your referral links and codes for products you already use. Share them to your feed and earn royalties when followers click through.
           </p>
           <div className="flex items-center justify-center gap-2">
             <button

@@ -30,8 +30,8 @@ const steps = [
   {
     emoji: null,
     title: "Earn from what you love",
-    subtitle: "Your catalog is your storefront.",
-    body: "Add your referral links and codes for products you already use. When followers tap your links, you earn commissions — right from your profile.",
+    subtitle: "Add products you love and earn royalties.",
+    body: "Save your referral links and codes to your catalog. When followers tap your links, you earn royalties — right from your profile.",
     cta: { label: "Set up my catalog →", href: "/catalog" },
   },
 ];

@@ -139,7 +139,7 @@ export async function GET() {
       recommendations.unshift({
         type: "catalog",
         title: "Start earning with your catalog",
-        message: "Add your referral links and codes to your catalog. Share them to your feed and earn commissions when followers click through.",
+        message: "Add your referral links and codes to your catalog. Share them to your feed and earn royalties when followers click through.",
         priority: 9,
       });
     }
