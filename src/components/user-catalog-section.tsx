@@ -15,7 +15,6 @@ import {
   getUserCatalogEndpoint,
 } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
-import { contentBottomPadding, fixedCtaBottomOffset } from "@/components/layout/bottom-inset";
 import { BottomCtaBar } from "@/components/layout/bottom-cta";
 
 interface CatalogItem {
@@ -121,17 +120,15 @@ function DetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pb-[var(--fixed-cta-bottom-offset)] sm:pb-0"
-      style={{ ["--fixed-cta-bottom-offset" as string]: fixedCtaBottomOffset }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       onClick={onClose}
     >
       <div className="absolute inset-0 backdrop-blur-sm" style={{ background: "rgba(24,25,15,0.5)" }} />
       <div
-        className="relative w-full sm:max-w-md max-h-[calc(100dvh-1rem)] overflow-y-auto overscroll-y-contain rounded-t-2xl sm:rounded-2xl"
+        className="relative w-full sm:max-w-md flex flex-col max-h-[85dvh] sm:max-h-[85vh] rounded-t-2xl sm:rounded-2xl overflow-hidden"
         style={{
           background: "var(--surface)",
           border: "1px solid var(--border)",
-          WebkitOverflowScrolling: "touch",
           boxShadow: "var(--shadow-lg)",
         }}
         onClick={(e) => e.stopPropagation()}
@@ -145,6 +142,8 @@ function DetailModal({
           <HiX className="w-5 h-5" />
         </button>
 
+        {/* Scrollable body */}
+        <div className="overflow-y-auto flex-1 overscroll-y-contain" style={{ WebkitOverflowScrolling: "touch" }}>
         {/* Image */}
         {item.photoUrl || item.logoUrl ? (
           <div className="w-full aspect-square">
@@ -163,7 +162,7 @@ function DetailModal({
         )}
 
         {/* Content */}
-        <div className="p-5 pb-8 space-y-4" style={{ paddingBottom: contentBottomPadding }}>
+        <div className="p-5 space-y-4">
           {/* Title + brand + category */}
           <div>
             <h3 className="text-xl font-normal" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>{item.name}</h3>
@@ -317,45 +316,46 @@ function DetailModal({
             </div>
           )}
 
-          {/* Shop / Link button + own profile actions */}
-          <BottomCtaBar
-            className="sticky bottom-0 -mx-5 mt-2 px-5 space-y-3"
-            style={{ borderTop: "1px solid var(--border)" }}
-          >
-            {(item.link || item.recipeSourceUrl || item.videoUrl) && (
-              <a
-                href={item.link || item.recipeSourceUrl || item.videoUrl || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => {
-                  const url = item.link || item.recipeSourceUrl || item.videoUrl;
-                  if (url && isCapacitorNative()) {
-                    e.preventDefault();
-                    openExternalLink(url);
-                  }
-                }}
-                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold btn-gradient transition-all"
-                style={{ color: "#FDFAF5" }}
-              >
-                <HiExternalLink className="w-4 h-4" />
-                {getPublicCtaLabel(item)}
-              </a>
-            )}
-
-            {/* Edit / Delete shortcut for own profile */}
-            {isOwnProfile && (
-              <Link
-                href="/catalog"
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium"
-                style={{ background: "rgba(82,133,49,0.08)", color: "#528531", border: "1px solid rgba(82,133,49,0.18)" }}
-              >
-                <HiPencil className="w-4 h-4" />
-                Edit or Delete in My Catalog
-              </Link>
-            )}
-          </BottomCtaBar>
-
         </div>
+        </div>{/* end scrollable body */}
+
+        {/* Footer — outside scroll container, always visible */}
+        <BottomCtaBar
+          className="space-y-3"
+          style={{ borderTop: "1px solid var(--border)" }}
+        >
+          {(item.link || item.recipeSourceUrl || item.videoUrl) && (
+            <a
+              href={item.link || item.recipeSourceUrl || item.videoUrl || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                const url = item.link || item.recipeSourceUrl || item.videoUrl;
+                if (url && isCapacitorNative()) {
+                  e.preventDefault();
+                  openExternalLink(url);
+                }
+              }}
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold btn-gradient transition-all"
+              style={{ color: "#FDFAF5" }}
+            >
+              <HiExternalLink className="w-4 h-4" />
+              {getPublicCtaLabel(item)}
+            </a>
+          )}
+
+          {/* Edit / Delete shortcut for own profile */}
+          {isOwnProfile && (
+            <Link
+              href="/catalog"
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium"
+              style={{ background: "rgba(82,133,49,0.08)", color: "#528531", border: "1px solid rgba(82,133,49,0.18)" }}
+            >
+              <HiPencil className="w-4 h-4" />
+              Edit or Delete in My Catalog
+            </Link>
+          )}
+        </BottomCtaBar>
       </div>
     </div>
   );
