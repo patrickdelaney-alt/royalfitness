@@ -29,6 +29,7 @@ export async function GET() {
       muscleGroupsThisWeek,
       allTimeMuscleGroups,
       streakPosts,
+      affiliateItemCount,
     ] = await Promise.all([
       prisma.post.count({
         where: { authorId: userId, type: "WORKOUT", createdAt: { gte: weekAgo } },
@@ -73,6 +74,7 @@ export async function GET() {
         orderBy: { createdAt: "desc" },
         take: 200,
       }),
+      prisma.affiliateItem.count({ where: { userId } }),
     ]);
 
     const dayMs = 24 * 60 * 60 * 1000;
@@ -133,7 +135,16 @@ export async function GET() {
       .getRecommendations(summary)
       .slice(0, 3);
 
-    return NextResponse.json({ recommendations });
+    if (affiliateItemCount === 0) {
+      recommendations.unshift({
+        type: "catalog",
+        title: "Start earning with your catalog",
+        message: "Add your referral links and codes to your catalog. Share them to your feed and earn royalties when followers click through.",
+        priority: 9,
+      });
+    }
+
+    return NextResponse.json({ recommendations: recommendations.slice(0, 3) });
   } catch (error) {
     console.error("GET /api/recommendations error:", error);
     return NextResponse.json(

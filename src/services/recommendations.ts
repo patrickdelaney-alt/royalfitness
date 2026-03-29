@@ -6,7 +6,7 @@
  */
 
 export interface Recommendation {
-  type: "workout" | "meal" | "wellness" | "general";
+  type: "workout" | "meal" | "wellness" | "general" | "catalog";
   title: string;
   message: string;
   priority: number; // 1-10, higher = more important
