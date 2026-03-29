@@ -32,7 +32,8 @@ export function ModalSheet({
 }: ModalSheetProps) {
   return (
     <div
-      className={`fixed inset-0 z-[${zIndex}] flex items-end sm:items-center justify-center`}
+      className="fixed inset-0 flex items-end sm:items-center justify-center"
+      style={{ zIndex }}
       onClick={onClose}
     >
       {/* Backdrop */}
