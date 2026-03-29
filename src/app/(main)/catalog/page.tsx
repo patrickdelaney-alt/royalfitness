@@ -2623,25 +2623,54 @@ export default function CatalogPage() {
 
       {showQuickGuide && (
         <div
-          className="mb-4 p-3.5 rounded-xl space-y-2"
-          style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
+          className="mb-4 p-4 rounded-xl"
+          style={{ background: "rgba(36,63,22,0.05)", border: "1px solid rgba(36,63,22,0.12)" }}
         >
-          <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-            New to Catalog? Start here:
+          <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--text)" }}>
+            Turn your recommendations into income
           </p>
-          <ol className="space-y-1 text-xs list-decimal pl-4" style={{ color: "var(--text-muted)" }}>
-            <li>Tap <span style={{ color: "#528531", fontWeight: 600 }}>Add</span> and choose what you want to save.</li>
-            <li>For referral links, choose <span style={{ color: "#528531", fontWeight: 600 }}>Affiliate</span> and paste a link or promo code.</li>
-            <li>Open any saved item and tap <span style={{ color: "#528531", fontWeight: 600 }}>Share to Feed</span>.</li>
-          </ol>
-          <button
-            type="button"
-            onClick={dismissQuickGuide}
-            className="text-xs font-medium px-2.5 py-1.5 rounded-lg"
-            style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
-          >
-            Got it
-          </button>
+          <p className="text-xs mb-3" style={{ color: "var(--text-muted)" }}>
+            Add your referral links once. Earn every time a follower clicks.
+          </p>
+          <div className="space-y-2 mb-3">
+            {[
+              <>Tap <span style={{ color: "#528531", fontWeight: 600 }}>Add</span> and select <span style={{ color: "#528531", fontWeight: 600 }}>Referral Link</span>, then paste your link or promo code.</>,
+              <>Add a photo and description so it looks great when shared to the feed.</>,
+              <>Open any saved item and tap <span style={{ color: "#528531", fontWeight: 600 }}>Share to Feed</span> — your followers see it, you earn commissions.</>,
+            ].map((step, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <span
+                  className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white mt-0.5"
+                  style={{ background: "#528531" }}
+                >
+                  {i + 1}
+                </span>
+                <p className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>{step}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setAddingCategory("affiliates");
+                setShowPicker(false);
+                dismissQuickGuide();
+              }}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+              style={{ background: "#528531", color: "#fff" }}
+            >
+              Add my first referral link
+            </button>
+            <button
+              type="button"
+              onClick={dismissQuickGuide}
+              className="text-xs font-medium px-2.5 py-1.5 rounded-lg"
+              style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
+            >
+              Got it
+            </button>
+          </div>
         </div>
       )}
 
@@ -2729,25 +2758,40 @@ export default function CatalogPage() {
           </div>
         )
       ) : items.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-stone-600/80 to-stone-800/80 flex items-center justify-center">
+        <div className="text-center py-12 px-4">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-stone-600/80 to-stone-800/80 flex items-center justify-center">
             <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/95">
               Catalog
             </span>
           </div>
-          <p className="text-sm font-medium" style={{ color: muted }}>Your catalog is empty</p>
-          <p className="text-xs mt-1 mb-3" style={{ color: muted }}>Tap Add above to get started</p>
-          <button
-            type="button"
-            onClick={() => {
-              setAddingCategory("affiliates");
-              setShowPicker(false);
-            }}
-            className="text-xs font-semibold px-3 py-2 rounded-lg"
-            style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
-          >
-            Add referral link
-          </button>
+          <p className="text-base font-semibold mb-1" style={{ color: "var(--text)" }}>Your catalog is your storefront</p>
+          <p className="text-xs leading-relaxed mb-4 max-w-xs mx-auto" style={{ color: muted }}>
+            Save your referral links and codes for products you already use. Share them to your feed and earn commissions when followers click through.
+          </p>
+          <div className="flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setAddingCategory("affiliates");
+                setShowPicker(false);
+              }}
+              className="text-xs font-semibold px-4 py-2 rounded-lg"
+              style={{ background: "#528531", color: "#fff" }}
+            >
+              Add referral link
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowPicker(true);
+                setAddingCategory(null);
+              }}
+              className="text-xs font-semibold px-4 py-2 rounded-lg"
+              style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
+            >
+              Add a product
+            </button>
+          </div>
         </div>
       ) : viewMode === "grid" ? (
         /* ── Grid View ── */

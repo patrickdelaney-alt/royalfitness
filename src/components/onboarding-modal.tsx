@@ -27,6 +27,13 @@ const steps = [
     body: "Search for friends, fellow gym-goers, or anyone crushing their goals. Follow them and cheer each other on.",
     cta: { label: "Find people to follow →", href: "/explore" },
   },
+  {
+    emoji: null,
+    title: "Earn from what you love",
+    subtitle: "Your catalog is your storefront.",
+    body: "Add your referral links and codes for products you already use. When followers tap your links, you earn commissions — right from your profile.",
+    cta: { label: "Set up my catalog →", href: "/catalog" },
+  },
 ];
 
 interface Props {
@@ -90,7 +97,7 @@ export default function OnboardingModal({ onClose }: Props) {
 
           {/* Content */}
           <div className="text-center mt-2">
-            <div className="text-5xl mb-4">{current.emoji}</div>
+            {current.emoji && <div className="text-5xl mb-4">{current.emoji}</div>}
             <h2 className="text-xl font-normal mb-1" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>{current.title}</h2>
             <p className="text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>
               Step {step + 1} of {steps.length}
