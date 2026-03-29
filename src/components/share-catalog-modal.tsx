@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { HiX, HiShare, HiCalendar, HiExclamation, HiPhotograph } from "react-icons/hi";
 import toast from "react-hot-toast";
-import { fixedCtaBottomOffset } from "@/components/layout/bottom-inset";
 import { BottomCtaBar, BottomCtaRow } from "@/components/layout/bottom-cta";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -168,9 +167,8 @@ export default function ShareCatalogModal({
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center pb-[var(--fixed-cta-bottom-offset)] sm:items-center sm:pb-0"
+      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
       style={{
-        ["--fixed-cta-bottom-offset" as string]: fixedCtaBottomOffset,
         background: "rgba(24,25,15,0.55)",
         backdropFilter: "blur(4px)",
       }}
