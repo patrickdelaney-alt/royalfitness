@@ -350,7 +350,7 @@ function DetailModal({
                 style={{ background: "rgba(82,133,49,0.08)", color: "#528531", border: "1px solid rgba(82,133,49,0.18)" }}
               >
                 <HiPencil className="w-4 h-4" />
-                Edit or Delete in My Catalog
+                Manage items
               </Link>
             )}
           </BottomCtaBar>
@@ -438,14 +438,25 @@ export default function UserCatalogSection({
     <div className="mt-8">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-normal text-foreground" style={{ fontFamily: "var(--font-display)" }}>Catalog</h2>
-        {linkedCount > 0 && (
-          <span
-            className="text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "var(--gold-subtle)", color: "var(--gold)" }}
-          >
-            {linkedCount} product {linkedCount === 1 ? "link" : "links"}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {linkedCount > 0 && (
+            <span
+              className="text-xs px-2 py-0.5 rounded-full"
+              style={{ background: "var(--gold-subtle)", color: "var(--gold)" }}
+            >
+              {linkedCount} product {linkedCount === 1 ? "link" : "links"}
+            </span>
+          )}
+          {isOwnProfile && (
+            <Link
+              href="/catalog"
+              className="text-xs font-medium"
+              style={{ color: "var(--brand)" }}
+            >
+              Manage →
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Content */}

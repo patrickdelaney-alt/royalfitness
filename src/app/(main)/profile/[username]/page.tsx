@@ -299,13 +299,6 @@ export default function ProfilePage() {
               <HiPencil className="w-4 h-4" />
               Edit Profile
             </Link>
-            <Link
-              href="/catalog"
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors"
-              style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)", color: "var(--text)" }}
-            >
-              My Catalog
-            </Link>
             <button
               onClick={() => signOut({ callbackUrl: "/signin" })}
               className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-colors"
