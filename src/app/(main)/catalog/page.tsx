@@ -39,7 +39,7 @@ import {
   type CatalogTab,
 } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
-import { fixedCtaBottomOffset, sheetBottomPadding } from "@/components/layout/bottom-inset";
+import { sheetBottomPadding } from "@/components/layout/bottom-inset";
 import { BottomCtaBar, BottomCtaRow } from "@/components/layout/bottom-cta";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -2106,8 +2106,7 @@ function ItemDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pb-[var(--fixed-cta-bottom-offset)] sm:pb-0"
-      style={{ ["--fixed-cta-bottom-offset" as string]: fixedCtaBottomOffset }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
