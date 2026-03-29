@@ -2571,7 +2571,7 @@ export default function CatalogPage() {
           >
             <HiArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-lg font-bold">My Catalog</h1>
+          <h1 className="text-lg font-bold">Catalog</h1>
         </div>
         <div className="flex items-center gap-2">
           {/* View toggle */}
