@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { HiXMark, HiUserCircle } from "react-icons/hi2";
-import { fixedCtaBottomOffset, sheetBottomPadding } from "@/components/layout/bottom-inset";
+import { sheetBottomPadding, tabBarHeight } from "@/components/layout/bottom-inset";
 
 interface FollowUser {
   id: string;
@@ -142,7 +142,7 @@ export default function FollowListModal({
           border: "1px solid var(--border)",
           maxHeight: "75vh",
           boxShadow: "var(--shadow-lg)",
-          bottom: fixedCtaBottomOffset,
+          bottom: tabBarHeight,
         }}
       >
         {/* Handle + header */}
