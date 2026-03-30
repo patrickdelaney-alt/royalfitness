@@ -1412,6 +1412,13 @@ export default function CreatePostContent() {
 
         <div className="rf-fade-up-3 flex flex-col gap-3 w-full max-w-xs">
           <button
+            onClick={() => router.push(`/posts/${successPost.id}`)}
+            className="w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2"
+            style={{ background: "linear-gradient(135deg, #243F16 0%, #528531 100%)", color: "#ffffff" }}
+          >
+            👀 View Post
+          </button>
+          <button
             onClick={sharePost}
             className="w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2"
             style={{ background: "linear-gradient(135deg, #243F16 0%, #528531 100%)", color: "#ffffff" }}
