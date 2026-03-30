@@ -103,6 +103,12 @@ export function BottomNav() {
                 >
                   <tab.icon className="h-5 w-5" style={{ color: "#FDFAF5" }} />
                 </div>
+                {/* Invisible spacer — matches the label height of other tabs so
+                    this cell has the same natural height and the pill icon
+                    vertically aligns with adjacent tab icons. */}
+                <span className="invisible text-[11px] font-semibold" aria-hidden="true">
+                  Create
+                </span>
               </Link>
             );
           }
