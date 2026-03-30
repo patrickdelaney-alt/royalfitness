@@ -1793,7 +1793,7 @@ export default function CreatePostContent() {
             {!isFromSession && (
               <button
                 type="button"
-                onClick={() => (window.location.href = "/workout")}
+                onClick={() => router.push("/workout")}
                 className="w-full flex items-center justify-between px-4 py-4 rounded-2xl transition-all active:scale-[0.98] mb-1"
                 style={{
                   background:
