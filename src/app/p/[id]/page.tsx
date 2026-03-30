@@ -41,7 +41,7 @@ export async function generateMetadata({
   const post = await getPublicPost(id);
 
   if (!post) {
-    return { title: "Post not found · Royal Fitness" };
+    return { title: "Post not found · Royal" };
   }
 
   const author = post.author.name ?? post.author.username;
@@ -54,7 +54,7 @@ export async function generateMetadata({
       ? "wellness update"
       : "post";
 
-  const title = `${author} logged a ${typeLabel} on Royal Fitness`;
+  const title = `${author} logged a ${typeLabel} on Royal`;
   let description = post.caption ?? "";
 
   if (post.type === "WORKOUT" && post.workoutDetail) {
@@ -89,7 +89,7 @@ export async function generateMetadata({
       title,
       description,
       url,
-      siteName: "Royal Fitness",
+      siteName: "Royal",
       images: [{ url: image, width: 1200, height: 630 }],
       type: "article",
     },
