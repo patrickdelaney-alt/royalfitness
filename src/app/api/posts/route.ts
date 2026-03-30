@@ -163,40 +163,26 @@ export async function GET(req: NextRequest) {
     }
 
     if (userId) {
-      // Authenticated: show own posts + posts from followed users (respecting visibility)
-      const followedUserIds = await prisma.follow.findMany({
-        where: { followerId: userId },
-        select: { followingId: true },
-      });
-      const followingIds = followedUserIds.map(
-        (f: { followingId: string }) => f.followingId
-      );
-
-      // Get blocked user IDs (both directions)
-      const blockedByMe = await prisma.blockedUser.findMany({
-        where: { blockerId: userId },
-        select: { blockedId: true },
-      });
-      const blockedMe = await prisma.blockedUser.findMany({
-        where: { blockedId: userId },
-        select: { blockerId: true },
-      });
-      const blockedIds = [
-        ...blockedByMe.map((b: { blockedId: string }) => b.blockedId),
-        ...blockedMe.map((b: { blockerId: string }) => b.blockerId),
-      ];
-
+      // Use relational filters instead of pre-fetching all followingIds / blockedIds
+      // into Node.js memory. For users with large follow lists the old approach loaded
+      // thousands of IDs into the process and back into a giant IN(...) clause on every
+      // feed page load. Prisma translates these nested filters into correlated EXISTS
+      // subqueries that stay entirely inside Postgres and scale with the existing indexes
+      // on Follow(followerId, followingId) and BlockedUser(blockerId, blockedId).
       where.AND = [
-        // Exclude blocked users
-        ...(blockedIds.length > 0
-          ? [{ authorId: { notIn: blockedIds } }]
-          : []),
+        {
+          author: {
+            // Exclude posts from blocked users in either direction
+            blockedUsers: { none: { blockedId: userId } }, // author has not blocked viewer
+            blockedBy:    { none: { blockerId: userId } },  // viewer has not blocked author
+          },
+        },
         // Visibility logic: own posts (any visibility) OR followed users' PUBLIC/FOLLOWERS posts OR any PUBLIC post
         {
           OR: [
             { authorId: userId },
             {
-              authorId: { in: followingIds },
+              author: { followers: { some: { followerId: userId } } },
               visibility: { in: ["PUBLIC", "FOLLOWERS"] },
             },
             { visibility: "PUBLIC" },
