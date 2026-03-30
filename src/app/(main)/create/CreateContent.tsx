@@ -1361,10 +1361,17 @@ export default function CreatePostContent() {
   // ── Success overlay ────────────────────────────────────────
   if (successPost) {
     const shareUrl = `https://royalwellness.app/p/${successPost.id}`;
-    const copyLink = () => {
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        toast.success("Link copied!");
-      });
+    const sharePost = () => {
+      if (typeof navigator.share === "function") {
+        navigator.share({ url: shareUrl }).catch(() => {
+          // User cancelled or share unavailable — fall back silently
+          navigator.clipboard.writeText(shareUrl).catch(() => {});
+        });
+      } else {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          toast.success("Link copied!");
+        });
+      }
     };
     return (
       <div
@@ -1405,7 +1412,7 @@ export default function CreatePostContent() {
 
         <div className="rf-fade-up-3 flex flex-col gap-3 w-full max-w-xs">
           <button
-            onClick={copyLink}
+            onClick={sharePost}
             className="w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2"
             style={{ background: "linear-gradient(135deg, #243F16 0%, #528531 100%)", color: "#ffffff" }}
           >
