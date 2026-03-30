@@ -1124,7 +1124,12 @@ export default function CreatePostContent() {
   const handleResumeDraft = useCallback(() => {
     if (!pendingDraft) return;
     applyDraft(pendingDraft);
+    // Sync the ref so the autosave effect sees no delta after restore, then
+    // remove the localStorage entry so the banner doesn't reappear next visit.
+    lastDraftSignatureRef.current = JSON.stringify(pendingDraft);
+    try { localStorage.removeItem(CREATE_DRAFT_STORAGE_KEY); } catch { /* ignore */ }
     setPendingDraft(null);
+    toast.success("Draft restored");
   }, [applyDraft, pendingDraft]);
 
   const handleDiscardDraft = useCallback(() => {
@@ -1136,6 +1141,13 @@ export default function CreatePostContent() {
     if (isEditingPost || !draftReady || pendingDraft || submitting || successPost) return;
     const draft = buildDraft();
     const signature = JSON.stringify(draft);
+    // On the first unblocked run (ref is still the empty sentinel), capture the
+    // current form state as the baseline and bail out — this prevents an untouched
+    // default form from being written to localStorage on every mount.
+    if (lastDraftSignatureRef.current === "") {
+      lastDraftSignatureRef.current = signature;
+      return;
+    }
     if (signature === lastDraftSignatureRef.current) return;
     setIsDirty(true);
     const timer = window.setTimeout(() => {
