@@ -1148,7 +1148,11 @@ function FullPostCard({
                 >
                   <button
                     onClick={() => {
-                      router.push(`/create?editPostId=${post.id}`);
+                      if (post.type === "CATALOG_SHARE") {
+                        setShowEditModal(true);
+                      } else {
+                        router.push(`/create?editPostId=${post.id}`);
+                      }
                       setShowOwnerMenu(false);
                     }}
                     className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-black/5"
@@ -1309,8 +1313,40 @@ function FullPostCard({
           >
             <h3 className="text-base font-bold" style={{ color: "#18190F" }}>Edit post</h3>
 
+            {/* Catalog item preview (read-only) */}
+            {post.type === "CATALOG_SHARE" && post.catalogShareDetail && (
+              <div
+                className="flex items-center gap-3 p-3 rounded-xl"
+                style={{ background: "rgba(154,123,46,0.08)", border: "1px solid rgba(154,123,46,0.18)" }}
+              >
+                {post.catalogShareDetail.photoUrl && (
+                  <img
+                    src={post.catalogShareDetail.photoUrl}
+                    alt={post.catalogShareDetail.title}
+                    className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                  />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold truncate" style={{ color: "#18190F" }}>
+                    {post.catalogShareDetail.title}
+                  </p>
+                  {post.catalogShareDetail.brand && (
+                    <p className="text-xs truncate" style={{ color: "#7A7560" }}>
+                      {post.catalogShareDetail.brand}
+                    </p>
+                  )}
+                  <span
+                    className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-xs font-medium"
+                    style={{ background: "rgba(154,123,46,0.15)", color: "#9A7B2E" }}
+                  >
+                    {CATALOG_TYPE_LABELS[post.catalogShareDetail.catalogItemType] ?? post.catalogShareDetail.catalogItemType}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Type-specific name field */}
-            {post.type !== "GENERAL" && (
+            {post.type !== "GENERAL" && post.type !== "CATALOG_SHARE" && post.type !== "CHECKIN" && post.type !== "AFFILIATE" && (
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: "#7A7560" }}>
                   {post.type === "WORKOUT" ? "Workout name" : post.type === "MEAL" ? "Meal name" : "Activity"}
