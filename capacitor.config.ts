@@ -8,7 +8,7 @@ const config: CapacitorConfig = {
   webDir: 'public',
   server: {
     // Replace with your production Vercel URL before running `npx cap add ios`
-    url: 'https://royalwellness.vercel.app',
+    url: 'https://royalwellness.app',
     cleartext: false,
   },
 };
