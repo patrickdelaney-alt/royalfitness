@@ -143,16 +143,27 @@ export default function SignUpClient({ appleEnabled, googleEnabled, waitlistGate
       }
 
       // Auto sign-in after registration. auth.js v5 beta's signIn() return
-      // value is unreliable, so we verify via /api/auth/session immediately after.
+      // value is unreliable, so we verify via /api/auth/session with retries
+      // to avoid a race condition where the cookie isn't written yet.
       await signIn("credentials", { email, password, redirect: false });
 
-      const sessionRes = await fetch("/api/auth/session");
-      const session = await sessionRes.json();
+      let session = null;
+      for (let i = 0; i < 3; i++) {
+        const sessionRes = await fetch("/api/auth/session");
+        const data = await sessionRes.json();
+        if (data?.user?.id) {
+          session = data;
+          break;
+        }
+        await new Promise((r) => setTimeout(r, 300));
+      }
 
       if (session?.user?.id) {
         window.location.href = "/feed?welcome=1";
       } else {
-        window.location.href = "/signin";
+        setError("Account created! Please sign in to continue.");
+        setLoading(false);
+        return;
       }
     } catch {
       setError("Something went wrong. Please try again.");
