@@ -162,7 +162,7 @@ export default async function PublicPostPage({
           className="flex items-center gap-2 font-bold text-base"
           style={{ color: "#528531" }}
         >
-          Royal Fitness
+          Royal
         </Link>
         <Link
           href="/signin"
@@ -352,7 +352,7 @@ export default async function PublicPostPage({
             Train with {post.author.name ?? post.author.username}
           </p>
           <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-            Join Royal Fitness — free forever
+            Join Royal
           </p>
         </div>
         <Link
