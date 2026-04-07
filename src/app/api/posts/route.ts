@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 import { createPostSchema, CATALOG_ITEM_TYPES } from "@/lib/validations";
@@ -582,6 +583,24 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(post, { status: 201 });
   } catch (error) {
+    // Unique constraint violation on CatalogShareCooldown — race condition where
+    // two concurrent requests both passed the early findFirst check before either wrote.
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002" &&
+      Array.isArray((error.meta as { target?: string[] })?.target) &&
+      (error.meta as { target: string[] }).target.some(
+        (f) => f.includes("catalogItemId") || f.includes("sharedDate")
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error: "You've already shared this item today. Come back tomorrow to share it again.",
+          code: "ALREADY_SHARED_TODAY",
+        },
+        { status: 409 }
+      );
+    }
     console.error("POST /api/posts error:", error);
     return NextResponse.json(
       { error: "Failed to create post" },
