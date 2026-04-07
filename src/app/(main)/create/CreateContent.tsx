@@ -1206,7 +1206,7 @@ export default function CreatePostContent() {
         type,
         caption: caption || undefined,
         visibility,
-        mediaUrl: mediaUrl || undefined,
+        mediaUrl: isEditingPost ? mediaUrl : (mediaUrl || undefined),
         postDate: postDate || undefined,
         externalUrl: embedPreview?.url,
         embed: embedPreview
