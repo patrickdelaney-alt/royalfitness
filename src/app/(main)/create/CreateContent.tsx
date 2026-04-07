@@ -1206,7 +1206,7 @@ export default function CreatePostContent() {
         type,
         caption: caption || undefined,
         visibility,
-        mediaUrl: isEditingPost ? mediaUrl : (mediaUrl || undefined),
+        mediaUrl: mediaUrl ?? undefined,
         postDate: postDate || undefined,
         externalUrl: embedPreview?.url,
         embed: embedPreview
@@ -1942,6 +1942,12 @@ export default function CreatePostContent() {
             {/* 4. Energy slider — always visible */}
             <EnergySlider value={energy} onChange={setEnergy} />
 
+            {/* 4b. Exertion — always visible for all workout post types */}
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Exertion (1-10)</label>
+              <input type="number" min="1" max="10" value={perceivedExertion} onChange={(e) => setPerceivedExertion(e.target.value)} placeholder="7" className="input-dark w-full" />
+            </div>
+
             {/* 5. Caption — always visible */}
             <div>
               <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Caption</label>
@@ -2141,15 +2147,9 @@ export default function CreatePostContent() {
               <span style={{ color: "var(--text)" }}>Group class</span>
             </label>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Duration (min)</label>
-                <input type="number" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} placeholder="60" className="input-dark w-full" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Exertion (1-10)</label>
-                <input type="number" min="1" max="10" value={perceivedExertion} onChange={(e) => setPerceivedExertion(e.target.value)} placeholder="7" className="input-dark w-full" />
-              </div>
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Duration (min)</label>
+              <input type="number" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} placeholder="60" className="input-dark w-full" />
             </div>
 
             {/* Exercises */}
