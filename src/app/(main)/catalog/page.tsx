@@ -3014,7 +3014,7 @@ export default function CatalogPage() {
                 setSharingItem({
                   id: nudgeItem.id,
                   name: "name" in nudgeItem ? (nudgeItem as { name: string }).name : "",
-                  type: tabToShareType(catalogType),
+                  catalogType: tabToShareType(catalogType),
                 });
                 setNudgeItem(null);
               }}
