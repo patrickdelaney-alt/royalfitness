@@ -193,10 +193,12 @@ function PhotoUpload({
   photoUrl,
   photoSource,
   onUpload,
+  onRemove,
 }: {
   photoUrl: string | null;
   photoSource?: PhotoSource;
   onUpload: (url: string) => void;
+  onRemove: () => void;
 }) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -249,13 +251,24 @@ function PhotoUpload({
         <div className="space-y-2">
           <div className="relative w-full aspect-video rounded-xl overflow-hidden">
             <img src={photoUrl} alt="Preview" className="w-full h-full object-cover" />
-            <button
-              onClick={openFilePicker}
-              className="absolute bottom-2 right-2 p-1.5 rounded-lg text-xs"
-              style={{ background: "rgba(24,25,15,0.15)", color: "#ffffff" }}
-            >
-              Change
-            </button>
+            <div className="absolute bottom-2 right-2 flex gap-1.5">
+              <button
+                type="button"
+                onClick={onRemove}
+                className="p-1.5 rounded-lg text-xs"
+                style={{ background: "rgba(24,25,15,0.15)", color: "#ffffff" }}
+              >
+                Remove photo
+              </button>
+              <button
+                type="button"
+                onClick={openFilePicker}
+                className="p-1.5 rounded-lg text-xs"
+                style={{ background: "rgba(24,25,15,0.15)", color: "#ffffff" }}
+              >
+                Change
+              </button>
+            </div>
           </div>
           {photoSource === "auto" && (
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
@@ -371,6 +384,10 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
           setPhotoUrl(url);
           setPhotoSource("manual");
         }}
+        onRemove={() => {
+          setPhotoUrl(null);
+          setPhotoSource("none");
+        }}
       />
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Meal name *" className={inputCls} />
       <input
@@ -420,6 +437,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
   const [referralCode, setReferralCode] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoSource, setPhotoSource] = useState<PhotoSource>("none");
+  const [autoPhotoUrl, setAutoPhotoUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [linkEnriching, setLinkEnriching] = useState(false);
@@ -459,6 +477,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
           setBrand(enriched.siteName);
         }
         if (enriched.imageUrl && (options?.overwriteTouched || photoSourceRef.current !== "manual")) {
+          setAutoPhotoUrl(enriched.imageUrl);
           setPhotoUrl(enriched.imageUrl);
           setPhotoSource("auto");
         }
@@ -540,6 +559,15 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
         onUpload={(url) => {
           setPhotoUrl(url);
           setPhotoSource("manual");
+        }}
+        onRemove={() => {
+          if (autoPhotoUrl) {
+            setPhotoUrl(autoPhotoUrl);
+            setPhotoSource("auto");
+            return;
+          }
+          setPhotoUrl(null);
+          setPhotoSource("none");
         }}
       />
       <input
@@ -634,6 +662,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
   const [referralCode, setReferralCode] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoSource, setPhotoSource] = useState<PhotoSource>("none");
+  const [autoPhotoUrl, setAutoPhotoUrl] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -670,6 +699,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
           setName(enriched.title);
         }
         if (enriched.imageUrl && (options?.overwriteTouched || photoSourceRef.current !== "manual")) {
+          setAutoPhotoUrl(enriched.imageUrl);
           setPhotoUrl(enriched.imageUrl);
           setPhotoSource("auto");
         }
@@ -749,6 +779,15 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
         onUpload={(url) => {
           setPhotoUrl(url);
           setPhotoSource("manual");
+        }}
+        onRemove={() => {
+          if (autoPhotoUrl) {
+            setPhotoUrl(autoPhotoUrl);
+            setPhotoSource("auto");
+            return;
+          }
+          setPhotoUrl(null);
+          setPhotoSource("none");
         }}
       />
       <input
@@ -832,6 +871,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
   const [referralCode, setReferralCode] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoSource, setPhotoSource] = useState<PhotoSource>("none");
+  const [autoPhotoUrl, setAutoPhotoUrl] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -868,6 +908,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
           setName(enriched.title);
         }
         if (enriched.imageUrl && (options?.overwriteTouched || photoSourceRef.current !== "manual")) {
+          setAutoPhotoUrl(enriched.imageUrl);
           setPhotoUrl(enriched.imageUrl);
           setPhotoSource("auto");
         }
@@ -948,6 +989,15 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         onUpload={(url) => {
           setPhotoUrl(url);
           setPhotoSource("manual");
+        }}
+        onRemove={() => {
+          if (autoPhotoUrl) {
+            setPhotoUrl(autoPhotoUrl);
+            setPhotoSource("auto");
+            return;
+          }
+          setPhotoUrl(null);
+          setPhotoSource("none");
         }}
       />
       <input
@@ -1155,6 +1205,7 @@ function AddAffiliateForm({
   const [ctaLabel, setCtaLabel] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoSource, setPhotoSource] = useState<PhotoSource>("none");
+  const [autoPhotoUrl, setAutoPhotoUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const [error, setError] = useState("");
@@ -1252,6 +1303,7 @@ function AddAffiliateForm({
           setBrand(enriched.siteName);
         }
         if (enriched.imageUrl && (options?.forcePhotoRefresh || singlePhotoSourceRef.current !== "manual")) {
+          setAutoPhotoUrl(enriched.imageUrl);
           setPhotoUrl(enriched.imageUrl);
           setPhotoSource("auto");
           singlePhotoSourceRef.current = "auto";
@@ -1666,6 +1718,17 @@ function AddAffiliateForm({
               setPhotoSource("manual");
               singlePhotoSourceRef.current = "manual";
             }}
+            onRemove={() => {
+              if (autoPhotoUrl) {
+                setPhotoUrl(autoPhotoUrl);
+                setPhotoSource("auto");
+                singlePhotoSourceRef.current = "auto";
+                return;
+              }
+              setPhotoUrl(null);
+              setPhotoSource("none");
+              singlePhotoSourceRef.current = "none";
+            }}
           />
           <button
             onClick={handleSingleSubmit}
@@ -1800,6 +1863,11 @@ function EditItemModal({
     }
 
     const payload: Record<string, unknown> = {};
+    const optionalPhotoForPatch = (value: string, original: string | null | undefined) => {
+      const trimmed = value.trim();
+      if (!trimmed && original) return null;
+      return trimmed || undefined;
+    };
     const addIfChanged = (key: string, value: unknown, original: unknown) => {
       const left = Array.isArray(value) ? JSON.stringify(value) : value;
       const right = Array.isArray(original) ? JSON.stringify(original) : original;
@@ -1820,7 +1888,7 @@ function EditItemModal({
       addIfChanged("carbs", carbs ? parseFloat(carbs) : undefined, original.carbs ?? undefined);
       addIfChanged("fat", fat ? parseFloat(fat) : undefined, original.fat ?? undefined);
       addIfChanged("recipeSourceUrl", recipeSourceUrl.trim(), original.recipeSourceUrl ?? "");
-      addIfChanged("photoUrl", photoUrl || undefined, original.photoUrl ?? undefined);
+      addIfChanged("photoUrl", optionalPhotoForPatch(photoUrl, original.photoUrl), original.photoUrl ?? undefined);
       addIfChanged("notes", notes.trim(), original.notes ?? "");
     } else if (tab === "workouts") {
       const original = item as SavedWorkout;
@@ -1833,14 +1901,14 @@ function EditItemModal({
       addIfChanged("dose", dose.trim(), original.dose ?? "");
       addIfChanged("schedule", schedule.trim(), original.schedule ?? "");
       addIfChanged("notes", notes.trim(), original.notes ?? "");
-      addIfChanged("photoUrl", photoUrl || undefined, original.photoUrl ?? undefined);
+      addIfChanged("photoUrl", optionalPhotoForPatch(photoUrl, original.photoUrl), original.photoUrl ?? undefined);
       addIfChanged("link", link.trim(), original.link ?? "");
       addIfChanged("referralCode", referralCode.trim(), original.referralCode ?? "");
     } else if (tab === "accessories") {
       const original = item as Accessory;
       addIfChanged("type", type.trim(), original.type ?? "");
       addIfChanged("link", link.trim(), original.link ?? "");
-      addIfChanged("photoUrl", photoUrl || undefined, original.photoUrl ?? undefined);
+      addIfChanged("photoUrl", optionalPhotoForPatch(photoUrl, original.photoUrl), original.photoUrl ?? undefined);
       addIfChanged("referralCode", referralCode.trim(), original.referralCode ?? "");
       addIfChanged("notes", notes.trim(), original.notes ?? "");
     } else if (tab === "wellness") {
@@ -1852,7 +1920,7 @@ function EditItemModal({
         original.durationMinutes ?? undefined
       );
       addIfChanged("link", link.trim(), original.link ?? "");
-      addIfChanged("photoUrl", photoUrl || undefined, original.photoUrl ?? undefined);
+      addIfChanged("photoUrl", optionalPhotoForPatch(photoUrl, original.photoUrl), original.photoUrl ?? undefined);
       addIfChanged("referralCode", referralCode.trim(), original.referralCode ?? "");
       addIfChanged("notes", notes.trim(), original.notes ?? "");
     } else if (tab === "affiliates") {
@@ -1865,7 +1933,7 @@ function EditItemModal({
       addIfChanged("subcategoryTags", dedupeTags(parseTagsText(subcategoryTagsText)), original.subcategoryTags ?? []);
       addIfChanged("ctaLabel", ctaLabel.trim() || undefined, original.ctaLabel ?? undefined);
       addIfChanged("logoUrl", logoUrl.trim() || undefined, original.logoUrl ?? undefined);
-      addIfChanged("photoUrl", photoUrl || undefined, original.photoUrl ?? undefined);
+      addIfChanged("photoUrl", optionalPhotoForPatch(photoUrl, original.photoUrl), original.photoUrl ?? undefined);
     }
 
     if (Object.keys(payload).length === 0) {
@@ -1992,7 +2060,13 @@ function EditItemModal({
           {tab === "affiliates" && (
             <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand name (optional)" className={inputCls} />
           )}
-          {tab !== "workouts" && <PhotoUpload photoUrl={photoUrl || null} onUpload={setPhotoUrl} />}
+          {tab !== "workouts" && (
+            <PhotoUpload
+              photoUrl={photoUrl || null}
+              onUpload={setPhotoUrl}
+              onRemove={() => setPhotoUrl("")}
+            />
+          )}
           {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
         </div>
 
