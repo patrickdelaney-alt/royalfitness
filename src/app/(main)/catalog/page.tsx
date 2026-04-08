@@ -41,6 +41,7 @@ import {
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 import { sheetBottomPadding } from "@/components/layout/bottom-inset";
 import { BottomCtaBar, BottomCtaRow } from "@/components/layout/bottom-cta";
+import { compressImage } from "@/lib/compress-image";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -218,8 +219,9 @@ function PhotoUpload({
     setUploadError("");
     setUploading(true);
     try {
+      const toUpload = await compressImage(file).catch(() => file);
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", toUpload);
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       if (res.ok) {
         const { url } = await res.json();
@@ -283,6 +285,7 @@ function PhotoUpload({
         </div>
       ) : (
         <button
+          type="button"
           onClick={openFilePicker}
           disabled={uploading}
           className="w-full py-4 rounded-xl flex flex-col items-center gap-1.5 transition-all"
@@ -1841,9 +1844,10 @@ function EditItemModal({
   const [ctaLabel, setCtaLabel] = useState(
     tab === "affiliates" ? (item as AffiliateItem).ctaLabel ?? "" : ""
   );
-  const [logoUrl, setLogoUrl] = useState(
+  const [logoUrl] = useState(
     tab === "affiliates" ? (item as AffiliateItem).logoUrl ?? "" : ""
   );
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -1994,6 +1998,47 @@ function EditItemModal({
         <div className="overflow-y-auto overscroll-contain flex-1 p-4 space-y-3" style={{ WebkitOverflowScrolling: "touch" }}>
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder={namePlaceholder()} className={inputCls} />
 
+          {tab === "affiliates" && (
+            <>
+              <div>
+                <PhotoUpload
+                  photoUrl={photoUrl || null}
+                  onUpload={setPhotoUrl}
+                  onRemove={() => setPhotoUrl("")}
+                />
+                <p className="text-xs mt-1 pl-1" style={{ color: "var(--text-muted)" }}>
+                  Replaces the auto-fetched image
+                </p>
+              </div>
+              <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Affiliate / referral link" className={inputCls} />
+              <div className="space-y-1">
+                <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo code (e.g. SAVE20) — optional" className={inputCls} />
+                <p className="text-xs pl-1" style={{ color: "var(--text-muted)" }}>Short code only — not the same URL as above</p>
+              </div>
+              <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand name (optional)" className={inputCls} />
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Description (optional)" className="textarea-dark w-full resize-none" />
+              <select value={affiliateCategory} onChange={(e) => setAffiliateCategory(e.target.value)} className="select-dark w-full">
+                {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => setShowAdvanced((v) => !v)}
+                className="text-xs font-medium flex items-center gap-1"
+                style={{ color: "var(--text-muted)" }}
+              >
+                {showAdvanced ? "Hide advanced ▴" : "Advanced options ▾"}
+              </button>
+              {showAdvanced && (
+                <>
+                  <input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder='Button text (e.g. "Shop Now") — optional' className={inputCls} />
+                  <input value={subcategoryTagsText} onChange={(e) => setSubcategoryTagsText(e.target.value)} placeholder="Tags (comma-separated, optional)" className={inputCls} />
+                </>
+              )}
+            </>
+          )}
+
           {tab === "meals" && (
             <>
               <input value={recipeSourceUrl} onChange={(e) => setRecipeSourceUrl(e.target.value)} placeholder="Recipe URL (optional)" className={inputCls} />
@@ -2038,29 +2083,11 @@ function EditItemModal({
               <input type="number" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} placeholder="Duration (minutes, optional)" className={inputCls} />
             </>
           )}
-          {tab === "affiliates" && (
-            <>
-              <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Affiliate / referral link (the URL to share)" className={inputCls} />
-              <div className="space-y-1">
-                <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo code (e.g. SAVE20) — optional" className={inputCls} />
-                <p className="text-xs pl-1" style={{ color: "var(--text-muted)" }}>Short code only — not the same URL as above</p>
-              </div>
-              <select value={affiliateCategory} onChange={(e) => setAffiliateCategory(e.target.value)} className="select-dark w-full">
-                {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-              <input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder="Primary CTA label (optional)" className={inputCls} />
-              <input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="Logo image URL (optional)" className={inputCls} />
-              <input value={subcategoryTagsText} onChange={(e) => setSubcategoryTagsText(e.target.value)} placeholder="Subcategory tags (comma-separated, optional)" className={inputCls} />
-            </>
-          )}
 
-          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder={tab === "affiliates" ? "Description (optional)" : "Notes (optional)"} className="textarea-dark w-full resize-none" />
-          {tab === "affiliates" && (
-            <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand name (optional)" className={inputCls} />
+          {tab !== "affiliates" && (
+            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes (optional)" className="textarea-dark w-full resize-none" />
           )}
-          {tab !== "workouts" && (
+          {tab !== "workouts" && tab !== "affiliates" && (
             <PhotoUpload
               photoUrl={photoUrl || null}
               onUpload={setPhotoUrl}
