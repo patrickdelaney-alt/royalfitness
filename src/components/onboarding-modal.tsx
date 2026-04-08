@@ -2,6 +2,24 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { lightImpact } from "@/lib/haptics";
+
+interface Suggestion {
+  id: string;
+  name: string | null;
+  username: string;
+  avatarUrl: string | null;
+}
+
+function initials(name?: string | null): string {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
 
 const STORAGE_KEY = "rf_welcome_seen";
 
@@ -25,7 +43,7 @@ const steps = [
     title: "Find your community",
     subtitle: "Training is better together.",
     body: "Search for friends, fellow gym-goers, or anyone crushing their goals. Follow them and cheer each other on.",
-    cta: { label: "Find people to follow →", href: "/explore" },
+    cta: null,
   },
   {
     emoji: null,
@@ -43,6 +61,10 @@ interface Props {
 export default function OnboardingModal({ onClose }: Props) {
   const [step, setStep] = useState(0);
   const [showConfirmDismiss, setShowConfirmDismiss] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [followedIds, setFollowedIds] = useState<Set<string>>(new Set());
+  const [followingId, setFollowingId] = useState<string | null>(null);
 
   const dismiss = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -58,6 +80,35 @@ export default function OnboardingModal({ onClose }: Props) {
     }
     setShowConfirmDismiss(true);
   }, [dismiss, step]);
+
+  useEffect(() => {
+    if (step !== 2) return;
+    setSuggestionsLoading(true);
+    fetch("/api/users/suggestions?limit=5")
+      .then((r) => r.json())
+      .then((d) => setSuggestions(d.suggestions ?? []))
+      .catch(() => {})
+      .finally(() => setSuggestionsLoading(false));
+  }, [step]);
+
+  async function handleFollow(id: string) {
+    setFollowingId(id);
+    try {
+      const res = await fetch("/api/social/follow", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUserId: id }),
+      });
+      if (res.ok) {
+        lightImpact();
+        setFollowedIds((prev) => new Set([...prev, id]));
+      }
+    } catch {
+      // silent
+    } finally {
+      setFollowingId(null);
+    }
+  }
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -119,6 +170,79 @@ export default function OnboardingModal({ onClose }: Props) {
             >
               {current.cta.label}
             </Link>
+          )}
+
+          {/* Step 2: inline suggested users */}
+          {step === 2 && (
+            <div className="mt-4">
+              {suggestionsLoading ? (
+                <div className="flex justify-center py-4">
+                  <div
+                    className="w-5 h-5 border-2 rounded-full animate-spin"
+                    style={{ borderColor: "var(--brand)", borderTopColor: "transparent" }}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {suggestions.map((s) => {
+                    const followed = followedIds.has(s.id);
+                    const isLoading = followingId === s.id;
+                    return (
+                      <div key={s.id} className="flex items-center gap-3 px-1">
+                        {s.avatarUrl ? (
+                          <img
+                            src={s.avatarUrl}
+                            alt={s.username}
+                            className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div
+                            className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                            style={{ background: "var(--brand)" }}
+                          >
+                            {initials(s.name)}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0 text-left">
+                          <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>
+                            {s.name || s.username}
+                          </p>
+                          <p className="text-xs truncate" style={{ color: "var(--text-muted)" }}>
+                            @{s.username}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleFollow(s.id)}
+                          disabled={followed || isLoading}
+                          className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors${followed ? " cursor-default" : ""}`}
+                          style={
+                            followed
+                              ? { background: "rgba(36,63,22,0.08)", color: "var(--text-muted)" }
+                              : { background: "var(--brand)", color: "#fff" }
+                          }
+                        >
+                          {isLoading ? (
+                            <span className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin inline-block" />
+                          ) : followed ? (
+                            "Following"
+                          ) : (
+                            "Follow"
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <Link
+                href="/explore"
+                onClick={dismiss}
+                className="mt-3 block text-center text-xs font-medium"
+                style={{ color: "var(--brand)" }}
+              >
+                Find more →
+              </Link>
+            </div>
           )}
 
           {/* Navigation */}
