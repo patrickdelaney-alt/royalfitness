@@ -14,6 +14,18 @@ const ALLOWED_TYPES = [
   "video/quicktime",
 ];
 
+const EXT_TO_MIME: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+  gif: "image/gif",
+  heic: "image/heic",
+  heif: "image/heif",
+  mp4: "video/mp4",
+  mov: "video/quicktime",
+};
+
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 
 export async function POST(req: NextRequest) {
@@ -30,7 +42,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    // iOS WKWebView sometimes delivers files with an empty MIME type.
+    // Fall back to deriving the type from the file extension.
+    const ext = (file.name.split(".").pop() ?? "").toLowerCase();
+    const resolvedType = ALLOWED_TYPES.includes(file.type)
+      ? file.type
+      : (EXT_TO_MIME[ext] ?? "");
+
+    if (!resolvedType) {
       return NextResponse.json(
         { error: "File type not allowed" },
         { status: 400 }
@@ -44,8 +63,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const ext = file.name.split(".").pop() || "bin";
-    const uniqueName = `uploads/${crypto.randomUUID()}.${ext}`;
+    const uniqueName = `uploads/${crypto.randomUUID()}.${ext || "bin"}`;
 
     const blob = await put(uniqueName, file, { access: "public" });
 
