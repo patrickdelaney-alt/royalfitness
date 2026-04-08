@@ -225,7 +225,7 @@ function PhotoUpload({
       <input
         ref={fileRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept="image/*,image/heic,image/heif"
         className="hidden"
         onChange={handleFile}
       />
