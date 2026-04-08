@@ -476,7 +476,7 @@ export default function UserCatalogSection({
                 style={{ color: "#ffffff" }}
               >
                 <HiUpload className="w-4 h-4" />
-                Upload Affiliate Links
+                Add referral links
               </Link>
               <p className="text-xs mt-3" style={{ color: "var(--text-muted)" }}>
                 Discount codes, referral links &amp; more
