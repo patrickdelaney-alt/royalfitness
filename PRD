@@ -1,0 +1,126 @@
+# Royal — Product Requirements Document
+
+Last updated: 2026-04-06
+
+---
+
+## What Royal is
+
+Royal is a wellness tracking and social platform — Strava, but for workouts and wellness. Users log and track their fitness and wellness life in detail, share it with a community, and earn royalties when others use their product referral links.
+
+The priority order matters: logging and tracking is the core product. Social sharing is the layer on top. The royalties/catalog feature is a tasteful addition that rewards people for the recommendations they'd be making anyway.
+
+Available on iOS. App Store: https://apps.apple.com/us/app/royal-fitness-wellness/id6759988491
+
+---
+
+## The problem Royal solves
+
+Strava owns the running and cycling space because it made activity tracking social without making it performative. Nothing does that for the broader world of fitness and wellness — gym workouts, nutrition, recovery, sleep, sauna, skincare, supplements.
+
+Royal fills that gap. It also adds something Strava doesn't have: a tasteful way to earn from the products and places you already recommend to people.
+
+---
+
+## Target user
+
+**Primary**: Gen Z and Millennial (roughly 20–35), health-conscious, active lifestyle. Not necessarily an influencer or content creator — just someone who genuinely cares about how they live and wants a place to track and share it.
+
+**Secondary**: Nano-influencers and wellness creators (under 5K followers) who want a platform built around their actual lifestyle rather than content performance metrics.
+
+**Who Royal is not for**: People chasing follower counts, people who want a calorie-counting app, people looking for a get-rich-quick affiliate scheme.
+
+---
+
+## Core features (currently live)
+
+### 1. Live workout tracker
+The heart of the app. Users can start a live workout session with a built-in timer and add exercises as they go, crossing them off as they complete them. This makes Royal useful in the gym in real time — not just as a post-workout logging tool.
+
+The design principle here mirrors Strava's: one tap to start, as much or as little detail as the user wants to add. A user can log "went to the gym" in seconds, or build out a full session with every exercise, set, and rep tracked in detail.
+
+### 2. Wellness logging
+Beyond workouts, users can log the full picture of their wellness life:
+- **Nutrition** — meals, dietary choices
+- **Wellness activities** — recovery, sleep, mindfulness, sauna, red light therapy, skincare, supplements, and other lifestyle products and routines
+
+Logging should always feel frictionless. One tap for simple entries, depth available for those who want it.
+
+### 3. Activity feed
+Logged activities surface to a shared social feed. Posts can include photos, text, and product tags. Feed is filterable by category: All, Workouts, Meals, Wellness.
+
+This is where Royal becomes social — not a broadcasting platform, but a genuine community of people sharing how they actually live.
+
+### 4. Catalog
+Each user has a personal catalog — a grid view of products, supplements, and services they actually use, with optional referral links or codes attached. This is the royalties layer.
+
+Users can:
+- Add products to their catalog permanently
+- Periodically post catalog items to the feed to promote recommendations to followers
+- Attach referral codes or links so followers can purchase through them
+
+When a follower uses a referral link, the catalog owner earns a commission — framed within Royal as earning royalties. The language matters: this is not affiliate marketing, it is earning royalties on your lifestyle recommendations.
+
+### 5. Social graph
+Users can follow others, view their activity, and discover people through the feed. Profiles show logged activity history and the user's catalog.
+
+### 6. Smart suggestions
+The app surfaces contextual nudges based on activity — for example, suggesting a recovery session after 5+ workouts in a week.
+
+---
+
+## Planned features
+
+### Workout suggestions (future)
+Build on the live tracker by helping users plan workouts, not just log them. The app could suggest exercises based on previous sessions, muscle groups trained, or recovery status. This keeps Royal useful before a workout, not just during and after.
+
+### Location & place discovery (future)
+Allow users to tag wellness locations when logging — gyms, yoga studios, spas, wellness centres, outdoor routes. Other users can discover these places through the feed and a dedicated discovery view.
+
+Goals:
+- Make logging more contextual and rich
+- Create a discovery layer for wellness locations (a wellness-focused version of what Strava does with segments and popular routes)
+- Surface popular local wellness spots organically through community activity
+
+This feature directly supports the non-influencer user — someone who just wants to find a good gym nearby is as valuable to Royal as someone building a referral catalog.
+
+---
+
+## What Royal is not building
+
+- A follower-count leaderboard or virality mechanic
+- Anything that makes the earning layer feel like a job
+- A guided classes or live streaming feature (Peloton's lane)
+- A calorie counter or macro tracker (too clinical, wrong register)
+
+---
+
+## Design principles
+
+All product decisions should be evaluated against these:
+
+1. **Logging first** — if tracking a workout or wellness activity isn't fast and effortless, nothing else matters. Every friction point in the logging flow is a product failure.
+2. **Earned silence** — less is more. Remove before adding. Screens should breathe.
+3. **Genuine first** — the social and royalties layers only work if the tracking layer is real. Royal is a tool people use because it helps them, not because they want an audience.
+4. **Non-performative** — features should reward consistency, not content output.
+5. **Tasteful earning** — royalties should feel like a pleasant side effect of living well, not the reason to use the app.
+
+---
+
+## Technical stack
+
+- **Frontend**: Next.js (App Router), Tailwind CSS
+- **Backend / DB**: Supabase (Postgres, Auth, Storage, Realtime)
+- **Hosting**: Vercel
+- **Repo**: github.com/patrickdelaney-alt/royalfitness
+- **Platform**: iOS (App Store live), web TBD
+
+---
+
+## Success looks like
+
+- Users opening Royal at the gym to track live workouts, not just to post about them after
+- Logging feeling so fast that it becomes a habit without thinking
+- Catalog referral links being used organically, not aggressively promoted
+- Location discovery driving real-world wellness behaviour — trying a new gym, finding a sauna
+- Word of mouth from people who describe Royal as "Strava but for everything wellness"
