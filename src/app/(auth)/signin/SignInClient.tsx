@@ -107,6 +107,7 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<"apple" | "google" | null>(
     null
@@ -114,10 +115,15 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
 
   // Show friendly message when NextAuth redirects back with ?error=, then
   // immediately clean the param from the URL so a page refresh doesn't repeat it.
+  // Also show a success banner when redirected here after registration.
   useEffect(() => {
     const err = searchParams.get("error");
+    const registered = searchParams.get("registered");
     if (err) {
       setError(ERROR_MESSAGES[err] ?? ERROR_MESSAGES.Default);
+      router.replace("/signin", { scroll: false });
+    } else if (registered === "1") {
+      setSuccess("Account created! Sign in to get started.");
       router.replace("/signin", { scroll: false });
     }
   }, [searchParams, router]);
@@ -172,6 +178,19 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
       <h2 className="mb-6 text-center text-2xl font-normal" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>
         Welcome back
       </h2>
+
+      {success && (
+        <div
+          className="mb-4 rounded-lg p-3 text-sm border"
+          style={{
+            background: "rgba(22,163,74,0.08)",
+            borderColor: "rgba(22,163,74,0.25)",
+            color: "#15803d",
+          }}
+        >
+          {success}
+        </div>
+      )}
 
       {error && (
         <div
