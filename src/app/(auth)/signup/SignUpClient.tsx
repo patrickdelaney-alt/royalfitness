@@ -161,9 +161,7 @@ export default function SignUpClient({ appleEnabled, googleEnabled, waitlistGate
       if (session?.user?.id) {
         window.location.href = "/feed?welcome=1";
       } else {
-        setError("Account created! Please sign in to continue.");
-        setLoading(false);
-        return;
+        window.location.href = "/signin?registered=1";
       }
     } catch {
       setError("Something went wrong. Please try again.");
