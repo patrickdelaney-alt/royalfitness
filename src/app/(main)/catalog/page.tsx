@@ -199,11 +199,21 @@ function PhotoUpload({
   onUpload: (url: string) => void;
 }) {
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const openFilePicker = () => {
+    setUploadError("");
+    fileRef.current?.click();
+  };
+
+  const getUploadErrorMessage = (statusText?: string) =>
+    `${statusText ?? "Upload failed"}. Please try again. Common causes: unsupported format or file size too large.`;
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setUploadError("");
     setUploading(true);
     try {
       const formData = new FormData();
@@ -212,11 +222,17 @@ function PhotoUpload({
       if (res.ok) {
         const { url } = await res.json();
         onUpload(url);
+      } else {
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        setUploadError(getUploadErrorMessage(data?.error || res.statusText));
       }
     } catch {
-      /* ignore */
+      setUploadError(
+        "Could not upload photo due to a network error. Please try again. Common causes: unsupported format or file size too large.",
+      );
     } finally {
       setUploading(false);
+      e.target.value = "";
     }
   };
 
@@ -234,7 +250,7 @@ function PhotoUpload({
           <div className="relative w-full aspect-video rounded-xl overflow-hidden">
             <img src={photoUrl} alt="Preview" className="w-full h-full object-cover" />
             <button
-              onClick={() => fileRef.current?.click()}
+              onClick={openFilePicker}
               className="absolute bottom-2 right-2 p-1.5 rounded-lg text-xs"
               style={{ background: "rgba(24,25,15,0.15)", color: "#ffffff" }}
             >
@@ -254,7 +270,7 @@ function PhotoUpload({
         </div>
       ) : (
         <button
-          onClick={() => fileRef.current?.click()}
+          onClick={openFilePicker}
           disabled={uploading}
           className="w-full py-4 rounded-xl flex flex-col items-center gap-1.5 transition-all"
           style={{
@@ -268,10 +284,15 @@ function PhotoUpload({
           ) : (
             <>
               <HiPhotograph className="w-6 h-6" />
-              <span className="text-xs font-medium">Add Photo</span>
+              <span className="text-xs font-medium">{uploadError ? "Try again" : "Add Photo"}</span>
             </>
           )}
         </button>
+      )}
+      {uploadError && (
+        <p className="mt-2 text-xs" style={{ color: "var(--danger, #b42318)" }}>
+          {uploadError}
+        </p>
       )}
     </div>
   );
