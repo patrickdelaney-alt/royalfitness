@@ -174,7 +174,7 @@ const TYPE_BADGE: Record<Post["type"], { bg: string; text: string; label: string
   WELLNESS:      { bg: "rgba(26,107,42,0.12)",    text: "#1A6B2A", label: "Wellness",     emoji: "🧘" },
   GENERAL:       { bg: "rgba(36,63,22,0.10)",     text: "#7A7560", label: "General",      emoji: "⭐" },
   CHECKIN:       { bg: "rgba(212,115,90,0.12)",   text: "#A85A42", label: "Check-in",     emoji: "📍" },
-  AFFILIATE:     { bg: "rgba(154,123,46,0.12)",   text: "#9A7B2E", label: "Affiliate",    emoji: "🔗" },
+  AFFILIATE:     { bg: "rgba(154,123,46,0.12)",   text: "#9A7B2E", label: "Referral",     emoji: "🔗" },
   CATALOG_SHARE: { bg: "rgba(154,123,46,0.15)",   text: "#9A7B2E", label: "Shared Item",  emoji: "✨" },
 };
 

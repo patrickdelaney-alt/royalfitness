@@ -1264,6 +1264,7 @@ interface BulkItem {
   needsReview: boolean;
   lowConfidenceConfirmed: boolean;
   included: boolean;
+  actioned: boolean;
 }
 
 function AddAffiliateForm({
@@ -1363,6 +1364,7 @@ function AddAffiliateForm({
           needsReview: d.needsReview,
           lowConfidenceConfirmed: confidence >= 0.55,
           included: true,
+          actioned: false,
         };
       })
     );
@@ -1602,11 +1604,11 @@ function AddAffiliateForm({
                 value={rawText}
                 onChange={(e) => setRawText(e.target.value)}
                 rows={6}
-                placeholder={"Paste your affiliate links & codes here — one per line:\n\nhttps://myprotein.com/ref/ROYAL20\nhttps://gymshark.com?ref=abc GYMCODE15\nhttps://whoop.com/join/xyz"}
+                placeholder={"Paste your referral links and codes, one per line:\n\nhttps://myprotein.com/ref/ROYAL20\nhttps://gymshark.com?ref=abc GYMCODE15\nhttps://whoop.com/join/xyz"}
                 className="textarea-dark w-full resize-none"
               />
               <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                One link or code per line. We&apos;ll auto-detect brands and categories.
+                Paste links from brands you already recommend — one per line.
               </p>
               <button
                 onClick={handleBulkParse}
@@ -1621,96 +1623,131 @@ function AddAffiliateForm({
             <>
               {/* Review detected items */}
               <div className="space-y-2">
-                <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                  {bulkItems.filter((b) => b.included).length} of {bulkItems.length} items selected
-                </p>
-                {bulkItems.length > 0 && (() => {
-                  const activeIndex = Math.min(reviewIndex, bulkItems.length - 1);
-                  const item = bulkItems[activeIndex];
-                  if (!item) return null;
-                  const confidencePercent = Math.round(item.confidence * 100);
-                  const confidenceTone = item.confidence >= 0.75 ? "#528531" : item.confidence >= 0.55 ? "#9A7B2E" : "#f87171";
-                  const confidenceLabel = item.confidence >= 0.75 ? "High confidence" : item.confidence >= 0.55 ? "Medium confidence" : "Low confidence";
-                  return (
-                    <div
-                      className="rounded-xl p-3 space-y-3 transition-opacity"
-                      style={{
-                        background: item.included ? "var(--surface)" : "rgba(36,63,22,0.02)",
-                        border: item.needsReview ? "1px solid rgba(248,113,113,0.28)" : "1px solid rgba(36,63,22,0.10)",
-                        opacity: item.included ? 1 : 0.55,
-                      }}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                          Review {activeIndex + 1} / {bulkItems.length}
+                {(() => {
+                  const readyCount = bulkItems.filter((b) => b.included).length;
+                  const skippedCount = bulkItems.filter((b) => b.actioned && !b.included).length;
+                  const reviewedCount = bulkItems.filter((b) => b.actioned).length;
+                  const allReviewed = bulkItems.length > 0 && bulkItems.every((b) => b.actioned);
+
+                  if (allReviewed) {
+                    return (
+                      <div className="rounded-xl p-4 space-y-3 text-center" style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}>
+                        <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                          {readyCount > 0
+                            ? `${readyCount} ${readyCount === 1 ? "link" : "links"} ready.${skippedCount > 0 ? ` ${skippedCount} skipped.` : ""}`
+                            : "All items skipped."}
                         </p>
-                        <span className="text-[10px] px-2 py-1 rounded-full font-medium" style={{ background: `${confidenceTone}22`, color: confidenceTone }}>
-                          {confidenceLabel} · {confidencePercent}%
-                        </span>
+                        {readyCount > 0 && (
+                          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                            These will be added to your catalog. Followers who shop through your links earn you royalties.
+                          </p>
+                        )}
+                        {readyCount === 0 && (
+                          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                            Go back and add at least one link to continue.
+                          </p>
+                        )}
                       </div>
-                      {item.confidenceReasons.length > 0 && (
-                        <ul className="text-[10px] space-y-0.5" style={{ color: confidenceTone }}>
-                          {item.confidenceReasons.map((r, idx) => <li key={idx}>· {r}</li>)}
-                        </ul>
-                      )}
-                      <input value={item.name} onChange={(e) => updateBulkItem(activeIndex, "name", e.target.value)} placeholder="Title *" className={inputCls} />
-                      <input value={item.brand ?? ""} onChange={(e) => updateBulkItem(activeIndex, "brand", e.target.value)} placeholder="Brand" className={inputCls} />
-                      <div className="grid grid-cols-2 gap-2">
-                        <select value={item.category} onChange={(e) => updateBulkItem(activeIndex, "category", e.target.value)} className="select-dark w-full">
-                          {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                          ))}
-                        </select>
-                        <input value={item.subcategory} onChange={(e) => updateBulkItem(activeIndex, "subcategory", e.target.value)} placeholder="Subcategory tag" className={inputCls} />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input value={item.link ?? ""} onChange={(e) => updateBulkItem(activeIndex, "link", e.target.value)} placeholder="Affiliate link" className={inputCls} />
-                        <input value={item.referralCode ?? ""} onChange={(e) => updateBulkItem(activeIndex, "referralCode", e.target.value)} placeholder="Code" className={inputCls} />
-                      </div>
-                      <input value={item.photoUrl ?? ""} onChange={(e) => updateBulkItem(activeIndex, "photoUrl", e.target.value)} placeholder="Logo image URL" className={inputCls} />
-                      {item.confidence < 0.55 && item.included && (
-                        <label className="flex items-start gap-2 text-xs" style={{ color: "#f87171" }}>
-                          <input
-                            type="checkbox"
-                            checked={item.lowConfidenceConfirmed}
-                            onChange={(e) => updateBulkItem(activeIndex, "lowConfidenceConfirmed", e.target.checked)}
-                            className="mt-0.5 rounded"
-                          />
-                          Confirm this low-confidence item before final save.
-                        </label>
-                      )}
-                      <div className="flex flex-wrap gap-2 text-[10px]" style={{ color: "var(--text-muted)" }}>
-                        {item.link && <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}><HiLink className="inline w-2.5 h-2.5 mr-1" />{item.link}</span>}
-                        {item.referralCode && <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(154,123,46,0.12)", color: "#9A7B2E" }}>{item.referralCode}</span>}
-                        <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}>{AFFILIATE_CATEGORY_LABELS[item.category] ?? "Other"}</span>
-                        {item.subcategory.trim() && <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}>{item.subcategory.trim()}</span>}
-                      </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => updateBulkItem(activeIndex, "included", true)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(82,133,49,0.14)", color: "#528531" }}>Accept</button>
-                        <button onClick={() => updateBulkItem(activeIndex, "included", false)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(248,113,113,0.14)", color: "#f87171" }}>Skip</button>
-                        <button onClick={() => updateBulkItem(activeIndex, "needsReview", true)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(36,63,22,0.08)", color: "var(--text-muted)" }}>Edit</button>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setReviewIndex((prev) => Math.max(prev - 1, 0))}
-                          disabled={activeIndex === 0}
-                          className="flex-1 py-2 rounded-xl text-xs font-medium disabled:opacity-40"
-                          style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}
-                        >
-                          <HiChevronLeft className="inline w-3.5 h-3.5 mr-1" />
-                          Previous
-                        </button>
-                        <button
-                          onClick={() => setReviewIndex((prev) => Math.min(prev + 1, bulkItems.length - 1))}
-                          disabled={activeIndex === bulkItems.length - 1}
-                          className="flex-1 py-2 rounded-xl text-xs font-medium disabled:opacity-40"
-                          style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}
-                        >
-                          Next
-                          <HiChevronRight className="inline w-3.5 h-3.5 ml-1" />
-                        </button>
-                      </div>
-                    </div>
+                    );
+                  }
+
+                  return (
+                    <>
+                      <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                        {reviewedCount} of {bulkItems.length} reviewed
+                      </p>
+                      {bulkItems.length > 0 && (() => {
+                        const activeIndex = Math.min(reviewIndex, bulkItems.length - 1);
+                        const item = bulkItems[activeIndex];
+                        if (!item) return null;
+                        const confidencePercent = Math.round(item.confidence * 100);
+                        const confidenceTone = item.confidence >= 0.75 ? "#528531" : item.confidence >= 0.55 ? "#9A7B2E" : "#f87171";
+                        const confidenceLabel = item.confidence >= 0.75 ? "High confidence" : item.confidence >= 0.55 ? "Medium confidence" : "Low confidence";
+                        return (
+                          <div
+                            className="rounded-xl p-3 space-y-3 transition-opacity"
+                            style={{
+                              background: item.included ? "var(--surface)" : "rgba(36,63,22,0.02)",
+                              border: item.needsReview ? "1px solid rgba(248,113,113,0.28)" : "1px solid rgba(36,63,22,0.10)",
+                              opacity: item.included ? 1 : 0.55,
+                            }}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                                {activeIndex + 1} of {bulkItems.length}
+                              </p>
+                              <span className="text-[10px] px-2 py-1 rounded-full font-medium" style={{ background: `${confidenceTone}22`, color: confidenceTone }}>
+                                {confidenceLabel} · {confidencePercent}%
+                              </span>
+                            </div>
+                            {item.confidenceReasons.length > 0 && (
+                              <ul className="text-[10px] space-y-0.5" style={{ color: confidenceTone }}>
+                                {item.confidenceReasons.map((r, idx) => <li key={idx}>· {r}</li>)}
+                              </ul>
+                            )}
+                            <input value={item.name} onChange={(e) => updateBulkItem(activeIndex, "name", e.target.value)} placeholder="Title *" className={inputCls} />
+                            <input value={item.brand ?? ""} onChange={(e) => updateBulkItem(activeIndex, "brand", e.target.value)} placeholder="Brand" className={inputCls} />
+                            <div className="grid grid-cols-2 gap-2">
+                              <select value={item.category} onChange={(e) => updateBulkItem(activeIndex, "category", e.target.value)} className="select-dark w-full">
+                                {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
+                                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
+                              </select>
+                              <input value={item.subcategory} onChange={(e) => updateBulkItem(activeIndex, "subcategory", e.target.value)} placeholder="Subcategory tag" className={inputCls} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <input value={item.link ?? ""} onChange={(e) => updateBulkItem(activeIndex, "link", e.target.value)} placeholder="Referral link" className={inputCls} />
+                              <input value={item.referralCode ?? ""} onChange={(e) => updateBulkItem(activeIndex, "referralCode", e.target.value)} placeholder="Code" className={inputCls} />
+                            </div>
+                            <input value={item.photoUrl ?? ""} onChange={(e) => updateBulkItem(activeIndex, "photoUrl", e.target.value)} placeholder="Logo image URL" className={inputCls} />
+                            {item.confidence < 0.55 && item.included && (
+                              <label className="flex items-start gap-2 text-xs" style={{ color: "#f87171" }}>
+                                <input
+                                  type="checkbox"
+                                  checked={item.lowConfidenceConfirmed}
+                                  onChange={(e) => updateBulkItem(activeIndex, "lowConfidenceConfirmed", e.target.checked)}
+                                  className="mt-0.5 rounded"
+                                />
+                                Confirm this low-confidence item before saving.
+                              </label>
+                            )}
+                            <div className="flex flex-wrap gap-2 text-[10px]" style={{ color: "var(--text-muted)" }}>
+                              {item.link && <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}><HiLink className="inline w-2.5 h-2.5 mr-1" />{item.link}</span>}
+                              {item.referralCode && <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(154,123,46,0.12)", color: "#9A7B2E" }}>{item.referralCode}</span>}
+                              <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}>{AFFILIATE_CATEGORY_LABELS[item.category] ?? "Other"}</span>
+                              {item.subcategory.trim() && <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}>{item.subcategory.trim()}</span>}
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  setBulkItems(prev => prev.map((it, i) => i === activeIndex ? { ...it, included: true, actioned: true } : it));
+                                  if (activeIndex < bulkItems.length - 1) setReviewIndex(prev => prev + 1);
+                                }}
+                                className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(82,133,49,0.14)", color: "#528531" }}
+                              >Add to catalog</button>
+                              <button
+                                onClick={() => {
+                                  setBulkItems(prev => prev.map((it, i) => i === activeIndex ? { ...it, included: false, actioned: true } : it));
+                                  if (activeIndex < bulkItems.length - 1) setReviewIndex(prev => prev + 1);
+                                }}
+                                className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(248,113,113,0.14)", color: "#f87171" }}
+                              >Skip</button>
+                              <button onClick={() => updateBulkItem(activeIndex, "needsReview", true)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(36,63,22,0.08)", color: "var(--text-muted)" }}>Edit</button>
+                            </div>
+                            {activeIndex > 0 && (
+                              <button
+                                onClick={() => setReviewIndex((prev) => Math.max(prev - 1, 0))}
+                                className="w-full py-1.5 rounded-xl text-xs font-medium"
+                                style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}
+                              >
+                                <HiChevronLeft className="inline w-3.5 h-3.5 mr-1" />
+                                Back to previous
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </>
                   );
                 })()}
               </div>
@@ -1728,7 +1765,7 @@ function AddAffiliateForm({
                   className="flex-1 py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
                   style={{ color: "#ffffff" }}
                 >
-                  {bulkSubmitting ? "Saving..." : `Save Reviewed ${bulkItems.filter((b) => b.included).length}`}
+                  {bulkSubmitting ? "Saving..." : (() => { const n = bulkItems.filter((b) => b.included).length; return `Add ${n} ${n === 1 ? "link" : "links"} to catalog`; })()}
                 </button>
               </div>
             </>
@@ -1755,7 +1792,7 @@ function AddAffiliateForm({
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
-                Affiliate link
+                Referral link
               </span>
               <button
                 type="button"
@@ -1771,7 +1808,7 @@ function AddAffiliateForm({
               <input
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
-                placeholder="Affiliate / referral link"
+                placeholder="Referral link"
                 className={inputCls}
               />
               {link && (
@@ -1824,7 +1861,7 @@ function AddAffiliateForm({
             className="w-full py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
             style={{ color: "#ffffff" }}
           >
-            {submitting ? "Saving..." : "Add Affiliate Item"}
+            {submitting ? "Saving..." : "Add to catalog"}
           </button>
         </>
       )}
@@ -2095,7 +2132,7 @@ function EditItemModal({
                   Replaces the auto-fetched image
                 </p>
               </div>
-              <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Affiliate / referral link" className={inputCls} />
+              <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Referral link" className={inputCls} />
               <div className="space-y-1">
                 <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo code (e.g. SAVE20) — optional" className={inputCls} />
                 <p className="text-xs pl-1" style={{ color: "var(--text-muted)" }}>Short code only — not the same URL as above</p>
