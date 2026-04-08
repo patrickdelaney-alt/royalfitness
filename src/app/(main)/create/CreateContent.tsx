@@ -1307,7 +1307,6 @@ export default function CreatePostContent() {
 
       if (!res.ok) {
         const data = await res.json();
-        if (data.details) console.error("Post validation details:", JSON.stringify(data.details, null, 2));
         setError(data.error || (isEditingPost ? "Failed to update post" : "Failed to create post"));
         return;
       }
