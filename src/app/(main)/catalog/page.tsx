@@ -329,6 +329,7 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
   const [photoSource, setPhotoSource] = useState<PhotoSource>("none");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [showMore, setShowMore] = useState(false);
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -392,32 +393,48 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
           setPhotoSource("none");
         }}
       />
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Meal name *" className={inputCls} />
-      <input
-        value={recipeSourceUrl}
-        onChange={(e) => setRecipeSourceUrl(e.target.value)}
-        placeholder="Instagram / TikTok link (optional)"
-        className={inputCls}
-      />
-      <input
-        value={ingredients}
-        onChange={(e) => setIngredients(e.target.value)}
-        placeholder="Ingredients (comma-separated)"
-        className={inputCls}
-      />
-      <div className="grid grid-cols-2 gap-2">
-        <input type="number" value={calories} onChange={(e) => setCalories(e.target.value)} placeholder="Calories" className={inputCls} />
-        <input type="number" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="Protein (g)" className={inputCls} />
-        <input type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="Carbs (g)" className={inputCls} />
-        <input type="number" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="Fat (g)" className={inputCls} />
+      <div>
+        <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>Name</label>
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. High-Protein Chicken Bowl" className={inputCls} />
       </div>
-      <textarea
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        rows={2}
-        placeholder="Notes"
-        className="textarea-dark w-full resize-none"
-      />
+      {showMore ? (
+        <>
+          <input
+            value={recipeSourceUrl}
+            onChange={(e) => setRecipeSourceUrl(e.target.value)}
+            placeholder="Instagram / TikTok link (optional)"
+            className={inputCls}
+          />
+          <input
+            value={ingredients}
+            onChange={(e) => setIngredients(e.target.value)}
+            placeholder="Ingredients (comma-separated)"
+            className={inputCls}
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <input type="number" value={calories} onChange={(e) => setCalories(e.target.value)} placeholder="Calories" className={inputCls} />
+            <input type="number" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="Protein (g)" className={inputCls} />
+            <input type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="Carbs (g)" className={inputCls} />
+            <input type="number" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="Fat (g)" className={inputCls} />
+          </div>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            placeholder="Notes"
+            className="textarea-dark w-full resize-none"
+          />
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowMore(true)}
+          className="text-xs font-medium"
+          style={{ color: "#528531" }}
+        >
+          + Add more details
+        </button>
+      )}
       <button
         onClick={handleSubmit}
         disabled={submitting}
@@ -445,6 +462,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
   const [error, setError] = useState("");
   const [linkEnriching, setLinkEnriching] = useState(false);
   const [linkEnrichError, setLinkEnrichError] = useState("");
+  const [showMore, setShowMore] = useState(false);
   const enrichRequestIdRef = useRef(0);
   const nameTouchedRef = useRef(false);
   const brandTouchedRef = useRef(false);
@@ -573,79 +591,95 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
           setPhotoSource("none");
         }}
       />
-      <input
-        value={name}
-        onChange={(e) => {
-          nameTouchedRef.current = true;
-          setName(e.target.value);
-        }}
-        placeholder="Supplement name *"
-        className={inputCls}
-      />
-      <div className="grid grid-cols-2 gap-2">
+      <div>
+        <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>Name</label>
         <input
-          value={brand}
+          value={name}
           onChange={(e) => {
-            brandTouchedRef.current = true;
-            setBrand(e.target.value);
+            nameTouchedRef.current = true;
+            setName(e.target.value);
           }}
-          placeholder="Brand"
+          placeholder="e.g. Whey Protein"
           className={inputCls}
         />
-        <input value={dose} onChange={(e) => setDose(e.target.value)} placeholder="Dose (e.g. 5g)" className={inputCls} />
       </div>
-      <input value={schedule} onChange={(e) => setSchedule(e.target.value)} placeholder="Schedule (e.g. Morning)" className={inputCls} />
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
-            Product link
-          </span>
-          <button
-            type="button"
-            onClick={() => void runLinkEnrichment(link)}
-            disabled={!link.trim() || linkEnriching}
-            className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
-            style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
-          >
-            Re-apply link preview
-          </button>
-          <button
-            type="button"
-            onClick={() => void runLinkEnrichment(link, { overwriteTouched: true })}
-            disabled={!link.trim() || linkEnriching}
-            className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
-            style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
-          >
-            Replace with preview data
-          </button>
-        </div>
-        <input
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
-          placeholder="Product link (optional)"
-          type="url"
-          className={inputCls}
-        />
-        {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
-        {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
-      </div>
-      <div className="relative">
-        <input
-          value={referralCode}
-          onChange={(e) => setReferralCode(e.target.value)}
-          placeholder="Referral / affiliate code (e.g. ROYAL20)"
-          className={inputCls}
-        />
-        {referralCode && (
-          <span
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(36,63,22,0.15)", color: "#528531" }}
-          >
-            Code
-          </span>
-        )}
-      </div>
-      <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
+      {showMore ? (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              value={brand}
+              onChange={(e) => {
+                brandTouchedRef.current = true;
+                setBrand(e.target.value);
+              }}
+              placeholder="Brand (optional)"
+              className={inputCls}
+            />
+            <input value={dose} onChange={(e) => setDose(e.target.value)} placeholder="Dose (optional)" className={inputCls} />
+          </div>
+          <input value={schedule} onChange={(e) => setSchedule(e.target.value)} placeholder="Schedule (optional)" className={inputCls} />
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+                Product link
+              </span>
+              <button
+                type="button"
+                onClick={() => void runLinkEnrichment(link)}
+                disabled={!link.trim() || linkEnriching}
+                className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
+                style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+              >
+                Re-apply link preview
+              </button>
+              <button
+                type="button"
+                onClick={() => void runLinkEnrichment(link, { overwriteTouched: true })}
+                disabled={!link.trim() || linkEnriching}
+                className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
+                style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+              >
+                Replace with preview data
+              </button>
+            </div>
+            <input
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              placeholder="Product link (optional)"
+              type="url"
+              className={inputCls}
+            />
+            {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
+            {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
+          </div>
+          <div className="relative">
+            <input
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value)}
+              placeholder="Referral / affiliate code (e.g. ROYAL20)"
+              className={inputCls}
+            />
+            {referralCode && (
+              <span
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full"
+                style={{ background: "rgba(36,63,22,0.15)", color: "#528531" }}
+              >
+                Code
+              </span>
+            )}
+          </div>
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes (optional)" className="textarea-dark w-full resize-none" />
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowMore(true)}
+          className="text-xs font-medium"
+          style={{ color: "#528531" }}
+        >
+          + Add more details
+        </button>
+      )}
       <button
         onClick={handleSubmit}
         disabled={submitting}
@@ -671,6 +705,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
   const [error, setError] = useState("");
   const [linkEnriching, setLinkEnriching] = useState(false);
   const [linkEnrichError, setLinkEnrichError] = useState("");
+  const [showMore, setShowMore] = useState(false);
   const enrichRequestIdRef = useRef(0);
   const nameTouchedRef = useRef(false);
   const photoSourceRef = useRef(photoSource);
@@ -793,67 +828,83 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
           setPhotoSource("none");
         }}
       />
-      <input
-        value={name}
-        onChange={(e) => {
-          nameTouchedRef.current = true;
-          setName(e.target.value);
-        }}
-        placeholder="Accessory name *"
-        className={inputCls}
-      />
-      <input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (e.g. Recovery, Gear)" className={inputCls} />
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
-            Link
-          </span>
-          <button
-            type="button"
-            onClick={() => void runLinkEnrichment(link)}
-            disabled={!link.trim() || linkEnriching}
-            className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
-            style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
-          >
-            Re-apply link preview
-          </button>
-          <button
-            type="button"
-            onClick={() => void runLinkEnrichment(link, { overwriteTouched: true })}
-            disabled={!link.trim() || linkEnriching}
-            className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
-            style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
-          >
-            Replace with preview data
-          </button>
-        </div>
+      <div>
+        <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>Name</label>
         <input
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
-          placeholder="Link (optional)"
-          type="url"
+          value={name}
+          onChange={(e) => {
+            nameTouchedRef.current = true;
+            setName(e.target.value);
+          }}
+          placeholder="e.g. Resistance Bands"
           className={inputCls}
         />
-        {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
-        {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
       </div>
-      <div className="relative">
-        <input
-          value={referralCode}
-          onChange={(e) => setReferralCode(e.target.value)}
-          placeholder="Referral / affiliate code (e.g. ROYAL20)"
-          className={inputCls}
-        />
-        {referralCode && (
-          <span
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(36,63,22,0.15)", color: "#528531" }}
-          >
-            Code
-          </span>
-        )}
-      </div>
-      <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
+      {showMore ? (
+        <>
+          <input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (optional)" className={inputCls} />
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+                Link
+              </span>
+              <button
+                type="button"
+                onClick={() => void runLinkEnrichment(link)}
+                disabled={!link.trim() || linkEnriching}
+                className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
+                style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+              >
+                Re-apply link preview
+              </button>
+              <button
+                type="button"
+                onClick={() => void runLinkEnrichment(link, { overwriteTouched: true })}
+                disabled={!link.trim() || linkEnriching}
+                className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
+                style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+              >
+                Replace with preview data
+              </button>
+            </div>
+            <input
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              placeholder="Link (optional)"
+              type="url"
+              className={inputCls}
+            />
+            {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
+            {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
+          </div>
+          <div className="relative">
+            <input
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value)}
+              placeholder="Referral / affiliate code (e.g. ROYAL20)"
+              className={inputCls}
+            />
+            {referralCode && (
+              <span
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full"
+                style={{ background: "rgba(36,63,22,0.15)", color: "#528531" }}
+              >
+                Code
+              </span>
+            )}
+          </div>
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes (optional)" className="textarea-dark w-full resize-none" />
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowMore(true)}
+          className="text-xs font-medium"
+          style={{ color: "#528531" }}
+        >
+          + Add more details
+        </button>
+      )}
       <button
         onClick={handleSubmit}
         disabled={submitting}
@@ -880,6 +931,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
   const [error, setError] = useState("");
   const [linkEnriching, setLinkEnriching] = useState(false);
   const [linkEnrichError, setLinkEnrichError] = useState("");
+  const [showMore, setShowMore] = useState(false);
   const enrichRequestIdRef = useRef(0);
   const nameTouchedRef = useRef(false);
   const photoSourceRef = useRef(photoSource);
@@ -1003,76 +1055,92 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
           setPhotoSource("none");
         }}
       />
-      <input
-        value={name}
-        onChange={(e) => {
-          nameTouchedRef.current = true;
-          setName(e.target.value);
-        }}
-        placeholder="Wellness item name *"
-        className={inputCls}
-      />
-      <div className="grid grid-cols-2 gap-2">
-        <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="Activity type (e.g. Yoga)" className={inputCls} />
+      <div>
+        <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>Name</label>
         <input
-          type="number"
-          value={durationMinutes}
-          onChange={(e) => setDurationMinutes(e.target.value)}
-          placeholder="Duration (min)"
+          value={name}
+          onChange={(e) => {
+            nameTouchedRef.current = true;
+            setName(e.target.value);
+          }}
+          placeholder="e.g. Morning Run"
           className={inputCls}
         />
       </div>
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
-            Link
-          </span>
-          <button
-            type="button"
-            onClick={() => void runLinkEnrichment(link)}
-            disabled={!link.trim() || linkEnriching}
-            className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
-            style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
-          >
-            Re-apply link preview
-          </button>
-          <button
-            type="button"
-            onClick={() => void runLinkEnrichment(link, { overwriteTouched: true })}
-            disabled={!link.trim() || linkEnriching}
-            className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
-            style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
-          >
-            Replace with preview data
-          </button>
-        </div>
-        <input
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
-          placeholder="Link (optional)"
-          type="url"
-          className={inputCls}
-        />
-        {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
-        {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
-      </div>
-      <div className="relative">
-        <input
-          value={referralCode}
-          onChange={(e) => setReferralCode(e.target.value)}
-          placeholder="Referral / affiliate code (e.g. ROYAL20)"
-          className={inputCls}
-        />
-        {referralCode && (
-          <span
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(36,63,22,0.15)", color: "#528531" }}
-          >
-            Code
-          </span>
-        )}
-      </div>
-      <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
+      {showMore ? (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="Activity type (optional)" className={inputCls} />
+            <input
+              type="number"
+              value={durationMinutes}
+              onChange={(e) => setDurationMinutes(e.target.value)}
+              placeholder="Duration (min)"
+              className={inputCls}
+            />
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+                Link
+              </span>
+              <button
+                type="button"
+                onClick={() => void runLinkEnrichment(link)}
+                disabled={!link.trim() || linkEnriching}
+                className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
+                style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+              >
+                Re-apply link preview
+              </button>
+              <button
+                type="button"
+                onClick={() => void runLinkEnrichment(link, { overwriteTouched: true })}
+                disabled={!link.trim() || linkEnriching}
+                className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
+                style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+              >
+                Replace with preview data
+              </button>
+            </div>
+            <input
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              placeholder="Link (optional)"
+              type="url"
+              className={inputCls}
+            />
+            {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
+            {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
+          </div>
+          <div className="relative">
+            <input
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value)}
+              placeholder="Referral / affiliate code (e.g. ROYAL20)"
+              className={inputCls}
+            />
+            {referralCode && (
+              <span
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full"
+                style={{ background: "rgba(36,63,22,0.15)", color: "#528531" }}
+              >
+                Code
+              </span>
+            )}
+          </div>
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes (optional)" className="textarea-dark w-full resize-none" />
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowMore(true)}
+          className="text-xs font-medium"
+          style={{ color: "#528531" }}
+        >
+          + Add more details
+        </button>
+      )}
       <button
         onClick={handleSubmit}
         disabled={submitting}
@@ -1092,6 +1160,7 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [showMore, setShowMore] = useState(false);
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -1140,15 +1209,31 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
           {error}
         </p>
       )}
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Workout name *" className={inputCls} />
-      <input value={exercises} onChange={(e) => setExercises(e.target.value)} placeholder="Exercises (comma-separated)" className={inputCls} />
-      <input
-        value={videoUrl}
-        onChange={(e) => setVideoUrl(e.target.value)}
-        placeholder="YouTube / Instagram / TikTok link (optional)"
-        className={inputCls}
-      />
-      <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" className="textarea-dark w-full resize-none" />
+      <div>
+        <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>Name</label>
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Push Day" className={inputCls} />
+      </div>
+      {showMore ? (
+        <>
+          <input value={exercises} onChange={(e) => setExercises(e.target.value)} placeholder="Exercises (comma-separated, optional)" className={inputCls} />
+          <input
+            value={videoUrl}
+            onChange={(e) => setVideoUrl(e.target.value)}
+            placeholder="YouTube / Instagram / TikTok link (optional)"
+            className={inputCls}
+          />
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes (optional)" className="textarea-dark w-full resize-none" />
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowMore(true)}
+          className="text-xs font-medium"
+          style={{ color: "#528531" }}
+        >
+          + Add more details
+        </button>
+      )}
       <button
         onClick={handleSubmit}
         disabled={submitting}
@@ -2481,18 +2566,36 @@ function CategoryPicker({
           <HiX className="w-4 h-4" />
         </button>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {CATALOG_CATEGORY_PICKER_OPTIONS.map((opt) => (
-          <button
-            key={opt.key}
-            onClick={() => onSelect(opt.key)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95"
-            style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
-          >
-            <span>{opt.emoji}</span>
-            {opt.label}
-          </button>
-        ))}
+      <div className="space-y-1.5">
+        {CATALOG_CATEGORY_PICKER_OPTIONS.map((opt) => {
+          const isAffiliate = opt.key === "affiliates";
+          return (
+            <button
+              key={opt.key}
+              onClick={() => onSelect(opt.key)}
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all active:scale-[0.99]"
+              style={{
+                background: isAffiliate ? "rgba(200,169,81,0.08)" : "rgba(36,63,22,0.06)",
+                border: isAffiliate ? "1px solid rgba(200,169,81,0.35)" : "1px solid transparent",
+              }}
+            >
+              <div>
+                <p className="text-sm font-medium" style={{ color: isAffiliate ? "#c8a951" : "var(--text)" }}>
+                  {opt.label}
+                </p>
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>{opt.description}</p>
+              </div>
+              {isAffiliate && (
+                <span
+                  className="flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ml-2"
+                  style={{ background: "rgba(200,169,81,0.15)", color: "#c8a951" }}
+                >
+                  Earn
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -2512,6 +2615,7 @@ export default function CatalogPage() {
   const [editingItem, setEditingItem] = useState<AnyItem | null>(null);
   const [sharingItem, setSharingItem] = useState<ShareCatalogItem | null>(null);
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
+  const [nudgeItem, setNudgeItem] = useState<AnyItemWithType | null>(null);
 
   // Maps catalog tab names to the CatalogItemType enum used by the share API
   const tabToShareType = (tab: CatalogTab): ShareCatalogItemType => {
@@ -2809,50 +2913,77 @@ export default function CatalogPage() {
       {/* Add form — driven by addingCategory, independent of current tab */}
       {addingCategory !== null && (
         <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => { setShowPicker(true); setAddingCategory(null); }}
+            className="flex items-center gap-1 text-xs font-medium mb-2"
+            style={{ color: "var(--text-muted)" }}
+          >
+            <HiChevronLeft className="w-4 h-4" />
+            Change category
+          </button>
           {addingCategory === "meals" && (
             <AddMealForm
               onAdd={(m) => {
-                setAllItems((p) => [{ ...m, _catalogType: "meals" as CatalogTab }, ...p]);
+                const newItem = { ...m, _catalogType: "meals" as CatalogTab };
+                const isFirst = allItems.length === 0;
+                setAllItems((p) => [newItem, ...p]);
                 setAddingCategory(null);
+                if (isFirst) setNudgeItem(newItem);
               }}
             />
           )}
           {addingCategory === "workouts" && (
             <AddWorkoutForm
               onAdd={(w) => {
-                setAllItems((p) => [{ ...w, _catalogType: "workouts" as CatalogTab }, ...p]);
+                const newItem = { ...w, _catalogType: "workouts" as CatalogTab };
+                const isFirst = allItems.length === 0;
+                setAllItems((p) => [newItem, ...p]);
                 setAddingCategory(null);
+                if (isFirst) setNudgeItem(newItem);
               }}
             />
           )}
           {addingCategory === "supplements" && (
             <AddSupplementForm
               onAdd={(s) => {
-                setAllItems((p) => [{ ...s, _catalogType: "supplements" as CatalogTab }, ...p]);
+                const newItem = { ...s, _catalogType: "supplements" as CatalogTab };
+                const isFirst = allItems.length === 0;
+                setAllItems((p) => [newItem, ...p]);
                 setAddingCategory(null);
+                if (isFirst) setNudgeItem(newItem);
               }}
             />
           )}
           {addingCategory === "accessories" && (
             <AddAccessoryForm
               onAdd={(a) => {
-                setAllItems((p) => [{ ...a, _catalogType: "accessories" as CatalogTab }, ...p]);
+                const newItem = { ...a, _catalogType: "accessories" as CatalogTab };
+                const isFirst = allItems.length === 0;
+                setAllItems((p) => [newItem, ...p]);
                 setAddingCategory(null);
+                if (isFirst) setNudgeItem(newItem);
               }}
             />
           )}
           {addingCategory === "wellness" && (
             <AddWellnessForm
               onAdd={(w) => {
-                setAllItems((p) => [{ ...w, _catalogType: "wellness" as CatalogTab }, ...p]);
+                const newItem = { ...w, _catalogType: "wellness" as CatalogTab };
+                const isFirst = allItems.length === 0;
+                setAllItems((p) => [newItem, ...p]);
                 setAddingCategory(null);
+                if (isFirst) setNudgeItem(newItem);
               }}
             />
           )}
           {addingCategory === "affiliates" && (
             <AddAffiliateForm
               onAdd={(a) => {
-                setAllItems((p) => [{ ...a, _catalogType: "affiliates" as CatalogTab }, ...p]);
+                const newItem = { ...a, _catalogType: "affiliates" as CatalogTab };
+                const isFirst = allItems.length === 0;
+                setAllItems((p) => [newItem, ...p]);
+                if (isFirst) setNudgeItem(newItem);
               }}
               onBulkSaveComplete={async () => {
                 fetchAllItems();
@@ -2860,6 +2991,47 @@ export default function CatalogPage() {
               }}
             />
           )}
+        </div>
+      )}
+
+      {/* First-item nudge */}
+      {nudgeItem && (
+        <div
+          className="mb-4 p-4 rounded-xl flex items-start justify-between gap-3"
+          style={{ background: "rgba(36,63,22,0.05)", border: "1px solid rgba(36,63,22,0.12)" }}
+        >
+          <div className="flex-1">
+            <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--text)" }}>It&apos;s saved.</p>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+              Now share it to your feed so followers can click through and you can start earning.
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-2 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                const catalogType = nudgeItem._catalogType;
+                setSharingItem({
+                  id: nudgeItem.id,
+                  name: "name" in nudgeItem ? (nudgeItem as { name: string }).name : "",
+                  catalogType: tabToShareType(catalogType),
+                });
+                setNudgeItem(null);
+              }}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+              style={{ background: "#528531", color: "#fff" }}
+            >
+              Share to Feed
+            </button>
+            <button
+              type="button"
+              onClick={() => setNudgeItem(null)}
+              className="text-xs"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Maybe later
+            </button>
+          </div>
         </div>
       )}
 
@@ -2885,21 +3057,21 @@ export default function CatalogPage() {
               Catalog
             </span>
           </div>
-          <p className="text-sm font-medium" style={{ color: muted }}>Your catalog is empty</p>
-          <p className="text-xs leading-relaxed mb-4 max-w-xs mx-auto mt-1" style={{ color: muted }}>
-            Save your referral links and codes for products you already use. Share them to your feed and earn royalties when followers click through.
+          <p className="text-sm font-medium" style={{ color: muted }}>Nothing saved yet.</p>
+          <p className="text-xs leading-relaxed mb-5 max-w-xs mx-auto mt-1" style={{ color: muted }}>
+            Add the products, links, and routines you already recommend. Every click from your followers earns you royalties.
           </p>
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex flex-col items-center gap-2 max-w-[200px] mx-auto">
             <button
               type="button"
               onClick={() => {
                 setAddingCategory("affiliates");
                 setShowPicker(false);
               }}
-              className="text-xs font-semibold px-4 py-2 rounded-lg"
+              className="w-full text-xs font-semibold px-4 py-2.5 rounded-lg"
               style={{ background: "#528531", color: "#fff" }}
             >
-              Add referral link
+              Add a referral link
             </button>
             <button
               type="button"
@@ -2907,10 +3079,10 @@ export default function CatalogPage() {
                 setShowPicker(true);
                 setAddingCategory(null);
               }}
-              className="text-xs font-semibold px-4 py-2 rounded-lg"
+              className="w-full text-xs font-semibold px-4 py-2.5 rounded-lg"
               style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
             >
-              Add a product
+              Browse categories
             </button>
           </div>
         </div>

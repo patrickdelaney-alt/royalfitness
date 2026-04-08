@@ -18,6 +18,7 @@ type CatalogTabConfig = {
     public: string;
   };
   emoji: string;
+  description: string;
 };
 
 export const CATALOG_TAB_CONFIG: Record<CatalogTab, CatalogTabConfig> = {
@@ -26,36 +27,42 @@ export const CATALOG_TAB_CONFIG: Record<CatalogTab, CatalogTabConfig> = {
     labels: { owner: "Meals", public: "Meals", picker: "Meals" },
     gradients: { owner: "from-orange-600/80 to-red-700/80", public: "from-amber-700/70 to-amber-900/70" },
     emoji: "🍽",
+    description: "Recipes and meals you actually eat",
   },
   workouts: {
     endpoint: "/api/catalog/workouts",
     labels: { owner: "Workout", public: "Workouts", picker: "Workout" },
     gradients: { owner: "from-blue-600/80 to-indigo-700/80", public: "from-green-800/70 to-green-950/70" },
     emoji: "💪",
+    description: "Routines your followers can follow",
   },
   supplements: {
     endpoint: "/api/catalog/supplements",
     labels: { owner: "Supps", public: "Supps", picker: "Supps" },
     gradients: { owner: "from-green-600/80 to-emerald-700/80", public: "from-emerald-700/70 to-emerald-900/70" },
     emoji: "💊",
+    description: "Supplements with your referral code",
   },
   accessories: {
     endpoint: "/api/catalog/accessories",
     labels: { owner: "Gear", public: "Gear", picker: "Gear" },
     gradients: { owner: "from-purple-600/80 to-pink-700/80", public: "from-stone-600/70 to-stone-800/70" },
     emoji: "⚙️",
+    description: "Equipment and accessories you use",
   },
   wellness: {
     endpoint: "/api/catalog/wellness",
     labels: { owner: "Wellness", public: "Wellness", picker: "Wellness" },
     gradients: { owner: "from-teal-600/80 to-cyan-700/80", public: "from-lime-700/70 to-lime-900/70" },
     emoji: "🧘",
+    description: "Apps, tools, and wellness products",
   },
   affiliates: {
     endpoint: "/api/catalog/affiliates",
-    labels: { owner: "Deals", public: "Links", picker: "Import Links" },
+    labels: { owner: "Deals", public: "Links", picker: "Referral Links" },
     gradients: { owner: "from-amber-600/80 to-yellow-700/80", public: "from-amber-600/70 to-yellow-800/70" },
     emoji: "📋",
+    description: "Paste a link and start earning",
   },
 };
 
@@ -137,11 +144,11 @@ export const AFFILIATE_CATEGORY_OPTIONS: { value: string; label: string }[] = [
   { value: "OTHER", label: "Other" },
 ];
 
-export const CATALOG_CATEGORY_PICKER_OPTIONS: { key: CatalogTab; label: string; emoji: string }[] =
+export const CATALOG_CATEGORY_PICKER_OPTIONS: { key: CatalogTab; label: string; description: string }[] =
   CATALOG_TABS.map((tab) => ({
     key: tab,
     label: CATALOG_TAB_CONFIG[tab].labels.picker,
-    emoji: CATALOG_TAB_CONFIG[tab].emoji,
+    description: CATALOG_TAB_CONFIG[tab].description,
   }));
 
 export const normalizeTagLabel = (value: string) =>
