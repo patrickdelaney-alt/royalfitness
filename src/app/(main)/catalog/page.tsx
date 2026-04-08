@@ -1665,8 +1665,14 @@ function AddAffiliateForm({
               We&apos;ll auto-detect links, codes, and categories
             </p>
           </div>
-          <input value={name} onChange={(e) => { singleNameTouchedRef.current = true; setName(e.target.value); }} placeholder="Item name *" className={inputCls} />
-          <input value={brand} onChange={(e) => { singleBrandTouchedRef.current = true; setBrand(e.target.value); }} placeholder="Brand name (optional)" className={inputCls} />
+          <div>
+            <input value={name} onChange={(e) => { singleNameTouchedRef.current = true; setName(e.target.value); }} placeholder="Item name *" className={inputCls} />
+            <p className="text-[11px] mt-0.5 pl-1" style={{ color: "var(--text-muted)" }}>The name shown on your catalog card</p>
+          </div>
+          <div>
+            <input value={brand} onChange={(e) => { singleBrandTouchedRef.current = true; setBrand(e.target.value); }} placeholder="Brand name (optional)" className={inputCls} />
+            <p className="text-[11px] mt-0.5 pl-1" style={{ color: "var(--text-muted)" }}>The brand or company you&apos;re affiliated with</p>
+          </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
@@ -1698,15 +1704,21 @@ function AddAffiliateForm({
             {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
             {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
           </div>
-          <div className="relative">
-            <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Discount / promo code (e.g. ROYAL20)" className={inputCls} />
-            {referralCode && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(154,123,46,0.15)", color: "#9A7B2E" }}>
-                Code
-              </span>
-            )}
+          <div>
+            <div className="relative">
+              <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Discount / promo code (e.g. ROYAL20)" className={inputCls} />
+              {referralCode && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(154,123,46,0.15)", color: "#9A7B2E" }}>
+                  Code
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] mt-0.5 pl-1" style={{ color: "var(--text-muted)" }}>Short code your followers enter at checkout — not the URL above</p>
           </div>
-          <input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder="Primary CTA label (optional)" className={inputCls} />
+          <div>
+            <input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder='Button text (e.g. "Shop Now") — optional' className={inputCls} />
+            <p className="text-[11px] mt-0.5 pl-1" style={{ color: "var(--text-muted)" }}>The button your followers tap to shop — defaults to &quot;Shop Now&quot;</p>
+          </div>
           <select value={category} onChange={(e) => setCategory(e.target.value)} className="select-dark w-full">
             {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
