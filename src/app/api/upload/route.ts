@@ -63,8 +63,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const ext = file.name.split(".").pop() || "bin";
-    const uniqueName = `uploads/${crypto.randomUUID()}.${ext}`;
+    const uniqueName = `uploads/${crypto.randomUUID()}.${ext || "bin"}`;
 
     const blob = await put(uniqueName, file, { access: "public" });
 
