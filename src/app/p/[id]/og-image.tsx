@@ -82,7 +82,7 @@ export async function GET(
     if (post.wellnessDetail.durationMinutes)
       details.push(`${post.wellnessDetail.durationMinutes} min`);
     if (post.wellnessDetail.intensity)
-      details.push(post.wellnessDetail.intensity);
+      details.push(`intensity ${post.wellnessDetail.intensity}/10`);
   }
 
   const caption = post.caption
