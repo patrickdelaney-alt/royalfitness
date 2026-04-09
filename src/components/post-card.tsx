@@ -1508,7 +1508,7 @@ function FullPostCard({
           <span>{commentCount}</span>
         </button>
 
-        {/* Share — own posts only. One tap: copies referral link + downloads story card */}
+        {/* Share — own posts only. One tap: opens native share sheet with story card + referral link */}
         {isOwner && (
           <button
             onClick={async () => {
@@ -1529,15 +1529,23 @@ function FullPostCard({
                     authorHandle: post.author.username,
                   }),
                 ]);
-                await navigator.clipboard.writeText(linkRes.url);
-                const objUrl = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = objUrl;
-                a.download = "royal-share.png";
-                a.click();
-                URL.revokeObjectURL(objUrl);
-                toast.success("Card saved · link copied");
-              } catch {
+                const file = new File([blob], "royal-share.png", { type: "image/png" });
+                if (navigator.share && navigator.canShare?.({ files: [file] })) {
+                  // Native share sheet (iOS/Android) — includes image + link
+                  await navigator.share({ files: [file], url: linkRes.url });
+                } else if (navigator.share) {
+                  // Share sheet without file
+                  await navigator.share({ url: linkRes.url });
+                } else {
+                  // Desktop fallback — clipboard
+                  await navigator.clipboard.writeText(linkRes.url);
+                  toast.success("Link copied");
+                  return;
+                }
+                toast.success("Shared!");
+              } catch (err) {
+                // AbortError means the user dismissed the share sheet — not an error
+                if (err instanceof Error && err.name === "AbortError") return;
                 toast.error("Something went wrong");
               } finally {
                 setLinkLoading(false);
