@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { HiLockOpen } from "react-icons/hi2";
-import { HiExternalLink, HiX, HiLink, HiClipboardCopy, HiUpload, HiPencil } from "react-icons/hi";
+import { HiExternalLink, HiX, HiLink, HiClipboardCopy, HiUpload, HiPencil, HiPhotograph } from "react-icons/hi";
+import { generateShareCard } from "@/lib/generate-share-card";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
 import {
   type CatalogTab,
@@ -98,6 +99,8 @@ function DetailModal({
   isOwnProfile?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
+  const [refLinkLoading, setRefLinkLoading] = useState(false);
+  const [cardLoading, setCardLoading] = useState(false);
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -326,6 +329,71 @@ function DetailModal({
             <HiExternalLink className="w-4 h-4" />
             {getPublicCtaLabel(item)}
           </a>
+        )}
+
+        {/* Referral loop — own profile only */}
+        {isOwnProfile && (
+          <div className="flex gap-2">
+            {/* Generate + copy /r/<id> referral link */}
+            <button
+              onClick={async () => {
+                if (refLinkLoading) return;
+                setRefLinkLoading(true);
+                try {
+                  const res = await fetch("/api/referral-links", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ sourceType: "catalog_item", sourceId: item.id }),
+                  });
+                  if (!res.ok) throw new Error();
+                  const { url } = await res.json();
+                  await navigator.clipboard.writeText(url);
+                  // inline feedback via label swap (no toast import here)
+                  setRefLinkLoading(false);
+                  // brief flash — reuse copied state
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                } catch {
+                  setRefLinkLoading(false);
+                }
+              }}
+              disabled={refLinkLoading}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
+              style={{ background: "rgba(36,63,22,0.07)", color: "var(--brand)", border: "1px solid var(--border)" }}
+            >
+              <HiLink className="w-4 h-4" />
+              {refLinkLoading ? "Generating..." : copied ? "Copied" : "Get link"}
+            </button>
+
+            {/* Download 1080×1920 story card PNG */}
+            <button
+              onClick={async () => {
+                if (cardLoading) return;
+                setCardLoading(true);
+                try {
+                  const blob = await generateShareCard({
+                    type: "catalog_item",
+                    productName: item.name,
+                    brand: item.brand ?? null,
+                  });
+                  const objUrl = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = objUrl;
+                  a.download = "royal-share.png";
+                  a.click();
+                  URL.revokeObjectURL(objUrl);
+                } catch { /* ignore */ } finally {
+                  setCardLoading(false);
+                }
+              }}
+              disabled={cardLoading}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
+              style={{ background: "rgba(36,63,22,0.07)", color: "var(--brand)", border: "1px solid var(--border)" }}
+            >
+              <HiPhotograph className="w-4 h-4" />
+              {cardLoading ? "Generating..." : "Save card"}
+            </button>
+          </div>
         )}
 
         {/* Edit / Delete shortcut for own profile */}

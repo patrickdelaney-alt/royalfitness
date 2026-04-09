@@ -4,12 +4,13 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare, HiX, HiExternalLink, HiClipboardCopy } from "react-icons/hi";
+import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare, HiX, HiExternalLink, HiClipboardCopy, HiPhotograph } from "react-icons/hi";
 import { lightImpact } from "@/lib/haptics";
 import { AFFILIATE_CATEGORY_LABELS } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
 import EmbedMedia, { type ExternalContentItem } from "@/components/embed-media";
+import { generateShareCard } from "@/lib/generate-share-card";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -808,6 +809,8 @@ function FullPostCard({
 
   const [showOwnerMenu, setShowOwnerMenu] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [linkLoading, setLinkLoading] = useState(false);
+  const [cardLoading, setCardLoading] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
   const [editCaption, setEditCaption] = useState(post.caption ?? "");
   const [editVisibility, setEditVisibility] = useState(post.visibility);
@@ -1505,15 +1508,63 @@ function FullPostCard({
           <span>{commentCount}</span>
         </button>
 
+        {/* Referral link — generates /r/<id> and copies it */}
         <button
-          onClick={() => {
-            const url = `https://royalwellness.app/p/${post.id}`;
-            navigator.clipboard.writeText(url).then(() => toast.success("Link copied!"));
+          onClick={async () => {
+            if (linkLoading) return;
+            setLinkLoading(true);
+            try {
+              const res = await fetch("/api/referral-links", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sourceType: "post", sourceId: post.id }),
+              });
+              if (!res.ok) throw new Error("Failed to generate link");
+              const { url } = await res.json();
+              await navigator.clipboard.writeText(url);
+              toast.success("Referral link copied");
+            } catch {
+              toast.error("Could not copy link");
+            } finally {
+              setLinkLoading(false);
+            }
           }}
-          className="ml-auto flex items-center gap-1.5 text-sm text-muted-dim hover:text-foreground transition-colors"
-          title="Copy share link"
+          disabled={linkLoading}
+          className="ml-auto flex items-center gap-1.5 text-sm text-muted-dim hover:text-foreground transition-colors disabled:opacity-50"
+          title="Copy referral link"
         >
           <HiShare className="w-4 h-4" />
+        </button>
+
+        {/* Save story card — generates 1080×1920 PNG for Instagram Stories */}
+        <button
+          onClick={async () => {
+            if (cardLoading) return;
+            setCardLoading(true);
+            try {
+              const blob = await generateShareCard({
+                type: "post",
+                caption: post.caption ?? null,
+                mediaUrl: post.mediaUrl ?? null,
+                authorHandle: post.author.username,
+              });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "royal-share.png";
+              a.click();
+              URL.revokeObjectURL(url);
+            } catch {
+              toast.error("Could not generate card");
+            } finally {
+              setCardLoading(false);
+            }
+          }}
+          disabled={cardLoading}
+          className="flex items-center gap-1.5 text-sm text-muted-dim hover:text-foreground transition-colors disabled:opacity-50"
+          title="Save story card"
+        >
+          <HiPhotograph className="w-4 h-4" />
         </button>
       </div>
 
