@@ -1506,22 +1506,25 @@ function FullPostCard({
           <span>{commentCount}</span>
         </button>
 
-        {/* Share — own posts only. One tap: opens native share sheet with referral link */}
+        {/* Share — own posts only. Shares the public post URL so iMessage previews the OG card. */}
         {isOwner && (
           <button
             onClick={async () => {
               if (linkLoading) return;
               setLinkLoading(true);
               try {
-                const linkRes = await fetch("/api/referral-links", {
+                // Fire-and-forget referral attribution — don't block on it
+                fetch("/api/referral-links", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ sourceType: "post", sourceId: post.id }),
-                }).then((r) => (r.ok ? r.json() : Promise.reject()));
+                }).catch(() => {});
+
+                const url = `https://royalwellness.app/p/${post.id}`;
                 if (navigator.share) {
-                  await navigator.share({ url: linkRes.url });
+                  await navigator.share({ url });
                 } else {
-                  await navigator.clipboard.writeText(linkRes.url);
+                  await navigator.clipboard.writeText(url);
                   toast.success("Link copied");
                   return;
                 }
