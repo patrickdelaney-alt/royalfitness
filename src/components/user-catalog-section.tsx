@@ -331,69 +331,49 @@ function DetailModal({
           </a>
         )}
 
-        {/* Referral loop — own profile only */}
+        {/* Share to Stories — own profile only.
+            One tap: saves a story card + copies your Royal referral link.
+            Kept separate from the "Shop Now" / discount link above. */}
         {isOwnProfile && (
-          <div className="flex gap-2">
-            {/* Generate + copy /r/<id> referral link */}
-            <button
-              onClick={async () => {
-                if (refLinkLoading) return;
-                setRefLinkLoading(true);
-                try {
-                  const res = await fetch("/api/referral-links", {
+          <button
+            onClick={async () => {
+              if (refLinkLoading || cardLoading) return;
+              setRefLinkLoading(true);
+              setCardLoading(true);
+              try {
+                const [linkRes, blob] = await Promise.all([
+                  fetch("/api/referral-links", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ sourceType: "catalog_item", sourceId: item.id }),
-                  });
-                  if (!res.ok) throw new Error();
-                  const { url } = await res.json();
-                  await navigator.clipboard.writeText(url);
-                  // inline feedback via label swap (no toast import here)
-                  setRefLinkLoading(false);
-                  // brief flash — reuse copied state
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                } catch {
-                  setRefLinkLoading(false);
-                }
-              }}
-              disabled={refLinkLoading}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
-              style={{ background: "rgba(36,63,22,0.07)", color: "var(--brand)", border: "1px solid var(--border)" }}
-            >
-              <HiLink className="w-4 h-4" />
-              {refLinkLoading ? "Generating..." : copied ? "Copied" : "Get link"}
-            </button>
-
-            {/* Download 1080×1920 story card PNG */}
-            <button
-              onClick={async () => {
-                if (cardLoading) return;
-                setCardLoading(true);
-                try {
-                  const blob = await generateShareCard({
+                  }).then((r) => (r.ok ? r.json() : Promise.reject())),
+                  generateShareCard({
                     type: "catalog_item",
                     productName: item.name,
                     brand: item.brand ?? null,
-                  });
-                  const objUrl = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = objUrl;
-                  a.download = "royal-share.png";
-                  a.click();
-                  URL.revokeObjectURL(objUrl);
-                } catch { /* ignore */ } finally {
-                  setCardLoading(false);
-                }
-              }}
-              disabled={cardLoading}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
-              style={{ background: "rgba(36,63,22,0.07)", color: "var(--brand)", border: "1px solid var(--border)" }}
-            >
-              <HiPhotograph className="w-4 h-4" />
-              {cardLoading ? "Generating..." : "Save card"}
-            </button>
-          </div>
+                  }),
+                ]);
+                await navigator.clipboard.writeText(linkRes.url);
+                const objUrl = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = objUrl;
+                a.download = "royal-share.png";
+                a.click();
+                URL.revokeObjectURL(objUrl);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2500);
+              } catch { /* ignore */ } finally {
+                setRefLinkLoading(false);
+                setCardLoading(false);
+              }
+            }}
+            disabled={refLinkLoading || cardLoading}
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
+            style={{ background: "rgba(36,63,22,0.07)", color: "var(--brand)", border: "1px solid var(--border)" }}
+          >
+            <HiPhotograph className="w-4 h-4" />
+            {(refLinkLoading || cardLoading) ? "Generating..." : copied ? "Card saved · link copied" : "Share to Stories"}
+          </button>
         )}
 
         {/* Edit / Delete shortcut for own profile */}
