@@ -23,7 +23,13 @@ function initials(name?: string | null): string {
 
 const STORAGE_KEY = "rf_welcome_seen";
 
-const steps = [
+const steps: {
+  emoji: string | null;
+  title: string;
+  subtitle: string;
+  body: string | null;
+  cta: { label: string; href: string } | null;
+}[] = [
   {
     emoji: "🌿",
     title: "Welcome to Royal",
@@ -40,9 +46,9 @@ const steps = [
   },
   {
     emoji: "🤝",
-    title: "Find your community",
-    subtitle: "Training is better together.",
-    body: "Search for friends, fellow gym-goers, or anyone crushing their goals. Follow them and cheer each other on.",
+    title: "People worth following.",
+    subtitle: "Follow a few people and your feed comes alive.",
+    body: null,
     cta: null,
   },
   {
@@ -84,7 +90,7 @@ export default function OnboardingModal({ onClose }: Props) {
   useEffect(() => {
     if (step !== 2) return;
     setSuggestionsLoading(true);
-    fetch("/api/users/suggestions?limit=5")
+    fetch("/api/users/suggestions?limit=6")
       .then((r) => r.json())
       .then((d) => setSuggestions(d.suggestions ?? []))
       .catch(() => {})
@@ -156,9 +162,11 @@ export default function OnboardingModal({ onClose }: Props) {
             <p className="text-sm font-semibold mb-3" style={{ color: "var(--brand)" }}>
               {current.subtitle}
             </p>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-              {current.body}
-            </p>
+            {current.body && (
+              <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                {current.body}
+              </p>
+            )}
           </div>
 
           {/* CTA button */}
@@ -217,8 +225,8 @@ export default function OnboardingModal({ onClose }: Props) {
                           className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors${followed ? " cursor-default" : ""}`}
                           style={
                             followed
-                              ? { background: "rgba(36,63,22,0.08)", color: "var(--text-muted)" }
-                              : { background: "var(--brand)", color: "#fff" }
+                              ? { background: "#f5f2ec", border: "1px solid #2d5a27", color: "#2d5a27" }
+                              : { background: "#2d5a27", color: "#f5f2ec" }
                           }
                         >
                           {isLoading ? (
