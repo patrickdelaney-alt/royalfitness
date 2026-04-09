@@ -80,7 +80,7 @@ export async function generateMetadata({
   }
 
   const url = `https://royalwellness.app/p/${id}`;
-  const image = post.mediaUrl ?? "https://royalwellness.app/og-default.png";
+  const image = `https://royalwellness.app/p/${id}/og-image`;
 
   return {
     title,
@@ -94,10 +94,10 @@ export async function generateMetadata({
       type: "article",
     },
     twitter: {
-      card: post.mediaUrl ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title,
       description,
-      images: post.mediaUrl ? [post.mediaUrl] : [],
+      images: [image],
     },
   };
 }

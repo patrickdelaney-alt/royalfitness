@@ -4,13 +4,12 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare, HiX, HiExternalLink, HiClipboardCopy, HiPhotograph } from "react-icons/hi";
+import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare, HiX, HiExternalLink, HiClipboardCopy } from "react-icons/hi";
 import { lightImpact } from "@/lib/haptics";
 import { AFFILIATE_CATEGORY_LABELS } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
 import EmbedMedia, { type ExternalContentItem } from "@/components/embed-media";
-import { generateShareCard } from "@/lib/generate-share-card";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -810,7 +809,6 @@ function FullPostCard({
   const [showOwnerMenu, setShowOwnerMenu] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [linkLoading, setLinkLoading] = useState(false);
-  const [cardLoading, setCardLoading] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
   const [editCaption, setEditCaption] = useState(post.caption ?? "");
   const [editVisibility, setEditVisibility] = useState(post.visibility);
@@ -1508,36 +1506,21 @@ function FullPostCard({
           <span>{commentCount}</span>
         </button>
 
-        {/* Share — own posts only. One tap: opens native share sheet with story card + referral link */}
+        {/* Share — own posts only. One tap: opens native share sheet with referral link */}
         {isOwner && (
           <button
             onClick={async () => {
-              if (linkLoading || cardLoading) return;
+              if (linkLoading) return;
               setLinkLoading(true);
-              setCardLoading(true);
               try {
-                const [linkRes, blob] = await Promise.all([
-                  fetch("/api/referral-links", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ sourceType: "post", sourceId: post.id }),
-                  }).then((r) => (r.ok ? r.json() : Promise.reject())),
-                  generateShareCard({
-                    type: "post",
-                    caption: post.caption ?? null,
-                    mediaUrl: post.mediaUrl ?? null,
-                    authorHandle: post.author.username,
-                  }),
-                ]);
-                const file = new File([blob], "royal-share.png", { type: "image/png" });
-                if (navigator.share && navigator.canShare?.({ files: [file] })) {
-                  // Native share sheet (iOS/Android) — includes image + link
-                  await navigator.share({ files: [file], url: linkRes.url });
-                } else if (navigator.share) {
-                  // Share sheet without file
+                const linkRes = await fetch("/api/referral-links", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ sourceType: "post", sourceId: post.id }),
+                }).then((r) => (r.ok ? r.json() : Promise.reject()));
+                if (navigator.share) {
                   await navigator.share({ url: linkRes.url });
                 } else {
-                  // Desktop fallback — clipboard
                   await navigator.clipboard.writeText(linkRes.url);
                   toast.success("Link copied");
                   return;
@@ -1549,12 +1532,11 @@ function FullPostCard({
                 toast.error("Something went wrong");
               } finally {
                 setLinkLoading(false);
-                setCardLoading(false);
               }
             }}
-            disabled={linkLoading || cardLoading}
+            disabled={linkLoading}
             className="ml-auto flex items-center gap-1.5 text-sm text-muted-dim hover:text-foreground transition-colors disabled:opacity-50"
-            title="Share to Stories"
+            title="Share"
           >
             <HiShare className="w-4 h-4" />
           </button>
