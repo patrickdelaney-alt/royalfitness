@@ -64,3 +64,30 @@ export async function sendInviteEmail(
     console.log('[email] Invite email sent', { to: email, id: data?.id });
   }
 }
+
+export async function sendWelcomeEmail(email: string): Promise<void> {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[email] RESEND_API_KEY not configured, skipping welcome email');
+    return;
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
+  const { data, error } = await resend.emails.send({
+    from: 'Royal <notifications@royalwellness.app>',
+    to: email,
+    subject: 'Welcome to Royal — start your wellness journey',
+    html: `
+      <p>Welcome to Royal.</p>
+      <p>This is your space to share workouts, track your wellness, and connect with others on the same path.</p>
+      <p>Start by posting your first activity or exploring what others are doing.</p>
+      <p><a href="https://royalwellness.app">Open Royal →</a></p>
+    `,
+  });
+
+  if (error) {
+    console.error('[email] Failed to send welcome email to', email, error);
+  } else {
+    console.log('[email] Welcome email sent', { to: email, id: data?.id });
+  }
+}

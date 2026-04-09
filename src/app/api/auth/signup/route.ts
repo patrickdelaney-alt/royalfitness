@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { signUpSchema } from "@/lib/validations";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   const rateLimit = checkRateLimit(req, "auth-signup", 8, 10 * 60 * 1000);
@@ -74,6 +75,13 @@ export async function POST(req: NextRequest) {
         passwordHash,
       },
     });
+
+    // Welcome email — failure must not block account creation
+    try {
+      await sendWelcomeEmail(user.email);
+    } catch {
+      // non-blocking
+    }
 
     // Attribution: if a valid refCode was passed, record the referral and auto-follow
     if (refCode) {

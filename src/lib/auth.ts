@@ -5,6 +5,7 @@ import Apple from "next-auth/providers/apple";
 import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
+import { sendWelcomeEmail } from "./email";
 
 // AUTH_SECRET is required by NextAuth v5 for JWT signing and cookie encryption.
 // Resolution order:
@@ -199,6 +200,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               passwordHash: null,
             },
           });
+          try {
+            await sendWelcomeEmail(normalizedEmail);
+          } catch {
+            // Welcome email failure must not block sign-in
+          }
         }
         // Existing users: their profile is already set — don't overwrite it.
         return true;
