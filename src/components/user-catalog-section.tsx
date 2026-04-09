@@ -332,7 +332,7 @@ function DetailModal({
         )}
 
         {/* Share to Stories — own profile only.
-            One tap: saves a story card + copies your Royal referral link.
+            One tap: opens native share sheet with story card + Royal referral link.
             Kept separate from the "Shop Now" / discount link above. */}
         {isOwnProfile && (
           <button
@@ -353,16 +353,23 @@ function DetailModal({
                     brand: item.brand ?? null,
                   }),
                 ]);
-                await navigator.clipboard.writeText(linkRes.url);
-                const objUrl = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = objUrl;
-                a.download = "royal-share.png";
-                a.click();
-                URL.revokeObjectURL(objUrl);
+                const file = new File([blob], "royal-share.png", { type: "image/png" });
+                if (navigator.share && navigator.canShare?.({ files: [file] })) {
+                  await navigator.share({ files: [file], url: linkRes.url });
+                } else if (navigator.share) {
+                  await navigator.share({ url: linkRes.url });
+                } else {
+                  await navigator.clipboard.writeText(linkRes.url);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2500);
+                  return;
+                }
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2500);
-              } catch { /* ignore */ } finally {
+              } catch (err) {
+                // AbortError means user dismissed the share sheet — not an error
+                if (err instanceof Error && err.name === "AbortError") return;
+              } finally {
                 setRefLinkLoading(false);
                 setCardLoading(false);
               }
@@ -372,7 +379,7 @@ function DetailModal({
             style={{ background: "rgba(36,63,22,0.07)", color: "var(--brand)", border: "1px solid var(--border)" }}
           >
             <HiPhotograph className="w-4 h-4" />
-            {(refLinkLoading || cardLoading) ? "Generating..." : copied ? "Card saved · link copied" : "Share to Stories"}
+            {(refLinkLoading || cardLoading) ? "Generating..." : copied ? "Shared!" : "Share to Stories"}
           </button>
         )}
 
