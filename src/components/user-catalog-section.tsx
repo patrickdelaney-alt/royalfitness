@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { HiLockOpen } from "react-icons/hi2";
-import { HiExternalLink, HiX, HiLink, HiClipboardCopy, HiUpload, HiPencil } from "react-icons/hi";
+import { HiExternalLink, HiX, HiLink, HiClipboardCopy, HiUpload, HiPencil, HiPhotograph } from "react-icons/hi";
+import { generateShareCard } from "@/lib/generate-share-card";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
 import {
   type CatalogTab,
@@ -98,6 +99,8 @@ function DetailModal({
   isOwnProfile?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
+  const [refLinkLoading, setRefLinkLoading] = useState(false);
+  const [cardLoading, setCardLoading] = useState(false);
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -326,6 +329,51 @@ function DetailModal({
             <HiExternalLink className="w-4 h-4" />
             {getPublicCtaLabel(item)}
           </a>
+        )}
+
+        {/* Share to Stories — own profile only.
+            One tap: saves a story card + copies your Royal referral link.
+            Kept separate from the "Shop Now" / discount link above. */}
+        {isOwnProfile && (
+          <button
+            onClick={async () => {
+              if (refLinkLoading || cardLoading) return;
+              setRefLinkLoading(true);
+              setCardLoading(true);
+              try {
+                const [linkRes, blob] = await Promise.all([
+                  fetch("/api/referral-links", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ sourceType: "catalog_item", sourceId: item.id }),
+                  }).then((r) => (r.ok ? r.json() : Promise.reject())),
+                  generateShareCard({
+                    type: "catalog_item",
+                    productName: item.name,
+                    brand: item.brand ?? null,
+                  }),
+                ]);
+                await navigator.clipboard.writeText(linkRes.url);
+                const objUrl = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = objUrl;
+                a.download = "royal-share.png";
+                a.click();
+                URL.revokeObjectURL(objUrl);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2500);
+              } catch { /* ignore */ } finally {
+                setRefLinkLoading(false);
+                setCardLoading(false);
+              }
+            }}
+            disabled={refLinkLoading || cardLoading}
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
+            style={{ background: "rgba(36,63,22,0.07)", color: "var(--brand)", border: "1px solid var(--border)" }}
+          >
+            <HiPhotograph className="w-4 h-4" />
+            {(refLinkLoading || cardLoading) ? "Generating..." : copied ? "Card saved · link copied" : "Share to Stories"}
+          </button>
         )}
 
         {/* Edit / Delete shortcut for own profile */}
