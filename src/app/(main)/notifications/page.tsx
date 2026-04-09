@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { HiHeart, HiChatBubbleLeft, HiUserPlus, HiUserCircle } from "react-icons/hi2";
+import { HiHeart, HiChatBubbleLeft, HiUserPlus, HiUserCircle, HiArrowTrendingUp } from "react-icons/hi2";
 
 interface NotificationActor {
   id: string;
@@ -19,11 +19,13 @@ interface NotificationPost {
 
 interface Notification {
   id: string;
-  type: "LIKE" | "COMMENT" | "FOLLOW" | "FOLLOW_REQUEST";
+  type: "LIKE" | "COMMENT" | "FOLLOW" | "FOLLOW_REQUEST" | "REFERRAL_PURCHASE";
   read: boolean;
   createdAt: string;
-  actor: NotificationActor;
+  // Null for REFERRAL_PURCHASE where the buyer is anonymous
+  actor: NotificationActor | null;
   post: NotificationPost | null;
+  body: string | null;
 }
 
 const ICON_MAP = {
@@ -31,6 +33,7 @@ const ICON_MAP = {
   COMMENT: HiChatBubbleLeft,
   FOLLOW: HiUserPlus,
   FOLLOW_REQUEST: HiUserPlus,
+  REFERRAL_PURCHASE: HiArrowTrendingUp,
 };
 
 const ICON_COLOR_MAP = {
@@ -38,6 +41,7 @@ const ICON_COLOR_MAP = {
   COMMENT: "text-blue-500",
   FOLLOW: "text-green-500",
   FOLLOW_REQUEST: "text-amber-500",
+  REFERRAL_PURCHASE: "text-amber-600",
 };
 
 function getNotificationAction(notification: Notification): string {
@@ -50,16 +54,21 @@ function getNotificationAction(notification: Notification): string {
       return "started following you";
     case "FOLLOW_REQUEST":
       return "requested to follow you";
+    case "REFERRAL_PURCHASE":
+      return notification.body ?? "Someone used your referral link.";
     default:
       return "interacted with your content";
   }
 }
 
 function getNotificationLink(notification: Notification): string {
+  if (notification.type === "REFERRAL_PURCHASE") {
+    return "/notifications";
+  }
   if (notification.post) {
     return `/posts/${notification.post.id}`;
   }
-  return `/profile/${notification.actor.username}`;
+  return `/profile/${notification.actor?.username ?? ""}`;
 }
 
 function timeAgo(dateStr: string): string {
@@ -256,9 +265,9 @@ export default function NotificationsPage() {
                   !notification.read ? "bg-primary/5" : ""
                 }`}
               >
-                {/* Avatar */}
+                {/* Avatar — omitted for REFERRAL_PURCHASE where actor is anonymous */}
                 <div className="relative flex-shrink-0">
-                  {notification.actor.avatarUrl ? (
+                  {notification.actor?.avatarUrl ? (
                     <img
                       src={notification.actor.avatarUrl}
                       alt={notification.actor.username}
@@ -277,9 +286,13 @@ export default function NotificationsPage() {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-foreground leading-snug">
-                    <span className="font-semibold">
-                      {notification.actor.username}
-                    </span>{" "}
+                    {notification.actor && (
+                      <>
+                        <span className="font-semibold">
+                          {notification.actor.username}
+                        </span>{" "}
+                      </>
+                    )}
                     {getNotificationAction(notification)}
                   </p>
                   {notification.post?.caption && (

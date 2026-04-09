@@ -41,8 +41,8 @@ Royal looks like a painting of a place you'd rather be: still, saturated, archit
 
 ### How it works in the app
 
-- **Wordmark/logo only**: Serif — the single editorial anchor of the brand. It appears once, at the top of every screen, and that's enough.
-- **All UI text**: Sans-serif, light-to-regular weight, generous sizing. Filter pills, card text, post content, labels — all sans-serif.
+- **Wordmark/logo only**: Cormorant Garamond (serif) — the single editorial anchor of the brand. It appears once, at the top of every screen, and that's enough.
+- **All UI text**: Plus Jakarta Sans (sans-serif), light-to-regular weight, generous sizing. Filter pills, card text, post content, labels — all sans-serif.
 
 ### The rule
 
@@ -106,7 +106,7 @@ Before publishing any visual asset, check:
 - [ ] Background is cream (#f5f2ec) or cobalt (#1a2e6e) — not white, not grey
 - [ ] Negative space is at least 50% of the frame
 - [ ] No more than 2 colours used prominently in a single asset
-- [ ] Typography is the wordmark serif or UI sans-serif — never display or novelty fonts
+- [ ] Typography is Cormorant Garamond (wordmark) or Plus Jakarta Sans (UI) — never display or novelty fonts
 - [ ] No gradients, no drop shadows, no glass effects
 - [ ] If there are people, they are at rest — not mid-workout, not grimacing
 - [ ] The overall feeling is: calm, earned, somewhere worth being
