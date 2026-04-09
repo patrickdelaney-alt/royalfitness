@@ -46,6 +46,9 @@ model User {
   notificationsReceived Notification[] @relation("notificationsReceived")
   notificationsActed    Notification[] @relation("notificationsActed")
 
+  referralLinks        ReferralLink[]
+  referralAttribution  ReferralAttribution? @relation("referralAttribution")
+
   notifyOnLike    Boolean @default(true)
   notifyOnComment Boolean @default(true)
   notifyOnFollow  Boolean @default(true)
@@ -538,6 +541,7 @@ enum NotificationType {
   COMMENT
   FOLLOW
   FOLLOW_REQUEST
+  REFERRAL_PURCHASE
 }
 
 model Notification {
@@ -549,11 +553,17 @@ model Notification {
   recipientId String
   recipient   User   @relation("notificationsReceived", fields: [recipientId], references: [id], onDelete: Cascade)
 
-  actorId String
-  actor   User   @relation("notificationsActed", fields: [actorId], references: [id], onDelete: Cascade)
+  // Nullable for REFERRAL_PURCHASE where the buyer is anonymous
+  actorId String?
+  actor   User?  @relation("notificationsActed", fields: [actorId], references: [id], onDelete: SetNull)
 
   postId String?
   post   Post?  @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // REFERRAL_PURCHASE: human-readable copy e.g. "Someone used your AG1 link."
+  body           String?
+  referralLinkId String?
+  referralLink   ReferralLink? @relation(fields: [referralLinkId], references: [id], onDelete: SetNull)
 
   @@index([recipientId, createdAt(sort: Desc)])
   @@index([recipientId, read])
@@ -579,6 +589,38 @@ model BlockedUser {
   createdAt DateTime @default(now())
 
   @@unique([blockerId, blockedId])
+}
+
+// ─── REFERRAL ────────────────────────────────────────────────────
+
+// A unique shareable link tied to a post or catalog item.
+// id doubles as the URL code: /r/<id>
+model ReferralLink {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceType String   // 'post' | 'catalog_item'
+  sourceId   String
+  clickCount Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  attributions  ReferralAttribution[]
+  notifications Notification[]
+
+  @@index([userId])
+  @@index([sourceType, sourceId])
+}
+
+// Records which new user signed up via a referral link.
+// One attribution per new user (enforced by unique on newUserId).
+model ReferralAttribution {
+  id             String       @id @default(cuid())
+  referralLinkId String
+  referralLink   ReferralLink @relation(fields: [referralLinkId], references: [id])
+  newUserId      String       @unique
+  newUser        User         @relation("referralAttribution", fields: [newUserId], references: [id])
+  welcomeShown   Boolean      @default(false)
+  createdAt      DateTime     @default(now())
 }
 
 // ─── WAITLIST ─────────────────────────────────────────────────────

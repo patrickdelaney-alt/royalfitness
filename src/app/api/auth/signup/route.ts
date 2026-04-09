@@ -60,6 +60,12 @@ export async function POST(req: NextRequest) {
 
     const passwordHash = await bcrypt.hash(data.password, 12);
 
+    // Optional referral code — passed by the client if the user arrived via /r/<code>
+    const refCode =
+      typeof body.refCode === "string" && body.refCode.trim().length <= 50
+        ? body.refCode.trim()
+        : null;
+
     const user = await prisma.user.create({
       data: {
         name: data.name,
@@ -68,6 +74,28 @@ export async function POST(req: NextRequest) {
         passwordHash,
       },
     });
+
+    // Attribution: if a valid refCode was passed, record the referral and auto-follow
+    if (refCode) {
+      try {
+        const link = await prisma.referralLink.findUnique({
+          where: { id: refCode },
+          select: { id: true, userId: true },
+        });
+        if (link && link.userId !== user.id) {
+          await prisma.$transaction([
+            prisma.referralAttribution.create({
+              data: { referralLinkId: link.id, newUserId: user.id },
+            }),
+            prisma.follow.create({
+              data: { followerId: user.id, followingId: link.userId },
+            }),
+          ]);
+        }
+      } catch {
+        // Attribution failure must not block account creation
+      }
+    }
 
     return NextResponse.json(
       { id: user.id, username: user.username },

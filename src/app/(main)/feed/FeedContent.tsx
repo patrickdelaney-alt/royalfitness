@@ -8,6 +8,7 @@ import { HiSearch } from "react-icons/hi";
 import PostCard, { Post } from "@/components/post-card";
 import RecommendationCard from "@/components/recommendation-card";
 import OnboardingModal, { shouldShowOnboarding } from "@/components/onboarding-modal";
+import ReferralAttributionBanner from "@/components/referral-attribution-banner";
 
 const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS"] as const;
 type PostTypeFilter = typeof POST_TYPES[number];
@@ -170,6 +171,9 @@ export default function FeedContent() {
           <HiSearch className="w-5 h-5" style={{ color: "var(--text-muted)" }} />
         </Link>
       </div>
+
+      {/* First-open referral attribution banner — shown once, quiet */}
+      <ReferralAttributionBanner />
 
       {/* Filter chips */}
       <div className="flex gap-2 overflow-x-auto pb-3 mb-2" style={{ scrollbarWidth: "none" }}>
