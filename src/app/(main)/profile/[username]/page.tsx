@@ -3,12 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { HiLogout, HiPencil, HiCheck, HiX, HiUpload, HiArrowLeft } from "react-icons/hi";
+import { HiLogout, HiPencil, HiCheck, HiX, HiUpload, HiArrowLeft, HiUserAdd } from "react-icons/hi";
 import Link from "next/link";
 import FollowListModal from "@/components/follow-list-modal";
 import UserCatalogSection from "@/components/user-catalog-section";
 import { lightImpact } from "@/lib/haptics";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
+import toast from "react-hot-toast";
 
 interface UserProfile {
   id: string;
@@ -80,6 +81,7 @@ export default function ProfilePage() {
   const [activeSection, setActiveSection] = useState<"activity" | "catalog">("activity");
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockLoading, setBlockLoading] = useState(false);
+  const [inviteLoading, setInviteLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -216,6 +218,29 @@ export default function ProfilePage() {
     }
   }, [profile, isBlocked, blockLoading]);
 
+  async function handleInvite() {
+    if (!profile || inviteLoading) return;
+    setInviteLoading(true);
+    try {
+      const res = await fetch("/api/referral-links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sourceType: "profile", sourceId: profile.id }),
+      });
+      const { url } = await res.json();
+      if (navigator.share) {
+        await navigator.share({ url, title: "Royal", text: "Join me on Royal" });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copied");
+      }
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") return;
+    } finally {
+      setInviteLoading(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
@@ -345,6 +370,15 @@ export default function ProfilePage() {
               <HiLogout className="w-4 h-4" />
             </button>
           </div>
+          <button
+            onClick={handleInvite}
+            disabled={inviteLoading}
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-50"
+            style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)", color: "var(--text)" }}
+          >
+            <HiUserAdd className="w-4 h-4" />
+            Invite friends
+          </button>
           <Link
             href="/catalog?upload=true"
             className="flex items-center gap-3 py-3 px-4 rounded-xl text-left transition-all btn-gradient"

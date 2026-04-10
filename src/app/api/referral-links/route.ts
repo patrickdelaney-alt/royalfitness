@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 
-const SOURCE_TYPES = ["post", "catalog_item"] as const;
+const SOURCE_TYPES = ["post", "catalog_item", "profile"] as const;
 type SourceType = (typeof SOURCE_TYPES)[number];
 
 // POST /api/referral-links
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       !SOURCE_TYPES.includes(sourceType as SourceType)
     ) {
       return NextResponse.json(
-        { error: "sourceType must be 'post' or 'catalog_item'" },
+        { error: "sourceType must be 'post', 'catalog_item', or 'profile'" },
         { status: 400 }
       );
     }
