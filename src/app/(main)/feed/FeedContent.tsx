@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import useSWRInfinite from "swr/infinite";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -24,21 +25,70 @@ const POST_TYPE_LABELS: Record<string, string> = {
   WELLNESS: "Wellness",
 };
 
+type FeedPage = { posts: Post[]; nextCursor?: string };
+
+const fetcher = (url: string): Promise<FeedPage> =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error("Failed to fetch");
+    return r.json();
+  });
 
 export default function FeedContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState(false);
-  const [cursor, setCursor] = useState<string | undefined>();
-  const [hasMore, setHasMore] = useState(true);
   const [filter, setFilter] = useState<PostTypeFilter>(normalizeFilter(searchParams.get("filter")));
-  const { data: session } = useSession();
-  const currentUserId = session?.user?.id ?? undefined;
   const [showOnboarding, setShowOnboarding] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const { data: session } = useSession();
+  const currentUserId = session?.user?.id ?? undefined;
+
+  // Build the SWR cache key for each page of the feed.
+  // When `filter` changes, getKey changes identity, so SWR treats it as a
+  // new cache entry — serving any previously cached results instantly while
+  // revalidating in background.
+  const getKey = useCallback(
+    (pageIndex: number, previousPageData: FeedPage | null): string | null => {
+      if (previousPageData && !previousPageData.nextCursor) return null;
+      const params = new URLSearchParams();
+      params.set("limit", "20");
+      if (pageIndex > 0 && previousPageData?.nextCursor) {
+        params.set("cursor", previousPageData.nextCursor);
+      }
+      if (filter !== "ALL") params.set("type", filter);
+      return `/api/posts?${params.toString()}`;
+    },
+    [filter]
+  );
+
+  const { data, error, isLoading, isValidating, size, setSize, mutate } =
+    useSWRInfinite<FeedPage>(getKey, fetcher, {
+      // Don't refetch when the tab regains focus — the HTTP Cache-Control
+      // header on the API already handles background freshness.
+      revalidateOnFocus: false,
+      // Don't re-fetch page 1 every time we load a subsequent page; cursor-
+      // based pages are stable so re-fetching page 1 would just shift cursors.
+      revalidateFirstPage: false,
+    });
+
+  const posts: Post[] = data ? data.flatMap((page) => page.posts) : [];
+  const hasMore = data ? !!data[data.length - 1]?.nextCursor : true;
+  // True when we're fetching a new page (not the very first load)
+  const loadingMore = isValidating && size > 1 && !data?.[size - 1];
+
+  // When the filter changes, reset to page 1 so we don't immediately fire
+  // off requests for all previously-loaded pages under the new filter.
+  useEffect(() => {
+    setSize(1);
+  }, [filter, setSize]);
+
+  // Show a toast only when a load-more fails (initial load failure shows the
+  // inline error block instead).
+  useEffect(() => {
+    if (error && posts.length > 0) {
+      toast.error("Failed to load more posts.");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error]);
 
   // Show onboarding modal for new users arriving via ?welcome=1
   useEffect(() => {
@@ -59,76 +109,63 @@ export default function FeedContent() {
     }
   }, [filter, router, searchParams]);
 
-  const handleDeletePost = useCallback((id: string) => {
-    setPosts((prev) => prev.filter((p) => p.id !== id));
-  }, []);
-
-  const handleEditPost = useCallback((id: string, fields: { caption: string | null; visibility: string; workoutName?: string; mealName?: string; activityType?: string }) => {
-    setPosts((prev) => prev.map((p) => {
-      if (p.id !== id) return p;
-      return {
-        ...p,
-        caption: fields.caption,
-        visibility: fields.visibility,
-        workoutDetail: fields.workoutName && p.workoutDetail ? { ...p.workoutDetail, workoutName: fields.workoutName } : p.workoutDetail,
-        mealDetail: fields.mealName && p.mealDetail ? { ...p.mealDetail, mealName: fields.mealName } : p.mealDetail,
-        wellnessDetail: fields.activityType && p.wellnessDetail ? { ...p.wellnessDetail, activityType: fields.activityType } : p.wellnessDetail,
-      };
-    }));
-  }, []);
-
-  const fetchPosts = useCallback(
-    async (reset = false) => {
-      if (reset) {
-        setLoading(true);
-      } else {
-        setLoadingMore(true);
-      }
-
-      try {
-        const params = new URLSearchParams();
-        params.set("limit", "20");
-        if (!reset && cursor) params.set("cursor", cursor);
-        if (filter !== "ALL") params.set("type", filter);
-
-        const res = await fetch(`/api/posts?${params.toString()}`);
-        if (!res.ok) throw new Error("Failed to fetch");
-
-        const data = await res.json();
-
-        if (reset) {
-          setPosts(data.posts);
-          setError(false);
-        } else {
-          setPosts((prev) => [...prev, ...data.posts]);
-        }
-        setCursor(data.nextCursor);
-        setHasMore(!!data.nextCursor);
-      } catch (err) {
-        if (reset) {
-          setError(true);
-          toast.error("Failed to load posts. Please try again.");
-        } else {
-          toast.error("Failed to load more posts.");
-        }
-      } finally {
-        if (reset) {
-          setLoading(false);
-        }
-        setLoadingMore(false);
-      }
+  // Optimistically remove a deleted post from every page in the SWR cache.
+  const handleDeletePost = useCallback(
+    (id: string) => {
+      mutate(
+        (pages) =>
+          pages?.map((page) => ({
+            ...page,
+            posts: page.posts.filter((p) => p.id !== id),
+          })),
+        { revalidate: false }
+      );
     },
-    [cursor, filter]
+    [mutate]
   );
 
-  // Initial load and filter change
-  useEffect(() => {
-    setCursor(undefined);
-    setHasMore(true);
-    setError(false);
-    fetchPosts(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter]);
+  // Optimistically apply edits to a post in the SWR cache.
+  const handleEditPost = useCallback(
+    (
+      id: string,
+      fields: {
+        caption: string | null;
+        visibility: string;
+        workoutName?: string;
+        mealName?: string;
+        activityType?: string;
+      }
+    ) => {
+      mutate(
+        (pages) =>
+          pages?.map((page) => ({
+            ...page,
+            posts: page.posts.map((p) => {
+              if (p.id !== id) return p;
+              return {
+                ...p,
+                caption: fields.caption,
+                visibility: fields.visibility,
+                workoutDetail:
+                  fields.workoutName && p.workoutDetail
+                    ? { ...p.workoutDetail, workoutName: fields.workoutName }
+                    : p.workoutDetail,
+                mealDetail:
+                  fields.mealName && p.mealDetail
+                    ? { ...p.mealDetail, mealName: fields.mealName }
+                    : p.mealDetail,
+                wellnessDetail:
+                  fields.activityType && p.wellnessDetail
+                    ? { ...p.wellnessDetail, activityType: fields.activityType }
+                    : p.wellnessDetail,
+              };
+            }),
+          })),
+        { revalidate: false }
+      );
+    },
+    [mutate]
+  );
 
   // Infinite scroll observer
   useEffect(() => {
@@ -137,7 +174,7 @@ export default function FeedContent() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loadingMore) {
-          fetchPosts(false);
+          setSize((s) => s + 1);
         }
       },
       { rootMargin: "200px" }
@@ -145,7 +182,7 @@ export default function FeedContent() {
 
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [hasMore, loadingMore, fetchPosts]);
+  }, [hasMore, loadingMore, setSize]);
 
   return (
     <>
@@ -210,7 +247,7 @@ export default function FeedContent() {
       <RecommendationCard />
 
       {/* Posts */}
-      {loading ? (
+      {isLoading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div
@@ -237,11 +274,11 @@ export default function FeedContent() {
             </div>
           ))}
         </div>
-      ) : error ? (
+      ) : error && posts.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>Failed to load posts.</p>
           <button
-            onClick={() => fetchPosts(true)}
+            onClick={() => mutate()}
             className="mt-3 text-xs underline"
             style={{ color: "var(--brand)" }}
           >
