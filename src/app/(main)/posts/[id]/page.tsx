@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import PostCard, { Post } from "@/components/post-card";
 
@@ -26,14 +27,8 @@ export default function PostDetailPage() {
   }, []);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
-
-  useEffect(() => {
-    fetch("/api/auth/session")
-      .then((r) => r.json())
-      .then((s) => setCurrentUserId(s?.user?.id ?? undefined))
-      .catch(() => {});
-  }, []);
+  const { data: session } = useSession();
+  const currentUserId = session?.user?.id ?? undefined;
 
   useEffect(() => {
     async function load() {

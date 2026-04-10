@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -34,16 +35,10 @@ export default function FeedContent() {
   const [cursor, setCursor] = useState<string | undefined>();
   const [hasMore, setHasMore] = useState(true);
   const [filter, setFilter] = useState<PostTypeFilter>(normalizeFilter(searchParams.get("filter")));
-  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
+  const { data: session } = useSession();
+  const currentUserId = session?.user?.id ?? undefined;
   const [showOnboarding, setShowOnboarding] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    fetch("/api/auth/session")
-      .then((r) => r.json())
-      .then((s) => setCurrentUserId(s?.user?.id ?? undefined))
-      .catch(() => {});
-  }, []);
 
   // Show onboarding modal for new users arriving via ?welcome=1
   useEffect(() => {

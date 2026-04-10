@@ -240,10 +240,10 @@ export async function GET(req: NextRequest) {
       likes: undefined, // Remove the raw likes array from the response
     }));
 
-    return NextResponse.json({
-      posts: formattedPosts,
-      nextCursor,
-    });
+    return NextResponse.json(
+      { posts: formattedPosts, nextCursor },
+      { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } }
+    );
   } catch (error) {
     console.error("GET /api/posts error:", error);
     return NextResponse.json(
