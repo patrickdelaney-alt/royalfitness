@@ -27,10 +27,16 @@ export function BottomNav() {
 
   const feedFilter = searchParams.get("filter");
 
+  // Primary effect: runs once on mount.
+  // Fetches on initial load, on tab/window visibility restore, and every 5 minutes
+  // as a conservative fallback. Navigation does NOT restart this effect.
   useEffect(() => {
     let cancelled = false;
+    const isFetching = { current: false }; // guard against concurrent requests
 
     async function fetchCount() {
+      if (isFetching.current) return;
+      isFetching.current = true;
       try {
         const res = await fetch("/api/notifications/unread-count");
         if (res.ok) {
@@ -53,15 +59,46 @@ export function BottomNav() {
         }
       } catch {
         // silent
+      } finally {
+        isFetching.current = false;
       }
     }
 
     fetchCount();
-    const interval = setInterval(fetchCount, 30_000);
+    const interval = setInterval(fetchCount, 5 * 60_000); // 5 minutes
+
+    function handleVisibility() {
+      if (document.visibilityState === "visible") fetchCount();
+    }
+    document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
       cancelled = true;
       clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Secondary effect: refresh the badge count only when the user navigates TO
+  // the notifications tab. This keeps the badge accurate at the moment the user
+  // is actively looking at their notifications, without re-running on every
+  // other route change.
+  useEffect(() => {
+    if (pathname !== "/notifications") return;
+
+    let cancelled = false;
+    fetch("/api/notifications/unread-count")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data && !cancelled) {
+          prevCountRef.current = data.count;
+          setUnreadCount(data.count);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
     };
   }, [pathname]);
 
