@@ -9,6 +9,10 @@ jest.mock("@/lib/safe-auth", () => ({
   safeAuth: jest.fn(),
 }));
 
+jest.mock("@/lib/user-stats", () => ({
+  getOrRefreshStreaks: jest.fn().mockResolvedValue({ currentStreak: 0, workoutStreak: 0 }),
+}));
+
 jest.mock("@/lib/prisma", () => ({
   prisma: {
     user: {
@@ -19,7 +23,6 @@ jest.mock("@/lib/prisma", () => ({
     },
     exerciseSet: {
       aggregate: jest.fn(),
-      findMany: jest.fn(),
     },
     wellnessDetail: {
       aggregate: jest.fn(),
@@ -27,6 +30,7 @@ jest.mock("@/lib/prisma", () => ({
     workoutDetail: {
       aggregate: jest.fn(),
     },
+    $queryRaw: jest.fn(),
   },
 }));
 
@@ -55,9 +59,10 @@ const mockedSafeAuth = safeAuth as jest.MockedFunction<typeof safeAuth>;
 const mockedPrisma = prisma as unknown as {
   user: { findUnique: jest.Mock };
   post: { findMany: jest.Mock };
-  exerciseSet: { aggregate: jest.Mock; findMany: jest.Mock };
+  exerciseSet: { aggregate: jest.Mock };
   wellnessDetail: { aggregate: jest.Mock };
   workoutDetail: { aggregate: jest.Mock };
+  $queryRaw: jest.Mock;
 };
 
 describe("GET /api/stats access control", () => {
@@ -68,13 +73,15 @@ describe("GET /api/stats access control", () => {
     mockedPrisma.user.findUnique.mockReset();
     mockedPrisma.post.findMany.mockReset();
     mockedPrisma.exerciseSet.aggregate.mockReset();
-    mockedPrisma.exerciseSet.findMany.mockReset();
     mockedPrisma.wellnessDetail.aggregate.mockReset();
     mockedPrisma.workoutDetail.aggregate.mockReset();
+    mockedPrisma.$queryRaw.mockReset();
 
+    // Period posts and weekly posts both return empty arrays
     mockedPrisma.post.findMany.mockResolvedValue([]);
     mockedPrisma.exerciseSet.aggregate.mockResolvedValue({ _count: { id: 0 } });
-    mockedPrisma.exerciseSet.findMany.mockResolvedValue([]);
+    // Volume raw SQL returns zero
+    mockedPrisma.$queryRaw.mockResolvedValue([{ total: null }]);
 
     mockedPrisma.wellnessDetail.aggregate
       .mockResolvedValueOnce({ _sum: { durationMinutes: 0 } })
