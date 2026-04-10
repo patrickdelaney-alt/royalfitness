@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { HiHome, HiChartBar, HiPlusCircle, HiUser } from "react-icons/hi";
 import { HiBell } from "react-icons/hi2";
 import { BOTTOM_NAV_BASE_HEIGHT_REM, BOTTOM_NAV_HEIGHT } from "@/components/bottom-nav.constants";
+import { useNotificationCount } from "@/components/notification-count-provider";
 
 // Explore is intentionally NOT here — it lives as a search icon in the feed
 // header (FeedContent.tsx), which is the standard pattern (Instagram, etc.).
@@ -22,7 +23,7 @@ const tabs = [
 export function BottomNav() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { unreadCount, setUnreadCount } = useNotificationCount();
   const prevCountRef = useRef(0);
 
   const feedFilter = searchParams.get("filter");

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import { useNotificationCount } from "@/components/notification-count-provider";
 import { HiHeart, HiChatBubbleLeft, HiUserPlus, HiUserCircle, HiArrowTrendingUp } from "react-icons/hi2";
 
 interface NotificationActor {
@@ -87,6 +88,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function NotificationsPage() {
+  const { setUnreadCount } = useNotificationCount();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -167,6 +169,7 @@ export default function NotificationsPage() {
     setNotifications((prev) =>
       prev.map((notification) => ({ ...notification, read: true }))
     );
+    setUnreadCount(0);
 
     try {
       const res = await fetch("/api/notifications", {
@@ -180,10 +183,11 @@ export default function NotificationsPage() {
     } catch (error) {
       console.error("Failed to mark all notifications as read:", error);
       setNotifications(previousNotifications);
+      setUnreadCount(previousNotifications.filter((n) => !n.read).length);
     } finally {
       setMarkingAllRead(false);
     }
-  }, [markingAllRead, notifications]);
+  }, [markingAllRead, notifications, setUnreadCount]);
 
   const markNotificationAsRead = useCallback(async (id: string) => {
     setNotifications((prev) =>
@@ -191,6 +195,7 @@ export default function NotificationsPage() {
         notification.id === id ? { ...notification, read: true } : notification
       )
     );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
 
     try {
       const res = await fetch("/api/notifications", {
@@ -210,8 +215,9 @@ export default function NotificationsPage() {
             : notification
         )
       );
+      setUnreadCount((prev) => prev + 1);
     }
-  }, []);
+  }, [setUnreadCount]);
 
   const unreadCount = notifications.filter((notification) => !notification.read).length;
 
