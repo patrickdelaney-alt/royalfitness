@@ -49,33 +49,43 @@ export async function GET(
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    if (post.visibility === "FOLLOWERS" && post.authorId !== userId) {
-      if (!userId) {
-        return NextResponse.json({ error: "Post not found" }, { status: 404 });
-      }
-      const isFollowing = await prisma.follow.findUnique({
-        where: {
-          followerId_followingId: {
-            followerId: userId,
-            followingId: post.authorId,
-          },
-        },
-      });
-      if (!isFollowing) {
-        return NextResponse.json({ error: "Post not found" }, { status: 404 });
-      }
+    // Unauthenticated users cannot view FOLLOWERS-only posts by others
+    if (post.visibility === "FOLLOWERS" && post.authorId !== userId && !userId) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    // Check if the viewer is blocked by the author or vice versa
-    if (userId && userId !== post.authorId) {
-      const blocked = await prisma.blockedUser.findFirst({
-        where: {
-          OR: [
-            { blockerId: post.authorId, blockedId: userId },
-            { blockerId: userId, blockedId: post.authorId },
-          ],
-        },
-      });
+    // Run follow check and block check concurrently — they are independent queries
+    const needsFollowCheck =
+      post.visibility === "FOLLOWERS" && post.authorId !== userId && !!userId;
+    const needsBlockCheck = !!userId && userId !== post.authorId;
+
+    if (needsFollowCheck || needsBlockCheck) {
+      const [isFollowing, blocked] = await Promise.all([
+        needsFollowCheck
+          ? prisma.follow.findUnique({
+              where: {
+                followerId_followingId: {
+                  followerId: userId as string,
+                  followingId: post.authorId,
+                },
+              },
+            })
+          : Promise.resolve(null),
+        needsBlockCheck
+          ? prisma.blockedUser.findFirst({
+              where: {
+                OR: [
+                  { blockerId: post.authorId, blockedId: userId as string },
+                  { blockerId: userId as string, blockedId: post.authorId },
+                ],
+              },
+            })
+          : Promise.resolve(null),
+      ]);
+
+      if (needsFollowCheck && !isFollowing) {
+        return NextResponse.json({ error: "Post not found" }, { status: 404 });
+      }
       if (blocked) {
         return NextResponse.json({ error: "Post not found" }, { status: 404 });
       }
@@ -91,7 +101,9 @@ export async function GET(
       likes: undefined,
     };
 
-    return NextResponse.json(responsePost);
+    return NextResponse.json(responsePost, {
+      headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=120" },
+    });
   } catch (error) {
     console.error("GET /api/posts/[id] error:", error);
     return NextResponse.json(
