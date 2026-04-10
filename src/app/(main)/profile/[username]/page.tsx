@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { HiLogout, HiPencil, HiCheck, HiX, HiUpload } from "react-icons/hi";
+import { HiLogout, HiPencil, HiCheck, HiX, HiUpload, HiArrowLeft } from "react-icons/hi";
 import Link from "next/link";
 import FollowListModal from "@/components/follow-list-modal";
 import UserCatalogSection from "@/components/user-catalog-section";
@@ -113,6 +113,33 @@ export default function ProfilePage() {
       .finally(() => setRequestsLoading(false));
   }, [isOwnProfile]);
 
+  // Swipe-right-from-left-edge gesture for back navigation (mobile/Capacitor)
+  useEffect(() => {
+    let startX = 0;
+    let startY = 0;
+
+    function onTouchStart(e: TouchEvent) {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    }
+
+    function onTouchEnd(e: TouchEvent) {
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = Math.abs(e.changedTouches[0].clientY - startY);
+      if (startX < 30 && dx > 60 && dy < dx * 0.6) {
+        lightImpact();
+        router.back();
+      }
+    }
+
+    document.addEventListener("touchstart", onTouchStart, { passive: true });
+    document.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      document.removeEventListener("touchstart", onTouchStart);
+      document.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [router]);
+
   const handleFollow = useCallback(async () => {
     if (!profile || followLoading) return;
     setFollowLoading(true);
@@ -209,6 +236,17 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "var(--text)" }}>
+      {/* Back button — shown when viewing another user's profile */}
+      {!isOwnProfile && (
+        <button
+          onClick={() => { lightImpact(); router.back(); }}
+          className="flex items-center gap-1.5 mb-4 text-sm"
+          style={{ color: "var(--text-muted)" }}
+        >
+          <HiArrowLeft className="w-5 h-5" />
+          Back
+        </button>
+      )}
       {/* Profile header */}
       <div className="flex items-start gap-4 mb-5">
         {profile.avatarUrl ? (
