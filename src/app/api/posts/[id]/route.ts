@@ -3,6 +3,7 @@ import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
 import { createPostSchema } from "@/lib/validations";
 import { parseEmbedUrl } from "@/lib/embed-parser";
+import { invalidateStreakCache } from "@/lib/user-stats";
 
 // GET /api/posts/[id] — Get a single post by ID
 export async function GET(
@@ -383,6 +384,9 @@ export async function DELETE(
     }
 
     await prisma.post.delete({ where: { id } });
+
+    // Fire-and-forget: invalidate streak cache — deleting a post may break an active streak
+    invalidateStreakCache(post.authorId).catch(() => {});
 
     return NextResponse.json({ success: true });
   } catch (error) {

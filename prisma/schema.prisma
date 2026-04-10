@@ -42,6 +42,7 @@ model User {
 
   stepsEntries   StepsEntry[]
   achievements   UserAchievement[]
+  userStats      UserStats?
 
   notificationsReceived Notification[] @relation("notificationsReceived")
   notificationsActed    Notification[] @relation("notificationsActed")
@@ -517,6 +518,14 @@ model UserAchievement {
 
   @@unique([userId, badgeKey])
   @@index([userId])
+}
+
+model UserStats {
+  userId           String    @id
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentStreak    Int       @default(0)
+  workoutStreak    Int       @default(0)
+  streakComputedAt DateTime? // null = cache dirty, recompute on next stats read
 }
 
 // ─── STEPS ───────────────────────────────────────────────────────

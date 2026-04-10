@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { createPostSchema, CATALOG_ITEM_TYPES } from "@/lib/validations";
 import { checkAndAwardAchievements } from "@/lib/achievements";
 import { parseEmbedUrl } from "@/lib/embed-parser";
+import { invalidateStreakCache } from "@/lib/user-stats";
 
 // ── Catalog item snapshot resolver ────────────────────────────────────────────
 // Looks up a catalog item by ID and type, verifies ownership, returns snapshot.
@@ -574,6 +575,9 @@ export async function POST(req: NextRequest) {
         },
       });
     });
+
+    // Fire-and-forget: invalidate streak cache so next stats read recomputes
+    invalidateStreakCache(userId).catch(() => {});
 
     // Fire-and-forget: check and award achievements (check-ins don't earn badges)
     if (data.type !== "CHECKIN") {

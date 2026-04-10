@@ -13,6 +13,7 @@ import {
   getYearStart,
   addDaysToDateStr,
 } from "@/lib/timezone";
+import { getOrRefreshStreaks } from "@/lib/user-stats";
 
 export async function GET(req: NextRequest) {
   try {
@@ -69,7 +70,8 @@ export async function GET(req: NextRequest) {
 
     const periodStart = midnightInTzToUTC(periodStartStr, tz);
 
-    // Fetch all posts in the period for this user
+    // Fetch all posts in the period for this user, including muscleGroups so
+    // we avoid a second round-trip later for the muscle group breakdown.
     const posts = await prisma.post.findMany({
       where: {
         authorId: userId,
@@ -79,6 +81,7 @@ export async function GET(req: NextRequest) {
         id: true,
         type: true,
         createdAt: true,
+        workoutDetail: { select: { muscleGroups: true } },
       },
     });
 
@@ -96,7 +99,7 @@ export async function GET(req: NextRequest) {
 
     const workoutCount = workoutPostIds.length;
 
-    // Total sets and total volume from workout exercises
+    // Total sets from workout exercises (aggregate count at DB level)
     let totalSets = 0;
     let totalVolume = 0;
 
@@ -113,28 +116,17 @@ export async function GET(req: NextRequest) {
       });
       totalSets = setsAgg._count.id;
 
-      // Calculate total volume: sum of (weight * reps) where both are present
-      const volumeSets = await prisma.exerciseSet.findMany({
-        where: {
-          exercise: {
-            workoutDetail: {
-              postId: { in: workoutPostIds },
-            },
-          },
-          weight: { not: null },
-          reps: { not: null },
-        },
-        select: {
-          weight: true,
-          reps: true,
-        },
-      });
-
-      for (const s of volumeSets) {
-        if (s.weight !== null && s.reps !== null) {
-          totalVolume += s.weight * s.reps;
-        }
-      }
+      // Total volume: push SUM(weight * reps) to Postgres — no rows returned to Node.js
+      const [volumeResult] = await prisma.$queryRaw<[{ total: number | null }]>`
+        SELECT SUM(es.weight * es.reps) AS total
+        FROM "ExerciseSet" es
+        JOIN "Exercise" e ON e.id = es."exerciseId"
+        JOIN "WorkoutDetail" wd ON wd.id = e."workoutDetailId"
+        WHERE wd."postId" = ANY(${workoutPostIds}::text[])
+          AND es.weight IS NOT NULL
+          AND es.reps IS NOT NULL
+      `;
+      totalVolume = Number(volumeResult?.total ?? 0);
     }
 
     // Wellness minutes: sum of durationMinutes from WellnessDetail
@@ -185,25 +177,11 @@ export async function GET(req: NextRequest) {
           totalMoodCount
         : null;
 
-    // Streak calculations: fetch all post dates for the user (any type) ordered desc
-    const allPostDates = await prisma.post.findMany({
-      where: { authorId: userId },
-      select: { createdAt: true, type: true },
-      orderBy: { createdAt: "desc" },
-    });
-
-    const allDates: Date[] = [];
-    const workoutDates: Date[] = [];
-
-    for (const post of allPostDates) {
-      allDates.push(post.createdAt);
-      if (post.type === "WORKOUT") {
-        workoutDates.push(post.createdAt);
-      }
-    }
-
-    const currentStreak = calculateStreak(allDates, tz);
-    const workoutStreak = calculateStreak(workoutDates, tz);
+    // Streaks: use lazy cache (bounded 730-day query, 2-min TTL, invalidated on write)
+    const { currentStreak, workoutStreak } = await getOrRefreshStreaks(
+      userId,
+      tz
+    );
 
     // Weekly workout breakdown: Mon-Sun of current calendar week in user's TZ
     const weekDays = getWeekDays(todayStr);
@@ -257,44 +235,36 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    // Muscle group frequency for the selected period
-    const periodWorkoutPosts = await prisma.post.findMany({
-      where: {
-        authorId: userId,
-        type: "WORKOUT",
-        createdAt: { gte: periodStart },
-      },
-      select: {
-        workoutDetail: { select: { muscleGroups: true } },
-      },
-    });
-
+    // Muscle group frequency for the selected period — reuse already-fetched posts
     const muscleGroupCounts: Record<string, number> = {};
-    for (const post of periodWorkoutPosts) {
-      if (post.workoutDetail?.muscleGroups) {
+    for (const post of posts) {
+      if (post.type === "WORKOUT" && post.workoutDetail?.muscleGroups) {
         for (const mg of post.workoutDetail.muscleGroups) {
           muscleGroupCounts[mg] = (muscleGroupCounts[mg] ?? 0) + 1;
         }
       }
     }
 
-    return NextResponse.json({
-      workoutCount,
-      totalSets,
-      totalVolume,
-      wellnessMinutes,
-      mealsPosted,
-      avgMoodAfter:
-        avgMoodAfter !== null
-          ? Math.round(avgMoodAfter * 10) / 10
-          : null,
-      currentStreak,
-      workoutStreak,
-      weeklyWorkouts,
-      muscleGroupCounts,
-      period,
-      userId,
-    });
+    return NextResponse.json(
+      {
+        workoutCount,
+        totalSets,
+        totalVolume,
+        wellnessMinutes,
+        mealsPosted,
+        avgMoodAfter:
+          avgMoodAfter !== null
+            ? Math.round(avgMoodAfter * 10) / 10
+            : null,
+        currentStreak,
+        workoutStreak,
+        weeklyWorkouts,
+        muscleGroupCounts,
+        period,
+        userId,
+      },
+      { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=120" } }
+    );
   } catch (error) {
     console.error("Error fetching stats:", error);
     return NextResponse.json(
@@ -302,39 +272,4 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-/**
- * Calculate consecutive days with at least one post, counting back from today
- * in the user's timezone. If there is no post today, the streak is 0.
- */
-function calculateStreak(dates: Date[], timeZone: string): number {
-  if (dates.length === 0) return 0;
-
-  // Convert each UTC date to the user's local date string and deduplicate
-  const uniqueDays = new Set<string>();
-  for (const d of dates) {
-    uniqueDays.add(utcToLocalDateStr(d, timeZone));
-  }
-
-  const todayStr = getUserToday(timeZone);
-
-  if (!uniqueDays.has(todayStr)) {
-    return 0;
-  }
-
-  let streak = 1;
-  let checkDate = new Date(todayStr + "T12:00:00Z");
-
-  while (true) {
-    checkDate = new Date(checkDate.getTime() - 86400000);
-    const checkStr = utcToLocalDateStr(checkDate, timeZone);
-    if (uniqueDays.has(checkStr)) {
-      streak++;
-    } else {
-      break;
-    }
-  }
-
-  return streak;
 }
