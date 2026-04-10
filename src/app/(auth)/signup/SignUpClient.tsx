@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 
@@ -87,6 +87,42 @@ export default function SignUpClient({ appleEnabled, googleEnabled, waitlistGate
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<"apple" | "google" | null>(null);
+  const [usernameStatus, setUsernameStatus] = useState<
+    "idle" | "checking" | "available" | "taken" | "format-error"
+  >("idle");
+  const [debouncedUsername, setDebouncedUsername] = useState("");
+
+  // Debounce: update debouncedUsername 500ms after the user stops typing
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedUsername(username), 500);
+    return () => clearTimeout(timer);
+  }, [username]);
+
+  // Fire availability check when debounced value settles
+  useEffect(() => {
+    if (debouncedUsername.length < 3 || !/^[a-zA-Z0-9_]+$/.test(debouncedUsername)) {
+      if (debouncedUsername.length > 0) setUsernameStatus("format-error");
+      return;
+    }
+
+    let cancelled = false;
+    setUsernameStatus("checking");
+
+    fetch(`/api/users/check-username?username=${encodeURIComponent(debouncedUsername)}`)
+      .then(async (r) => {
+        if (!r.ok) { if (!cancelled) setUsernameStatus("idle"); return; }
+        const data = await r.json();
+        if (cancelled) return;
+        if (data.available) {
+          setUsernameStatus("available");
+        } else {
+          setUsernameStatus(data.reason === "format" ? "format-error" : "taken");
+        }
+      })
+      .catch(() => { if (!cancelled) setUsernameStatus("idle"); });
+
+    return () => { cancelled = true; };
+  }, [debouncedUsername]);
 
   async function handleOAuth(provider: "apple" | "google") {
     setOauthLoading(provider);
@@ -310,12 +346,22 @@ export default function SignUpClient({ appleEnabled, googleEnabled, waitlistGate
             type="text"
             required
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => { setUsername(e.target.value); setUsernameStatus("idle"); }}
             placeholder="johndoe"
             className="input-dark"
           />
-          {fieldErrors.username && (
+          {fieldErrors.username ? (
             <p className="mt-1 text-xs" style={{ color: "#b91c1c" }}>{fieldErrors.username}</p>
+          ) : usernameStatus === "checking" ? (
+            <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>Checking…</p>
+          ) : usernameStatus === "available" ? (
+            <p className="mt-1 text-xs" style={{ color: "#16a34a" }}>&#10003; Username available</p>
+          ) : usernameStatus === "taken" ? (
+            <p className="mt-1 text-xs" style={{ color: "#b91c1c" }}>Username already taken</p>
+          ) : usernameStatus === "format-error" ? (
+            <p className="mt-1 text-xs" style={{ color: "#b91c1c" }}>Only letters, numbers, and underscores allowed</p>
+          ) : (
+            <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>Letters, numbers, and underscores only</p>
           )}
         </div>
 
