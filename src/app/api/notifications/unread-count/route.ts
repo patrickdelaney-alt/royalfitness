@@ -14,7 +14,9 @@ export async function GET() {
       where: { recipientId: session.user.id, read: false },
     });
 
-    return NextResponse.json({ count });
+    return NextResponse.json({ count }, {
+      headers: { "Cache-Control": "private, max-age=60" },
+    });
   } catch (error) {
     console.error("GET /api/notifications/unread-count error:", error);
     return NextResponse.json(
