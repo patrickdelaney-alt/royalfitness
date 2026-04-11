@@ -8,6 +8,7 @@ import { compressImage } from "@/lib/compress-image";
 import { successNotification } from "@/lib/haptics";
 import { parseEmbedUrl, type EmbedProvider } from "@/lib/embed-parser";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
+import { usePendingPostsStore } from "@/store/pending-posts";
 
 type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN";
 
@@ -505,6 +506,7 @@ function MediaBlock({
 export default function CreatePostContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const addPendingPost = usePendingPostsStore((s) => s.addPendingPost);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isFromSession = searchParams.get("fromSession") === "1";
   const editPostId = searchParams.get("editPostId");
@@ -1322,6 +1324,24 @@ export default function CreatePostContent() {
       const created = await res.json();
       clearDraft();
       successNotification();
+      addPendingPost({
+        id: created.id,
+        type: created.type,
+        caption: created.caption ?? null,
+        mediaUrl: created.mediaUrl ?? null,
+        createdAt: created.createdAt,
+        author: created.author,
+        workoutDetail: created.workoutDetail
+          ? { workoutName: created.workoutDetail.workoutName }
+          : null,
+        mealDetail: created.mealDetail
+          ? { mealName: created.mealDetail.mealName }
+          : null,
+        wellnessDetail: created.wellnessDetail
+          ? { activityType: created.wellnessDetail.activityType }
+          : null,
+        gym: created.gym ?? null,
+      });
       setSuccessPost({ id: created.id, type: created.type as PostType });
     } catch {
       setError("Something went wrong");

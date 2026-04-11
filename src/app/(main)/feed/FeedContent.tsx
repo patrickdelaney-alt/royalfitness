@@ -11,6 +11,8 @@ import PostCard, { Post } from "@/components/post-card";
 import RecommendationCard from "@/components/recommendation-card";
 import OnboardingModal, { shouldShowOnboarding } from "@/components/onboarding-modal";
 import ReferralAttributionBanner from "@/components/referral-attribution-banner";
+import PendingPostCard from "@/components/pending-post-card";
+import { usePendingPostsStore } from "@/store/pending-posts";
 
 const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS"] as const;
 type PostTypeFilter = typeof POST_TYPES[number];
@@ -42,6 +44,10 @@ export default function FeedContent() {
   const { data: session } = useSession();
   const currentUserId = session?.user?.id ?? undefined;
 
+  const pendingPosts = usePendingPostsStore((s) => s.pendingPosts);
+  const removePendingPost = usePendingPostsStore((s) => s.removePendingPost);
+  const [fadingIds, setFadingIds] = useState<Set<string>>(new Set());
+
   // Build the SWR cache key for each page of the feed.
   // When `filter` changes, getKey changes identity, so SWR treats it as a
   // new cache entry — serving any previously cached results instantly while
@@ -68,6 +74,9 @@ export default function FeedContent() {
       // Don't re-fetch page 1 every time we load a subsequent page; cursor-
       // based pages are stable so re-fetching page 1 would just shift cursors.
       revalidateFirstPage: false,
+      // Poll every 5s while a post is pending so the real post shows up
+      // quickly even if the browser served a cached feed response.
+      refreshInterval: pendingPosts.length > 0 ? 5000 : 0,
     });
 
   const posts: Post[] = data ? data.flatMap((page) => page.posts) : [];
@@ -108,6 +117,25 @@ export default function FeedContent() {
       router.replace("/feed", { scroll: false });
     }
   }, [filter, router, searchParams]);
+
+  // Force an immediate revalidation on mount when pending posts exist so the
+  // real post shows up as soon as possible rather than waiting for the next poll.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (pendingPosts.length > 0) mutate();
+  }, []); // intentionally runs once on mount
+
+  // When SWR returns data that contains a pending post's real ID, trigger the
+  // fade-out animation. Cleanup (store removal) is handled by onFaded below.
+  useEffect(() => {
+    if (pendingPosts.length === 0) return;
+    const liveIds = new Set(posts.map((p) => p.id));
+    pendingPosts.forEach((pp) => {
+      if (!fadingIds.has(pp.id) && liveIds.has(pp.id)) {
+        setFadingIds((prev) => new Set(prev).add(pp.id));
+      }
+    });
+  }, [posts, pendingPosts, fadingIds]);
 
   // Optimistically remove a deleted post from every page in the SWR cache.
   const handleDeletePost = useCallback(
@@ -285,7 +313,7 @@ export default function FeedContent() {
             Try again
           </button>
         </div>
-      ) : posts.length === 0 ? (
+      ) : posts.length === 0 && pendingPosts.length === 0 ? (
         <div className="text-center py-16 px-4">
           <p className="text-2xl mb-3" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>Your feed is quiet</p>
           <p className="text-sm mb-5" style={{ color: "var(--text-muted)", lineHeight: 1.65 }}>
@@ -308,6 +336,22 @@ export default function FeedContent() {
         </div>
       ) : (
         <div className="space-y-4 pb-4">
+          {/* Pending (in-flight) posts always render at the very top */}
+          {pendingPosts.map((pp) => (
+            <PendingPostCard
+              key={pp.id}
+              post={pp}
+              isFading={fadingIds.has(pp.id)}
+              onFaded={() => {
+                removePendingPost(pp.id);
+                setFadingIds((prev) => {
+                  const next = new Set(prev);
+                  next.delete(pp.id);
+                  return next;
+                });
+              }}
+            />
+          ))}
           {posts.map((post) => (
             <PostCard key={post.id} post={post} currentUserId={currentUserId} onDelete={handleDeletePost} onEdit={handleEditPost} />
           ))}
