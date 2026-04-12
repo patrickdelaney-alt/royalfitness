@@ -562,8 +562,8 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Chevron */}
-                  <svg width="7" height="12" viewBox="0 0 7 12" fill="none" className="flex-shrink-0" style={{ opacity: 0.28 }}>
-                    <path d="M1 1l5 5-5 5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  <svg width="7" height="12" viewBox="0 0 7 12" fill="none" className="flex-shrink-0" style={{ color: "var(--text-muted)", opacity: 0.6 }}>
+                    <path d="M1 1l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </Link>
               );
