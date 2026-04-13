@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HiArrowLeft, HiPlus, HiTrash, HiPhotograph, HiX, HiPlay, HiLightningBolt, HiLocationMarker, HiSearch } from "react-icons/hi";
 import toast from "react-hot-toast";
@@ -9,6 +9,7 @@ import { successNotification } from "@/lib/haptics";
 import { parseEmbedUrl, type EmbedProvider } from "@/lib/embed-parser";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 import { usePendingPostsStore } from "@/store/pending-posts";
+import { photoPrompts } from "@/lib/photo-prompts";
 
 type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN";
 
@@ -394,7 +395,7 @@ function MoodSlider({ value, onChange }: { value: number; onChange: (v: number) 
 // ── Media Upload Block (shared across types) ─────────────────
 function MediaBlock({
   mediaPreview, uploading, onRemove, onFileClick, fileInputRef, onFileChange,
-  embedPreview, onClearEmbed,
+  embedPreview, onClearEmbed, prompt,
 }: {
   mediaPreview: string | null;
   uploading: boolean;
@@ -404,6 +405,7 @@ function MediaBlock({
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   embedPreview?: { provider: EmbedProvider; url: string; title?: string; thumbnailUrl?: string } | null;
   onClearEmbed?: () => void;
+  prompt?: string;
 }) {
   // Instagram / TikTok embed: show thumbnail card in the media slot
   if (embedPreview && (embedPreview.provider === "instagram" || embedPreview.provider === "tiktok")) {
@@ -490,6 +492,7 @@ function MediaBlock({
         >
           <HiPhotograph className="w-8 h-8" />
           <span className="text-sm">Add photo or video</span>
+          {prompt && <span className="text-xs opacity-60">{prompt}</span>}
         </button>
       )}
       <input
@@ -1350,6 +1353,11 @@ export default function CreatePostContent() {
     }
   };
 
+  const photoPrompt = useMemo(() => {
+    const list = photoPrompts[type] ?? photoPrompts.GENERAL;
+    return list[Math.floor(Math.random() * list.length)];
+  }, [type]);
+
   const mediaProps = {
     mediaPreview,
     uploading,
@@ -1359,6 +1367,7 @@ export default function CreatePostContent() {
     onFileChange: handleFileChange,
     embedPreview,
     onClearEmbed: clearEmbed,
+    prompt: photoPrompt,
   };
 
   const TYPE_LABELS: Record<PostType, string> = {
