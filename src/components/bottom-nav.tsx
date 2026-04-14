@@ -80,29 +80,6 @@ export function BottomNav() {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Secondary effect: refresh the badge count only when the user navigates TO
-  // the notifications tab. This keeps the badge accurate at the moment the user
-  // is actively looking at their notifications, without re-running on every
-  // other route change.
-  useEffect(() => {
-    if (pathname !== "/notifications") return;
-
-    let cancelled = false;
-    fetch("/api/notifications/unread-count")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data && !cancelled) {
-          prevCountRef.current = data.count;
-          setUnreadCount(data.count);
-        }
-      })
-      .catch(() => {});
-
-    return () => {
-      cancelled = true;
-    };
-  }, [pathname]);
-
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-40 border-t"
