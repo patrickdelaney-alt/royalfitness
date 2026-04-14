@@ -620,10 +620,12 @@ function CheckInPostCard({
   post,
   currentUserId,
   onDelete,
+  onLike,
 }: {
   post: Post;
   currentUserId?: string;
   onDelete?: (id: string) => void;
+  onLike?: (id: string, liked: boolean, likesCount: number) => void;
 }) {
   const [liked, setLiked] = useState(post.likedByMe);
   const [likeCount, setLikeCount] = useState(post._count.likes);
@@ -648,6 +650,7 @@ function CheckInPostCard({
         const data = await res.json();
         setLiked(data.liked);
         setLikeCount(data.likesCount);
+        onLike?.(post.id, data.liked, data.likesCount);
       } else {
         setLiked(wasLiked);
         setLikeCount((c) => c + (wasLiked ? 1 : -1));
@@ -658,7 +661,7 @@ function CheckInPostCard({
     } finally {
       setLikeLoading(false);
     }
-  }, [liked, likeLoading, post.id]);
+  }, [liked, likeLoading, post.id, onLike]);
 
   const handleDelete = useCallback(async () => {
     if (deleting) return;
@@ -784,11 +787,13 @@ function FullPostCard({
   currentUserId,
   onDelete,
   onEdit,
+  onLike,
 }: {
   post: Post;
   currentUserId?: string;
   onDelete?: (id: string) => void;
   onEdit?: (id: string, fields: { caption: string | null; visibility: string; workoutName?: string; mealName?: string; activityType?: string }) => void;
+  onLike?: (id: string, liked: boolean, likesCount: number) => void;
 }) {
   const [liked, setLiked] = useState(post.likedByMe);
   const [likeCount, setLikeCount] = useState(post._count.likes);
@@ -852,6 +857,7 @@ function FullPostCard({
         const data = await res.json();
         setLiked(data.liked);
         setLikeCount(data.likesCount);
+        onLike?.(post.id, data.liked, data.likesCount);
       } else {
         setLiked(wasLiked);
         setLikeCount((c) => c + (wasLiked ? 1 : -1));
@@ -862,7 +868,7 @@ function FullPostCard({
     } finally {
       setLikeLoading(false);
     }
-  }, [liked, likeLoading, post.id]);
+  }, [liked, likeLoading, post.id, onLike]);
 
   // ── load comments ──
 
@@ -1641,11 +1647,13 @@ export default function PostCard({
   currentUserId,
   onDelete,
   onEdit,
+  onLike,
 }: {
   post: Post;
   currentUserId?: string;
   onDelete?: (id: string) => void;
   onEdit?: (id: string, fields: { caption: string | null; visibility: string; workoutName?: string; mealName?: string; activityType?: string }) => void;
+  onLike?: (id: string, liked: boolean, likesCount: number) => void;
 }) {
   if (post.type === "CHECKIN") {
     return (
@@ -1653,6 +1661,7 @@ export default function PostCard({
         post={post}
         currentUserId={currentUserId}
         onDelete={onDelete}
+        onLike={onLike}
       />
     );
   }
@@ -1662,6 +1671,7 @@ export default function PostCard({
       currentUserId={currentUserId}
       onDelete={onDelete}
       onEdit={onEdit}
+      onLike={onLike}
     />
   );
 }
