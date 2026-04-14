@@ -15,7 +15,7 @@ export async function GET() {
     });
 
     return NextResponse.json({ count }, {
-      headers: { "Cache-Control": "private, max-age=60" },
+      headers: { "Cache-Control": "no-store" },
     });
   } catch (error) {
     console.error("GET /api/notifications/unread-count error:", error);
