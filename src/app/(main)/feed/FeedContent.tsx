@@ -195,6 +195,25 @@ export default function FeedContent() {
     [mutate]
   );
 
+  // Sync a like/unlike into the SWR cache so PostCard re-mounts with the
+  // correct likedByMe value after navigation (same pattern as handleDeletePost).
+  const handleLikePost = useCallback(
+    (id: string, liked: boolean, likesCount: number) => {
+      mutate(
+        (pages) =>
+          pages?.map((page) => ({
+            ...page,
+            posts: page.posts.map((p) => {
+              if (p.id !== id) return p;
+              return { ...p, likedByMe: liked, _count: { ...p._count, likes: likesCount } };
+            }),
+          })),
+        { revalidate: false }
+      );
+    },
+    [mutate]
+  );
+
   // Infinite scroll observer
   useEffect(() => {
     if (!sentinelRef.current || !hasMore || loadingMore) return;
@@ -353,7 +372,7 @@ export default function FeedContent() {
             />
           ))}
           {posts.map((post) => (
-            <PostCard key={post.id} post={post} currentUserId={currentUserId} onDelete={handleDeletePost} onEdit={handleEditPost} />
+            <PostCard key={post.id} post={post} currentUserId={currentUserId} onDelete={handleDeletePost} onEdit={handleEditPost} onLike={handleLikePost} />
           ))}
           {loadingMore && (
             <div className="flex justify-center py-4">
