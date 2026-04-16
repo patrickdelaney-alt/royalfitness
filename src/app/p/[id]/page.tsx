@@ -80,7 +80,6 @@ export async function generateMetadata({
   }
 
   const url = `https://royalwellness.app/p/${id}`;
-  const image = `https://royalwellness.app/p/${id}/og-image`;
 
   return {
     title,
@@ -90,14 +89,14 @@ export async function generateMetadata({
       description,
       url,
       siteName: "Royal",
-      images: [{ url: image, width: 1200, height: 630 }],
+      // og:image is injected automatically by opengraph-image.tsx
       type: "article",
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [image],
+      // twitter:image is injected automatically by opengraph-image.tsx
     },
   };
 }
