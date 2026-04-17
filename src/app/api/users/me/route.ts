@@ -5,6 +5,7 @@ import { z } from "zod";
 
 const updateProfileSchema = z.object({
   name: z.string().min(1).max(100).optional(),
+  username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_]+$/).optional(),
   bio: z.string().max(500).optional(),
   avatarUrl: z.string().optional(),
   isPrivate: z.boolean().optional(),
@@ -37,6 +38,7 @@ export async function PATCH(req: NextRequest) {
       where: { id: session.user.id },
       data: {
         ...(data.name !== undefined && { name: data.name }),
+        ...(data.username !== undefined && { username: data.username }),
         ...(data.bio !== undefined && { bio: data.bio }),
         ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl || null }),
         ...(data.isPrivate !== undefined && { isPrivate: data.isPrivate }),
