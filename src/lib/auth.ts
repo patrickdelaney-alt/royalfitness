@@ -219,6 +219,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (account?.provider === "credentials") {
           token.id = user.id;
           token.username = (user as { username?: string }).username ?? "";
+          try {
+            const dbUser = await prisma.user.findUnique({
+              where: { id: user.id },
+              select: { onboardingStep: true },
+            });
+            token.onboardingStep = dbUser?.onboardingStep ?? null;
+          } catch {
+            token.onboardingStep = null;
+          }
         } else if (user.email) {
           // OAuth: look up the record we just created/found
           try {
@@ -227,9 +236,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             });
             token.id = dbUser?.id ?? "";
             token.username = dbUser?.username ?? "";
+            token.onboardingStep = dbUser?.onboardingStep ?? null;
           } catch {
             token.id = "";
             token.username = "";
+            token.onboardingStep = null;
           }
         }
       }
@@ -240,6 +251,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.username = token.username as string;
+        session.user.onboardingStep = (token.onboardingStep as string | null) ?? null;
       }
       return session;
     },

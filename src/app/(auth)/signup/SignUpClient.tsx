@@ -126,7 +126,7 @@ export default function SignUpClient({ appleEnabled, googleEnabled, waitlistGate
 
   async function handleOAuth(provider: "apple" | "google") {
     setOauthLoading(provider);
-    await signIn(provider, { callbackUrl: "/feed?welcome=1" });
+    await signIn(provider, { callbackUrl: "/onboarding/profile" });
   }
 
   function validate(): boolean {
@@ -195,7 +195,7 @@ export default function SignUpClient({ appleEnabled, googleEnabled, waitlistGate
       }
 
       if (session?.user?.id) {
-        window.location.href = "/feed?welcome=1";
+        window.location.href = "/onboarding/profile";
       } else {
         window.location.href = "/signin?registered=1";
       }
