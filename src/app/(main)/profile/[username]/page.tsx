@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { HiLogout, HiPencil, HiCheck, HiX, HiUpload, HiArrowLeft, HiUserAdd } from "react-icons/hi";
 import Link from "next/link";
 import FollowListModal from "@/components/follow-list-modal";
@@ -67,6 +67,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const username = params.username as string;
 
+  const { data: session } = useSession();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<PostSummary[]>([]);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
@@ -253,6 +254,16 @@ export default function ProfilePage() {
     return (
       <div className="text-center py-20">
         <p style={{ color: "var(--text-muted)" }}>User not found</p>
+        {session && (
+          <button
+            onClick={() => signOut({ callbackUrl: "/signin" })}
+            className="mt-4 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium mx-auto"
+            style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)", color: "var(--text-muted)" }}
+          >
+            <HiLogout className="w-4 h-4" />
+            Sign out
+          </button>
+        )}
       </div>
     );
   }
