@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Royal — iOS Signup Flow</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  html, body { margin:0; padding:0; background:#f0eee9; font-family:'Plus Jakarta Sans', system-ui, sans-serif; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="../../design-canvas.jsx"></script>
+<script type="text/babel" src="../../ios-frame.jsx"></script>
+<script type="text/babel" src="./royal-primitives.jsx"></script>
+<script type="text/babel" src="./screens-a.jsx"></script>
+<script type="text/babel" src="./screens-b.jsx"></script>
+<script type="text/babel" src="./screens-c.jsx"></script>
+
+<script type="text/babel">
+function Frame({ children }) {
+  return (
+    <div style={{
+      width: 390, height: 844, borderRadius: 54, overflow: 'hidden',
+      position: 'relative', background: '#EEE8DC',
+      boxShadow: '0 30px 60px rgba(24,25,15,0.18), 0 0 0 10px #1a1a1a, 0 0 0 11px rgba(0,0,0,0.4)',
+    }}>
+      {/* dynamic island */}
+      <div style={{
+        position: 'absolute', top: 11, left: '50%', transform: 'translateX(-50%)',
+        width: 122, height: 36, borderRadius: 20, background: '#000', zIndex: 50,
+      }} />
+      {/* status bar */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: 54,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 32px', zIndex: 40, paddingTop: 18,
+      }}>
+        <span style={{ fontSize: 15, fontWeight: 600, color: '#18190F', fontFamily: '-apple-system, system-ui' }}>9:41</span>
+        <div style={{ display:'flex', gap: 6, alignItems:'center' }}>
+          <svg width="17" height="10" viewBox="0 0 17 10"><rect x="0" y="6" width="3" height="4" rx="0.7" fill="#18190F"/><rect x="4" y="4" width="3" height="6" rx="0.7" fill="#18190F"/><rect x="8" y="2" width="3" height="8" rx="0.7" fill="#18190F"/><rect x="12" y="0" width="3" height="10" rx="0.7" fill="#18190F"/></svg>
+          <svg width="22" height="11" viewBox="0 0 22 11"><rect x="0.5" y="0.5" width="19" height="10" rx="2.5" stroke="#18190F" strokeOpacity="0.4" fill="none"/><rect x="2" y="2" width="14" height="7" rx="1.5" fill="#18190F"/></svg>
+        </div>
+      </div>
+      <div style={{ height: '100%' }}>{children}</div>
+      {/* home indicator */}
+      <div style={{
+        position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
+        width: 134, height: 5, borderRadius: 3, background: 'rgba(24,25,15,0.35)', zIndex: 60,
+      }} />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection
+        title="Royal · iOS signup flow"
+        subtitle="Eight screens. Teaches the four moves that make Royal work: log sessions, follow people, build a catalog, share to earn royalties."
+      >
+        <DCArtboard label="1 · Welcome" width={390} height={844} style={{ background:'transparent', boxShadow:'none' }}>
+          <Frame><ScreenWelcome onNext={()=>{}} /></Frame>
+        </DCArtboard>
+        <DCArtboard label="2 · Create account" width={390} height={844} style={{ background:'transparent', boxShadow:'none' }}>
+          <Frame><ScreenAccount onNext={()=>{}} onBack={()=>{}} /></Frame>
+        </DCArtboard>
+        <DCArtboard label="3 · Profile basics" width={390} height={844} style={{ background:'transparent', boxShadow:'none' }}>
+          <Frame><ScreenProfile onNext={()=>{}} onBack={()=>{}} /></Frame>
+        </DCArtboard>
+        <DCArtboard label="4 · Follow people" width={390} height={844} style={{ background:'transparent', boxShadow:'none' }}>
+          <Frame><ScreenFollow onNext={()=>{}} onBack={()=>{}} onSkip={()=>{}} /></Frame>
+        </DCArtboard>
+        <DCArtboard label="5 · Log your first session" width={390} height={844} style={{ background:'transparent', boxShadow:'none' }}>
+          <Frame><ScreenFirstPost onNext={()=>{}} onBack={()=>{}} onSkip={()=>{}} /></Frame>
+        </DCArtboard>
+        <DCArtboard label="6 · Build your catalog" width={390} height={844} style={{ background:'transparent', boxShadow:'none' }}>
+          <Frame><ScreenCatalog onNext={()=>{}} onBack={()=>{}} onSkip={()=>{}} /></Frame>
+        </DCArtboard>
+        <DCArtboard label="7 · Share to earn royalties" width={390} height={844} style={{ background:'transparent', boxShadow:'none' }}>
+          <Frame><ScreenRoyalties onNext={()=>{}} onBack={()=>{}} onSkip={()=>{}} /></Frame>
+        </DCArtboard>
+        <DCArtboard label="8 · Done" width={390} height={844} style={{ background:'transparent', boxShadow:'none' }}>
+          <Frame><ScreenDone onFinish={()=>{}} /></Frame>
+        </DCArtboard>
+
+        <DCPostIt top={-20} left={540} rotate={-3} width={200}>
+          Tip: the Skip link matters. Onboarding should be a tour, not a toll.
+        </DCPostIt>
+        <DCPostIt top={-30} left={2050} rotate={2} width={220}>
+          "Add exercises" is off by default — quick captions should be the path of least resistance.
+        </DCPostIt>
+        <DCPostIt top={-25} left={3130} rotate={-2} width={210}>
+          Royalty chip uses mustard, never green. Keeps earning visually separate from activity.
+        </DCPostIt>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
