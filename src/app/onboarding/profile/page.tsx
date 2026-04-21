@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
 import RInput from "@/components/onboarding/RInput";
 import RPrimaryBtn from "@/components/onboarding/RPrimaryBtn";
@@ -12,6 +13,7 @@ function getInitials(name: string) {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
@@ -21,6 +23,20 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const initialized = useRef(false);
+  const prefilledUsername = useRef("");
+
+  useEffect(() => {
+    if (!session?.user || initialized.current) return;
+    initialized.current = true;
+    if (session.user.name) setName(session.user.name);
+    const u = session.user.username as string | undefined;
+    if (u && !/^user_[a-z0-9]{7}$/.test(u)) {
+      prefilledUsername.current = u;
+      setUsername(u);
+      setUsernameStatus("available");
+    }
+  }, [session?.user]);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedUsername(username), 500);
@@ -28,6 +44,10 @@ export default function ProfilePage() {
   }, [username]);
 
   useEffect(() => {
+    if (debouncedUsername === prefilledUsername.current) {
+      setUsernameStatus("available");
+      return;
+    }
     if (debouncedUsername.length < 3 || !/^[a-zA-Z0-9_]+$/.test(debouncedUsername)) {
       if (debouncedUsername.length > 0) setUsernameStatus("error");
       return;
