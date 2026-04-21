@@ -25,11 +25,11 @@ export async function sendPasswordResetEmail(
   });
 
   if (error) {
-    console.error('[email] Failed to send password reset email to', email, error);
+    console.error('[email] Failed to send password reset email', error);
     throw new Error(error.message);
   }
 
-  console.log('[email] Password reset email sent', { to: email, id: data?.id });
+  console.log('[email] Password reset email sent', { id: data?.id });
 }
 
 export async function sendInviteEmail(
@@ -58,10 +58,10 @@ export async function sendInviteEmail(
   });
 
   if (error) {
-    console.error('[email] Failed to send invite email to', email, error);
+    console.error('[email] Failed to send invite email', error);
     // Don't throw — just log. Admin action already completed in DB.
   } else {
-    console.log('[email] Invite email sent', { to: email, id: data?.id });
+    console.log('[email] Invite email sent', { id: data?.id });
   }
 }
 
@@ -86,8 +86,8 @@ export async function sendWelcomeEmail(email: string): Promise<void> {
   });
 
   if (error) {
-    console.error('[email] Failed to send welcome email to', email, error);
+    console.error('[email] Failed to send welcome email', error);
   } else {
-    console.log('[email] Welcome email sent', { to: email, id: data?.id });
+    console.log('[email] Welcome email sent', { id: data?.id });
   }
 }
