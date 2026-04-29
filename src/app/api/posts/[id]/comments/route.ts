@@ -68,17 +68,20 @@ export async function GET(
       }
     }
 
-    const comments = await prisma.comment.findMany({
-      where: { postId },
-      take: limit + 1,
-      skip,
-      orderBy: { createdAt: "asc" },
-      include: {
-        author: {
-          select: { id: true, name: true, username: true, avatarUrl: true },
+    const [comments, total] = await Promise.all([
+      prisma.comment.findMany({
+        where: { postId },
+        take: limit + 1,
+        skip,
+        orderBy: { createdAt: "asc" },
+        include: {
+          author: {
+            select: { id: true, name: true, username: true, avatarUrl: true },
+          },
         },
-      },
-    });
+      }),
+      prisma.comment.count({ where: { postId } }),
+    ]);
 
     let nextCursor: string | undefined;
     if (comments.length > limit) {
@@ -89,6 +92,7 @@ export async function GET(
     return NextResponse.json({
       comments,
       nextCursor,
+      total,
     });
   } catch (error) {
     console.error("GET /api/posts/[id]/comments error:", error);

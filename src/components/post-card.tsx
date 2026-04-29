@@ -878,8 +878,14 @@ function FullPostCard({
       const res = await fetch(`/api/posts/${post.id}/comments?limit=3`);
       if (res.ok) {
         const data = await res.json();
-        setComments(data.comments ?? []);
+        setComments((prev) => {
+          const serverComments: Comment[] = data.comments ?? [];
+          const serverIds = new Set(serverComments.map((c) => c.id));
+          const localOnly = prev.filter((c) => !serverIds.has(c.id));
+          return [...serverComments, ...localOnly];
+        });
         setNextCursor(data.nextCursor);
+        if (data.total != null) setCommentCount(data.total);
       }
     } catch {
       // silent fail
@@ -907,7 +913,11 @@ function FullPostCard({
       );
       if (res.ok) {
         const data = await res.json();
-        setComments((prev) => [...prev, ...(data.comments ?? [])]);
+        setComments((prev) => {
+          const serverComments: Comment[] = data.comments ?? [];
+          const prevIds = new Set(prev.map((c) => c.id));
+          return [...prev, ...serverComments.filter((c) => !prevIds.has(c.id))];
+        });
         setNextCursor(data.nextCursor);
       }
     } catch {
