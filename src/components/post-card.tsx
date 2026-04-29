@@ -10,6 +10,7 @@ import { AFFILIATE_CATEGORY_LABELS } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
 import EmbedMedia, { type ExternalContentItem } from "@/components/embed-media";
+import { useLikesStore } from "@/store/likes";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -627,8 +628,10 @@ function CheckInPostCard({
   onDelete?: (id: string) => void;
   onLike?: (id: string, liked: boolean, likesCount: number) => void;
 }) {
-  const [liked, setLiked] = useState(post.likedByMe);
-  const [likeCount, setLikeCount] = useState(post._count.likes);
+  const { likes, setLike } = useLikesStore();
+  const checkinOverride = likes[post.id];
+  const [liked, setLiked] = useState(checkinOverride?.liked ?? post.likedByMe);
+  const [likeCount, setLikeCount] = useState(checkinOverride?.count ?? post._count.likes);
   const [likeLoading, setLikeLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -650,6 +653,7 @@ function CheckInPostCard({
         const data = await res.json();
         setLiked(data.liked);
         setLikeCount(data.likesCount);
+        setLike(post.id, data.liked, data.likesCount);
         onLike?.(post.id, data.liked, data.likesCount);
       } else {
         setLiked(wasLiked);
@@ -661,7 +665,7 @@ function CheckInPostCard({
     } finally {
       setLikeLoading(false);
     }
-  }, [liked, likeLoading, post.id, onLike]);
+  }, [liked, likeLoading, post.id, onLike, setLike]);
 
   const handleDelete = useCallback(async () => {
     if (deleting) return;
@@ -795,8 +799,10 @@ function FullPostCard({
   onEdit?: (id: string, fields: { caption: string | null; visibility: string; workoutName?: string; mealName?: string; activityType?: string }) => void;
   onLike?: (id: string, liked: boolean, likesCount: number) => void;
 }) {
-  const [liked, setLiked] = useState(post.likedByMe);
-  const [likeCount, setLikeCount] = useState(post._count.likes);
+  const { likes, setLike } = useLikesStore();
+  const fullOverride = likes[post.id];
+  const [liked, setLiked] = useState(fullOverride?.liked ?? post.likedByMe);
+  const [likeCount, setLikeCount] = useState(fullOverride?.count ?? post._count.likes);
   const [likeLoading, setLikeLoading] = useState(false);
 
   const [showComments, setShowComments] = useState(false);
@@ -857,6 +863,7 @@ function FullPostCard({
         const data = await res.json();
         setLiked(data.liked);
         setLikeCount(data.likesCount);
+        setLike(post.id, data.liked, data.likesCount);
         onLike?.(post.id, data.liked, data.likesCount);
       } else {
         setLiked(wasLiked);
@@ -868,7 +875,7 @@ function FullPostCard({
     } finally {
       setLikeLoading(false);
     }
-  }, [liked, likeLoading, post.id, onLike]);
+  }, [liked, likeLoading, post.id, onLike, setLike]);
 
   // ── load comments ──
 

@@ -25,6 +25,13 @@ export default function PostDetailPage() {
       };
     });
   }, []);
+
+  const handleLike = useCallback((id: string, liked: boolean, likesCount: number) => {
+    setPost((p) => {
+      if (!p || p.id !== id) return p;
+      return { ...p, likedByMe: liked, _count: { ...p._count, likes: likesCount } };
+    });
+  }, []);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const { data: session } = useSession();
@@ -93,6 +100,7 @@ export default function PostDetailPage() {
         currentUserId={currentUserId}
         onDelete={() => router.back()}
         onEdit={handleEdit}
+        onLike={handleLike}
       />
     </div>
   );
