@@ -21,13 +21,12 @@ interface GymResult {
   _count: { members: number; posts: number };
 }
 
-interface Suggestion {
+interface SuggestedUser {
   id: string;
   name: string | null;
   username: string;
   avatarUrl: string | null;
-  postCount: number;
-  postTypes: string[];
+  _count: { posts: number };
 }
 
 function initials(name?: string | null): string {
@@ -40,22 +39,6 @@ function initials(name?: string | null): string {
     .slice(0, 2);
 }
 
-const TYPE_EMOJI: Record<string, string> = {
-  WORKOUT: "💪",
-  MEAL: "🥗",
-  WELLNESS: "🧘",
-  GENERAL: "📝",
-};
-
-function activityPill(postCount: number, postTypes: string[]): string {
-  const typeLabels = postTypes
-    .map((t) => TYPE_EMOJI[t] ?? "")
-    .filter(Boolean)
-    .join(" ");
-  const noun = postCount === 1 ? "post" : "posts";
-  return `${typeLabels} ${postCount} ${noun} this week`.trim();
-}
-
 export default function ExplorePage() {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -64,7 +47,7 @@ export default function ExplorePage() {
   const [gyms, setGyms] = useState<GymResult[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [suggestions, setSuggestions] = useState<SuggestedUser[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [followedIds, setFollowedIds] = useState<Set<string>>(new Set());
   const [followingId, setFollowingId] = useState<string | null>(null);
@@ -94,13 +77,13 @@ export default function ExplorePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
-  // Fetch suggestions when on People tab with empty query
+  // Fetch suggested users when on People tab with empty query
   useEffect(() => {
     if (tab !== "people") return;
     setSuggestionsLoading(true);
-    fetch("/api/users/suggestions")
+    fetch("/api/users/suggested")
       .then((r) => r.json())
-      .then((d) => setSuggestions(d.suggestions ?? []))
+      .then((d) => setSuggestions(d.users ?? []))
       .catch(() => {})
       .finally(() => setSuggestionsLoading(false));
   }, [tab]);
@@ -141,7 +124,7 @@ export default function ExplorePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, tab]);
 
-  async function handleFollow(suggestion: Suggestion) {
+  async function handleFollow(suggestion: SuggestedUser) {
     setFollowingId(suggestion.id);
     try {
       const res = await fetch("/api/social/follow", {
@@ -231,23 +214,31 @@ export default function ExplorePage() {
         </div>
       ) : showSuggestions ? (
         suggestionsLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border"
+              >
+                <div className="w-10 h-10 rounded-full bg-muted/20 animate-pulse flex-shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="h-3 rounded bg-muted/20 animate-pulse w-28" />
+                  <div className="h-3 rounded bg-muted/20 animate-pulse w-16" />
+                </div>
+                <div className="w-16 h-7 rounded-lg bg-muted/20 animate-pulse flex-shrink-0" />
+              </div>
+            ))}
           </div>
-        ) : suggestions.length === 0 ? (
-          <div className="text-center py-16">
-            <HiSearch className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-muted text-sm">Search for people or gyms</p>
-          </div>
-        ) : (
+        ) : suggestions.length === 0 ? null : (
           <div>
             <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-3">
-              Active this week
+              People to follow
             </p>
             <div className="space-y-2">
               {suggestions.map((suggestion) => {
                 const followed = followedIds.has(suggestion.id);
                 const isFollowing = followingId === suggestion.id;
+                const postCount = suggestion._count.posts;
                 return (
                   <div
                     key={suggestion.id}
@@ -271,10 +262,10 @@ export default function ExplorePage() {
                       className="flex-1 min-w-0"
                     >
                       <p className="font-semibold text-sm text-foreground truncate">
-                        {suggestion.username}
+                        {suggestion.name ?? suggestion.username}
                       </p>
                       <p className="text-xs text-muted truncate">
-                        {activityPill(suggestion.postCount, suggestion.postTypes)}
+                        @{suggestion.username} · {postCount} {postCount === 1 ? "post" : "posts"}
                       </p>
                     </Link>
                     <button
