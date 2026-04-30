@@ -8,16 +8,7 @@ function isAdmin(email: string | null | undefined): boolean {
   return !!email && email === process.env.ADMIN_EMAIL
 }
 
-// POST /api/admin/backfill-founding-members
-// One-time endpoint to mark all existing users as founding members and
-// create invite tokens for any who don't already have one.
-// Admin-only (requires ADMIN_EMAIL match).
-export async function POST() {
-  const session = await auth()
-  if (!isAdmin(session?.user?.email)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
+async function runBackfill() {
   const users = await prisma.user.findMany({
     where: { foundingMember: false },
     select: { id: true },
@@ -41,6 +32,30 @@ export async function POST() {
     }
     updated++
   }
+  return updated
+}
 
+// GET — visit in browser while logged in as admin to trigger backfill
+export async function GET() {
+  const session = await auth()
+  if (!isAdmin(session?.user?.email)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+  const updated = await runBackfill()
+  return NextResponse.json({ ok: true, updated })
+}
+
+// POST /api/admin/backfill-founding-members
+export async function POST() {
+  const session = await auth()
+  if (!isAdmin(session?.user?.email)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const session2 = await auth()
+  if (!isAdmin(session2?.user?.email)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+  const updated = await runBackfill()
   return NextResponse.json({ ok: true, updated })
 }
