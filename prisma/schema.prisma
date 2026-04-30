@@ -55,12 +55,17 @@ model User {
   notifyOnComment Boolean @default(true)
   notifyOnFollow  Boolean @default(true)
 
+  foundingMember     Boolean @default(false)
+  foundingMemberSeen Boolean @default(false)
+
   reportsMade    Report[]      @relation("reporter")
   blockedUsers   BlockedUser[] @relation("blocker")
   blockedBy      BlockedUser[] @relation("blocked")
 
   accounts       Account[]
   sessions       Session[]
+
+  foundingMemberInvites FoundingMemberInvite[]
 }
 
 model Account {
@@ -631,6 +636,21 @@ model ReferralAttribution {
   newUser        User         @relation("referralAttribution", fields: [newUserId], references: [id])
   welcomeShown   Boolean      @default(false)
   createdAt      DateTime     @default(now())
+}
+
+// ─── FOUNDING MEMBERS ────────────────────────────────────────────
+
+model FoundingMemberInvite {
+  id          String   @id @default(cuid())
+  inviterId   String
+  inviter     User     @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  token       String   @unique
+  clickCount  Int      @default(0)
+  signupCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([inviterId])
 }
 
 // ─── WAITLIST ─────────────────────────────────────────────────────

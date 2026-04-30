@@ -10,6 +10,7 @@ import UserCatalogSection from "@/components/user-catalog-section";
 import { lightImpact } from "@/lib/haptics";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 import toast from "react-hot-toast";
+import { FoundingMemberBadge } from "@/components/founding-member-badge";
 
 interface UserProfile {
   id: string;
@@ -22,6 +23,7 @@ interface UserProfile {
   tiktokUrl: string | null;
   followerCount: number;
   followingCount: number;
+  foundingMember: boolean;
 }
 
 interface PostSummary {
@@ -293,7 +295,10 @@ export default function ProfilePage() {
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold truncate">{profile.username}</h1>
+          <h1 className="text-lg font-bold truncate flex items-center gap-1.5">
+            {profile.username}
+            {profile.foundingMember && <FoundingMemberBadge size="md" />}
+          </h1>
           {profile.name && (
             <p className="text-sm truncate" style={{ color: muted }}>{profile.name}</p>
           )}

@@ -27,6 +27,7 @@ export async function GET(
         instagramUrl: true,
         tiktokUrl: true,
         createdAt: true,
+        foundingMember: true,
         notifyOnLike: true,
         notifyOnComment: true,
         notifyOnFollow: true,
