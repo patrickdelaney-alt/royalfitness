@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { HiLogout, HiPencil, HiCheck, HiX, HiUpload, HiArrowLeft, HiUserAdd } from "react-icons/hi";
 import Link from "next/link";
+import QRCode from "qrcode";
 import FollowListModal from "@/components/follow-list-modal";
 import UserCatalogSection from "@/components/user-catalog-section";
 import { lightImpact } from "@/lib/haptics";
@@ -85,6 +86,8 @@ export default function ProfilePage() {
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockLoading, setBlockLoading] = useState(false);
   const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteStats, setInviteStats] = useState<{ token: string | null; clickCount: number } | null>(null);
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     async function load() {
@@ -117,6 +120,24 @@ export default function ProfilePage() {
       .catch(() => {})
       .finally(() => setRequestsLoading(false));
   }, [isOwnProfile]);
+
+  useEffect(() => {
+    if (!isOwnProfile || !profile?.foundingMember) return;
+    fetch("/api/founding-member/invite-stats")
+      .then((r) => r.json())
+      .then((d) => setInviteStats({ token: d.token, clickCount: d.clickCount ?? 0 }))
+      .catch(() => {});
+  }, [isOwnProfile, profile?.foundingMember]);
+
+  useEffect(() => {
+    if (!inviteStats?.token || !qrCanvasRef.current) return;
+    const url = `https://royalfitness.app/api/founding-member/track?ref=${inviteStats.token}`;
+    QRCode.toCanvas(qrCanvasRef.current, url, {
+      width: 160,
+      margin: 2,
+      color: { dark: "#2d5a27", light: "#f5f2ec" },
+    }).catch(() => {});
+  }, [inviteStats?.token]);
 
   // Swipe-right-from-left-edge gesture for back navigation (mobile/Capacitor)
   useEffect(() => {
@@ -417,6 +438,42 @@ export default function ProfilePage() {
           >
             🏅 My Badges
           </Link>
+
+          {profile.foundingMember && inviteStats?.token && (
+            <div
+              className="flex flex-col items-center py-5 px-4 mt-2"
+              style={{ background: "rgba(200,169,81,0.06)", border: "1px solid rgba(200,169,81,0.35)" }}
+            >
+              <p
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 10,
+                  fontWeight: 300,
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  color: "#c8a951",
+                  marginBottom: 14,
+                }}
+              >
+                Share Royal
+              </p>
+              <canvas ref={qrCanvasRef} style={{ display: "block" }} />
+              <p
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 11,
+                  fontWeight: 300,
+                  color: "#c4a882",
+                  marginTop: 12,
+                  letterSpacing: "0.06em",
+                }}
+              >
+                {inviteStats.clickCount === 0
+                  ? "No scans yet"
+                  : `${inviteStats.clickCount} ${inviteStats.clickCount === 1 ? "scan" : "scans"}`}
+              </p>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex gap-2 mb-6">
