@@ -191,7 +191,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // Apple only sends the real name on the FIRST sign-in; fall back
           // to a human-readable name derived from the email rather than "User".
           const displayName = user.name?.trim() || deriveNameFromEmail(normalizedEmail);
-          await prisma.user.create({
+          const newUser = await prisma.user.create({
             data: {
               email: normalizedEmail,
               name: displayName,
@@ -204,6 +204,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             await sendWelcomeEmail(normalizedEmail);
           } catch {
             // Welcome email failure must not block sign-in
+          }
+          // Attempt to claim founding member status (first 100 users)
+          try {
+            const FOUNDING_MEMBER_CAP = 100;
+            const foundingCount = await prisma.user.count({ where: { foundingMember: true } });
+            if (foundingCount < FOUNDING_MEMBER_CAP) {
+              const { randomBytes } = await import("crypto");
+              const token = randomBytes(8).toString("hex");
+              await prisma.user.update({
+                where: { id: newUser.id },
+                data: { foundingMember: true, foundingMemberSeen: false },
+              });
+              await prisma.foundingMemberInvite.create({
+                data: { inviterId: newUser.id, token },
+              });
+            }
+          } catch {
+            // Founding member claim failure must not block sign-in
           }
         }
         // Existing users: their profile is already set — don't overwrite it.
