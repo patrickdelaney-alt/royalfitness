@@ -30,10 +30,22 @@ if (!process.env.AUTH_SECRET) {
 }
 
 // AUTH_URL / NEXTAUTH_URL tells NextAuth where the app is hosted so it can
-// construct callback URLs and validate requests.  On Vercel, VERCEL_URL is
-// always injected automatically — use it as a zero-config fallback.
+// construct callback URLs and validate requests.
+//
+// IMPORTANT: We must use the same domain the browser is on, otherwise the
+// OAuth state cookie (set on the custom domain) won't be sent when Google
+// redirects back to the Vercel deployment URL — causing an InvalidCheck error.
+//
+// Priority:
+//  1. AUTH_URL / NEXTAUTH_URL — explicit override always wins
+//  2. VERCEL_PROJECT_PRODUCTION_URL — stable custom domain (e.g. royalwellness.app)
+//  3. VERCEL_URL — per-deployment URL; only safe for preview deployments that
+//     have no custom domain, since it changes every deploy and will mismatch
+//     the domain the browser is on for custom-domain production deployments.
 if (!process.env.AUTH_URL && !process.env.NEXTAUTH_URL) {
-  if (process.env.VERCEL_URL) {
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    process.env.AUTH_URL = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  } else if (process.env.VERCEL_URL) {
     process.env.AUTH_URL = `https://${process.env.VERCEL_URL}`;
   }
 } else if (process.env.AUTH_URL && !process.env.AUTH_URL.startsWith("http")) {
