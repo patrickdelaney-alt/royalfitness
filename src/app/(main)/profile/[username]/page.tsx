@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { HiLogout, HiPencil, HiCheck, HiX, HiUpload, HiArrowLeft, HiUserAdd } from "react-icons/hi";
@@ -87,7 +87,7 @@ export default function ProfilePage() {
   const [blockLoading, setBlockLoading] = useState(false);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteStats, setInviteStats] = useState<{ token: string | null; clickCount: number } | null>(null);
-  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [qrSrc, setQrSrc] = useState('');
 
   useEffect(() => {
     async function load() {
@@ -130,13 +130,17 @@ export default function ProfilePage() {
   }, [isOwnProfile, profile?.foundingMember]);
 
   useEffect(() => {
-    if (!inviteStats?.token || !qrCanvasRef.current) return;
-    const url = `https://royalfitness.app/api/founding-member/track?ref=${inviteStats.token}`;
-    QRCode.toCanvas(qrCanvasRef.current, url, {
-      width: 160,
+    if (!inviteStats?.token) return;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://royalfitness.app';
+    const url = `${appUrl}/api/founding-member/track?ref=${inviteStats.token}`;
+    QRCode.toString(url, {
+      type: 'svg',
+      errorCorrectionLevel: 'H',
       margin: 2,
       color: { dark: "#2d5a27", light: "#f5f2ec" },
-    }).catch(() => {});
+    })
+      .then(svg => setQrSrc(`data:image/svg+xml,${encodeURIComponent(svg)}`))
+      .catch(() => {});
   }, [inviteStats?.token]);
 
   // Swipe-right-from-left-edge gesture for back navigation (mobile/Capacitor)
@@ -457,7 +461,9 @@ export default function ProfilePage() {
               >
                 Share Royal
               </p>
-              <canvas ref={qrCanvasRef} style={{ display: "block" }} />
+              {qrSrc && (
+                <img src={qrSrc} alt="Invite QR code" width={160} height={160} style={{ display: "block" }} />
+              )}
               <p
                 style={{
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
