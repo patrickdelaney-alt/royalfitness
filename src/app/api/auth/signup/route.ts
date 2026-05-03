@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { signUpSchema } from "@/lib/validations";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -81,6 +82,24 @@ export async function POST(req: NextRequest) {
       await sendWelcomeEmail(user.email);
     } catch {
       // non-blocking
+    }
+
+    // Founding member claim — first 100 users get the badge
+    try {
+      const FOUNDING_MEMBER_CAP = 100;
+      const foundingCount = await prisma.user.count({ where: { foundingMember: true } });
+      if (foundingCount < FOUNDING_MEMBER_CAP) {
+        const token = randomBytes(8).toString("hex");
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { foundingMember: true, foundingMemberSeen: false },
+        });
+        await prisma.foundingMemberInvite.create({
+          data: { inviterId: user.id, token },
+        });
+      }
+    } catch {
+      // Founding member claim failure must not block account creation
     }
 
     // Attribution: if a valid refCode was passed, record the referral and auto-follow
