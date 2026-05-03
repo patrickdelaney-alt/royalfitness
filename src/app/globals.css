@@ -179,6 +179,12 @@ body::before {
   transform: translateY(-4px);
 }
 
+/* Auth screens: suppress card-shell hover lift */
+.card-shell:has(form):hover {
+  transform: none;
+  box-shadow: none;
+}
+
 .card-core {
   background: var(--surface);
   border-radius: 28px;
