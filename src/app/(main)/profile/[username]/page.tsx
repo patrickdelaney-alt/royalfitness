@@ -311,7 +311,7 @@ export default function ProfilePage() {
         </button>
       )}
       {/* Profile header */}
-      <div className="flex items-start gap-4 mb-5">
+      <div className="flex items-start gap-4 mb-6">
         {profile.avatarUrl ? (
           <img src={profile.avatarUrl} alt={profile.username} className="w-20 h-20 rounded-full object-cover" />
         ) : (
@@ -320,27 +320,28 @@ export default function ProfilePage() {
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold truncate flex items-center gap-1.5">
+          <h1 className="text-[22px] font-semibold truncate flex items-center gap-1.5" style={{ lineHeight: 1.2 }}>
             {profile.username}
             {profile.foundingMember && <FoundingMemberBadge size="md" />}
           </h1>
           {profile.name && (
-            <p className="text-sm truncate" style={{ color: muted }}>{profile.name}</p>
+            <p className="text-[14px] truncate" style={{ color: '#c4a882' }}>{profile.name}</p>
           )}
-          <div className="flex gap-4 mt-2">
+          <div className="flex items-center gap-4 mt-2">
             <button
               onClick={() => setFollowModal("followers")}
               className="text-center hover:opacity-70 transition-opacity"
             >
-              <p className="text-sm font-bold">{profile.followerCount}</p>
-              <p className="text-xs" style={{ color: muted }}>Followers</p>
+              <p className="text-[20px] font-semibold leading-none">{profile.followerCount}</p>
+              <p className="text-[11px] uppercase tracking-wide mt-0.5" style={{ color: muted }}>Followers</p>
             </button>
+            <div style={{ width: 1, height: 28, background: 'rgba(36,63,22,0.12)' }} />
             <button
               onClick={() => setFollowModal("following")}
               className="text-center hover:opacity-70 transition-opacity"
             >
-              <p className="text-sm font-bold">{profile.followingCount}</p>
-              <p className="text-xs" style={{ color: muted }}>Following</p>
+              <p className="text-[20px] font-semibold leading-none">{profile.followingCount}</p>
+              <p className="text-[11px] uppercase tracking-wide mt-0.5" style={{ color: muted }}>Following</p>
             </button>
           </div>
         </div>
@@ -348,7 +349,7 @@ export default function ProfilePage() {
 
       {/* Bio */}
       {profile.bio && (
-        <p className="text-sm mb-4 whitespace-pre-wrap" style={{ color: "var(--text)" }}>{profile.bio}</p>
+        <p className="text-sm mt-3 mb-4 whitespace-pre-wrap" style={{ color: "var(--text)" }}>{profile.bio}</p>
       )}
 
       {/* Social links */}
@@ -393,20 +394,20 @@ export default function ProfilePage() {
 
       {/* Action buttons */}
       {isOwnProfile ? (
-        <div className="flex flex-col gap-2 mb-6">
+        <div className="flex flex-col gap-2 mb-6 mt-2">
           <div className="flex gap-2">
             <Link
               href="/profile/edit"
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors"
-              style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)", color: "var(--text)" }}
+              className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-medium transition-colors"
+              style={{ background: "rgba(36,63,22,0.04)", border: "0.5px solid rgba(36,63,22,0.08)", color: "var(--text)" }}
             >
               <HiPencil className="w-4 h-4" />
               Edit Profile
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: "/signin" })}
-              className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-colors"
-              style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)", color: "var(--text-muted)" }}
+              className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-sm font-medium transition-colors"
+              style={{ background: "rgba(36,63,22,0.04)", border: "0.5px solid rgba(36,63,22,0.08)", color: "var(--text-muted)" }}
             >
               <HiLogout className="w-4 h-4" />
             </button>
@@ -414,38 +415,39 @@ export default function ProfilePage() {
           <button
             onClick={handleInvite}
             disabled={inviteLoading}
-            className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-50"
-            style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)", color: "var(--text)" }}
+            className="flex items-center justify-center gap-2 py-2.5 text-sm transition-opacity disabled:opacity-50 hover:opacity-70"
+            style={{ color: "var(--text)", background: "transparent" }}
           >
-            <HiUserAdd className="w-4 h-4" />
+            <HiUserAdd className="w-4 h-4" style={{ opacity: 0.5 }} />
             Invite friends
+            <span style={{ opacity: 0.35 }}>&#8594;</span>
           </button>
           <Link
             href="/catalog?upload=true"
-            className="flex items-center gap-3 py-3 px-4 rounded-xl text-left transition-all btn-gradient"
-            style={{ color: "#ffffff" }}
+            className="flex items-center gap-3 py-3 px-4 rounded-xl text-left transition-all"
+            style={{ border: "1px solid rgba(45,90,39,0.28)", background: "rgba(45,90,39,0.03)", color: "#2d5a27" }}
           >
             <HiUpload className="w-5 h-5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold leading-tight">Upload Affiliate &amp; Discount Links</p>
-              <p className="text-xs mt-0.5 opacity-80">Paste links, promo codes &amp; referrals in bulk</p>
+              <p className="text-xs mt-0.5" style={{ color: "rgba(45,90,39,0.55)" }}>Paste links, promo codes &amp; referrals in bulk</p>
             </div>
           </Link>
           <Link
             href="/achievements"
-            className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
+            className="flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-medium transition-all"
             style={{
-              background: "linear-gradient(135deg, rgba(36,63,22,0.10) 0%, rgba(82,133,49,0.10) 100%)",
-              border: "1px solid rgba(82,133,49,0.25)",
-              color: "var(--brand)",
+              background: "transparent",
+              border: "0.5px solid rgba(36,63,22,0.15)",
+              color: "var(--text-muted)",
             }}
           >
-            🏅 My Badges
+            Badges
           </Link>
 
           {profile.foundingMember && inviteStats?.token && (
             <div
-              className="flex flex-col items-center py-5 px-4 mt-2"
+              className="flex flex-col items-center py-4 px-4 mt-2"
               style={{ background: "rgba(200,169,81,0.06)", border: "1px solid rgba(200,169,81,0.35)" }}
             >
               <p
@@ -462,7 +464,7 @@ export default function ProfilePage() {
                 Share Royal
               </p>
               {qrSrc && (
-                <img src={qrSrc} alt="Invite QR code" width={160} height={160} style={{ display: "block" }} />
+                <img src={qrSrc} alt="Invite QR code" width={140} height={140} style={{ display: "block" }} />
               )}
               <p
                 style={{
@@ -571,7 +573,7 @@ export default function ProfilePage() {
       />
 
       {/* Section toggle */}
-      <div className="flex gap-1.5 mb-4 p-1 rounded-xl" style={{ background: "rgba(36,63,22,0.04)" }}>
+      <div className="flex gap-1.5 mt-4 mb-4 p-1 rounded-xl" style={{ background: "rgba(36,63,22,0.04)" }}>
         {(["activity", "catalog"] as const).map((section) => (
           <button
             key={section}
