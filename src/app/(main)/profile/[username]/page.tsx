@@ -87,7 +87,7 @@ export default function ProfilePage() {
   const [blockLoading, setBlockLoading] = useState(false);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteStats, setInviteStats] = useState<{ token: string | null; clickCount: number } | null>(null);
-  const [qrSrc, setQrSrc] = useState('');
+  const [qrSvg, setQrSvg] = useState('');
 
   useEffect(() => {
     async function load() {
@@ -131,15 +131,16 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!inviteStats?.token) return;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://royalfitness.app';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://royalwellness.app';
     const url = `${appUrl}/api/founding-member/track?ref=${inviteStats.token}`;
     QRCode.toString(url, {
       type: 'svg',
       errorCorrectionLevel: 'H',
       margin: 2,
-      color: { dark: "#2d5a27", light: "#f5f2ec" },
+      width: 200,
+      color: { dark: '#000000', light: '#ffffff' },
     })
-      .then(svg => setQrSrc(`data:image/svg+xml,${encodeURIComponent(svg)}`))
+      .then(svg => setQrSvg(svg))
       .catch(() => {});
   }, [inviteStats?.token]);
 
@@ -461,8 +462,8 @@ export default function ProfilePage() {
               >
                 Share Royal
               </p>
-              {qrSrc && (
-                <img src={qrSrc} alt="Invite QR code" width={160} height={160} style={{ display: "block" }} />
+              {qrSvg && (
+                <div dangerouslySetInnerHTML={{ __html: qrSvg }} style={{ width: 200, height: 200, display: 'block' }} />
               )}
               <p
                 style={{

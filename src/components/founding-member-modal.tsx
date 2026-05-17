@@ -8,10 +8,10 @@ interface Props {
   onDismiss: () => void
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://royalfitness.app'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://royalwellness.app'
 
 export function FoundingMemberModal({ inviteToken, onDismiss }: Props) {
-  const [qrSrc, setQrSrc] = useState('')
+  const [qrSvg, setQrSvg] = useState('')
 
   const inviteUrl = `${APP_URL}/api/founding-member/track?ref=${inviteToken}`
 
@@ -20,12 +20,13 @@ export function FoundingMemberModal({ inviteToken, onDismiss }: Props) {
       type: 'svg',
       errorCorrectionLevel: 'H',
       margin: 2,
+      width: 200,
       color: {
-        dark: '#2d5a27',
-        light: '#f5f2ec',
+        dark: '#000000',
+        light: '#ffffff',
       },
     })
-      .then(svg => setQrSrc(`data:image/svg+xml,${encodeURIComponent(svg)}`))
+      .then(svg => setQrSvg(svg))
       .catch(console.error)
   }, [inviteUrl])
 
@@ -108,12 +109,12 @@ export function FoundingMemberModal({ inviteToken, onDismiss }: Props) {
             background: '#f5f2ec',
             border: '1px solid rgba(200, 169, 81, 0.4)',
             marginBottom: 16,
-            opacity: qrSrc ? 1 : 0,
+            opacity: qrSvg ? 1 : 0,
             transition: 'opacity 0.4s ease',
           }}
         >
-          {qrSrc && (
-            <img src={qrSrc} alt="Invite QR code" width={180} height={180} style={{ display: 'block' }} />
+          {qrSvg && (
+            <div dangerouslySetInnerHTML={{ __html: qrSvg }} style={{ width: 200, height: 200, display: 'block' }} />
           )}
         </div>
 
