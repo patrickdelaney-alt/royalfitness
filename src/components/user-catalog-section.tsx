@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import ShareCatalogModal, {
+  type CatalogItemType as ShareCatalogItemType,
+  type ShareCatalogItem,
+} from "@/components/share-catalog-modal";
 import { HiLockOpen } from "react-icons/hi2";
 import {
   HiExternalLink,
@@ -10,9 +14,8 @@ import {
   HiClipboardCopy,
   HiUpload,
   HiPencil,
-  HiPhotograph,
+  HiShare,
 } from "react-icons/hi";
-import { generateShareCard } from "@/lib/generate-share-card";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
 import {
   type CatalogTab,
@@ -69,6 +72,30 @@ const CATALOG_TYPES: { type: CatalogType; label: string }[] = CATALOG_TABS.map(
   (t) => ({ type: t, label: PUBLIC_TAB_LABELS[t] }),
 );
 
+const tabToShareType = (type: CatalogType): ShareCatalogItemType => {
+  const map: Record<CatalogType, ShareCatalogItemType> = {
+    meals: "MEAL",
+    workouts: "WORKOUT",
+    supplements: "SUPPLEMENT",
+    accessories: "ACCESSORY",
+    wellness: "WELLNESS",
+    affiliates: "AFFILIATE",
+  };
+
+  return map[type];
+};
+
+const buildShareCatalogItem = (
+  item: CatalogItem,
+  type: CatalogType,
+): ShareCatalogItem => ({
+  id: item.id,
+  catalogType: tabToShareType(type),
+  name: item.name,
+  photoUrl: item.photoUrl ?? item.logoUrl ?? null,
+  brand: item.brand ?? null,
+});
+
 /** For affiliate items, resolve display label from their category field */
 const getPublicItemLabel = (item: CatalogItem, type: CatalogType): string => {
   if (type === "affiliates" && item.category) {
@@ -101,15 +128,15 @@ function DetailModal({
   type,
   onClose,
   isOwnProfile,
+  onShareToFeed,
 }: {
   item: CatalogItem;
   type: CatalogType;
   onClose: () => void;
   isOwnProfile?: boolean;
+  onShareToFeed?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const [refLinkLoading, setRefLinkLoading] = useState(false);
-  const [cardLoading, setCardLoading] = useState(false);
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -378,11 +405,28 @@ function DetailModal({
         </div>
       </ModalSheetBody>
 
-      {/* Pinned footer: shop link + own-profile actions */}
+      {/* Pinned footer: share-to-feed, then item actions */}
       <BottomCtaBar
         className="space-y-3"
         style={{ borderTop: "1px solid var(--border)" }}
       >
+        {/* Share to Feed — primary own-profile action */}
+        {isOwnProfile && onShareToFeed && (
+          <button
+            type="button"
+            onClick={onShareToFeed}
+            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-sm font-bold transition-all"
+            style={{
+              background: "linear-gradient(135deg, #243F16 0%, #3A6122 100%)",
+              color: "#FDFAF5",
+              boxShadow: "0 4px 16px rgba(36,63,22,0.30)",
+            }}
+          >
+            <HiShare className="w-4 h-4" />
+            Share to Feed
+          </button>
+        )}
+
         {(item.link || item.recipeSourceUrl || item.videoUrl) && (
           <a
             href={item.link || item.recipeSourceUrl || item.videoUrl || "#"}
@@ -395,86 +439,24 @@ function DetailModal({
                 openExternalLink(url);
               }
             }}
-            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold btn-gradient transition-all"
-            style={{ color: "#FDFAF5" }}
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold transition-all"
+            style={{
+              background: isOwnProfile
+                ? "rgba(36,63,22,0.07)"
+                : "linear-gradient(135deg, #243F16 0%, #3A6122 100%)",
+              color: isOwnProfile ? "var(--brand)" : "#FDFAF5",
+              border: isOwnProfile ? "1px solid var(--border)" : undefined,
+            }}
           >
             <HiExternalLink className="w-4 h-4" />
             {getPublicCtaLabel(item)}
           </a>
         )}
 
-        {/* Share card — own profile only.
-            Opens the native share sheet with a Royal referral card and link.
-            Kept separate from the "Shop Now" / discount link above. */}
-        {isOwnProfile && (
-          <button
-            onClick={async () => {
-              if (refLinkLoading || cardLoading) return;
-              setRefLinkLoading(true);
-              setCardLoading(true);
-              try {
-                const [linkRes, blob] = await Promise.all([
-                  fetch("/api/referral-links", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      sourceType: "catalog_item",
-                      sourceId: item.id,
-                    }),
-                  }).then((r) => (r.ok ? r.json() : Promise.reject())),
-                  generateShareCard({
-                    type: "catalog_item",
-                    productName: item.name,
-                    brand: item.brand ?? null,
-                  }),
-                ]);
-                const file = new File([blob], "royal-share.png", {
-                  type: "image/png",
-                });
-                if (
-                  navigator.share &&
-                  navigator.canShare?.({ files: [file] })
-                ) {
-                  await navigator.share({ files: [file], url: linkRes.url });
-                } else if (navigator.share) {
-                  await navigator.share({ url: linkRes.url });
-                } else {
-                  await navigator.clipboard.writeText(linkRes.url);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2500);
-                  return;
-                }
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2500);
-              } catch (err) {
-                // AbortError means user dismissed the share sheet — not an error
-                if (err instanceof Error && err.name === "AbortError") return;
-              } finally {
-                setRefLinkLoading(false);
-                setCardLoading(false);
-              }
-            }}
-            disabled={refLinkLoading || cardLoading}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
-            style={{
-              background: "rgba(36,63,22,0.07)",
-              color: "var(--brand)",
-              border: "1px solid var(--border)",
-            }}
-          >
-            <HiPhotograph className="w-4 h-4" />
-            {refLinkLoading || cardLoading
-              ? "Generating..."
-              : copied
-                ? "Shared!"
-                : "Share card"}
-          </button>
-        )}
-
-        {/* Edit / Delete shortcut for own profile */}
+        {/* Edit shortcut for own profile */}
         {isOwnProfile && (
           <Link
-            href="/catalog"
+            href={`/catalog?item=${encodeURIComponent(item.id)}&type=${encodeURIComponent(type)}`}
             className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium"
             style={{
               background: "rgba(82,133,49,0.08)",
@@ -483,7 +465,7 @@ function DetailModal({
             }}
           >
             <HiPencil className="w-4 h-4" />
-            Manage items
+            Edit item details
           </Link>
         )}
       </BottomCtaBar>
@@ -503,6 +485,7 @@ export default function UserCatalogSection({
   const [selectedItem, setSelectedItem] = useState<
     (CatalogItem & { catalogType: CatalogType }) | null
   >(null);
+  const [sharingItem, setSharingItem] = useState<ShareCatalogItem | null>(null);
 
   const fetchCatalog = useCallback(async () => {
     setLoading(true);
@@ -590,7 +573,7 @@ export default function UserCatalogSection({
               className="text-xs font-medium"
               style={{ color: "var(--brand)" }}
             >
-              Manage →
+              Edit catalog →
             </Link>
           )}
         </div>
@@ -659,6 +642,22 @@ export default function UserCatalogSection({
         </div>
       ) : (
         <>
+          {isOwnProfile && (
+            <div
+              className="mb-3 flex items-center gap-2 rounded-2xl px-3 py-2"
+              style={{
+                background: "rgba(36,63,22,0.06)",
+                border: "1px solid rgba(36,63,22,0.10)",
+                color: "var(--brand)",
+              }}
+            >
+              <HiShare className="w-4 h-4 flex-shrink-0" />
+              <p className="text-xs font-medium">
+                Tap any catalog item to share it to your feed.
+              </p>
+            </div>
+          )}
+
           {/* Instagram Grid */}
           <div className="grid grid-cols-3 gap-0.5">
             {items.map((item) =>
@@ -725,10 +724,10 @@ export default function UserCatalogSection({
                       </div>
                     )}
 
-                    {/* Pencil badge — visible on own profile to signal editability */}
+                    {/* Share hint — own-profile taps open details with Share to Feed first */}
                     {isOwnProfile && (
                       <div className="absolute bottom-1.5 right-1.5 p-1 rounded-full bg-black/50">
-                        <HiPencil className="w-2.5 h-2.5 text-white" />
+                        <HiShare className="w-2.5 h-2.5 text-white" />
                       </div>
                     )}
 
@@ -749,6 +748,24 @@ export default function UserCatalogSection({
           type={selectedItem.catalogType}
           onClose={() => setSelectedItem(null)}
           isOwnProfile={isOwnProfile}
+          onShareToFeed={
+            isOwnProfile
+              ? () => {
+                  setSharingItem(
+                    buildShareCatalogItem(selectedItem, selectedItem.catalogType),
+                  );
+                  setSelectedItem(null);
+                }
+              : undefined
+          }
+        />
+      )}
+
+      {sharingItem && (
+        <ShareCatalogModal
+          item={sharingItem}
+          onClose={() => setSharingItem(null)}
+          onSuccess={() => setSharingItem(null)}
         />
       )}
     </div>

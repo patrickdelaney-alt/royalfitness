@@ -3691,8 +3691,12 @@ export default function CatalogPage() {
     };
   }, [selectedItem, editingItem, sharingItem]);
 
-  // Ref to track if we should auto-open the upload form on first load (from ?upload=true)
+  // Refs to track one-time deep links on first load.
   const uploadOnMount = useRef(searchParams.get("upload") === "true");
+  const itemToOpenOnMount = useRef(searchParams.get("item"));
+  const itemTypeToOpenOnMount = useRef(
+    searchParams.get("type") as CatalogTab | null,
+  );
 
   const [allItems, setAllItems] = useState<AnyItemWithType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -3731,18 +3735,33 @@ export default function CatalogPage() {
         setAddingCategory("affiliates");
         uploadOnMount.current = false;
       }
+
+      // Auto-open a specific item when navigating from profile catalog actions.
+      if (itemToOpenOnMount.current) {
+        const requestedId = itemToOpenOnMount.current;
+        const requestedType = itemTypeToOpenOnMount.current;
+        const item = merged.find(
+          (candidate) =>
+            candidate.id === requestedId &&
+            (!requestedType || candidate._catalogType === requestedType),
+        );
+        if (item) setSelectedItem(item);
+        itemToOpenOnMount.current = null;
+        itemTypeToOpenOnMount.current = null;
+      }
     });
   };
 
   useEffect(() => {
     fetchAllItems();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
   }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const dismissed = window.localStorage.getItem(CATALOG_GUIDE_DISMISSED_KEY);
     setShowQuickGuide(dismissed !== "1");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
   }, []);
 
   useEffect(() => {
@@ -3755,6 +3774,7 @@ export default function CatalogPage() {
     } catch {
       /* ignore */
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
   }, []);
 
   const togglePin = (itemId: string) => {
@@ -4377,9 +4397,9 @@ export default function CatalogPage() {
                     </div>
                   )}
 
-                {/* Edit indicator — pencil badge so users know tapping opens edit/delete */}
+                {/* Share hint — tapping opens item details with Share to Feed first */}
                 <div className="absolute bottom-1.5 right-1.5 p-1 rounded-full bg-black/50">
-                  <HiPencil className="w-2.5 h-2.5 text-white" />
+                  <HiShare className="w-2.5 h-2.5 text-white" />
                 </div>
 
                 {/* Hover overlay */}
