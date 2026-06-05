@@ -3,7 +3,15 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { HiLockOpen } from "react-icons/hi2";
-import { HiExternalLink, HiX, HiLink, HiClipboardCopy, HiUpload, HiPencil, HiPhotograph } from "react-icons/hi";
+import {
+  HiExternalLink,
+  HiX,
+  HiLink,
+  HiClipboardCopy,
+  HiUpload,
+  HiPencil,
+  HiPhotograph,
+} from "react-icons/hi";
 import { generateShareCard } from "@/lib/generate-share-card";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
 import {
@@ -57,8 +65,9 @@ interface UserCatalogSectionProps {
 
 type CatalogType = CatalogTab;
 
-const CATALOG_TYPES: { type: CatalogType; label: string }[] =
-  CATALOG_TABS.map((t) => ({ type: t, label: PUBLIC_TAB_LABELS[t] }));
+const CATALOG_TYPES: { type: CatalogType; label: string }[] = CATALOG_TABS.map(
+  (t) => ({ type: t, label: PUBLIC_TAB_LABELS[t] }),
+);
 
 /** For affiliate items, resolve display label from their category field */
 const getPublicItemLabel = (item: CatalogItem, type: CatalogType): string => {
@@ -155,28 +164,52 @@ function DetailModal({
         <div className="p-5 space-y-4">
           {/* Title + brand + category */}
           <div>
-            <h3 className="text-xl font-normal" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>{item.name}</h3>
+            <h3
+              className="text-xl font-normal"
+              style={{
+                fontFamily: "var(--font-display)",
+                color: "var(--text)",
+              }}
+            >
+              {item.name}
+            </h3>
             {item.brand && (
-              <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>
+              <p
+                className="text-sm mt-0.5"
+                style={{ color: "var(--text-muted)" }}
+              >
                 by {item.brand}
               </p>
             )}
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
               <span
                 className="text-xs px-2.5 py-0.5 rounded-full"
-                style={{ background: "rgba(36,63,22,0.08)", color: "var(--brand)" }}
+                style={{
+                  background: "rgba(36,63,22,0.08)",
+                  color: "var(--brand)",
+                }}
               >
                 {categoryLabel}
               </span>
               {item.type && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full"
-                  style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}>
+                <span
+                  className="text-xs px-2.5 py-0.5 rounded-full"
+                  style={{
+                    background: "rgba(36,63,22,0.06)",
+                    color: "var(--text-muted)",
+                  }}
+                >
                   {item.type}
                 </span>
               )}
               {item.activityType && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full"
-                  style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}>
+                <span
+                  className="text-xs px-2.5 py-0.5 rounded-full"
+                  style={{
+                    background: "rgba(36,63,22,0.06)",
+                    color: "var(--text-muted)",
+                  }}
+                >
                   {item.activityType}
                 </span>
               )}
@@ -184,13 +217,14 @@ function DetailModal({
           </div>
 
           {/* Tags */}
-          {displayTags.length > 0 && (
-            <SubcategoryChips tags={displayTags} />
-          )}
+          {displayTags.length > 0 && <SubcategoryChips tags={displayTags} />}
 
           {/* Supplement details */}
           {(item.dose || item.schedule) && (
-            <div className="flex gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
+            <div
+              className="flex gap-4 text-xs"
+              style={{ color: "var(--text-muted)" }}
+            >
               {item.dose && <span>Dose: {item.dose}</span>}
               {item.schedule && <span>Schedule: {item.schedule}</span>}
             </div>
@@ -198,7 +232,10 @@ function DetailModal({
 
           {/* Meal macros */}
           {(item.calories || item.protein || item.carbs || item.fat) && (
-            <div className="flex gap-3 text-xs flex-wrap" style={{ color: "var(--text-muted)" }}>
+            <div
+              className="flex gap-3 text-xs flex-wrap"
+              style={{ color: "var(--text-muted)" }}
+            >
               {item.calories != null && <span>{item.calories} cal</span>}
               {item.protein != null && <span>{item.protein}g protein</span>}
               {item.carbs != null && <span>{item.carbs}g carbs</span>}
@@ -221,19 +258,27 @@ function DetailModal({
           )}
 
           {/* Workout exercises */}
-          {item.exercisesJson && (() => {
-            try {
-              const exercises = JSON.parse(item.exercisesJson);
-              if (Array.isArray(exercises) && exercises.length > 0) {
-                return (
-                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                    {exercises.map((e: { name: string }) => e.name).join(", ")}
-                  </p>
-                );
+          {item.exercisesJson &&
+            (() => {
+              try {
+                const exercises = JSON.parse(item.exercisesJson);
+                if (Array.isArray(exercises) && exercises.length > 0) {
+                  return (
+                    <p
+                      className="text-xs"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {exercises
+                        .map((e: { name: string }) => e.name)
+                        .join(", ")}
+                    </p>
+                  );
+                }
+              } catch {
+                /* ignore */
               }
-            } catch { /* ignore */ }
-            return null;
-          })()}
+              return null;
+            })()}
 
           {/* Description (affiliates use description, others use notes) */}
           {item.description && (
@@ -253,19 +298,30 @@ function DetailModal({
           {item.referralCode && !item.link && (
             <div
               className="p-4 rounded-xl text-center"
-              style={{ background: "var(--gold-subtle)", border: "1px solid var(--border-gold)" }}
+              style={{
+                background: "var(--gold-subtle)",
+                border: "1px solid var(--border-gold)",
+              }}
             >
-              <p className="text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>
+              <p
+                className="text-xs font-medium mb-1"
+                style={{ color: "var(--text-muted)" }}
+              >
                 Use this code for a special offer
               </p>
-              <p className="text-lg font-bold tracking-wider break-all my-1" style={{ color: "var(--gold)" }}>
+              <p
+                className="text-lg font-bold tracking-wider break-all my-1"
+                style={{ color: "var(--gold)" }}
+              >
                 {item.referralCode}
               </p>
               <button
                 onClick={copyCode}
                 className="w-full py-2.5 rounded-lg text-sm font-medium transition-all mt-2"
                 style={{
-                  background: copied ? "rgba(34,197,94,0.12)" : "rgba(36,63,22,0.08)",
+                  background: copied
+                    ? "rgba(34,197,94,0.12)"
+                    : "rgba(36,63,22,0.08)",
                   color: copied ? "#16a34a" : "var(--brand)",
                 }}
               >
@@ -276,18 +332,30 @@ function DetailModal({
           )}
           {item.referralCode && item.link && (
             <div>
-              <p className="text-xs mb-1.5" style={{ color: "var(--text-muted)" }}>
+              <p
+                className="text-xs mb-1.5"
+                style={{ color: "var(--text-muted)" }}
+              >
                 Use this code for a special offer
               </p>
               <div
                 className="flex items-center justify-between p-3 rounded-xl"
-                style={{ background: "var(--gold-subtle)", border: "1px solid var(--border-gold)" }}
+                style={{
+                  background: "var(--gold-subtle)",
+                  border: "1px solid var(--border-gold)",
+                }}
               >
                 <div className="min-w-0 overflow-hidden mr-3">
-                  <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                  <p
+                    className="text-xs font-medium"
+                    style={{ color: "var(--text-muted)" }}
+                  >
                     Promo Code
                   </p>
-                  <p className="text-base font-bold tracking-wider break-all" style={{ color: "var(--gold)" }}>
+                  <p
+                    className="text-base font-bold tracking-wider break-all"
+                    style={{ color: "var(--gold)" }}
+                  >
                     {item.referralCode}
                   </p>
                 </div>
@@ -295,7 +363,9 @@ function DetailModal({
                   onClick={copyCode}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
                   style={{
-                    background: copied ? "rgba(34,197,94,0.12)" : "rgba(36,63,22,0.08)",
+                    background: copied
+                      ? "rgba(34,197,94,0.12)"
+                      : "rgba(36,63,22,0.08)",
                     color: copied ? "#16a34a" : "var(--brand)",
                   }}
                 >
@@ -305,12 +375,14 @@ function DetailModal({
               </div>
             </div>
           )}
-
         </div>
       </ModalSheetBody>
 
       {/* Pinned footer: shop link + own-profile actions */}
-      <BottomCtaBar className="space-y-3" style={{ borderTop: "1px solid var(--border)" }}>
+      <BottomCtaBar
+        className="space-y-3"
+        style={{ borderTop: "1px solid var(--border)" }}
+      >
         {(item.link || item.recipeSourceUrl || item.videoUrl) && (
           <a
             href={item.link || item.recipeSourceUrl || item.videoUrl || "#"}
@@ -331,8 +403,8 @@ function DetailModal({
           </a>
         )}
 
-        {/* Share to Stories — own profile only.
-            One tap: opens native share sheet with story card + Royal referral link.
+        {/* Share card — own profile only.
+            Opens the native share sheet with a Royal referral card and link.
             Kept separate from the "Shop Now" / discount link above. */}
         {isOwnProfile && (
           <button
@@ -345,7 +417,10 @@ function DetailModal({
                   fetch("/api/referral-links", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ sourceType: "catalog_item", sourceId: item.id }),
+                    body: JSON.stringify({
+                      sourceType: "catalog_item",
+                      sourceId: item.id,
+                    }),
                   }).then((r) => (r.ok ? r.json() : Promise.reject())),
                   generateShareCard({
                     type: "catalog_item",
@@ -353,8 +428,13 @@ function DetailModal({
                     brand: item.brand ?? null,
                   }),
                 ]);
-                const file = new File([blob], "royal-share.png", { type: "image/png" });
-                if (navigator.share && navigator.canShare?.({ files: [file] })) {
+                const file = new File([blob], "royal-share.png", {
+                  type: "image/png",
+                });
+                if (
+                  navigator.share &&
+                  navigator.canShare?.({ files: [file] })
+                ) {
                   await navigator.share({ files: [file], url: linkRes.url });
                 } else if (navigator.share) {
                   await navigator.share({ url: linkRes.url });
@@ -376,10 +456,18 @@ function DetailModal({
             }}
             disabled={refLinkLoading || cardLoading}
             className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
-            style={{ background: "rgba(36,63,22,0.07)", color: "var(--brand)", border: "1px solid var(--border)" }}
+            style={{
+              background: "rgba(36,63,22,0.07)",
+              color: "var(--brand)",
+              border: "1px solid var(--border)",
+            }}
           >
             <HiPhotograph className="w-4 h-4" />
-            {(refLinkLoading || cardLoading) ? "Generating..." : copied ? "Shared!" : "Share to Stories"}
+            {refLinkLoading || cardLoading
+              ? "Generating..."
+              : copied
+                ? "Shared!"
+                : "Share card"}
           </button>
         )}
 
@@ -388,7 +476,11 @@ function DetailModal({
           <Link
             href="/catalog"
             className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium"
-            style={{ background: "rgba(82,133,49,0.08)", color: "#528531", border: "1px solid rgba(82,133,49,0.18)" }}
+            style={{
+              background: "rgba(82,133,49,0.08)",
+              color: "#528531",
+              border: "1px solid rgba(82,133,49,0.18)",
+            }}
           >
             <HiPencil className="w-4 h-4" />
             Manage items
@@ -403,10 +495,14 @@ export default function UserCatalogSection({
   username,
   isOwnProfile,
 }: UserCatalogSectionProps) {
-  const [items, setItems] = useState<Array<CatalogItem & { catalogType: CatalogType }>>([]);
+  const [items, setItems] = useState<
+    Array<CatalogItem & { catalogType: CatalogType }>
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedItem, setSelectedItem] = useState<(CatalogItem & { catalogType: CatalogType }) | null>(null);
+  const [selectedItem, setSelectedItem] = useState<
+    (CatalogItem & { catalogType: CatalogType }) | null
+  >(null);
 
   const fetchCatalog = useCallback(async () => {
     setLoading(true);
@@ -416,7 +512,7 @@ export default function UserCatalogSection({
       const requests = CATALOG_TYPES.map(async ({ type }) => {
         const params = new URLSearchParams({ limit: "30" });
         const res = await fetch(
-          `${getUserCatalogEndpoint(username, type)}?${params}`
+          `${getUserCatalogEndpoint(username, type)}?${params}`,
         );
 
         if (res.status === 403) {
@@ -442,13 +538,11 @@ export default function UserCatalogSection({
       });
 
       const results = await Promise.all(requests);
-      const mergedItems = results
-        .flat()
-        .sort((a, b) => {
-          const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return bTime - aTime;
-        });
+      const mergedItems = results.flat().sort((a, b) => {
+        const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return bTime - aTime;
+      });
 
       setItems(mergedItems);
     } catch (err) {
@@ -475,7 +569,12 @@ export default function UserCatalogSection({
   return (
     <div className="mt-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-normal text-foreground" style={{ fontFamily: "var(--font-display)" }}>Catalog</h2>
+        <h2
+          className="text-lg font-normal text-foreground"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          Catalog
+        </h2>
         <div className="flex items-center gap-2">
           {linkedCount > 0 && (
             <span
@@ -524,7 +623,12 @@ export default function UserCatalogSection({
         <div className="text-center py-10">
           {isOwnProfile ? (
             <>
-              <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>No catalog items yet</p>
+              <p
+                className="text-sm mb-4"
+                style={{ color: "var(--text-muted)" }}
+              >
+                No catalog items yet
+              </p>
               <Link
                 href="/catalog?upload=true"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold btn-gradient"
@@ -533,7 +637,10 @@ export default function UserCatalogSection({
                 <HiUpload className="w-4 h-4" />
                 Add referral links
               </Link>
-              <p className="text-xs mt-3" style={{ color: "var(--text-muted)" }}>
+              <p
+                className="text-xs mt-3"
+                style={{ color: "var(--text-muted)" }}
+              >
                 Discount codes, referral links &amp; more
               </p>
               <Link
@@ -554,7 +661,7 @@ export default function UserCatalogSection({
         <>
           {/* Instagram Grid */}
           <div className="grid grid-cols-3 gap-0.5">
-            {items.map((item) => (
+            {items.map((item) =>
               (() => {
                 const tileTags = buildDisplayTags(item, item.catalogType);
                 return (
@@ -590,19 +697,22 @@ export default function UserCatalogSection({
                     <div className="absolute top-1.5 left-1.5 flex flex-col items-start gap-1">
                       <span
                         className="text-[9px] leading-none px-1.5 py-1 rounded-full"
-                        style={{ background: "rgba(36,63,22,0.8)", color: "#FDFAF5" }}
+                        style={{
+                          background: "rgba(36,63,22,0.8)",
+                          color: "#FDFAF5",
+                        }}
                       >
                         {getPublicItemLabel(item, item.catalogType)}
                       </span>
-                    {/* Compact tag hint */}
-                    {tileTags.length > 0 && (
-                      <SubcategoryChips
-                        tags={tileTags}
-                        compact
-                        limit={1}
-                        className="[&>span]:!bg-black/55 [&>span]:!text-white"
-                      />
-                    )}
+                      {/* Compact tag hint */}
+                      {tileTags.length > 0 && (
+                        <SubcategoryChips
+                          tags={tileTags}
+                          compact
+                          limit={1}
+                          className="[&>span]:!bg-black/55 [&>span]:!text-white"
+                        />
+                      )}
                     </div>
 
                     {/* Link/referral badge */}
@@ -626,10 +736,9 @@ export default function UserCatalogSection({
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                   </button>
                 );
-              })()
-            ))}
+              })(),
+            )}
           </div>
-
         </>
       )}
 

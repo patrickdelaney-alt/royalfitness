@@ -19,7 +19,7 @@ export interface CatalogCardData {
 
 export type ShareCardData = PostCardData | CatalogCardData;
 
-// Card dimensions — 9:16 for Instagram Stories
+// Card dimensions — 9:16 vertical share card
 const W = 1080;
 const H = 1920;
 
@@ -41,7 +41,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 function wrapText(
   ctx: CanvasRenderingContext2D,
   text: string,
-  maxWidth: number
+  maxWidth: number,
 ): string[] {
   const words = text.split(" ");
   const lines: string[] = [];
@@ -73,7 +73,7 @@ function drawWordmark(ctx: CanvasRenderingContext2D) {
 
 async function buildPostCard(
   ctx: CanvasRenderingContext2D,
-  data: PostCardData
+  data: PostCardData,
 ): Promise<void> {
   // Background
   ctx.fillStyle = CREAM;
@@ -135,7 +135,7 @@ async function buildPostCard(
 
 function buildCatalogCard(
   ctx: CanvasRenderingContext2D,
-  data: CatalogCardData
+  data: CatalogCardData,
 ): void {
   // Background
   ctx.fillStyle = CREAM;
@@ -204,15 +204,12 @@ export async function generateShareCard(data: ShareCardData): Promise<Blob> {
   }
 
   return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          reject(new Error("Share card generation failed"));
-          return;
-        }
-        resolve(blob);
-      },
-      "image/png"
-    );
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error("Share card generation failed"));
+        return;
+      }
+      resolve(blob);
+    }, "image/png");
   });
 }
