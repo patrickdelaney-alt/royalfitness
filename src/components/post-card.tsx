@@ -4,7 +4,21 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { HiHeart, HiOutlineHeart, HiChat, HiClock, HiFire, HiTrash, HiDotsVertical, HiChevronDown, HiChevronUp, HiShare, HiX, HiExternalLink, HiClipboardCopy } from "react-icons/hi";
+import {
+  HiHeart,
+  HiOutlineHeart,
+  HiChat,
+  HiClock,
+  HiFire,
+  HiTrash,
+  HiDotsVertical,
+  HiChevronDown,
+  HiChevronUp,
+  HiShare,
+  HiX,
+  HiExternalLink,
+  HiClipboardCopy,
+} from "react-icons/hi";
 import { lightImpact } from "@/lib/haptics";
 import { AFFILIATE_CATEGORY_LABELS } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
@@ -146,7 +160,14 @@ interface Gym {
 
 export interface Post {
   id: string;
-  type: "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN" | "AFFILIATE" | "CATALOG_SHARE";
+  type:
+    | "WORKOUT"
+    | "MEAL"
+    | "WELLNESS"
+    | "GENERAL"
+    | "CHECKIN"
+    | "AFFILIATE"
+    | "CATALOG_SHARE";
   caption: string | null;
   mediaUrl: string | null;
   visibility: string;
@@ -169,14 +190,52 @@ export interface Post {
 
 // ── badge colours (warm light theme) ──────────────────────────────────────────
 
-const TYPE_BADGE: Record<Post["type"], { bg: string; text: string; label: string; emoji: string }> = {
-  WORKOUT:       { bg: "rgba(13,31,140,0.10)",   text: "#0D1F8C", label: "Workout",      emoji: "💪" },
-  MEAL:          { bg: "rgba(42,184,208,0.12)",   text: "#1A7B8A", label: "Meal",         emoji: "🥗" },
-  WELLNESS:      { bg: "rgba(26,107,42,0.12)",    text: "#1A6B2A", label: "Wellness",     emoji: "🧘" },
-  GENERAL:       { bg: "rgba(36,63,22,0.10)",     text: "#7A7560", label: "General",      emoji: "⭐" },
-  CHECKIN:       { bg: "rgba(212,115,90,0.12)",   text: "#A85A42", label: "Check-in",     emoji: "📍" },
-  AFFILIATE:     { bg: "rgba(154,123,46,0.12)",   text: "#9A7B2E", label: "Referral",     emoji: "🔗" },
-  CATALOG_SHARE: { bg: "rgba(154,123,46,0.15)",   text: "#9A7B2E", label: "Shared Item",  emoji: "✨" },
+const TYPE_BADGE: Record<
+  Post["type"],
+  { bg: string; text: string; label: string; emoji: string }
+> = {
+  WORKOUT: {
+    bg: "rgba(13,31,140,0.10)",
+    text: "#0D1F8C",
+    label: "Workout",
+    emoji: "💪",
+  },
+  MEAL: {
+    bg: "rgba(42,184,208,0.12)",
+    text: "#1A7B8A",
+    label: "Meal",
+    emoji: "🥗",
+  },
+  WELLNESS: {
+    bg: "rgba(26,107,42,0.12)",
+    text: "#1A6B2A",
+    label: "Wellness",
+    emoji: "🧘",
+  },
+  GENERAL: {
+    bg: "rgba(36,63,22,0.10)",
+    text: "#7A7560",
+    label: "General",
+    emoji: "⭐",
+  },
+  CHECKIN: {
+    bg: "rgba(212,115,90,0.12)",
+    text: "#A85A42",
+    label: "Check-in",
+    emoji: "📍",
+  },
+  AFFILIATE: {
+    bg: "rgba(154,123,46,0.12)",
+    text: "#9A7B2E",
+    label: "Referral",
+    emoji: "🔗",
+  },
+  CATALOG_SHARE: {
+    bg: "rgba(154,123,46,0.15)",
+    text: "#9A7B2E",
+    label: "Shared Item",
+    emoji: "✨",
+  },
 };
 
 // ── mood label ────────────────────────────────────────────────────────────────
@@ -194,7 +253,13 @@ function moodLabel(val: number | null): string | null {
 
 const EXERCISE_PREVIEW_COUNT = 4;
 
-function WorkoutSection({ detail, hideTitle = false }: { detail: WorkoutDetail; hideTitle?: boolean }) {
+function WorkoutSection({
+  detail,
+  hideTitle = false,
+}: {
+  detail: WorkoutDetail;
+  hideTitle?: boolean;
+}) {
   const [showAllExercises, setShowAllExercises] = useState(false);
   const hasMore = detail.exercises.length > EXERCISE_PREVIEW_COUNT;
   const visibleExercises = showAllExercises
@@ -204,7 +269,11 @@ function WorkoutSection({ detail, hideTitle = false }: { detail: WorkoutDetail; 
   return (
     <div className="mt-3 space-y-2 text-sm">
       <div className="flex items-center gap-3 flex-wrap">
-        {!hideTitle && <span className="font-semibold text-foreground">{detail.workoutName}</span>}
+        {!hideTitle && (
+          <span className="font-semibold text-foreground">
+            {detail.workoutName}
+          </span>
+        )}
         {detail.isClass && (
           <span
             className="text-xs px-2 py-0.5 rounded-full"
@@ -225,7 +294,10 @@ function WorkoutSection({ detail, hideTitle = false }: { detail: WorkoutDetail; 
       {detail.exercises.length > 0 && (
         <div className="space-y-1.5">
           {visibleExercises.map((ex) => (
-            <div key={ex.id} className="bg-surface rounded-lg px-3 py-2 border border-surface">
+            <div
+              key={ex.id}
+              className="bg-surface rounded-lg px-3 py-2 border border-surface"
+            >
               <p className="font-medium text-foreground">{ex.name}</p>
               {ex.sets.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-1">
@@ -233,7 +305,10 @@ function WorkoutSection({ detail, hideTitle = false }: { detail: WorkoutDetail; 
                     <span
                       key={s.id}
                       className="text-xs text-muted-dim rounded px-1.5 py-0.5"
-                      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
+                      style={{
+                        background: "rgba(36,63,22,0.04)",
+                        border: "1px solid rgba(36,63,22,0.10)",
+                      }}
                     >
                       Set {idx + 1}
                       {s.reps != null ? `: ${s.reps} reps` : ""}
@@ -249,7 +324,11 @@ function WorkoutSection({ detail, hideTitle = false }: { detail: WorkoutDetail; 
             <button
               onClick={() => setShowAllExercises(true)}
               className="w-full flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg transition-colors"
-              style={{ color: "#528531", background: "rgba(36,63,22,0.08)", border: "1px solid rgba(36,63,22,0.20)" }}
+              style={{
+                color: "#528531",
+                background: "rgba(36,63,22,0.08)",
+                border: "1px solid rgba(36,63,22,0.20)",
+              }}
             >
               <HiChevronDown className="w-3.5 h-3.5" />
               Show all {detail.exercises.length} exercises
@@ -260,7 +339,11 @@ function WorkoutSection({ detail, hideTitle = false }: { detail: WorkoutDetail; 
             <button
               onClick={() => setShowAllExercises(false)}
               className="w-full flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg transition-colors"
-              style={{ color: "#7A7560", background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
+              style={{
+                color: "#7A7560",
+                background: "rgba(36,63,22,0.04)",
+                border: "1px solid rgba(36,63,22,0.10)",
+              }}
             >
               <HiChevronUp className="w-3.5 h-3.5" />
               Show less
@@ -274,7 +357,10 @@ function WorkoutSection({ detail, hideTitle = false }: { detail: WorkoutDetail; 
         {detail.perceivedExertion != null && (
           <div className="flex items-center gap-2">
             <HiFire className="w-4 h-4 text-primary" />
-            <div className="w-24 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(36,63,22,0.10)" }}>
+            <div
+              className="w-24 h-1.5 rounded-full overflow-hidden"
+              style={{ background: "rgba(36,63,22,0.10)" }}
+            >
               <div
                 className="h-full rounded-full"
                 style={{
@@ -283,7 +369,9 @@ function WorkoutSection({ detail, hideTitle = false }: { detail: WorkoutDetail; 
                 }}
               />
             </div>
-            <span className="text-xs text-muted-dim">{detail.perceivedExertion}/10</span>
+            <span className="text-xs text-muted-dim">
+              {detail.perceivedExertion}/10
+            </span>
           </div>
         )}
         {detail.moodAfter != null && (
@@ -296,11 +384,21 @@ function WorkoutSection({ detail, hideTitle = false }: { detail: WorkoutDetail; 
   );
 }
 
-function MealSection({ detail, hideTitle = false }: { detail: MealDetail; hideTitle?: boolean }) {
+function MealSection({
+  detail,
+  hideTitle = false,
+}: {
+  detail: MealDetail;
+  hideTitle?: boolean;
+}) {
   return (
     <div className="mt-3 space-y-2 text-sm">
       <div className="flex items-center gap-3 flex-wrap">
-        {!hideTitle && <span className="font-semibold text-foreground">{detail.mealName}</span>}
+        {!hideTitle && (
+          <span className="font-semibold text-foreground">
+            {detail.mealName}
+          </span>
+        )}
         <span
           className="text-xs px-2 py-0.5 rounded-full capitalize"
           style={{ background: "rgba(154,123,46,0.1)", color: "#9A7B2E" }}
@@ -313,18 +411,24 @@ function MealSection({ detail, hideTitle = false }: { detail: MealDetail; hideTi
         <p className="text-sub">{detail.ingredients.join(", ")}</p>
       )}
 
-      {(detail.calories != null || detail.protein != null || detail.carbs != null || detail.fat != null) && (
+      {(detail.calories != null ||
+        detail.protein != null ||
+        detail.carbs != null ||
+        detail.fat != null) && (
         <div className="grid grid-cols-4 gap-2">
           {[
-            { label: "Cal",     value: detail.calories, unit: ""  },
-            { label: "Protein", value: detail.protein,  unit: "g" },
-            { label: "Carbs",   value: detail.carbs,    unit: "g" },
-            { label: "Fat",     value: detail.fat,      unit: "g" },
+            { label: "Cal", value: detail.calories, unit: "" },
+            { label: "Protein", value: detail.protein, unit: "g" },
+            { label: "Carbs", value: detail.carbs, unit: "g" },
+            { label: "Fat", value: detail.fat, unit: "g" },
           ].map((m) => (
             <div
               key={m.label}
               className="text-center rounded-lg py-2 px-1"
-              style={{ background: "rgba(154,123,46,0.08)", border: "1px solid rgba(154,123,46,0.12)" }}
+              style={{
+                background: "rgba(154,123,46,0.08)",
+                border: "1px solid rgba(154,123,46,0.12)",
+              }}
             >
               <p className="text-xs text-muted-dim">{m.label}</p>
               <p className="font-semibold text-foreground text-sm">
@@ -338,7 +442,13 @@ function MealSection({ detail, hideTitle = false }: { detail: MealDetail; hideTi
   );
 }
 
-function WellnessSection({ detail, hideTitle = false }: { detail: WellnessDetail; hideTitle?: boolean }) {
+function WellnessSection({
+  detail,
+  hideTitle = false,
+}: {
+  detail: WellnessDetail;
+  hideTitle?: boolean;
+}) {
   return (
     <div className="mt-3 space-y-2 text-sm">
       <div className="flex items-center gap-3 flex-wrap">
@@ -359,7 +469,10 @@ function WellnessSection({ detail, hideTitle = false }: { detail: WellnessDetail
         {detail.intensity != null && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-dim">Intensity:</span>
-            <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(36,63,22,0.10)" }}>
+            <div
+              className="w-20 h-1.5 rounded-full overflow-hidden"
+              style={{ background: "rgba(36,63,22,0.10)" }}
+            >
               <div
                 className="h-full rounded-full"
                 style={{
@@ -368,7 +481,9 @@ function WellnessSection({ detail, hideTitle = false }: { detail: WellnessDetail
                 }}
               />
             </div>
-            <span className="text-xs text-muted-dim">{detail.intensity}/10</span>
+            <span className="text-xs text-muted-dim">
+              {detail.intensity}/10
+            </span>
           </div>
         )}
         {detail.moodAfter != null && (
@@ -377,12 +492,17 @@ function WellnessSection({ detail, hideTitle = false }: { detail: WellnessDetail
           </span>
         )}
       </div>
-
     </div>
   );
 }
 
-function AffiliateSection({ detail, hideTitle = false }: { detail: AffiliateDetail; hideTitle?: boolean }) {
+function AffiliateSection({
+  detail,
+  hideTitle = false,
+}: {
+  detail: AffiliateDetail;
+  hideTitle?: boolean;
+}) {
   const [copied, setCopied] = useState(false);
 
   const copyCode = () => {
@@ -397,7 +517,9 @@ function AffiliateSection({ detail, hideTitle = false }: { detail: AffiliateDeta
   return (
     <div className="mt-3 space-y-2.5 text-sm">
       <div className="flex items-center gap-2 flex-wrap">
-        {!hideTitle && <span className="font-semibold text-foreground">{detail.title}</span>}
+        {!hideTitle && (
+          <span className="font-semibold text-foreground">{detail.title}</span>
+        )}
         {detail.brand && (
           <span
             className="text-xs px-2 py-0.5 rounded-full"
@@ -419,7 +541,9 @@ function AffiliateSection({ detail, hideTitle = false }: { detail: AffiliateDeta
           onClick={copyCode}
           className="flex items-center gap-2 w-full p-3 rounded-xl transition-all"
           style={{
-            background: copied ? "rgba(34,197,94,0.08)" : "rgba(154,123,46,0.08)",
+            background: copied
+              ? "rgba(34,197,94,0.08)"
+              : "rgba(154,123,46,0.08)",
             border: `1px solid ${copied ? "rgba(34,197,94,0.2)" : "rgba(154,123,46,0.15)"}`,
           }}
         >
@@ -427,11 +551,17 @@ function AffiliateSection({ detail, hideTitle = false }: { detail: AffiliateDeta
             <p className="text-xs font-medium" style={{ color: "#7A7560" }}>
               {copied ? "Copied!" : "Tap to copy code"}
             </p>
-            <p className="text-base font-bold tracking-wider" style={{ color: copied ? "#16a34a" : "#9A7B2E" }}>
+            <p
+              className="text-base font-bold tracking-wider"
+              style={{ color: copied ? "#16a34a" : "#9A7B2E" }}
+            >
               {detail.referralCode}
             </p>
           </div>
-          <HiClipboardCopy className="w-5 h-5 flex-shrink-0" style={{ color: copied ? "#16a34a" : "#9A7B2E" }} />
+          <HiClipboardCopy
+            className="w-5 h-5 flex-shrink-0"
+            style={{ color: copied ? "#16a34a" : "#9A7B2E" }}
+          />
         </button>
       )}
 
@@ -462,8 +592,12 @@ function AffiliateSection({ detail, hideTitle = false }: { detail: AffiliateDeta
 // Designed to be monetization-friendly: image hero → brand → title → CTA.
 
 const CATALOG_TYPE_LABELS: Record<string, string> = {
-  MEAL: "Meal", WORKOUT: "Workout", SUPPLEMENT: "Supplement",
-  ACCESSORY: "Accessory", WELLNESS: "Wellness", AFFILIATE: "Product",
+  MEAL: "Meal",
+  WORKOUT: "Workout",
+  SUPPLEMENT: "Supplement",
+  ACCESSORY: "Accessory",
+  WELLNESS: "Wellness",
+  AFFILIATE: "Product",
 };
 
 function CatalogShareSection({ detail }: { detail: CatalogShareDetail }) {
@@ -481,7 +615,11 @@ function CatalogShareSection({ detail }: { detail: CatalogShareDetail }) {
       document.body.appendChild(el);
       el.focus();
       el.select();
-      try { document.execCommand("copy"); } catch { /* silent */ }
+      try {
+        document.execCommand("copy");
+      } catch {
+        /* silent */
+      }
       document.body.removeChild(el);
     }
     setCopied(true);
@@ -489,48 +627,85 @@ function CatalogShareSection({ detail }: { detail: CatalogShareDetail }) {
   };
 
   const ctaText = detail.ctaLabel ?? "Shop Now";
-  const hasLink = typeof detail.link === "string" && detail.link.trim().length > 0;
+  const hasLink =
+    typeof detail.link === "string" && detail.link.trim().length > 0;
   const shareLink = hasLink ? detail.link!.trim() : undefined;
-  const hasReferralCode = typeof detail.referralCode === "string" && detail.referralCode.trim().length > 0;
-  const typeLabel = CATALOG_TYPE_LABELS[detail.catalogItemType] ?? detail.catalogItemType;
+  const hasReferralCode =
+    typeof detail.referralCode === "string" &&
+    detail.referralCode.trim().length > 0;
+  const typeLabel =
+    CATALOG_TYPE_LABELS[detail.catalogItemType] ?? detail.catalogItemType;
 
   return (
     <div
-      className="mt-3 rounded-2xl overflow-hidden"
-      style={{ border: "1px solid rgba(154,123,46,0.22)" }}
+      className="mt-3 rounded-[22px] overflow-hidden shadow-sm"
+      style={{
+        border: "1px solid rgba(154,123,46,0.24)",
+        background:
+          "linear-gradient(180deg, rgba(253,250,245,0.98) 0%, rgba(154,123,46,0.07) 100%)",
+      }}
     >
       {/* Product image hero */}
-      {detail.photoUrl && (
-        <div className="w-full overflow-hidden" style={{ maxHeight: "200px" }}>
+      <div
+        className="relative w-full overflow-hidden"
+        style={{ maxHeight: "220px" }}
+      >
+        {detail.photoUrl ? (
           <img
             src={detail.photoUrl}
             alt={detail.title}
             loading="lazy"
             className="w-full object-cover"
-            style={{ maxHeight: "200px" }}
+            style={{ maxHeight: "220px", minHeight: "148px" }}
           />
-        </div>
-      )}
-
-      {/* Product info body */}
-      <div className="p-4 space-y-2.5" style={{ background: "rgba(154,123,46,0.05)" }}>
-        {/* Type chip + brand */}
-        <div className="flex items-center gap-2 flex-wrap">
+        ) : (
+          <div
+            className="h-[148px] flex items-center justify-center"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(36,63,22,0.92), rgba(154,123,46,0.88))",
+            }}
+          >
+            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/85">
+              Royal Catalog
+            </span>
+          </div>
+        )}
+        <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3 bg-gradient-to-b from-black/45 to-transparent">
           <span
-            className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(154,123,46,0.14)", color: "#9A7B2E" }}
+            className="text-[10px] font-bold uppercase tracking-[0.14em] px-2.5 py-1 rounded-full"
+            style={{ background: "rgba(253,250,245,0.92)", color: "#243F16" }}
+          >
+            Shared recommendation
+          </span>
+          <span
+            className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
+            style={{ background: "rgba(24,25,15,0.58)", color: "#FDFAF5" }}
           >
             {typeLabel}
           </span>
+        </div>
+      </div>
+
+      {/* Product info body */}
+      <div className="p-4 space-y-3">
+        {/* Type chip + brand */}
+        <div className="flex items-center gap-2 flex-wrap">
           {detail.brand && (
-            <span className="text-xs font-semibold" style={{ color: "#9A7B2E" }}>
+            <span
+              className="text-[11px] font-bold uppercase tracking-[0.12em]"
+              style={{ color: "#9A7B2E" }}
+            >
               {detail.brand}
             </span>
           )}
         </div>
 
         {/* Title */}
-        <p className="font-semibold leading-snug text-foreground" style={{ fontSize: "15px" }}>
+        <p
+          className="font-bold leading-snug text-foreground"
+          style={{ fontSize: "17px" }}
+        >
           {detail.title}
         </p>
 
@@ -546,7 +721,7 @@ function CatalogShareSection({ detail }: { detail: CatalogShareDetail }) {
 
         {/* CTA row */}
         {(hasLink || hasReferralCode) && (
-          <div className="space-y-2 pt-0.5">
+          <div className="space-y-2 pt-1">
             {hasLink && (
               <a
                 href={shareLink}
@@ -558,7 +733,7 @@ function CatalogShareSection({ detail }: { detail: CatalogShareDetail }) {
                     openExternalLink(shareLink);
                   }
                 }}
-                className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 btn-gradient"
+                className="w-full min-h-[46px] flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-bold transition-all duration-200 btn-gradient active:scale-[0.99]"
                 style={{ color: "#FDFAF5" }}
               >
                 <HiExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
@@ -568,10 +743,14 @@ function CatalogShareSection({ detail }: { detail: CatalogShareDetail }) {
             {hasReferralCode && (
               <button
                 onClick={handleCopyCode}
-                className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 border"
+                className="w-full min-h-[44px] flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 border active:scale-[0.99]"
                 style={{
-                  background: copied ? "rgba(34,197,94,0.08)" : "rgba(154,123,46,0.08)",
-                  borderColor: copied ? "rgba(34,197,94,0.25)" : "rgba(154,123,46,0.22)",
+                  background: copied
+                    ? "rgba(34,197,94,0.08)"
+                    : "rgba(154,123,46,0.08)",
+                  borderColor: copied
+                    ? "rgba(34,197,94,0.25)"
+                    : "rgba(154,123,46,0.22)",
                   color: copied ? "#16a34a" : "#9A7B2E",
                 }}
               >
@@ -592,16 +771,39 @@ function WorkoutBadgeCard({ badge }: { badge: BadgeData }) {
   return (
     <div
       className="mt-2 rounded-xl overflow-hidden flex flex-col items-center justify-center py-8 px-4 gap-2"
-      style={{ background: badge.gradient, minHeight: "180px", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.14)" }}
+      style={{
+        background: badge.gradient,
+        minHeight: "180px",
+        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.14)",
+      }}
     >
-      <span style={{ fontSize: "64px", lineHeight: 1, filter: "drop-shadow(0 2px 8px rgba(8,18,96,0.18))" }}>
+      <span
+        style={{
+          fontSize: "64px",
+          lineHeight: 1,
+          filter: "drop-shadow(0 2px 8px rgba(8,18,96,0.18))",
+        }}
+      >
         {badge.emoji}
       </span>
-      <div style={{ width: "40%", height: "1px", background: "rgba(255,255,255,0.22)", borderRadius: "999px" }} />
+      <div
+        style={{
+          width: "40%",
+          height: "1px",
+          background: "rgba(255,255,255,0.22)",
+          borderRadius: "999px",
+        }}
+      />
       <p
         className="font-bold text-center mt-2"
-        style={{ color: "#FDFAF5", fontSize: "22px", fontFamily: "var(--font-display)", fontStyle: "italic",
-                 letterSpacing: "0.08em", textShadow: "0 1px 6px rgba(8,18,96,0.25)" }}
+        style={{
+          color: "#FDFAF5",
+          fontSize: "22px",
+          fontFamily: "var(--font-display)",
+          fontStyle: "italic",
+          letterSpacing: "0.08em",
+          textShadow: "0 1px 6px rgba(8,18,96,0.25)",
+        }}
       >
         {badge.name.toUpperCase()}
       </p>
@@ -631,7 +833,9 @@ function CheckInPostCard({
   const { likes, setLike } = useLikesStore();
   const checkinOverride = likes[post.id];
   const [liked, setLiked] = useState(checkinOverride?.liked ?? post.likedByMe);
-  const [likeCount, setLikeCount] = useState(checkinOverride?.count ?? post._count.likes);
+  const [likeCount, setLikeCount] = useState(
+    checkinOverride?.count ?? post._count.likes,
+  );
   const [likeLoading, setLikeLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -688,7 +892,10 @@ function CheckInPostCard({
     >
       {/* Header row: avatar + username + like + time + delete */}
       <div className="flex items-center gap-2.5 px-3 pt-3 pb-2">
-        <Link href={`/profile/${post.author.username}`} className="flex-shrink-0">
+        <Link
+          href={`/profile/${post.author.username}`}
+          className="flex-shrink-0"
+        >
           {post.author.avatarUrl ? (
             <img
               src={post.author.avatarUrl}
@@ -729,8 +936,8 @@ function CheckInPostCard({
             {timeAgo(post.createdAt)}
           </span>
 
-          {isOwner && (
-            showDeleteConfirm ? (
+          {isOwner &&
+            (showDeleteConfirm ? (
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
@@ -757,13 +964,15 @@ function CheckInPostCard({
               >
                 <HiTrash className="w-3.5 h-3.5" />
               </button>
-            )
-          )}
+            ))}
         </div>
       </div>
 
       {/* Divider */}
-      <div className="mx-3 border-t" style={{ borderColor: "rgba(36,63,22,0.08)" }} />
+      <div
+        className="mx-3 border-t"
+        style={{ borderColor: "rgba(36,63,22,0.08)" }}
+      />
 
       {/* Body: location + caption — no truncation */}
       <div className="px-3 pt-2 pb-3 space-y-1">
@@ -796,13 +1005,24 @@ function FullPostCard({
   post: Post;
   currentUserId?: string;
   onDelete?: (id: string) => void;
-  onEdit?: (id: string, fields: { caption: string | null; visibility: string; workoutName?: string; mealName?: string; activityType?: string }) => void;
+  onEdit?: (
+    id: string,
+    fields: {
+      caption: string | null;
+      visibility: string;
+      workoutName?: string;
+      mealName?: string;
+      activityType?: string;
+    },
+  ) => void;
   onLike?: (id: string, liked: boolean, likesCount: number) => void;
 }) {
   const { likes, setLike } = useLikesStore();
   const fullOverride = likes[post.id];
   const [liked, setLiked] = useState(fullOverride?.liked ?? post.likedByMe);
-  const [likeCount, setLikeCount] = useState(fullOverride?.count ?? post._count.likes);
+  const [likeCount, setLikeCount] = useState(
+    fullOverride?.count ?? post._count.likes,
+  );
   const [likeLoading, setLikeLoading] = useState(false);
 
   const [showComments, setShowComments] = useState(false);
@@ -824,7 +1044,10 @@ function FullPostCard({
   const [editCaption, setEditCaption] = useState(post.caption ?? "");
   const [editVisibility, setEditVisibility] = useState(post.visibility);
   const [editDetailName, setEditDetailName] = useState(
-    post.workoutDetail?.workoutName ?? post.mealDetail?.mealName ?? post.wellnessDetail?.activityType ?? ""
+    post.workoutDetail?.workoutName ??
+      post.mealDetail?.mealName ??
+      post.wellnessDetail?.activityType ??
+      "",
   );
 
   const [showModerationMenu, setShowModerationMenu] = useState(false);
@@ -836,12 +1059,17 @@ function FullPostCard({
   const router = useRouter();
   const isOwner = !!currentUserId && currentUserId === post.author.id;
   const primaryTitle =
-    post.type === "WORKOUT" ? post.workoutDetail?.workoutName :
-    post.type === "MEAL" ? post.mealDetail?.mealName :
-    post.type === "WELLNESS" ? post.wellnessDetail?.activityType :
-    post.type === "AFFILIATE" ? post.affiliateDetail?.title :
-    post.type === "CATALOG_SHARE" ? post.catalogShareDetail?.title :
-    null;
+    post.type === "WORKOUT"
+      ? post.workoutDetail?.workoutName
+      : post.type === "MEAL"
+        ? post.mealDetail?.mealName
+        : post.type === "WELLNESS"
+          ? post.wellnessDetail?.activityType
+          : post.type === "AFFILIATE"
+            ? post.affiliateDetail?.title
+            : post.type === "CATALOG_SHARE"
+              ? post.catalogShareDetail?.title
+              : null;
 
   // ── like toggle ──
 
@@ -916,7 +1144,7 @@ function FullPostCard({
     setLoadingMore(true);
     try {
       const res = await fetch(
-        `/api/posts/${post.id}/comments?limit=10&cursor=${nextCursor}`
+        `/api/posts/${post.id}/comments?limit=10&cursor=${nextCursor}`,
       );
       if (res.ok) {
         const data = await res.json();
@@ -1000,9 +1228,11 @@ function FullPostCard({
         onEdit?.(post.id, {
           caption: editCaption.trim() || null,
           visibility: editVisibility,
-          workoutName: post.type === "WORKOUT" ? editDetailName.trim() : undefined,
+          workoutName:
+            post.type === "WORKOUT" ? editDetailName.trim() : undefined,
           mealName: post.type === "MEAL" ? editDetailName.trim() : undefined,
-          activityType: post.type === "WELLNESS" ? editDetailName.trim() : undefined,
+          activityType:
+            post.type === "WELLNESS" ? editDetailName.trim() : undefined,
         });
       }
     } catch {
@@ -1010,27 +1240,38 @@ function FullPostCard({
     } finally {
       setEditSaving(false);
     }
-  }, [editSaving, editCaption, editVisibility, editDetailName, post.id, post.type, onEdit]);
+  }, [
+    editSaving,
+    editCaption,
+    editVisibility,
+    editDetailName,
+    post.id,
+    post.type,
+    onEdit,
+  ]);
 
   // ── report post ──
 
-  const handleReport = useCallback(async (reason: string) => {
-    if (moderationLoading) return;
-    setModerationLoading(true);
-    try {
-      await fetch(`/api/posts/${post.id}/report`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason }),
-      });
-    } catch {
-      // silent
-    } finally {
-      setModerationLoading(false);
-      setShowReportModal(false);
-      setShowModerationMenu(false);
-    }
-  }, [moderationLoading, post.id]);
+  const handleReport = useCallback(
+    async (reason: string) => {
+      if (moderationLoading) return;
+      setModerationLoading(true);
+      try {
+        await fetch(`/api/posts/${post.id}/report`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reason }),
+        });
+      } catch {
+        // silent
+      } finally {
+        setModerationLoading(false);
+        setShowReportModal(false);
+        setShowModerationMenu(false);
+      }
+    },
+    [moderationLoading, post.id],
+  );
 
   // ── block user ──
 
@@ -1060,29 +1301,38 @@ function FullPostCard({
   return (
     <article
       className={`rounded-xl border card-hover ${
-        post.type === "WORKOUT"       ? "type-border-workout"   :
-        post.type === "MEAL"          ? "type-border-meal"      :
-        post.type === "WELLNESS"      ? "type-border-wellness"  :
-        post.type === "AFFILIATE"     ? "type-border-meal"      :
-        post.type === "CATALOG_SHARE" ? "type-border-meal"      :
-                                        "type-border-general"
+        post.type === "WORKOUT"
+          ? "type-border-workout"
+          : post.type === "MEAL"
+            ? "type-border-meal"
+            : post.type === "WELLNESS"
+              ? "type-border-wellness"
+              : post.type === "AFFILIATE"
+                ? "type-border-meal"
+                : post.type === "CATALOG_SHARE"
+                  ? "type-border-meal"
+                  : "type-border-general"
       }`}
       style={{ background: "#FDFAF5", borderColor: "rgba(36,63,22,0.10)" }}
     >
       {/* ── header ── */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
         {/* avatar */}
-        <Link href={`/profile/${post.author.username}`} className="flex-shrink-0">
+        <Link
+          href={`/profile/${post.author.username}`}
+          className="flex-shrink-0"
+        >
           <div
             className="p-[2px] rounded-full"
             style={{
-              background: post.type === "WORKOUT"
-                ? "linear-gradient(135deg, rgba(36,63,22,0.6), rgba(168,166,255,0.3))"
-                : post.type === "MEAL"
-                ? "linear-gradient(135deg, rgba(154,123,46,0.6), rgba(201,168,76,0.3))"
-                : post.type === "WELLNESS"
-                ? "linear-gradient(135deg, rgba(82,133,49,0.6), rgba(36,63,22,0.3))"
-                : "transparent",
+              background:
+                post.type === "WORKOUT"
+                  ? "linear-gradient(135deg, rgba(36,63,22,0.6), rgba(168,166,255,0.3))"
+                  : post.type === "MEAL"
+                    ? "linear-gradient(135deg, rgba(154,123,46,0.6), rgba(201,168,76,0.3))"
+                    : post.type === "WELLNESS"
+                      ? "linear-gradient(135deg, rgba(82,133,49,0.6), rgba(36,63,22,0.3))"
+                      : "transparent",
             }}
           >
             {post.author.avatarUrl ? (
@@ -1094,9 +1344,7 @@ function FullPostCard({
                 style={{ display: "block" }}
               />
             ) : (
-              <div
-                className="w-10 h-10 rounded-full btn-gradient flex items-center justify-center text-white text-sm font-bold"
-              >
+              <div className="w-10 h-10 rounded-full btn-gradient flex items-center justify-center text-white text-sm font-bold">
                 {initials(post.author.name)}
               </div>
             )}
@@ -1105,7 +1353,10 @@ function FullPostCard({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <Link href={`/profile/${post.author.username}`} className="font-semibold text-sm text-foreground truncate hover:underline">
+            <Link
+              href={`/profile/${post.author.username}`}
+              className="font-semibold text-sm text-foreground truncate hover:underline"
+            >
               {post.author.username}
             </Link>
             <span
@@ -1165,10 +1416,16 @@ function FullPostCard({
             )}
             {showOwnerMenu && (
               <>
-                <div className="fixed inset-0 z-10" onClick={() => setShowOwnerMenu(false)} />
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowOwnerMenu(false)}
+                />
                 <div
                   className="absolute right-0 top-8 z-20 w-36 rounded-xl overflow-hidden shadow-xl"
-                  style={{ background: "#FDFAF5", border: "1px solid rgba(36,63,22,0.10)" }}
+                  style={{
+                    background: "#FDFAF5",
+                    border: "1px solid rgba(36,63,22,0.10)",
+                  }}
                 >
                   <button
                     onClick={() => {
@@ -1185,7 +1442,10 @@ function FullPostCard({
                     Edit post
                   </button>
                   <button
-                    onClick={() => { setShowDeleteConfirm(true); setShowOwnerMenu(false); }}
+                    onClick={() => {
+                      setShowDeleteConfirm(true);
+                      setShowOwnerMenu(false);
+                    }}
                     className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-black/5"
                     style={{ color: "#f87171" }}
                   >
@@ -1217,17 +1477,26 @@ function FullPostCard({
                 />
                 <div
                   className="absolute right-0 top-8 z-20 w-44 rounded-xl overflow-hidden shadow-xl"
-                  style={{ background: "#FDFAF5", border: "1px solid rgba(36,63,22,0.10)" }}
+                  style={{
+                    background: "#FDFAF5",
+                    border: "1px solid rgba(36,63,22,0.10)",
+                  }}
                 >
                   <button
-                    onClick={() => { setShowReportModal(true); setShowModerationMenu(false); }}
+                    onClick={() => {
+                      setShowReportModal(true);
+                      setShowModerationMenu(false);
+                    }}
                     className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-black/5"
                     style={{ color: "#18190F" }}
                   >
                     Report post
                   </button>
                   <button
-                    onClick={() => { setShowBlockConfirm(true); setShowModerationMenu(false); }}
+                    onClick={() => {
+                      setShowBlockConfirm(true);
+                      setShowModerationMenu(false);
+                    }}
                     className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-black/5"
                     style={{ color: "#f87171" }}
                   >
@@ -1245,24 +1514,44 @@ function FullPostCard({
         <div
           className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
           style={{ background: "rgba(24,25,15,0.5)" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setShowReportModal(false); }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowReportModal(false);
+          }}
         >
           <div
             className="w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-5 pb-8"
-            style={{ background: "#FDFAF5", border: "1px solid rgba(36,63,22,0.10)" }}
+            style={{
+              background: "#FDFAF5",
+              border: "1px solid rgba(36,63,22,0.10)",
+            }}
           >
-            <h3 className="text-base font-bold mb-1" style={{ color: "#18190F" }}>Report this post</h3>
+            <h3
+              className="text-base font-bold mb-1"
+              style={{ color: "#18190F" }}
+            >
+              Report this post
+            </h3>
             <p className="text-xs mb-4" style={{ color: "#7A7560" }}>
               Why are you reporting this post?
             </p>
             <div className="space-y-2">
-              {["Spam or fake", "Inappropriate content", "Harassment or bullying", "False health information", "Other"].map((reason) => (
+              {[
+                "Spam or fake",
+                "Inappropriate content",
+                "Harassment or bullying",
+                "False health information",
+                "Other",
+              ].map((reason) => (
                 <button
                   key={reason}
                   onClick={() => handleReport(reason)}
                   disabled={moderationLoading}
                   className="w-full text-left px-4 py-3 rounded-xl text-sm transition-all duration-200 disabled:opacity-60 flex items-center justify-between"
-                  style={{ background: "rgba(36,63,22,0.04)", color: "#18190F", border: "1px solid rgba(36,63,22,0.10)" }}
+                  style={{
+                    background: "rgba(36,63,22,0.04)",
+                    color: "#18190F",
+                    border: "1px solid rgba(36,63,22,0.10)",
+                  }}
                 >
                   {reason}
                   {moderationLoading && <LoadingSpinner />}
@@ -1285,15 +1574,26 @@ function FullPostCard({
         <div
           className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
           style={{ background: "rgba(24,25,15,0.5)" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setShowBlockConfirm(false); }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowBlockConfirm(false);
+          }}
         >
           <div
             className="w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-5 pb-8 text-center"
-            style={{ background: "#FDFAF5", border: "1px solid rgba(36,63,22,0.10)" }}
+            style={{
+              background: "#FDFAF5",
+              border: "1px solid rgba(36,63,22,0.10)",
+            }}
           >
-            <p className="text-base font-bold mb-2" style={{ color: "#18190F" }}>Block @{post.author.username}?</p>
+            <p
+              className="text-base font-bold mb-2"
+              style={{ color: "#18190F" }}
+            >
+              Block @{post.author.username}?
+            </p>
             <p className="text-sm mb-5" style={{ color: "#7A7560" }}>
-              Their posts won&apos;t appear in your feed. You can unblock from their profile.
+              Their posts won&apos;t appear in your feed. You can unblock from
+              their profile.
             </p>
             <div className="flex gap-3">
               <button
@@ -1329,19 +1629,29 @@ function FullPostCard({
         <div
           className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
           style={{ background: "rgba(24,25,15,0.5)" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false); }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowEditModal(false);
+          }}
         >
           <div
             className="w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-5 pb-8 space-y-4"
-            style={{ background: "#FDFAF5", border: "1px solid rgba(36,63,22,0.10)" }}
+            style={{
+              background: "#FDFAF5",
+              border: "1px solid rgba(36,63,22,0.10)",
+            }}
           >
-            <h3 className="text-base font-bold" style={{ color: "#18190F" }}>Edit post</h3>
+            <h3 className="text-base font-bold" style={{ color: "#18190F" }}>
+              Edit post
+            </h3>
 
             {/* Catalog item preview (read-only) */}
             {post.type === "CATALOG_SHARE" && post.catalogShareDetail && (
               <div
                 className="flex items-center gap-3 p-3 rounded-xl"
-                style={{ background: "rgba(154,123,46,0.08)", border: "1px solid rgba(154,123,46,0.18)" }}
+                style={{
+                  background: "rgba(154,123,46,0.08)",
+                  border: "1px solid rgba(154,123,46,0.18)",
+                }}
               >
                 {post.catalogShareDetail.photoUrl && (
                   <img
@@ -1351,43 +1661,71 @@ function FullPostCard({
                   />
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold truncate" style={{ color: "#18190F" }}>
+                  <p
+                    className="text-sm font-semibold truncate"
+                    style={{ color: "#18190F" }}
+                  >
                     {post.catalogShareDetail.title}
                   </p>
                   {post.catalogShareDetail.brand && (
-                    <p className="text-xs truncate" style={{ color: "#7A7560" }}>
+                    <p
+                      className="text-xs truncate"
+                      style={{ color: "#7A7560" }}
+                    >
                       {post.catalogShareDetail.brand}
                     </p>
                   )}
                   <span
                     className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-xs font-medium"
-                    style={{ background: "rgba(154,123,46,0.15)", color: "#9A7B2E" }}
+                    style={{
+                      background: "rgba(154,123,46,0.15)",
+                      color: "#9A7B2E",
+                    }}
                   >
-                    {CATALOG_TYPE_LABELS[post.catalogShareDetail.catalogItemType] ?? post.catalogShareDetail.catalogItemType}
+                    {CATALOG_TYPE_LABELS[
+                      post.catalogShareDetail.catalogItemType
+                    ] ?? post.catalogShareDetail.catalogItemType}
                   </span>
                 </div>
               </div>
             )}
 
             {/* Type-specific name field */}
-            {post.type !== "GENERAL" && post.type !== "CATALOG_SHARE" && post.type !== "CHECKIN" && post.type !== "AFFILIATE" && (
-              <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: "#7A7560" }}>
-                  {post.type === "WORKOUT" ? "Workout name" : post.type === "MEAL" ? "Meal name" : "Activity"}
-                </label>
-                <input
-                  type="text"
-                  value={editDetailName}
-                  onChange={(e) => setEditDetailName(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)", color: "#18190F" }}
-                />
-              </div>
-            )}
+            {post.type !== "GENERAL" &&
+              post.type !== "CATALOG_SHARE" &&
+              post.type !== "CHECKIN" &&
+              post.type !== "AFFILIATE" && (
+                <div>
+                  <label
+                    className="block text-xs font-medium mb-1.5"
+                    style={{ color: "#7A7560" }}
+                  >
+                    {post.type === "WORKOUT"
+                      ? "Workout name"
+                      : post.type === "MEAL"
+                        ? "Meal name"
+                        : "Activity"}
+                  </label>
+                  <input
+                    type="text"
+                    value={editDetailName}
+                    onChange={(e) => setEditDetailName(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    style={{
+                      background: "rgba(36,63,22,0.04)",
+                      border: "1px solid rgba(36,63,22,0.10)",
+                      color: "#18190F",
+                    }}
+                  />
+                </div>
+              )}
 
             {/* Caption */}
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "#7A7560" }}>
+              <label
+                className="block text-xs font-medium mb-1.5"
+                style={{ color: "#7A7560" }}
+              >
                 Caption
               </label>
               <textarea
@@ -1395,13 +1733,20 @@ function FullPostCard({
                 onChange={(e) => setEditCaption(e.target.value)}
                 rows={3}
                 className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
-                style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)", color: "#18190F" }}
+                style={{
+                  background: "rgba(36,63,22,0.04)",
+                  border: "1px solid rgba(36,63,22,0.10)",
+                  color: "#18190F",
+                }}
               />
             </div>
 
             {/* Visibility */}
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "#7A7560" }}>
+              <label
+                className="block text-xs font-medium mb-1.5"
+                style={{ color: "#7A7560" }}
+              >
                 Visibility
               </label>
               <div className="flex gap-2">
@@ -1413,10 +1758,17 @@ function FullPostCard({
                     style={
                       editVisibility === v
                         ? { background: "#243F16", color: "#FDFAF5" }
-                        : { background: "rgba(36,63,22,0.04)", color: "#7A7560" }
+                        : {
+                            background: "rgba(36,63,22,0.04)",
+                            color: "#7A7560",
+                          }
                     }
                   >
-                    {v === "PUBLIC" ? "Public" : v === "FOLLOWERS" ? "Followers" : "Private"}
+                    {v === "PUBLIC"
+                      ? "Public"
+                      : v === "FOLLOWERS"
+                        ? "Followers"
+                        : "Private"}
                   </button>
                 ))}
               </div>
@@ -1464,7 +1816,11 @@ function FullPostCard({
         {post.mediaUrl ? (
           <div className="mt-2 rounded-lg overflow-hidden">
             {post.mediaUrl.match(/\.(mp4|mov|webm)($|\?)/i) ? (
-              <video src={post.mediaUrl} controls className="w-full max-h-96 object-cover" />
+              <video
+                src={post.mediaUrl}
+                controls
+                className="w-full max-h-96 object-cover"
+              />
             ) : (
               <img
                 src={post.mediaUrl}
@@ -1482,13 +1838,34 @@ function FullPostCard({
           })()
         )}
 
-        {post.externalContent?.[0] && <EmbedMedia item={post.externalContent[0]} />}
+        {post.externalContent?.[0] && (
+          <EmbedMedia item={post.externalContent[0]} />
+        )}
 
-        {post.type === "WORKOUT"       && post.workoutDetail      && <WorkoutSection detail={post.workoutDetail} hideTitle={!!primaryTitle} />}
-        {post.type === "MEAL"          && post.mealDetail         && <MealSection detail={post.mealDetail} hideTitle={!!primaryTitle} />}
-        {post.type === "WELLNESS"      && post.wellnessDetail     && <WellnessSection detail={post.wellnessDetail} hideTitle={!!primaryTitle} />}
-        {post.type === "AFFILIATE"     && post.affiliateDetail    && <AffiliateSection detail={post.affiliateDetail} hideTitle={!!primaryTitle} />}
-        {post.type === "CATALOG_SHARE" && post.catalogShareDetail && <CatalogShareSection detail={post.catalogShareDetail} />}
+        {post.type === "WORKOUT" && post.workoutDetail && (
+          <WorkoutSection
+            detail={post.workoutDetail}
+            hideTitle={!!primaryTitle}
+          />
+        )}
+        {post.type === "MEAL" && post.mealDetail && (
+          <MealSection detail={post.mealDetail} hideTitle={!!primaryTitle} />
+        )}
+        {post.type === "WELLNESS" && post.wellnessDetail && (
+          <WellnessSection
+            detail={post.wellnessDetail}
+            hideTitle={!!primaryTitle}
+          />
+        )}
+        {post.type === "AFFILIATE" && post.affiliateDetail && (
+          <AffiliateSection
+            detail={post.affiliateDetail}
+            hideTitle={!!primaryTitle}
+          />
+        )}
+        {post.type === "CATALOG_SHARE" && post.catalogShareDetail && (
+          <CatalogShareSection detail={post.catalogShareDetail} />
+        )}
 
         {post.caption && (
           <p className="text-sm text-foreground whitespace-pre-wrap mt-3 mb-1">
@@ -1512,11 +1889,16 @@ function FullPostCard({
               <LoadingSpinner />
             </div>
           ) : liked ? (
-            <HiHeart className="w-5 h-5 text-red-500 transition-transform duration-300" style={{ transform: "scale(1.1)" }} />
+            <HiHeart
+              className="w-5 h-5 text-red-500 transition-transform duration-300"
+              style={{ transform: "scale(1.1)" }}
+            />
           ) : (
             <HiOutlineHeart className="w-5 h-5 text-muted-dim hover:text-foreground transition-colors duration-200" />
           )}
-          <span className={`transition-colors duration-200 ${liked ? "text-red-500 font-medium" : "text-muted-dim"}`}>
+          <span
+            className={`transition-colors duration-200 ${liked ? "text-red-500 font-medium" : "text-muted-dim"}`}
+          >
             {likeCount}
           </span>
         </button>
@@ -1540,7 +1922,10 @@ function FullPostCard({
                 fetch("/api/referral-links", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ sourceType: "post", sourceId: post.id }),
+                  body: JSON.stringify({
+                    sourceType: "post",
+                    sourceId: post.id,
+                  }),
                 }).catch(() => {});
 
                 const url = `https://royalwellness.app/p/${post.id}`;
@@ -1596,11 +1981,7 @@ function FullPostCard({
               disabled={commentSubmitting || !commentText.trim()}
               className="text-sm font-medium text-white btn-gradient disabled:opacity-60 disabled:cursor-not-allowed rounded-lg px-3 py-2 transition-all duration-200 flex items-center justify-center gap-1.5 min-w-[60px]"
             >
-              {commentSubmitting ? (
-                <LoadingSpinner />
-              ) : (
-                "Post"
-              )}
+              {commentSubmitting ? <LoadingSpinner /> : "Post"}
             </button>
           </div>
 
@@ -1612,7 +1993,10 @@ function FullPostCard({
 
           {comments.map((c) => (
             <div key={c.id} className="flex gap-2">
-              <Link href={`/profile/${c.author.username}`} className="flex-shrink-0">
+              <Link
+                href={`/profile/${c.author.username}`}
+                className="flex-shrink-0"
+              >
                 {c.author.avatarUrl ? (
                   <img
                     src={c.author.avatarUrl}
@@ -1621,16 +2005,17 @@ function FullPostCard({
                     className="w-7 h-7 rounded-full object-cover mt-0.5"
                   />
                 ) : (
-                  <div
-                    className="w-7 h-7 rounded-full btn-gradient flex items-center justify-center text-xs font-bold text-white mt-0.5"
-                  >
+                  <div className="w-7 h-7 rounded-full btn-gradient flex items-center justify-center text-xs font-bold text-white mt-0.5">
                     {initials(c.author.name)}
                   </div>
                 )}
               </Link>
               <div className="flex-1 min-w-0">
                 <p className="text-sm">
-                  <Link href={`/profile/${c.author.username}`} className="font-semibold text-foreground hover:underline">
+                  <Link
+                    href={`/profile/${c.author.username}`}
+                    className="font-semibold text-foreground hover:underline"
+                  >
                     {c.author.username}
                   </Link>{" "}
                   <span className="text-foreground">{c.text}</span>
@@ -1669,7 +2054,16 @@ export default function PostCard({
   post: Post;
   currentUserId?: string;
   onDelete?: (id: string) => void;
-  onEdit?: (id: string, fields: { caption: string | null; visibility: string; workoutName?: string; mealName?: string; activityType?: string }) => void;
+  onEdit?: (
+    id: string,
+    fields: {
+      caption: string | null;
+      visibility: string;
+      workoutName?: string;
+      mealName?: string;
+      activityType?: string;
+    },
+  ) => void;
   onLike?: (id: string, liked: boolean, likesCount: number) => void;
 }) {
   if (post.type === "CHECKIN") {

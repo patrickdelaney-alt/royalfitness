@@ -1,9 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { HiX, HiShare, HiCalendar, HiExclamation, HiPhotograph } from "react-icons/hi";
+import {
+  HiX,
+  HiShare,
+  HiCalendar,
+  HiExclamation,
+  HiPhotograph,
+} from "react-icons/hi";
 import toast from "react-hot-toast";
-import { BottomCtaBar, BottomCtaRow } from "@/components/layout/bottom-cta";
+import { BottomCtaBar } from "@/components/layout/bottom-cta";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -37,7 +43,10 @@ function LoadingSpinner({ size = "sm" }: { size?: "sm" | "md" }) {
   return (
     <div
       className={`${dim} border-t-transparent rounded-full animate-spin flex-shrink-0`}
-      style={{ borderColor: "rgba(253,250,245,0.5)", borderTopColor: "transparent" }}
+      style={{
+        borderColor: "rgba(253,250,245,0.5)",
+        borderTopColor: "transparent",
+      }}
     />
   );
 }
@@ -52,9 +61,9 @@ const CATALOG_TYPE_LABELS: Record<CatalogItemType, string> = {
 };
 
 const VISIBILITY_OPTIONS = [
-  { value: "PUBLIC",    label: "Public",    desc: "Everyone" },
-  { value: "FOLLOWERS", label: "Followers", desc: "Followers only" },
-  { value: "PRIVATE",   label: "Private",   desc: "Only you" },
+  { value: "PUBLIC", label: "Public", desc: "Everyone can see it" },
+  { value: "FOLLOWERS", label: "Followers", desc: "Your followers only" },
+  { value: "PRIVATE", label: "Private", desc: "Only you" },
 ] as const;
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -65,7 +74,9 @@ export default function ShareCatalogModal({
   onSuccess,
 }: ShareCatalogModalProps) {
   const [caption, setCaption] = useState("");
-  const [visibility, setVisibility] = useState<"PUBLIC" | "FOLLOWERS" | "PRIVATE">("PUBLIC");
+  const [visibility, setVisibility] = useState<
+    "PUBLIC" | "FOLLOWERS" | "PRIVATE"
+  >("PUBLIC");
   const [loading, setLoading] = useState(false);
   const [checkLoading, setCheckLoading] = useState(true);
   const [alreadySharedToday, setAlreadySharedToday] = useState(false);
@@ -80,7 +91,7 @@ export default function ShareCatalogModal({
     setCheckLoading(true);
 
     fetch(
-      `/api/catalog/share-check?itemId=${encodeURIComponent(item.id)}&itemType=${encodeURIComponent(item.catalogType)}`
+      `/api/catalog/share-check?itemId=${encodeURIComponent(item.id)}&itemType=${encodeURIComponent(item.catalogType)}`,
     )
       .then((r) => r.json())
       .then((data) => {
@@ -90,10 +101,17 @@ export default function ShareCatalogModal({
         }
       })
       .catch(() => {
-        if (!cancelled) setCheckLoading(false);
+        if (!cancelled) {
+          setError(
+            "We couldn't check share status. You can still try to share.",
+          );
+          setCheckLoading(false);
+        }
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [item.id, item.catalogType]);
 
   // ── Dismiss on backdrop click ───────────────────────────────────────────────
@@ -101,7 +119,7 @@ export default function ShareCatalogModal({
     (e: React.MouseEvent) => {
       if (e.target === e.currentTarget && !loading) onClose();
     },
-    [loading, onClose]
+    [loading, onClose],
   );
 
   // ── Submit ──────────────────────────────────────────────────────────────────
@@ -127,7 +145,9 @@ export default function ShareCatalogModal({
 
       if (res.status === 409) {
         setAlreadySharedToday(true);
-        setError("You've already shared this item today. Come back tomorrow.");
+        setError(
+          "You've already used Share to Feed for this item today. Come back tomorrow.",
+        );
         return;
       }
 
@@ -137,7 +157,7 @@ export default function ShareCatalogModal({
         return;
       }
 
-      toast.success("Shared to your feed!", {
+      toast.success("Shared to Feed", {
         style: {
           background: "var(--surface)",
           color: "var(--text)",
@@ -147,11 +167,19 @@ export default function ShareCatalogModal({
       onSuccess?.();
       onClose();
     } catch {
-      setError("Failed to share. Check your connection and try again.");
+      setError("Share to Feed failed. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
-  }, [loading, alreadySharedToday, caption, visibility, item, onSuccess, onClose]);
+  }, [
+    loading,
+    alreadySharedToday,
+    caption,
+    visibility,
+    item,
+    onSuccess,
+    onClose,
+  ]);
 
   // ── Keyboard shortcut ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -184,7 +212,8 @@ export default function ShareCatalogModal({
           className="rounded-t-[32px] sm:rounded-[32px] p-[2px] flex flex-col overflow-hidden"
           style={{
             background: "rgba(154,123,46,0.18)",
-            boxShadow: "0 24px 80px rgba(24,25,15,0.32), 0 1px 0 rgba(255,255,255,0.06) inset",
+            boxShadow:
+              "0 24px 80px rgba(24,25,15,0.32), 0 1px 0 rgba(255,255,255,0.06) inset",
             flex: 1,
             minHeight: 0,
           }}
@@ -214,19 +243,26 @@ export default function ShareCatalogModal({
                 <div>
                   <h2
                     className="font-bold text-lg leading-tight"
-                    style={{ color: "#18190F", fontFamily: "var(--font-display)", fontStyle: "italic" }}
+                    style={{
+                      color: "#18190F",
+                      fontFamily: "var(--font-display)",
+                      fontStyle: "italic",
+                    }}
                   >
                     Share to Feed
                   </h2>
                   <p className="text-xs mt-0.5" style={{ color: "#7A7560" }}>
-                    {CATALOG_TYPE_LABELS[item.catalogType]} · {item.name}
+                    Create a polished feed post from this catalog item.
                   </p>
                 </div>
                 <button
                   onClick={onClose}
-                  disabled={loading}
+                  disabled={loading || checkLoading}
                   className="p-2 rounded-full transition-colors disabled:opacity-50"
-                  style={{ background: "rgba(36,63,22,0.06)", color: "#7A7560" }}
+                  style={{
+                    background: "rgba(36,63,22,0.06)",
+                    color: "#7A7560",
+                  }}
                   aria-label="Close"
                 >
                   <HiX className="w-4 h-4" />
@@ -235,7 +271,7 @@ export default function ShareCatalogModal({
 
               {/* ── Item preview card ── */}
               <div
-                className="rounded-2xl overflow-hidden flex gap-3 p-3"
+                className="rounded-2xl overflow-hidden flex gap-3 p-3 shadow-sm"
                 style={{
                   background: "rgba(154,123,46,0.06)",
                   border: "1px solid rgba(154,123,46,0.20)",
@@ -253,23 +289,35 @@ export default function ShareCatalogModal({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <HiPhotograph className="w-6 h-6" style={{ color: "#9A7B2E" }} />
+                    <HiPhotograph
+                      className="w-6 h-6"
+                      style={{ color: "#9A7B2E" }}
+                    />
                   )}
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0 py-0.5">
                   {item.brand && (
-                    <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "#9A7B2E" }}>
+                    <p
+                      className="text-[10px] font-semibold uppercase tracking-wide"
+                      style={{ color: "#9A7B2E" }}
+                    >
                       {item.brand}
                     </p>
                   )}
-                  <p className="font-semibold text-sm leading-snug truncate" style={{ color: "#18190F" }}>
+                  <p
+                    className="font-semibold text-sm leading-snug truncate"
+                    style={{ color: "#18190F" }}
+                  >
                     {item.name}
                   </p>
                   <span
                     className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full"
-                    style={{ background: "rgba(154,123,46,0.14)", color: "#9A7B2E" }}
+                    style={{
+                      background: "rgba(154,123,46,0.14)",
+                      color: "#9A7B2E",
+                    }}
                   >
                     {CATALOG_TYPE_LABELS[item.catalogType]}
                   </span>
@@ -285,13 +333,20 @@ export default function ShareCatalogModal({
                     border: "1px solid rgba(154,123,46,0.22)",
                   }}
                 >
-                  <HiCalendar className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#9A7B2E" }} />
+                  <HiCalendar
+                    className="w-5 h-5 flex-shrink-0 mt-0.5"
+                    style={{ color: "#9A7B2E" }}
+                  />
                   <div>
-                    <p className="text-sm font-semibold" style={{ color: "#9A7B2E" }}>
-                      Already shared today
+                    <p
+                      className="text-sm font-semibold"
+                      style={{ color: "#9A7B2E" }}
+                    >
+                      Already shared to Feed today
                     </p>
                     <p className="text-xs mt-0.5" style={{ color: "#7A7560" }}>
-                      You can share this item again tomorrow. Check back in!
+                      To keep the feed high quality, each catalog item can be
+                      shared to Feed once per day.
                     </p>
                   </div>
                 </div>
@@ -302,7 +357,10 @@ export default function ShareCatalogModal({
                 <div className="flex items-center justify-center py-4">
                   <div
                     className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
-                    style={{ borderColor: "rgba(154,123,46,0.3)", borderTopColor: "#9A7B2E" }}
+                    style={{
+                      borderColor: "rgba(154,123,46,0.3)",
+                      borderTopColor: "#9A7B2E",
+                    }}
                   />
                 </div>
               )}
@@ -316,7 +374,10 @@ export default function ShareCatalogModal({
                       className="block text-xs font-semibold uppercase tracking-wide"
                       style={{ color: "#7A7560" }}
                     >
-                      Caption <span className="font-normal normal-case">(optional)</span>
+                      Caption{" "}
+                      <span className="font-normal normal-case">
+                        (optional)
+                      </span>
                     </label>
                     <div
                       className="rounded-2xl overflow-hidden"
@@ -327,7 +388,9 @@ export default function ShareCatalogModal({
                     >
                       <textarea
                         value={caption}
-                        onChange={(e) => setCaption(e.target.value.slice(0, MAX_CAPTION))}
+                        onChange={(e) =>
+                          setCaption(e.target.value.slice(0, MAX_CAPTION))
+                        }
                         placeholder="What do you love about this? Add a note for your followers…"
                         rows={3}
                         className="w-full px-4 py-3 text-sm bg-transparent resize-none focus:outline-none"
@@ -336,7 +399,10 @@ export default function ShareCatalogModal({
                       <div className="flex justify-end px-3 pb-2">
                         <span
                           className="text-[11px]"
-                          style={{ color: captionRemaining < 100 ? "#f87171" : "#7A7560" }}
+                          style={{
+                            color:
+                              captionRemaining < 100 ? "#f87171" : "#7A7560",
+                          }}
                         >
                           {captionRemaining}
                         </span>
@@ -350,68 +416,110 @@ export default function ShareCatalogModal({
                       className="block text-xs font-semibold uppercase tracking-wide"
                       style={{ color: "#7A7560" }}
                     >
-                      Visibility
+                      Feed audience
                     </label>
-                    <BottomCtaRow>
-                      {VISIBILITY_OPTIONS.map((opt) => (
-                        <button
-                          key={opt.value}
-                          onClick={() => setVisibility(opt.value)}
-                          className="min-w-[96px] flex-1 px-2 py-2.5 rounded-xl text-xs font-semibold leading-tight text-center transition-all duration-200"
-                          style={
-                            visibility === opt.value
-                              ? { background: "#243F16", color: "#FDFAF5", boxShadow: "0 2px 8px rgba(36,63,22,0.28)" }
-                              : { background: "rgba(36,63,22,0.06)", color: "#7A7560" }
-                          }
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </BottomCtaRow>
+                    <div className="grid grid-cols-3 gap-2">
+                      {VISIBILITY_OPTIONS.map((opt) => {
+                        const selected = visibility === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            onClick={() => setVisibility(opt.value)}
+                            className="min-h-[58px] px-2 py-2.5 rounded-xl text-center transition-all duration-200"
+                            style={
+                              selected
+                                ? {
+                                    background: "#243F16",
+                                    color: "#FDFAF5",
+                                    boxShadow: "0 2px 8px rgba(36,63,22,0.28)",
+                                  }
+                                : {
+                                    background: "rgba(36,63,22,0.06)",
+                                    color: "#7A7560",
+                                  }
+                            }
+                          >
+                            <span className="block text-xs font-semibold leading-tight">
+                              {opt.label}
+                            </span>
+                            <span className="block text-[10px] leading-tight mt-0.5 opacity-80">
+                              {opt.desc}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </>
               )}
             </div>
 
             {/* ── Sticky footer — always above the keyboard ── */}
-            {showForm && (
-              <BottomCtaBar className="px-6 space-y-3" style={{ background: "#FDFAF5" }}>
+            {(showForm || alreadySharedToday) && (
+              <BottomCtaBar
+                className="px-6 space-y-3"
+                style={{ background: "#FDFAF5" }}
+              >
                 {/* Inline error */}
                 {error && (
                   <div
                     className="flex items-start gap-2.5 rounded-xl px-4 py-3"
-                    style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.18)" }}
+                    style={{
+                      background: "rgba(239,68,68,0.06)",
+                      border: "1px solid rgba(239,68,68,0.18)",
+                    }}
                   >
                     <HiExclamation className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs leading-relaxed" style={{ color: "#dc2626" }}>
+                    <p
+                      className="text-xs leading-relaxed"
+                      style={{ color: "#dc2626" }}
+                    >
                       {error}
                     </p>
                   </div>
                 )}
 
                 {/* Submit */}
-                <button
-                  onClick={handleShare}
-                  disabled={loading}
-                  className="w-full py-3.5 rounded-2xl text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70"
-                  style={{
-                    background: "linear-gradient(135deg, #243F16 0%, #3A6122 100%)",
-                    color: "#FDFAF5",
-                    boxShadow: loading ? "none" : "0 4px 16px rgba(36,63,22,0.30)",
-                  }}
-                >
-                  {loading ? (
-                    <>
-                      <LoadingSpinner />
-                      <span>Sharing…</span>
-                    </>
-                  ) : (
-                    <>
-                      <HiShare className="w-4 h-4" />
-                      <span>Share to Feed</span>
-                    </>
-                  )}
-                </button>
+                {alreadySharedToday ? (
+                  <button
+                    onClick={onClose}
+                    className="w-full py-3.5 rounded-2xl text-sm font-bold transition-all duration-200"
+                    style={{
+                      background: "rgba(36,63,22,0.08)",
+                      color: "#243F16",
+                    }}
+                  >
+                    Done
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleShare}
+                    disabled={loading || checkLoading}
+                    className="w-full py-3.5 rounded-2xl text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #243F16 0%, #3A6122 100%)",
+                      color: "#FDFAF5",
+                      boxShadow: loading
+                        ? "none"
+                        : "0 4px 16px rgba(36,63,22,0.30)",
+                    }}
+                  >
+                    {loading ? (
+                      <>
+                        <LoadingSpinner />
+                        <span>Sharing to Feed…</span>
+                      </>
+                    ) : (
+                      <>
+                        <HiShare className="w-4 h-4" />
+                        <span>
+                          {checkLoading ? "Checking…" : "Share to Feed"}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                )}
               </BottomCtaBar>
             )}
           </div>

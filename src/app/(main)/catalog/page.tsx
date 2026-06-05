@@ -5,7 +5,6 @@ import {
   HiArrowLeft,
   HiCheck,
   HiChevronLeft,
-  HiChevronRight,
   HiPlus,
   HiTrash,
   HiExternalLink,
@@ -20,7 +19,10 @@ import {
   HiBookmark,
   HiOutlineBookmark,
 } from "react-icons/hi";
-import ShareCatalogModal, { type CatalogItemType as ShareCatalogItemType, type ShareCatalogItem } from "@/components/share-catalog-modal";
+import ShareCatalogModal, {
+  type CatalogItemType as ShareCatalogItemType,
+  type ShareCatalogItem,
+} from "@/components/share-catalog-modal";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SubcategoryChips } from "@/components/catalog/SubcategoryChips";
 import {
@@ -128,7 +130,13 @@ interface AffiliateItem {
   needsReview: boolean;
 }
 
-type AnyItem = SavedMeal | SavedWorkout | Supplement | Accessory | SavedWellnessItem | AffiliateItem;
+type AnyItem =
+  | SavedMeal
+  | SavedWorkout
+  | Supplement
+  | Accessory
+  | SavedWellnessItem
+  | AffiliateItem;
 type AnyItemWithType = AnyItem & { _catalogType: CatalogTab };
 
 const inputCls = "input-dark w-full";
@@ -172,7 +180,10 @@ async function enrichCatalogLink(url: string): Promise<LinkEnrichmentResult> {
 }
 
 /** For affiliate items, resolve display label from their AffiliateCategory */
-const getItemDisplayLabel = (item: AnyItem, catalogType: CatalogTab): string => {
+const getItemDisplayLabel = (
+  item: AnyItem,
+  catalogType: CatalogTab,
+): string => {
   if (catalogType === "affiliates" && "category" in item) {
     return getAffiliateDisplayLabel((item as AffiliateItem).category);
   }
@@ -182,11 +193,13 @@ const getItemDisplayLabel = (item: AnyItem, catalogType: CatalogTab): string => 
 /** For affiliate items, resolve gradient from their mapped catalog type */
 const getItemGradient = (item: AnyItem, catalogType: CatalogTab): string => {
   if (catalogType === "affiliates" && "category" in item) {
-    return getAffiliateGradient((item as AffiliateItem).category, CATALOG_PAGE_GRADIENTS);
+    return getAffiliateGradient(
+      (item as AffiliateItem).category,
+      CATALOG_PAGE_GRADIENTS,
+    );
   }
   return CATALOG_PAGE_GRADIENTS[catalogType];
 };
-
 
 // ── Photo Upload Component ────────────────────────────────────────────────────
 
@@ -222,12 +235,17 @@ function PhotoUpload({
       const toUpload = await compressImage(file).catch(() => file);
       const formData = new FormData();
       formData.append("file", toUpload);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
       if (res.ok) {
         const { url } = await res.json();
         onUpload(url);
       } else {
-        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        const data = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
         setUploadError(getUploadErrorMessage(data?.error || res.statusText));
       }
     } catch {
@@ -252,7 +270,11 @@ function PhotoUpload({
       {photoUrl ? (
         <div className="space-y-2">
           <div className="relative w-full aspect-video rounded-xl overflow-hidden">
-            <img src={photoUrl} alt="Preview" className="w-full h-full object-cover" />
+            <img
+              src={photoUrl}
+              alt="Preview"
+              className="w-full h-full object-cover"
+            />
             <div className="absolute bottom-2 right-2 flex gap-1.5">
               <button
                 type="button"
@@ -300,7 +322,9 @@ function PhotoUpload({
           ) : (
             <>
               <HiPhotograph className="w-6 h-6" />
-              <span className="text-xs font-medium">{uploadError ? "Try again" : "Add Photo"}</span>
+              <span className="text-xs font-medium">
+                {uploadError ? "Try again" : "Add Photo"}
+              </span>
             </>
           )}
         </button>
@@ -374,7 +398,10 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
   return (
     <div
       className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
+      style={{
+        background: "rgba(36,63,22,0.04)",
+        border: "1px solid rgba(36,63,22,0.10)",
+      }}
     >
       {error && (
         <p className="text-xs" style={{ color: "#f87171" }}>
@@ -394,8 +421,18 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
         }}
       />
       <div>
-        <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>Name</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. High-Protein Chicken Bowl" className={inputCls} />
+        <label
+          className="block text-[11px] font-medium mb-1"
+          style={{ color: "var(--text-muted)" }}
+        >
+          Name
+        </label>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. High-Protein Chicken Bowl"
+          className={inputCls}
+        />
       </div>
       {showMore ? (
         <>
@@ -412,10 +449,34 @@ function AddMealForm({ onAdd }: { onAdd: (meal: SavedMeal) => void }) {
             className={inputCls}
           />
           <div className="grid grid-cols-2 gap-2">
-            <input type="number" value={calories} onChange={(e) => setCalories(e.target.value)} placeholder="Calories" className={inputCls} />
-            <input type="number" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="Protein (g)" className={inputCls} />
-            <input type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="Carbs (g)" className={inputCls} />
-            <input type="number" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="Fat (g)" className={inputCls} />
+            <input
+              type="number"
+              value={calories}
+              onChange={(e) => setCalories(e.target.value)}
+              placeholder="Calories"
+              className={inputCls}
+            />
+            <input
+              type="number"
+              value={protein}
+              onChange={(e) => setProtein(e.target.value)}
+              placeholder="Protein (g)"
+              className={inputCls}
+            />
+            <input
+              type="number"
+              value={carbs}
+              onChange={(e) => setCarbs(e.target.value)}
+              placeholder="Carbs (g)"
+              className={inputCls}
+            />
+            <input
+              type="number"
+              value={fat}
+              onChange={(e) => setFat(e.target.value)}
+              placeholder="Fat (g)"
+              className={inputCls}
+            />
           </div>
           <textarea
             value={notes}
@@ -477,7 +538,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
       rawUrl: string,
       options?: {
         overwriteTouched?: boolean;
-      }
+      },
     ) => {
       const trimmedUrl = rawUrl.trim();
       if (!trimmedUrl) {
@@ -491,13 +552,22 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
       try {
         const enriched = await enrichCatalogLink(trimmedUrl);
         if (requestId !== enrichRequestIdRef.current) return;
-        if (enriched.title && (!nameTouchedRef.current || options?.overwriteTouched)) {
+        if (
+          enriched.title &&
+          (!nameTouchedRef.current || options?.overwriteTouched)
+        ) {
           setName(enriched.title);
         }
-        if (enriched.siteName && (!brandTouchedRef.current || options?.overwriteTouched)) {
+        if (
+          enriched.siteName &&
+          (!brandTouchedRef.current || options?.overwriteTouched)
+        ) {
           setBrand(enriched.siteName);
         }
-        if (enriched.imageUrl && (options?.overwriteTouched || photoSourceRef.current !== "manual")) {
+        if (
+          enriched.imageUrl &&
+          (options?.overwriteTouched || photoSourceRef.current !== "manual")
+        ) {
           setAutoPhotoUrl(enriched.imageUrl);
           setPhotoUrl(enriched.imageUrl);
           setPhotoSource("auto");
@@ -511,7 +581,7 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
         }
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -567,7 +637,10 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
   return (
     <div
       className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
+      style={{
+        background: "rgba(36,63,22,0.04)",
+        border: "1px solid rgba(36,63,22,0.10)",
+      }}
     >
       {error && (
         <p className="text-xs" style={{ color: "#f87171" }}>
@@ -592,7 +665,12 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
         }}
       />
       <div>
-        <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>Name</label>
+        <label
+          className="block text-[11px] font-medium mb-1"
+          style={{ color: "var(--text-muted)" }}
+        >
+          Name
+        </label>
         <input
           value={name}
           onChange={(e) => {
@@ -615,12 +693,25 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
               placeholder="Brand (optional)"
               className={inputCls}
             />
-            <input value={dose} onChange={(e) => setDose(e.target.value)} placeholder="Dose (optional)" className={inputCls} />
+            <input
+              value={dose}
+              onChange={(e) => setDose(e.target.value)}
+              placeholder="Dose (optional)"
+              className={inputCls}
+            />
           </div>
-          <input value={schedule} onChange={(e) => setSchedule(e.target.value)} placeholder="Schedule (optional)" className={inputCls} />
+          <input
+            value={schedule}
+            onChange={(e) => setSchedule(e.target.value)}
+            placeholder="Schedule (optional)"
+            className={inputCls}
+          />
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+              <span
+                className="text-[11px] whitespace-nowrap"
+                style={{ color: "var(--text-muted)" }}
+              >
                 Product link
               </span>
               <button
@@ -628,16 +719,24 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
                 onClick={() => void runLinkEnrichment(link)}
                 disabled={!link.trim() || linkEnriching}
                 className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
-                style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+                style={{
+                  borderColor: "rgba(36,63,22,0.25)",
+                  color: "var(--text-muted)",
+                }}
               >
                 Re-apply link preview
               </button>
               <button
                 type="button"
-                onClick={() => void runLinkEnrichment(link, { overwriteTouched: true })}
+                onClick={() =>
+                  void runLinkEnrichment(link, { overwriteTouched: true })
+                }
                 disabled={!link.trim() || linkEnriching}
                 className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
-                style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+                style={{
+                  borderColor: "rgba(36,63,22,0.25)",
+                  color: "var(--text-muted)",
+                }}
               >
                 Replace with preview data
               </button>
@@ -649,8 +748,16 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
               type="url"
               className={inputCls}
             />
-            {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
-            {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
+            {linkEnriching && (
+              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                Fetching preview…
+              </p>
+            )}
+            {!linkEnriching && linkEnrichError && (
+              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                {linkEnrichError}
+              </p>
+            )}
           </div>
           <div className="relative">
             <input
@@ -668,7 +775,13 @@ function AddSupplementForm({ onAdd }: { onAdd: (s: Supplement) => void }) {
               </span>
             )}
           </div>
-          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes (optional)" className="textarea-dark w-full resize-none" />
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            placeholder="Notes (optional)"
+            className="textarea-dark w-full resize-none"
+          />
         </>
       ) : (
         <button
@@ -719,7 +832,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
       rawUrl: string,
       options?: {
         overwriteTouched?: boolean;
-      }
+      },
     ) => {
       const trimmedUrl = rawUrl.trim();
       if (!trimmedUrl) {
@@ -733,10 +846,16 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
       try {
         const enriched = await enrichCatalogLink(trimmedUrl);
         if (requestId !== enrichRequestIdRef.current) return;
-        if (enriched.title && (!nameTouchedRef.current || options?.overwriteTouched)) {
+        if (
+          enriched.title &&
+          (!nameTouchedRef.current || options?.overwriteTouched)
+        ) {
           setName(enriched.title);
         }
-        if (enriched.imageUrl && (options?.overwriteTouched || photoSourceRef.current !== "manual")) {
+        if (
+          enriched.imageUrl &&
+          (options?.overwriteTouched || photoSourceRef.current !== "manual")
+        ) {
           setAutoPhotoUrl(enriched.imageUrl);
           setPhotoUrl(enriched.imageUrl);
           setPhotoSource("auto");
@@ -750,7 +869,7 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
         }
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -804,7 +923,10 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
   return (
     <div
       className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
+      style={{
+        background: "rgba(36,63,22,0.04)",
+        border: "1px solid rgba(36,63,22,0.10)",
+      }}
     >
       {error && (
         <p className="text-xs" style={{ color: "#f87171" }}>
@@ -829,7 +951,12 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
         }}
       />
       <div>
-        <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>Name</label>
+        <label
+          className="block text-[11px] font-medium mb-1"
+          style={{ color: "var(--text-muted)" }}
+        >
+          Name
+        </label>
         <input
           value={name}
           onChange={(e) => {
@@ -842,10 +969,18 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
       </div>
       {showMore ? (
         <>
-          <input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (optional)" className={inputCls} />
+          <input
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            placeholder="Type (optional)"
+            className={inputCls}
+          />
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+              <span
+                className="text-[11px] whitespace-nowrap"
+                style={{ color: "var(--text-muted)" }}
+              >
                 Link
               </span>
               <button
@@ -853,16 +988,24 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
                 onClick={() => void runLinkEnrichment(link)}
                 disabled={!link.trim() || linkEnriching}
                 className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
-                style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+                style={{
+                  borderColor: "rgba(36,63,22,0.25)",
+                  color: "var(--text-muted)",
+                }}
               >
                 Re-apply link preview
               </button>
               <button
                 type="button"
-                onClick={() => void runLinkEnrichment(link, { overwriteTouched: true })}
+                onClick={() =>
+                  void runLinkEnrichment(link, { overwriteTouched: true })
+                }
                 disabled={!link.trim() || linkEnriching}
                 className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
-                style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+                style={{
+                  borderColor: "rgba(36,63,22,0.25)",
+                  color: "var(--text-muted)",
+                }}
               >
                 Replace with preview data
               </button>
@@ -874,8 +1017,16 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
               type="url"
               className={inputCls}
             />
-            {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
-            {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
+            {linkEnriching && (
+              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                Fetching preview…
+              </p>
+            )}
+            {!linkEnriching && linkEnrichError && (
+              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                {linkEnrichError}
+              </p>
+            )}
           </div>
           <div className="relative">
             <input
@@ -893,7 +1044,13 @@ function AddAccessoryForm({ onAdd }: { onAdd: (a: Accessory) => void }) {
               </span>
             )}
           </div>
-          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes (optional)" className="textarea-dark w-full resize-none" />
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            placeholder="Notes (optional)"
+            className="textarea-dark w-full resize-none"
+          />
         </>
       ) : (
         <button
@@ -945,7 +1102,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
       rawUrl: string,
       options?: {
         overwriteTouched?: boolean;
-      }
+      },
     ) => {
       const trimmedUrl = rawUrl.trim();
       if (!trimmedUrl) {
@@ -959,10 +1116,16 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
       try {
         const enriched = await enrichCatalogLink(trimmedUrl);
         if (requestId !== enrichRequestIdRef.current) return;
-        if (enriched.title && (!nameTouchedRef.current || options?.overwriteTouched)) {
+        if (
+          enriched.title &&
+          (!nameTouchedRef.current || options?.overwriteTouched)
+        ) {
           setName(enriched.title);
         }
-        if (enriched.imageUrl && (options?.overwriteTouched || photoSourceRef.current !== "manual")) {
+        if (
+          enriched.imageUrl &&
+          (options?.overwriteTouched || photoSourceRef.current !== "manual")
+        ) {
           setAutoPhotoUrl(enriched.imageUrl);
           setPhotoUrl(enriched.imageUrl);
           setPhotoSource("auto");
@@ -976,7 +1139,7 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         }
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -1007,7 +1170,9 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         body: JSON.stringify({
           name: name.trim(),
           activityType: activityType.trim() || undefined,
-          durationMinutes: durationMinutes ? parseInt(durationMinutes) : undefined,
+          durationMinutes: durationMinutes
+            ? parseInt(durationMinutes)
+            : undefined,
           link: link.trim() || undefined,
           referralCode: referralCode.trim() || undefined,
           photoUrl: photoUrl || undefined,
@@ -1031,7 +1196,10 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
   return (
     <div
       className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
+      style={{
+        background: "rgba(36,63,22,0.04)",
+        border: "1px solid rgba(36,63,22,0.10)",
+      }}
     >
       {error && (
         <p className="text-xs" style={{ color: "#f87171" }}>
@@ -1056,7 +1224,12 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
         }}
       />
       <div>
-        <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>Name</label>
+        <label
+          className="block text-[11px] font-medium mb-1"
+          style={{ color: "var(--text-muted)" }}
+        >
+          Name
+        </label>
         <input
           value={name}
           onChange={(e) => {
@@ -1070,7 +1243,12 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
       {showMore ? (
         <>
           <div className="grid grid-cols-2 gap-2">
-            <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="Activity type (optional)" className={inputCls} />
+            <input
+              value={activityType}
+              onChange={(e) => setActivityType(e.target.value)}
+              placeholder="Activity type (optional)"
+              className={inputCls}
+            />
             <input
               type="number"
               value={durationMinutes}
@@ -1081,7 +1259,10 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+              <span
+                className="text-[11px] whitespace-nowrap"
+                style={{ color: "var(--text-muted)" }}
+              >
                 Link
               </span>
               <button
@@ -1089,16 +1270,24 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
                 onClick={() => void runLinkEnrichment(link)}
                 disabled={!link.trim() || linkEnriching}
                 className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
-                style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+                style={{
+                  borderColor: "rgba(36,63,22,0.25)",
+                  color: "var(--text-muted)",
+                }}
               >
                 Re-apply link preview
               </button>
               <button
                 type="button"
-                onClick={() => void runLinkEnrichment(link, { overwriteTouched: true })}
+                onClick={() =>
+                  void runLinkEnrichment(link, { overwriteTouched: true })
+                }
                 disabled={!link.trim() || linkEnriching}
                 className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
-                style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+                style={{
+                  borderColor: "rgba(36,63,22,0.25)",
+                  color: "var(--text-muted)",
+                }}
               >
                 Replace with preview data
               </button>
@@ -1110,8 +1299,16 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
               type="url"
               className={inputCls}
             />
-            {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
-            {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
+            {linkEnriching && (
+              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                Fetching preview…
+              </p>
+            )}
+            {!linkEnriching && linkEnrichError && (
+              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                {linkEnrichError}
+              </p>
+            )}
           </div>
           <div className="relative">
             <input
@@ -1129,7 +1326,13 @@ function AddWellnessForm({ onAdd }: { onAdd: (w: SavedWellnessItem) => void }) {
               </span>
             )}
           </div>
-          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes (optional)" className="textarea-dark w-full resize-none" />
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            placeholder="Notes (optional)"
+            className="textarea-dark w-full resize-none"
+          />
         </>
       ) : (
         <button
@@ -1202,7 +1405,10 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
   return (
     <div
       className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
+      style={{
+        background: "rgba(36,63,22,0.04)",
+        border: "1px solid rgba(36,63,22,0.10)",
+      }}
     >
       {error && (
         <p className="text-xs" style={{ color: "#f87171" }}>
@@ -1210,19 +1416,40 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
         </p>
       )}
       <div>
-        <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>Name</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Push Day" className={inputCls} />
+        <label
+          className="block text-[11px] font-medium mb-1"
+          style={{ color: "var(--text-muted)" }}
+        >
+          Name
+        </label>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Push Day"
+          className={inputCls}
+        />
       </div>
       {showMore ? (
         <>
-          <input value={exercises} onChange={(e) => setExercises(e.target.value)} placeholder="Exercises (comma-separated, optional)" className={inputCls} />
+          <input
+            value={exercises}
+            onChange={(e) => setExercises(e.target.value)}
+            placeholder="Exercises (comma-separated, optional)"
+            className={inputCls}
+          />
           <input
             value={videoUrl}
             onChange={(e) => setVideoUrl(e.target.value)}
             placeholder="YouTube / Instagram / TikTok link (optional)"
             className={inputCls}
           />
-          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes (optional)" className="textarea-dark w-full resize-none" />
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            placeholder="Notes (optional)"
+            className="textarea-dark w-full resize-none"
+          />
         </>
       ) : (
         <button
@@ -1248,7 +1475,6 @@ function AddWorkoutForm({ onAdd }: { onAdd: (w: SavedWorkout) => void }) {
 
 // ── Add Affiliate Form ────────────────────────────────────────────────────────
 
-
 interface BulkItem {
   id: string;
   name: string;
@@ -1270,9 +1496,11 @@ interface BulkItem {
 function AddAffiliateForm({
   onAdd,
   onBulkSaveComplete,
+  onSingleSaveComplete,
 }: {
   onAdd: (a: AffiliateItem) => void;
   onBulkSaveComplete: () => Promise<void>;
+  onSingleSaveComplete?: () => void;
 }) {
   // Mode: "paste" (bulk) or "single" (manual single item)
   const [mode, setMode] = useState<"paste" | "single">("paste");
@@ -1299,7 +1527,11 @@ function AddAffiliateForm({
 
   const [error, setError] = useState("");
 
-  const CONF_MAP: Record<string, number> = { high: 0.9, medium: 0.65, low: 0.35 };
+  const CONF_MAP: Record<string, number> = {
+    high: 0.9,
+    medium: 0.65,
+    low: 0.35,
+  };
 
   const [enriching, setEnriching] = useState(false);
   const [linkEnriching, setLinkEnriching] = useState(false);
@@ -1329,7 +1561,11 @@ function AddAffiliateForm({
           // Use og:title if the current name is just a domain or generic
           if (meta.title) {
             const domainOnly = (() => {
-              try { return new URL(d.link!).hostname.replace(/^www\./, ""); } catch { return ""; }
+              try {
+                return new URL(d.link!).hostname.replace(/^www\./, "");
+              } catch {
+                return "";
+              }
             })();
             if (!d.name || d.name === domainOnly || d.name.length < 3) {
               d.name = meta.title;
@@ -1341,7 +1577,9 @@ function AddAffiliateForm({
           if (meta.siteName && !d.brand) {
             d.brand = meta.siteName;
           }
-        } catch { /* continue enriching other items */ }
+        } catch {
+          /* continue enriching other items */
+        }
       }
     }
     setEnriching(false);
@@ -1366,7 +1604,7 @@ function AddAffiliateForm({
           included: true,
           actioned: false,
         };
-      })
+      }),
     );
     setBulkParsed(true);
     setReviewIndex(0);
@@ -1392,7 +1630,11 @@ function AddAffiliateForm({
         if (enriched.siteName && !singleBrandTouchedRef.current) {
           setBrand(enriched.siteName);
         }
-        if (enriched.imageUrl && (options?.forcePhotoRefresh || singlePhotoSourceRef.current !== "manual")) {
+        if (
+          enriched.imageUrl &&
+          (options?.forcePhotoRefresh ||
+            singlePhotoSourceRef.current !== "manual")
+        ) {
           setAutoPhotoUrl(enriched.imageUrl);
           setPhotoUrl(enriched.imageUrl);
           setPhotoSource("auto");
@@ -1407,12 +1649,16 @@ function AddAffiliateForm({
         }
       }
     },
-    [mode]
+    [mode],
   );
 
-  const updateBulkItem = (index: number, field: keyof BulkItem, value: string | boolean | null | number) => {
+  const updateBulkItem = (
+    index: number,
+    field: keyof BulkItem,
+    value: string | boolean | null | number,
+  ) => {
     setBulkItems((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)),
     );
   };
 
@@ -1427,9 +1673,13 @@ function AddAffiliateForm({
       setError("Every item needs a name");
       return;
     }
-    const lowConfidencePending = toSave.filter((item) => item.confidence < 0.55 && !item.lowConfidenceConfirmed);
+    const lowConfidencePending = toSave.filter(
+      (item) => item.confidence < 0.55 && !item.lowConfidenceConfirmed,
+    );
     if (lowConfidencePending.length > 0) {
-      setError(`Confirm ${lowConfidencePending.length} low-confidence item(s) before saving.`);
+      setError(
+        `Confirm ${lowConfidencePending.length} low-confidence item(s) before saving.`,
+      );
       return;
     }
     setBulkSubmitting(true);
@@ -1449,7 +1699,12 @@ function AddAffiliateForm({
             photoUrl: item.photoUrl?.trim() || undefined,
             subcategoryTags: dedupeTags(parseTagsText(item.tagsText)),
             logoUrl: item.photoUrl?.trim() || undefined,
-            enrichmentConfidence: item.confidence >= 0.75 ? "high" : item.confidence >= 0.55 ? "medium" : "low",
+            enrichmentConfidence:
+              item.confidence >= 0.75
+                ? "high"
+                : item.confidence >= 0.55
+                  ? "medium"
+                  : "low",
             needsReview: item.needsReview,
           }),
         });
@@ -1480,7 +1735,9 @@ function AddAffiliateForm({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "ArrowRight") {
         event.preventDefault();
-        setReviewIndex((prev) => Math.min(prev + 1, Math.max(0, bulkItems.length - 1)));
+        setReviewIndex((prev) =>
+          Math.min(prev + 1, Math.max(0, bulkItems.length - 1)),
+        );
       }
       if (event.key === "ArrowLeft") {
         event.preventDefault();
@@ -1514,14 +1771,18 @@ function AddAffiliateForm({
   // Single item smart-paste
   const handleSingleParse = () => {
     if (!rawText.trim()) return;
-    import("@/lib/affiliate-parser").then(({ parseAffiliateInput, suggestCategory }) => {
-      const result = parseAffiliateInput(rawText);
-      if (result.urls.length > 0 && !link) setLink(result.urls[0]);
-      if (result.codes.length > 0 && !referralCode) setReferralCode(result.codes[0]);
-      if (result.brand && !brand) setBrand(result.brand);
-      const suggested = suggestCategory(rawText, result.urls[0]);
-      if (suggested !== "OTHER" && category === "OTHER") setCategory(suggested);
-    });
+    import("@/lib/affiliate-parser").then(
+      ({ parseAffiliateInput, suggestCategory }) => {
+        const result = parseAffiliateInput(rawText);
+        if (result.urls.length > 0 && !link) setLink(result.urls[0]);
+        if (result.codes.length > 0 && !referralCode)
+          setReferralCode(result.codes[0]);
+        if (result.brand && !brand) setBrand(result.brand);
+        const suggested = suggestCategory(rawText, result.urls[0]);
+        if (suggested !== "OTHER" && category === "OTHER")
+          setCategory(suggested);
+      },
+    );
   };
 
   const handleSingleSubmit = async () => {
@@ -1557,6 +1818,7 @@ function AddAffiliateForm({
       }
       const item = await res.json();
       onAdd(item);
+      onSingleSaveComplete?.();
     } catch {
       setError("Something went wrong");
     } finally {
@@ -1567,14 +1829,27 @@ function AddAffiliateForm({
   return (
     <div
       className="space-y-3 p-4 rounded-xl"
-      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
+      style={{
+        background: "rgba(36,63,22,0.04)",
+        border: "1px solid rgba(36,63,22,0.10)",
+      }}
     >
-      {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
+      {error && (
+        <p className="text-xs" style={{ color: "#f87171" }}>
+          {error}
+        </p>
+      )}
 
       {/* Mode toggle */}
-      <div className="flex rounded-lg overflow-hidden" style={{ background: "rgba(36,63,22,0.06)" }}>
+      <div
+        className="flex rounded-lg overflow-hidden"
+        style={{ background: "rgba(36,63,22,0.06)" }}
+      >
         <button
-          onClick={() => { setMode("paste"); setError(""); }}
+          onClick={() => {
+            setMode("paste");
+            setError("");
+          }}
           className="flex-1 py-2 text-xs font-medium transition-all"
           style={{
             background: mode === "paste" ? "var(--brand)" : "transparent",
@@ -1584,7 +1859,10 @@ function AddAffiliateForm({
           Bulk Paste
         </button>
         <button
-          onClick={() => { setMode("single"); setError(""); }}
+          onClick={() => {
+            setMode("single");
+            setError("");
+          }}
           className="flex-1 py-2 text-xs font-medium transition-all"
           style={{
             background: mode === "single" ? "var(--brand)" : "transparent",
@@ -1604,7 +1882,9 @@ function AddAffiliateForm({
                 value={rawText}
                 onChange={(e) => setRawText(e.target.value)}
                 rows={6}
-                placeholder={"Paste your referral links and codes, one per line:\n\nhttps://myprotein.com/ref/ROYAL20\nhttps://gymshark.com?ref=abc GYMCODE15\nhttps://whoop.com/join/xyz"}
+                placeholder={
+                  "Paste your referral links and codes, one per line:\n\nhttps://myprotein.com/ref/ROYAL20\nhttps://gymshark.com?ref=abc GYMCODE15\nhttps://whoop.com/join/xyz"
+                }
                 className="textarea-dark w-full resize-none"
               />
               <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
@@ -1625,25 +1905,46 @@ function AddAffiliateForm({
               <div className="space-y-2">
                 {(() => {
                   const readyCount = bulkItems.filter((b) => b.included).length;
-                  const skippedCount = bulkItems.filter((b) => b.actioned && !b.included).length;
-                  const reviewedCount = bulkItems.filter((b) => b.actioned).length;
-                  const allReviewed = bulkItems.length > 0 && bulkItems.every((b) => b.actioned);
+                  const skippedCount = bulkItems.filter(
+                    (b) => b.actioned && !b.included,
+                  ).length;
+                  const reviewedCount = bulkItems.filter(
+                    (b) => b.actioned,
+                  ).length;
+                  const allReviewed =
+                    bulkItems.length > 0 && bulkItems.every((b) => b.actioned);
 
                   if (allReviewed) {
                     return (
-                      <div className="rounded-xl p-4 space-y-3 text-center" style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}>
-                        <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                      <div
+                        className="rounded-xl p-4 space-y-3 text-center"
+                        style={{
+                          background: "var(--surface)",
+                          border: "1px solid rgba(36,63,22,0.10)",
+                        }}
+                      >
+                        <p
+                          className="text-sm font-medium"
+                          style={{ color: "var(--text-primary)" }}
+                        >
                           {readyCount > 0
                             ? `${readyCount} ${readyCount === 1 ? "link" : "links"} ready.${skippedCount > 0 ? ` ${skippedCount} skipped.` : ""}`
                             : "All items skipped."}
                         </p>
                         {readyCount > 0 && (
-                          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                            These will be added to your catalog. Followers who shop through your links earn you royalties.
+                          <p
+                            className="text-xs"
+                            style={{ color: "var(--text-muted)" }}
+                          >
+                            These will be added to your catalog. Followers who
+                            shop through your links earn you royalties.
                           </p>
                         )}
                         {readyCount === 0 && (
-                          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                          <p
+                            className="text-xs"
+                            style={{ color: "var(--text-muted)" }}
+                          >
                             Go back and add at least one link to continue.
                           </p>
                         )}
@@ -1653,119 +1954,353 @@ function AddAffiliateForm({
 
                   return (
                     <>
-                      <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                      <p
+                        className="text-xs font-medium"
+                        style={{ color: "var(--text-muted)" }}
+                      >
                         {reviewedCount} of {bulkItems.length} reviewed
                       </p>
-                      {bulkItems.length > 0 && (() => {
-                        const activeIndex = Math.min(reviewIndex, bulkItems.length - 1);
-                        const item = bulkItems[activeIndex];
-                        if (!item) return null;
-                        const confidencePercent = Math.round(item.confidence * 100);
-                        const confidenceTone = item.confidence >= 0.75 ? "#528531" : item.confidence >= 0.55 ? "#9A7B2E" : "#f87171";
-                        const confidenceLabel = item.confidence >= 0.75 ? "High confidence" : item.confidence >= 0.55 ? "Medium confidence" : "Low confidence";
-                        return (
-                          <div
-                            className="rounded-xl p-3 space-y-3 transition-opacity"
-                            style={{
-                              background: item.included ? "var(--surface)" : "rgba(36,63,22,0.02)",
-                              border: item.needsReview ? "1px solid rgba(248,113,113,0.28)" : "1px solid rgba(36,63,22,0.10)",
-                              opacity: item.included ? 1 : 0.55,
-                            }}
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                                {activeIndex + 1} of {bulkItems.length}
-                              </p>
-                              <span className="text-[10px] px-2 py-1 rounded-full font-medium" style={{ background: `${confidenceTone}22`, color: confidenceTone }}>
-                                {confidenceLabel} · {confidencePercent}%
-                              </span>
-                            </div>
-                            {item.confidenceReasons.length > 0 && (
-                              <ul className="text-[10px] space-y-0.5" style={{ color: confidenceTone }}>
-                                {item.confidenceReasons.map((r, idx) => <li key={idx}>· {r}</li>)}
-                              </ul>
-                            )}
-                            <input value={item.name} onChange={(e) => updateBulkItem(activeIndex, "name", e.target.value)} placeholder="Title *" className={inputCls} />
-                            <input value={item.brand ?? ""} onChange={(e) => updateBulkItem(activeIndex, "brand", e.target.value)} placeholder="Brand" className={inputCls} />
-                            <div className="grid grid-cols-2 gap-2">
-                              <select value={item.category} onChange={(e) => updateBulkItem(activeIndex, "category", e.target.value)} className="select-dark w-full">
-                                {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
-                                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                ))}
-                              </select>
-                              <input value={item.subcategory} onChange={(e) => updateBulkItem(activeIndex, "subcategory", e.target.value)} placeholder="Subcategory tag" className={inputCls} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                              <input value={item.link ?? ""} onChange={(e) => updateBulkItem(activeIndex, "link", e.target.value)} placeholder="Referral link" className={inputCls} />
-                              <input value={item.referralCode ?? ""} onChange={(e) => updateBulkItem(activeIndex, "referralCode", e.target.value)} placeholder="Code" className={inputCls} />
-                            </div>
-                            <input value={item.photoUrl ?? ""} onChange={(e) => updateBulkItem(activeIndex, "photoUrl", e.target.value)} placeholder="Logo image URL" className={inputCls} />
-                            {item.confidence < 0.55 && item.included && (
-                              <label className="flex items-start gap-2 text-xs" style={{ color: "#f87171" }}>
+                      {bulkItems.length > 0 &&
+                        (() => {
+                          const activeIndex = Math.min(
+                            reviewIndex,
+                            bulkItems.length - 1,
+                          );
+                          const item = bulkItems[activeIndex];
+                          if (!item) return null;
+                          const confidencePercent = Math.round(
+                            item.confidence * 100,
+                          );
+                          const confidenceTone =
+                            item.confidence >= 0.75
+                              ? "#528531"
+                              : item.confidence >= 0.55
+                                ? "#9A7B2E"
+                                : "#f87171";
+                          const confidenceLabel =
+                            item.confidence >= 0.75
+                              ? "High confidence"
+                              : item.confidence >= 0.55
+                                ? "Medium confidence"
+                                : "Low confidence";
+                          return (
+                            <div
+                              className="rounded-xl p-3 space-y-3 transition-opacity"
+                              style={{
+                                background: item.included
+                                  ? "var(--surface)"
+                                  : "rgba(36,63,22,0.02)",
+                                border: item.needsReview
+                                  ? "1px solid rgba(248,113,113,0.28)"
+                                  : "1px solid rgba(36,63,22,0.10)",
+                                opacity: item.included ? 1 : 0.55,
+                              }}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <p
+                                  className="text-xs font-medium"
+                                  style={{ color: "var(--text-muted)" }}
+                                >
+                                  {activeIndex + 1} of {bulkItems.length}
+                                </p>
+                                <span
+                                  className="text-[10px] px-2 py-1 rounded-full font-medium"
+                                  style={{
+                                    background: `${confidenceTone}22`,
+                                    color: confidenceTone,
+                                  }}
+                                >
+                                  {confidenceLabel} · {confidencePercent}%
+                                </span>
+                              </div>
+                              {item.confidenceReasons.length > 0 && (
+                                <ul
+                                  className="text-[10px] space-y-0.5"
+                                  style={{ color: confidenceTone }}
+                                >
+                                  {item.confidenceReasons.map((r, idx) => (
+                                    <li key={idx}>· {r}</li>
+                                  ))}
+                                </ul>
+                              )}
+                              <input
+                                value={item.name}
+                                onChange={(e) =>
+                                  updateBulkItem(
+                                    activeIndex,
+                                    "name",
+                                    e.target.value,
+                                  )
+                                }
+                                placeholder="Title *"
+                                className={inputCls}
+                              />
+                              <input
+                                value={item.brand ?? ""}
+                                onChange={(e) =>
+                                  updateBulkItem(
+                                    activeIndex,
+                                    "brand",
+                                    e.target.value,
+                                  )
+                                }
+                                placeholder="Brand"
+                                className={inputCls}
+                              />
+                              <div className="grid grid-cols-2 gap-2">
+                                <select
+                                  value={item.category}
+                                  onChange={(e) =>
+                                    updateBulkItem(
+                                      activeIndex,
+                                      "category",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="select-dark w-full"
+                                >
+                                  {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                                </select>
                                 <input
-                                  type="checkbox"
-                                  checked={item.lowConfidenceConfirmed}
-                                  onChange={(e) => updateBulkItem(activeIndex, "lowConfidenceConfirmed", e.target.checked)}
-                                  className="mt-0.5 rounded"
+                                  value={item.subcategory}
+                                  onChange={(e) =>
+                                    updateBulkItem(
+                                      activeIndex,
+                                      "subcategory",
+                                      e.target.value,
+                                    )
+                                  }
+                                  placeholder="Subcategory tag"
+                                  className={inputCls}
                                 />
-                                Confirm this low-confidence item before saving.
-                              </label>
-                            )}
-                            <div className="flex flex-wrap gap-2 text-[10px]" style={{ color: "var(--text-muted)" }}>
-                              {item.link && <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}><HiLink className="inline w-2.5 h-2.5 mr-1" />{item.link}</span>}
-                              {item.referralCode && <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(154,123,46,0.12)", color: "#9A7B2E" }}>{item.referralCode}</span>}
-                              <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}>{AFFILIATE_CATEGORY_LABELS[item.category] ?? "Other"}</span>
-                              {item.subcategory.trim() && <span className="px-1.5 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.06)" }}>{item.subcategory.trim()}</span>}
-                            </div>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => {
-                                  setBulkItems(prev => prev.map((it, i) => i === activeIndex ? { ...it, included: true, actioned: true } : it));
-                                  if (activeIndex < bulkItems.length - 1) setReviewIndex(prev => prev + 1);
-                                }}
-                                className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(82,133,49,0.14)", color: "#528531" }}
-                              >Add to catalog</button>
-                              <button
-                                onClick={() => {
-                                  setBulkItems(prev => prev.map((it, i) => i === activeIndex ? { ...it, included: false, actioned: true } : it));
-                                  if (activeIndex < bulkItems.length - 1) setReviewIndex(prev => prev + 1);
-                                }}
-                                className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(248,113,113,0.14)", color: "#f87171" }}
-                              >Skip</button>
-                              <button onClick={() => updateBulkItem(activeIndex, "needsReview", true)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(36,63,22,0.08)", color: "var(--text-muted)" }}>Edit</button>
-                            </div>
-                            {activeIndex > 0 && (
-                              <button
-                                onClick={() => setReviewIndex((prev) => Math.max(prev - 1, 0))}
-                                className="w-full py-1.5 rounded-xl text-xs font-medium"
-                                style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <input
+                                  value={item.link ?? ""}
+                                  onChange={(e) =>
+                                    updateBulkItem(
+                                      activeIndex,
+                                      "link",
+                                      e.target.value,
+                                    )
+                                  }
+                                  placeholder="Referral link"
+                                  className={inputCls}
+                                />
+                                <input
+                                  value={item.referralCode ?? ""}
+                                  onChange={(e) =>
+                                    updateBulkItem(
+                                      activeIndex,
+                                      "referralCode",
+                                      e.target.value,
+                                    )
+                                  }
+                                  placeholder="Code"
+                                  className={inputCls}
+                                />
+                              </div>
+                              <input
+                                value={item.photoUrl ?? ""}
+                                onChange={(e) =>
+                                  updateBulkItem(
+                                    activeIndex,
+                                    "photoUrl",
+                                    e.target.value,
+                                  )
+                                }
+                                placeholder="Logo image URL"
+                                className={inputCls}
+                              />
+                              {item.confidence < 0.55 && item.included && (
+                                <label
+                                  className="flex items-start gap-2 text-xs"
+                                  style={{ color: "#f87171" }}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={item.lowConfidenceConfirmed}
+                                    onChange={(e) =>
+                                      updateBulkItem(
+                                        activeIndex,
+                                        "lowConfidenceConfirmed",
+                                        e.target.checked,
+                                      )
+                                    }
+                                    className="mt-0.5 rounded"
+                                  />
+                                  Confirm this low-confidence item before
+                                  saving.
+                                </label>
+                              )}
+                              <div
+                                className="flex flex-wrap gap-2 text-[10px]"
+                                style={{ color: "var(--text-muted)" }}
                               >
-                                <HiChevronLeft className="inline w-3.5 h-3.5 mr-1" />
-                                Back to previous
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })()}
+                                {item.link && (
+                                  <span
+                                    className="px-1.5 py-0.5 rounded-full"
+                                    style={{
+                                      background: "rgba(36,63,22,0.06)",
+                                    }}
+                                  >
+                                    <HiLink className="inline w-2.5 h-2.5 mr-1" />
+                                    {item.link}
+                                  </span>
+                                )}
+                                {item.referralCode && (
+                                  <span
+                                    className="px-1.5 py-0.5 rounded-full"
+                                    style={{
+                                      background: "rgba(154,123,46,0.12)",
+                                      color: "#9A7B2E",
+                                    }}
+                                  >
+                                    {item.referralCode}
+                                  </span>
+                                )}
+                                <span
+                                  className="px-1.5 py-0.5 rounded-full"
+                                  style={{ background: "rgba(36,63,22,0.06)" }}
+                                >
+                                  {AFFILIATE_CATEGORY_LABELS[item.category] ??
+                                    "Other"}
+                                </span>
+                                {item.subcategory.trim() && (
+                                  <span
+                                    className="px-1.5 py-0.5 rounded-full"
+                                    style={{
+                                      background: "rgba(36,63,22,0.06)",
+                                    }}
+                                  >
+                                    {item.subcategory.trim()}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => {
+                                    setBulkItems((prev) =>
+                                      prev.map((it, i) =>
+                                        i === activeIndex
+                                          ? {
+                                              ...it,
+                                              included: true,
+                                              actioned: true,
+                                            }
+                                          : it,
+                                      ),
+                                    );
+                                    if (activeIndex < bulkItems.length - 1)
+                                      setReviewIndex((prev) => prev + 1);
+                                  }}
+                                  className="flex-1 py-2 rounded-xl text-xs font-semibold"
+                                  style={{
+                                    background: "rgba(82,133,49,0.14)",
+                                    color: "#528531",
+                                  }}
+                                >
+                                  Add to catalog
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setBulkItems((prev) =>
+                                      prev.map((it, i) =>
+                                        i === activeIndex
+                                          ? {
+                                              ...it,
+                                              included: false,
+                                              actioned: true,
+                                            }
+                                          : it,
+                                      ),
+                                    );
+                                    if (activeIndex < bulkItems.length - 1)
+                                      setReviewIndex((prev) => prev + 1);
+                                  }}
+                                  className="flex-1 py-2 rounded-xl text-xs font-semibold"
+                                  style={{
+                                    background: "rgba(248,113,113,0.14)",
+                                    color: "#f87171",
+                                  }}
+                                >
+                                  Skip
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    updateBulkItem(
+                                      activeIndex,
+                                      "needsReview",
+                                      true,
+                                    )
+                                  }
+                                  className="flex-1 py-2 rounded-xl text-xs font-semibold"
+                                  style={{
+                                    background: "rgba(36,63,22,0.08)",
+                                    color: "var(--text-muted)",
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                              </div>
+                              {activeIndex > 0 && (
+                                <button
+                                  onClick={() =>
+                                    setReviewIndex((prev) =>
+                                      Math.max(prev - 1, 0),
+                                    )
+                                  }
+                                  className="w-full py-1.5 rounded-xl text-xs font-medium"
+                                  style={{
+                                    background: "rgba(36,63,22,0.06)",
+                                    color: "var(--text-muted)",
+                                  }}
+                                >
+                                  <HiChevronLeft className="inline w-3.5 h-3.5 mr-1" />
+                                  Back to previous
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })()}
                     </>
                   );
                 })()}
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => { setBulkParsed(false); setBulkItems([]); setReviewIndex(0); }}
+                  onClick={() => {
+                    setBulkParsed(false);
+                    setBulkItems([]);
+                    setReviewIndex(0);
+                  }}
                   className="flex-1 py-2 rounded-xl text-sm font-medium"
-                  style={{ background: "rgba(36,63,22,0.06)", color: "var(--text-muted)" }}
+                  style={{
+                    background: "rgba(36,63,22,0.06)",
+                    color: "var(--text-muted)",
+                  }}
                 >
                   Back
                 </button>
                 <button
                   onClick={handleBulkSubmit}
-                  disabled={bulkSubmitting || bulkItems.filter((b) => b.included).length === 0}
+                  disabled={
+                    bulkSubmitting ||
+                    bulkItems.filter((b) => b.included).length === 0
+                  }
                   className="flex-1 py-2 rounded-xl text-sm font-semibold btn-gradient disabled:opacity-50"
                   style={{ color: "#ffffff" }}
                 >
-                  {bulkSubmitting ? "Saving..." : (() => { const n = bulkItems.filter((b) => b.included).length; return `Add ${n} ${n === 1 ? "link" : "links"} to catalog`; })()}
+                  {bulkSubmitting
+                    ? "Saving..."
+                    : (() => {
+                        const n = bulkItems.filter((b) => b.included).length;
+                        return `Add ${n} ${n === 1 ? "link" : "links"} to catalog`;
+                      })()}
                 </button>
               </div>
             </>
@@ -1783,23 +2318,52 @@ function AddAffiliateForm({
               placeholder="Paste link or promo text to auto-fill..."
               className="textarea-dark w-full resize-none"
             />
-            <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+            <p
+              className="text-[11px] mt-0.5"
+              style={{ color: "var(--text-muted)" }}
+            >
               We&apos;ll auto-detect links, codes, and categories
             </p>
           </div>
-          <input value={name} onChange={(e) => { singleNameTouchedRef.current = true; setName(e.target.value); }} placeholder="Item name *" className={inputCls} />
-          <input value={brand} onChange={(e) => { singleBrandTouchedRef.current = true; setBrand(e.target.value); }} placeholder="Brand name (optional)" className={inputCls} />
+          <input
+            value={name}
+            onChange={(e) => {
+              singleNameTouchedRef.current = true;
+              setName(e.target.value);
+            }}
+            placeholder="Item name *"
+            className={inputCls}
+          />
+          <input
+            value={brand}
+            onChange={(e) => {
+              singleBrandTouchedRef.current = true;
+              setBrand(e.target.value);
+            }}
+            placeholder="Brand name (optional)"
+            className={inputCls}
+          />
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+              <span
+                className="text-[11px] whitespace-nowrap"
+                style={{ color: "var(--text-muted)" }}
+              >
                 Referral link
               </span>
               <button
                 type="button"
-                onClick={() => void runSingleLinkEnrichment(link, { forcePhotoRefresh: true })}
+                onClick={() =>
+                  void runSingleLinkEnrichment(link, {
+                    forcePhotoRefresh: true,
+                  })
+                }
                 disabled={!link.trim() || linkEnriching}
                 className="text-[11px] px-2 py-1 rounded-md border disabled:opacity-50"
-                style={{ borderColor: "rgba(36,63,22,0.25)", color: "var(--text-muted)" }}
+                style={{
+                  borderColor: "rgba(36,63,22,0.25)",
+                  color: "var(--text-muted)",
+                }}
               >
                 Refresh from link preview
               </button>
@@ -1812,29 +2376,71 @@ function AddAffiliateForm({
                 className={inputCls}
               />
               {link && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(36,63,22,0.15)", color: "#528531" }}>
+                <span
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full"
+                  style={{
+                    background: "rgba(36,63,22,0.15)",
+                    color: "#528531",
+                  }}
+                >
                   Link
                 </span>
               )}
             </div>
-            {linkEnriching && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Fetching preview…</p>}
-            {!linkEnriching && linkEnrichError && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{linkEnrichError}</p>}
+            {linkEnriching && (
+              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                Fetching preview…
+              </p>
+            )}
+            {!linkEnriching && linkEnrichError && (
+              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                {linkEnrichError}
+              </p>
+            )}
           </div>
           <div className="relative">
-            <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Discount / promo code (e.g. ROYAL20)" className={inputCls} />
+            <input
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value)}
+              placeholder="Discount / promo code (e.g. ROYAL20)"
+              className={inputCls}
+            />
             {referralCode && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(154,123,46,0.15)", color: "#9A7B2E" }}>
+              <span
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded-full"
+                style={{
+                  background: "rgba(154,123,46,0.15)",
+                  color: "#9A7B2E",
+                }}
+              >
                 Code
               </span>
             )}
           </div>
-          <input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder="Primary CTA label (optional)" className={inputCls} />
-          <select value={category} onChange={(e) => setCategory(e.target.value)} className="select-dark w-full">
+          <input
+            value={ctaLabel}
+            onChange={(e) => setCtaLabel(e.target.value)}
+            placeholder="Primary CTA label (optional)"
+            className={inputCls}
+          />
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="select-dark w-full"
+          >
             {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} placeholder="Description (optional)" className="textarea-dark w-full resize-none" />
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={2}
+            placeholder="Description (optional)"
+            className="textarea-dark w-full resize-none"
+          />
           <PhotoUpload
             photoUrl={photoUrl}
             photoSource={photoSource}
@@ -1882,92 +2488,107 @@ function EditItemModal({
 }) {
   const [name, setName] = useState(item.name ?? "");
   const [ingredients, setIngredients] = useState(
-    tab === "meals" ? ((item as SavedMeal).ingredients ?? []).join(", ") : ""
+    tab === "meals" ? ((item as SavedMeal).ingredients ?? []).join(", ") : "",
   );
   const [calories, setCalories] = useState(
-    tab === "meals" && (item as SavedMeal).calories != null ? String((item as SavedMeal).calories) : ""
+    tab === "meals" && (item as SavedMeal).calories != null
+      ? String((item as SavedMeal).calories)
+      : "",
   );
   const [protein, setProtein] = useState(
-    tab === "meals" && (item as SavedMeal).protein != null ? String((item as SavedMeal).protein) : ""
+    tab === "meals" && (item as SavedMeal).protein != null
+      ? String((item as SavedMeal).protein)
+      : "",
   );
   const [carbs, setCarbs] = useState(
-    tab === "meals" && (item as SavedMeal).carbs != null ? String((item as SavedMeal).carbs) : ""
+    tab === "meals" && (item as SavedMeal).carbs != null
+      ? String((item as SavedMeal).carbs)
+      : "",
   );
   const [fat, setFat] = useState(
-    tab === "meals" && (item as SavedMeal).fat != null ? String((item as SavedMeal).fat) : ""
+    tab === "meals" && (item as SavedMeal).fat != null
+      ? String((item as SavedMeal).fat)
+      : "",
   );
   const [recipeSourceUrl, setRecipeSourceUrl] = useState(
-    tab === "meals" ? (item as SavedMeal).recipeSourceUrl ?? "" : ""
+    tab === "meals" ? ((item as SavedMeal).recipeSourceUrl ?? "") : "",
   );
   const [exercisesJson, setExercisesJson] = useState(
-    tab === "workouts" ? (item as SavedWorkout).exercisesJson ?? "" : ""
+    tab === "workouts" ? ((item as SavedWorkout).exercisesJson ?? "") : "",
   );
   const [videoUrl, setVideoUrl] = useState(
-    tab === "workouts" ? (item as SavedWorkout).videoUrl ?? "" : ""
+    tab === "workouts" ? ((item as SavedWorkout).videoUrl ?? "") : "",
   );
   const [brand, setBrand] = useState(
     tab === "supplements"
-      ? (item as Supplement).brand ?? ""
+      ? ((item as Supplement).brand ?? "")
       : tab === "affiliates"
-        ? (item as AffiliateItem).brand ?? ""
-        : ""
+        ? ((item as AffiliateItem).brand ?? "")
+        : "",
   );
   const [dose, setDose] = useState(
-    tab === "supplements" ? (item as Supplement).dose ?? "" : ""
+    tab === "supplements" ? ((item as Supplement).dose ?? "") : "",
   );
   const [schedule, setSchedule] = useState(
-    tab === "supplements" ? (item as Supplement).schedule ?? "" : ""
+    tab === "supplements" ? ((item as Supplement).schedule ?? "") : "",
   );
   const [type, setType] = useState(
-    tab === "accessories" ? (item as Accessory).type ?? "" : ""
+    tab === "accessories" ? ((item as Accessory).type ?? "") : "",
   );
   const [activityType, setActivityType] = useState(
-    tab === "wellness" ? (item as SavedWellnessItem).activityType ?? "" : ""
+    tab === "wellness" ? ((item as SavedWellnessItem).activityType ?? "") : "",
   );
   const [durationMinutes, setDurationMinutes] = useState(
     tab === "wellness" && (item as SavedWellnessItem).durationMinutes != null
       ? String((item as SavedWellnessItem).durationMinutes)
-      : ""
+      : "",
   );
   const [link, setLink] = useState(
     tab === "supplements"
-      ? (item as Supplement).link ?? ""
+      ? ((item as Supplement).link ?? "")
       : tab === "accessories"
-        ? (item as Accessory).link ?? ""
+        ? ((item as Accessory).link ?? "")
         : tab === "wellness"
-          ? (item as SavedWellnessItem).link ?? ""
+          ? ((item as SavedWellnessItem).link ?? "")
           : tab === "affiliates"
-            ? (item as AffiliateItem).link ?? ""
-            : ""
+            ? ((item as AffiliateItem).link ?? "")
+            : "",
   );
   const [referralCode, setReferralCode] = useState(
     tab === "supplements"
-      ? (item as Supplement).referralCode ?? ""
+      ? ((item as Supplement).referralCode ?? "")
       : tab === "accessories"
-        ? (item as Accessory).referralCode ?? ""
+        ? ((item as Accessory).referralCode ?? "")
         : tab === "wellness"
-          ? (item as SavedWellnessItem).referralCode ?? ""
+          ? ((item as SavedWellnessItem).referralCode ?? "")
           : tab === "affiliates"
-            ? (item as AffiliateItem).referralCode ?? ""
-            : ""
+            ? ((item as AffiliateItem).referralCode ?? "")
+            : "",
   );
   const [notes, setNotes] = useState(
     tab === "affiliates"
-      ? (item as AffiliateItem).description ?? ""
-      : ("notes" in item ? (item as { notes: string | null }).notes : "") ?? ""
+      ? ((item as AffiliateItem).description ?? "")
+      : (("notes" in item ? (item as { notes: string | null }).notes : "") ??
+          ""),
   );
-  const [photoUrl, setPhotoUrl] = useState(("photoUrl" in item ? (item as { photoUrl: string | null }).photoUrl : "") ?? "");
+  const [photoUrl, setPhotoUrl] = useState(
+    ("photoUrl" in item
+      ? (item as { photoUrl: string | null }).photoUrl
+      : "") ?? "",
+  );
   const [affiliateCategory, setAffiliateCategory] = useState(
-    tab === "affiliates" ? (item as AffiliateItem).category : "OTHER"
+    tab === "affiliates" ? (item as AffiliateItem).category : "OTHER",
   );
   const [subcategoryTagsText, setSubcategoryTagsText] = useState(
-    tab === "affiliates" ? ((item as AffiliateItem).subcategoryTags ?? []).join(", ") : ""
+    tab === "affiliates"
+      ? ((item as AffiliateItem).subcategoryTags ?? []).join(", ")
+      : "",
   );
   const [ctaLabel, setCtaLabel] = useState(
-    tab === "affiliates" ? (item as AffiliateItem).ctaLabel ?? "" : ""
+    tab === "affiliates" ? ((item as AffiliateItem).ctaLabel ?? "") : "",
   );
   const [logoUrl] = useState(
-    tab === "affiliates" ? (item as AffiliateItem).logoUrl ?? "" : ""
+    tab === "affiliates" ? ((item as AffiliateItem).logoUrl ?? "") : "",
   );
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -1989,14 +2610,19 @@ function EditItemModal({
     }
 
     const payload: Record<string, unknown> = {};
-    const optionalPhotoForPatch = (value: string, original: string | null | undefined) => {
+    const optionalPhotoForPatch = (
+      value: string,
+      original: string | null | undefined,
+    ) => {
       const trimmed = value.trim();
       if (!trimmed && original) return null;
       return trimmed || undefined;
     };
     const addIfChanged = (key: string, value: unknown, original: unknown) => {
       const left = Array.isArray(value) ? JSON.stringify(value) : value;
-      const right = Array.isArray(original) ? JSON.stringify(original) : original;
+      const right = Array.isArray(original)
+        ? JSON.stringify(original)
+        : original;
       if (left !== right) payload[key] = value;
     };
 
@@ -2006,19 +2632,50 @@ function EditItemModal({
       const original = item as SavedMeal;
       addIfChanged(
         "ingredients",
-        ingredients.split(",").map((s) => s.trim()).filter(Boolean),
-        original.ingredients ?? []
+        ingredients
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
+        original.ingredients ?? [],
       );
-      addIfChanged("calories", calories ? parseInt(calories) : undefined, original.calories ?? undefined);
-      addIfChanged("protein", protein ? parseFloat(protein) : undefined, original.protein ?? undefined);
-      addIfChanged("carbs", carbs ? parseFloat(carbs) : undefined, original.carbs ?? undefined);
-      addIfChanged("fat", fat ? parseFloat(fat) : undefined, original.fat ?? undefined);
-      addIfChanged("recipeSourceUrl", recipeSourceUrl.trim(), original.recipeSourceUrl ?? "");
-      addIfChanged("photoUrl", optionalPhotoForPatch(photoUrl, original.photoUrl), original.photoUrl ?? undefined);
+      addIfChanged(
+        "calories",
+        calories ? parseInt(calories) : undefined,
+        original.calories ?? undefined,
+      );
+      addIfChanged(
+        "protein",
+        protein ? parseFloat(protein) : undefined,
+        original.protein ?? undefined,
+      );
+      addIfChanged(
+        "carbs",
+        carbs ? parseFloat(carbs) : undefined,
+        original.carbs ?? undefined,
+      );
+      addIfChanged(
+        "fat",
+        fat ? parseFloat(fat) : undefined,
+        original.fat ?? undefined,
+      );
+      addIfChanged(
+        "recipeSourceUrl",
+        recipeSourceUrl.trim(),
+        original.recipeSourceUrl ?? "",
+      );
+      addIfChanged(
+        "photoUrl",
+        optionalPhotoForPatch(photoUrl, original.photoUrl),
+        original.photoUrl ?? undefined,
+      );
       addIfChanged("notes", notes.trim(), original.notes ?? "");
     } else if (tab === "workouts") {
       const original = item as SavedWorkout;
-      addIfChanged("exercisesJson", exercisesJson.trim(), original.exercisesJson ?? "");
+      addIfChanged(
+        "exercisesJson",
+        exercisesJson.trim(),
+        original.exercisesJson ?? "",
+      );
       addIfChanged("videoUrl", videoUrl.trim(), original.videoUrl ?? "");
       addIfChanged("notes", notes.trim(), original.notes ?? "");
     } else if (tab === "supplements") {
@@ -2027,39 +2684,87 @@ function EditItemModal({
       addIfChanged("dose", dose.trim(), original.dose ?? "");
       addIfChanged("schedule", schedule.trim(), original.schedule ?? "");
       addIfChanged("notes", notes.trim(), original.notes ?? "");
-      addIfChanged("photoUrl", optionalPhotoForPatch(photoUrl, original.photoUrl), original.photoUrl ?? undefined);
+      addIfChanged(
+        "photoUrl",
+        optionalPhotoForPatch(photoUrl, original.photoUrl),
+        original.photoUrl ?? undefined,
+      );
       addIfChanged("link", link.trim(), original.link ?? "");
-      addIfChanged("referralCode", referralCode.trim(), original.referralCode ?? "");
+      addIfChanged(
+        "referralCode",
+        referralCode.trim(),
+        original.referralCode ?? "",
+      );
     } else if (tab === "accessories") {
       const original = item as Accessory;
       addIfChanged("type", type.trim(), original.type ?? "");
       addIfChanged("link", link.trim(), original.link ?? "");
-      addIfChanged("photoUrl", optionalPhotoForPatch(photoUrl, original.photoUrl), original.photoUrl ?? undefined);
-      addIfChanged("referralCode", referralCode.trim(), original.referralCode ?? "");
+      addIfChanged(
+        "photoUrl",
+        optionalPhotoForPatch(photoUrl, original.photoUrl),
+        original.photoUrl ?? undefined,
+      );
+      addIfChanged(
+        "referralCode",
+        referralCode.trim(),
+        original.referralCode ?? "",
+      );
       addIfChanged("notes", notes.trim(), original.notes ?? "");
     } else if (tab === "wellness") {
       const original = item as SavedWellnessItem;
-      addIfChanged("activityType", activityType.trim(), original.activityType ?? "");
+      addIfChanged(
+        "activityType",
+        activityType.trim(),
+        original.activityType ?? "",
+      );
       addIfChanged(
         "durationMinutes",
         durationMinutes ? parseInt(durationMinutes) : undefined,
-        original.durationMinutes ?? undefined
+        original.durationMinutes ?? undefined,
       );
       addIfChanged("link", link.trim(), original.link ?? "");
-      addIfChanged("photoUrl", optionalPhotoForPatch(photoUrl, original.photoUrl), original.photoUrl ?? undefined);
-      addIfChanged("referralCode", referralCode.trim(), original.referralCode ?? "");
+      addIfChanged(
+        "photoUrl",
+        optionalPhotoForPatch(photoUrl, original.photoUrl),
+        original.photoUrl ?? undefined,
+      );
+      addIfChanged(
+        "referralCode",
+        referralCode.trim(),
+        original.referralCode ?? "",
+      );
       addIfChanged("notes", notes.trim(), original.notes ?? "");
     } else if (tab === "affiliates") {
       const original = item as AffiliateItem;
       addIfChanged("description", notes.trim(), original.description ?? "");
       addIfChanged("brand", brand.trim(), original.brand ?? "");
       addIfChanged("link", link.trim(), original.link ?? "");
-      addIfChanged("referralCode", referralCode.trim(), original.referralCode ?? "");
+      addIfChanged(
+        "referralCode",
+        referralCode.trim(),
+        original.referralCode ?? "",
+      );
       addIfChanged("category", affiliateCategory, original.category);
-      addIfChanged("subcategoryTags", dedupeTags(parseTagsText(subcategoryTagsText)), original.subcategoryTags ?? []);
-      addIfChanged("ctaLabel", ctaLabel.trim() || undefined, original.ctaLabel ?? undefined);
-      addIfChanged("logoUrl", logoUrl.trim() || undefined, original.logoUrl ?? undefined);
-      addIfChanged("photoUrl", optionalPhotoForPatch(photoUrl, original.photoUrl), original.photoUrl ?? undefined);
+      addIfChanged(
+        "subcategoryTags",
+        dedupeTags(parseTagsText(subcategoryTagsText)),
+        original.subcategoryTags ?? [],
+      );
+      addIfChanged(
+        "ctaLabel",
+        ctaLabel.trim() || undefined,
+        original.ctaLabel ?? undefined,
+      );
+      addIfChanged(
+        "logoUrl",
+        logoUrl.trim() || undefined,
+        original.logoUrl ?? undefined,
+      );
+      addIfChanged(
+        "photoUrl",
+        optionalPhotoForPatch(photoUrl, original.photoUrl),
+        original.photoUrl ?? undefined,
+      );
     }
 
     if (Object.keys(payload).length === 0) {
@@ -2096,29 +2801,51 @@ function EditItemModal({
     if (tab === "supplements") return "Product name (e.g. Whey Protein)";
     if (tab === "accessories") return "Item name (e.g. Resistance Bands)";
     if (tab === "wellness") return "Activity name (e.g. Morning Run)";
-    if (tab === "affiliates") return "Brand or offer name (e.g. Dutch Meadows Farm)";
+    if (tab === "affiliates")
+      return "Brand or offer name (e.g. Dutch Meadows Farm)";
     return "Name";
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center"
+      onClick={onClose}
+    >
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div
         className="relative w-full sm:max-w-md flex flex-col max-h-[85vh] rounded-t-2xl sm:rounded-2xl overflow-hidden"
-        style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
+        style={{
+          background: "var(--surface)",
+          border: "1px solid rgba(36,63,22,0.10)",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Sticky header */}
-        <div className="flex items-center justify-between px-4 py-3 shrink-0" style={{ borderBottom: "1px solid rgba(36,63,22,0.08)" }}>
+        <div
+          className="flex items-center justify-between px-4 py-3 shrink-0"
+          style={{ borderBottom: "1px solid rgba(36,63,22,0.08)" }}
+        >
           <h3 className="text-base font-semibold truncate">Edit {item.name}</h3>
-          <button onClick={onClose} className="ml-2 shrink-0 p-1.5 rounded-full" style={{ background: "rgba(24,25,15,0.09)" }}>
+          <button
+            onClick={onClose}
+            className="ml-2 shrink-0 p-1.5 rounded-full"
+            style={{ background: "rgba(24,25,15,0.09)" }}
+          >
             <HiX className="w-4 h-4" />
           </button>
         </div>
 
         {/* Scrollable form body */}
-        <div className="overflow-y-auto overscroll-contain flex-1 p-4 space-y-3" style={{ WebkitOverflowScrolling: "touch" }}>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder={namePlaceholder()} className={inputCls} />
+        <div
+          className="overflow-y-auto overscroll-contain flex-1 p-4 space-y-3"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={namePlaceholder()}
+            className={inputCls}
+          />
 
           {tab === "affiliates" && (
             <>
@@ -2128,20 +2855,55 @@ function EditItemModal({
                   onUpload={setPhotoUrl}
                   onRemove={() => setPhotoUrl("")}
                 />
-                <p className="text-xs mt-1 pl-1" style={{ color: "var(--text-muted)" }}>
+                <p
+                  className="text-xs mt-1 pl-1"
+                  style={{ color: "var(--text-muted)" }}
+                >
                   Replaces the auto-fetched image
                 </p>
               </div>
-              <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Referral link" className={inputCls} />
+              <input
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                placeholder="Referral link"
+                className={inputCls}
+              />
               <div className="space-y-1">
-                <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo code (e.g. SAVE20) — optional" className={inputCls} />
-                <p className="text-xs pl-1" style={{ color: "var(--text-muted)" }}>Short code only — not the same URL as above</p>
+                <input
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value)}
+                  placeholder="Promo code (e.g. SAVE20) — optional"
+                  className={inputCls}
+                />
+                <p
+                  className="text-xs pl-1"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  Short code only — not the same URL as above
+                </p>
               </div>
-              <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand name (optional)" className={inputCls} />
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Description (optional)" className="textarea-dark w-full resize-none" />
-              <select value={affiliateCategory} onChange={(e) => setAffiliateCategory(e.target.value)} className="select-dark w-full">
+              <input
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                placeholder="Brand name (optional)"
+                className={inputCls}
+              />
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={2}
+                placeholder="Description (optional)"
+                className="textarea-dark w-full resize-none"
+              />
+              <select
+                value={affiliateCategory}
+                onChange={(e) => setAffiliateCategory(e.target.value)}
+                className="select-dark w-full"
+              >
                 {AFFILIATE_CATEGORY_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
                 ))}
               </select>
               <button
@@ -2154,8 +2916,18 @@ function EditItemModal({
               </button>
               {showAdvanced && (
                 <>
-                  <input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder='Button text (e.g. "Shop Now") — optional' className={inputCls} />
-                  <input value={subcategoryTagsText} onChange={(e) => setSubcategoryTagsText(e.target.value)} placeholder="Tags (comma-separated, optional)" className={inputCls} />
+                  <input
+                    value={ctaLabel}
+                    onChange={(e) => setCtaLabel(e.target.value)}
+                    placeholder='Button text (e.g. "Shop Now") — optional'
+                    className={inputCls}
+                  />
+                  <input
+                    value={subcategoryTagsText}
+                    onChange={(e) => setSubcategoryTagsText(e.target.value)}
+                    placeholder="Tags (comma-separated, optional)"
+                    className={inputCls}
+                  />
                 </>
               )}
             </>
@@ -2163,51 +2935,166 @@ function EditItemModal({
 
           {tab === "meals" && (
             <>
-              <input value={recipeSourceUrl} onChange={(e) => setRecipeSourceUrl(e.target.value)} placeholder="Recipe URL (optional)" className={inputCls} />
-              <input value={ingredients} onChange={(e) => setIngredients(e.target.value)} placeholder="Ingredients (comma-separated, optional)" className={inputCls} />
+              <input
+                value={recipeSourceUrl}
+                onChange={(e) => setRecipeSourceUrl(e.target.value)}
+                placeholder="Recipe URL (optional)"
+                className={inputCls}
+              />
+              <input
+                value={ingredients}
+                onChange={(e) => setIngredients(e.target.value)}
+                placeholder="Ingredients (comma-separated, optional)"
+                className={inputCls}
+              />
               <div className="grid grid-cols-2 gap-2">
-                <input type="number" value={calories} onChange={(e) => setCalories(e.target.value)} placeholder="Calories" className={inputCls} />
-                <input type="number" step="0.1" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="Protein (g)" className={inputCls} />
-                <input type="number" step="0.1" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="Carbs (g)" className={inputCls} />
-                <input type="number" step="0.1" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="Fat (g)" className={inputCls} />
+                <input
+                  type="number"
+                  value={calories}
+                  onChange={(e) => setCalories(e.target.value)}
+                  placeholder="Calories"
+                  className={inputCls}
+                />
+                <input
+                  type="number"
+                  step="0.1"
+                  value={protein}
+                  onChange={(e) => setProtein(e.target.value)}
+                  placeholder="Protein (g)"
+                  className={inputCls}
+                />
+                <input
+                  type="number"
+                  step="0.1"
+                  value={carbs}
+                  onChange={(e) => setCarbs(e.target.value)}
+                  placeholder="Carbs (g)"
+                  className={inputCls}
+                />
+                <input
+                  type="number"
+                  step="0.1"
+                  value={fat}
+                  onChange={(e) => setFat(e.target.value)}
+                  placeholder="Fat (g)"
+                  className={inputCls}
+                />
               </div>
             </>
           )}
           {tab === "workouts" && (
             <>
-              <input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="Video URL (optional)" className={inputCls} />
-              <textarea value={exercisesJson} onChange={(e) => setExercisesJson(e.target.value)} rows={4} placeholder='Exercises JSON (e.g. [{"name":"Squat","sets":3}])' className="textarea-dark w-full resize-none" />
+              <input
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="Video URL (optional)"
+                className={inputCls}
+              />
+              <textarea
+                value={exercisesJson}
+                onChange={(e) => setExercisesJson(e.target.value)}
+                rows={4}
+                placeholder='Exercises JSON (e.g. [{"name":"Squat","sets":3}])'
+                className="textarea-dark w-full resize-none"
+              />
             </>
           )}
           {tab === "supplements" && (
             <>
-              <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand (e.g. Optimum Nutrition)" className={inputCls} />
-              <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Website / Shop URL" className={inputCls} />
-              <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo or referral code" className={inputCls} />
+              <input
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                placeholder="Brand (e.g. Optimum Nutrition)"
+                className={inputCls}
+              />
+              <input
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                placeholder="Website / Shop URL"
+                className={inputCls}
+              />
+              <input
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
+                placeholder="Promo or referral code"
+                className={inputCls}
+              />
               <div className="grid grid-cols-2 gap-2">
-                <input value={dose} onChange={(e) => setDose(e.target.value)} placeholder="Dose (optional)" className={inputCls} />
-                <input value={schedule} onChange={(e) => setSchedule(e.target.value)} placeholder="Schedule (optional)" className={inputCls} />
+                <input
+                  value={dose}
+                  onChange={(e) => setDose(e.target.value)}
+                  placeholder="Dose (optional)"
+                  className={inputCls}
+                />
+                <input
+                  value={schedule}
+                  onChange={(e) => setSchedule(e.target.value)}
+                  placeholder="Schedule (optional)"
+                  className={inputCls}
+                />
               </div>
             </>
           )}
           {tab === "accessories" && (
             <>
-              <input value={type} onChange={(e) => setType(e.target.value)} placeholder="Item type (e.g. Resistance Band)" className={inputCls} />
-              <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Website / Shop URL" className={inputCls} />
-              <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo or referral code" className={inputCls} />
+              <input
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                placeholder="Item type (e.g. Resistance Band)"
+                className={inputCls}
+              />
+              <input
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                placeholder="Website / Shop URL"
+                className={inputCls}
+              />
+              <input
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
+                placeholder="Promo or referral code"
+                className={inputCls}
+              />
             </>
           )}
           {tab === "wellness" && (
             <>
-              <input value={activityType} onChange={(e) => setActivityType(e.target.value)} placeholder="Activity type (e.g. Yoga, HIIT)" className={inputCls} />
-              <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Website / App URL" className={inputCls} />
-              <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="Promo or referral code" className={inputCls} />
-              <input type="number" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} placeholder="Duration (minutes, optional)" className={inputCls} />
+              <input
+                value={activityType}
+                onChange={(e) => setActivityType(e.target.value)}
+                placeholder="Activity type (e.g. Yoga, HIIT)"
+                className={inputCls}
+              />
+              <input
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                placeholder="Website / App URL"
+                className={inputCls}
+              />
+              <input
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
+                placeholder="Promo or referral code"
+                className={inputCls}
+              />
+              <input
+                type="number"
+                value={durationMinutes}
+                onChange={(e) => setDurationMinutes(e.target.value)}
+                placeholder="Duration (minutes, optional)"
+                className={inputCls}
+              />
             </>
           )}
 
           {tab !== "affiliates" && (
-            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes (optional)" className="textarea-dark w-full resize-none" />
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              placeholder="Notes (optional)"
+              className="textarea-dark w-full resize-none"
+            />
           )}
           {tab !== "workouts" && tab !== "affiliates" && (
             <PhotoUpload
@@ -2216,7 +3103,11 @@ function EditItemModal({
               onRemove={() => setPhotoUrl("")}
             />
           )}
-          {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
+          {error && (
+            <p className="text-xs" style={{ color: "#f87171" }}>
+              {error}
+            </p>
+          )}
         </div>
 
         {/* Sticky footer */}
@@ -2243,7 +3134,15 @@ function EditItemModal({
 
 // ── Site Logo (for affiliate items without a photo) ───────────────────────────
 
-function SiteLogo({ url, name, gradient }: { url: string | null; name: string; gradient: string }) {
+function SiteLogo({
+  url,
+  name,
+  gradient,
+}: {
+  url: string | null;
+  name: string;
+  gradient: string;
+}) {
   const [imgError, setImgError] = useState(false);
   const domain = url
     ? (() => {
@@ -2257,14 +3156,21 @@ function SiteLogo({ url, name, gradient }: { url: string | null; name: string; g
 
   if (!domain || imgError) {
     return (
-      <div className={`w-full h-28 bg-gradient-to-br ${gradient} flex items-center justify-center`}>
-        <span className="text-5xl font-bold text-white/70">{name.charAt(0).toUpperCase()}</span>
+      <div
+        className={`w-full h-28 bg-gradient-to-br ${gradient} flex items-center justify-center`}
+      >
+        <span className="text-5xl font-bold text-white/70">
+          {name.charAt(0).toUpperCase()}
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-28 flex items-center justify-center" style={{ background: "var(--surface)" }}>
+    <div
+      className="w-full h-28 flex items-center justify-center"
+      style={{ background: "var(--surface)" }}
+    >
       <img
         src={`https://logo.clearbit.com/${domain}`}
         alt={name}
@@ -2302,21 +3208,31 @@ function ItemDetailModal({
   const tabGradient = getItemGradient(item, tab);
   const detailTags = getCatalogDisplayTags({
     tags: item.tags,
-    subcategoryTags: tab === "affiliates" ? (item as AffiliateItem).subcategoryTags : null,
-    brand: tab === "supplements" || tab === "affiliates" ? (item as Supplement | AffiliateItem).brand : null,
+    subcategoryTags:
+      tab === "affiliates" ? (item as AffiliateItem).subcategoryTags : null,
+    brand:
+      tab === "supplements" || tab === "affiliates"
+        ? (item as Supplement | AffiliateItem).brand
+        : null,
     type: tab === "accessories" ? (item as Accessory).type : null,
-    activityType: tab === "wellness" ? (item as SavedWellnessItem).activityType : null,
+    activityType:
+      tab === "wellness" ? (item as SavedWellnessItem).activityType : null,
     categoryLabel:
       tab === "affiliates" && (item as AffiliateItem).category !== "OTHER"
         ? AFFILIATE_CATEGORY_LABELS[(item as AffiliateItem).category]
         : null,
   });
 
-  const photoUrl = "photoUrl" in item ? (item as { photoUrl: string | null }).photoUrl : null;
+  const photoUrl =
+    "photoUrl" in item ? (item as { photoUrl: string | null }).photoUrl : null;
   const logoUrl = tab === "affiliates" ? (item as AffiliateItem).logoUrl : null;
   const link = "link" in item ? (item as { link: string | null }).link : null;
-  const referralCode = "referralCode" in item ? (item as { referralCode: string | null }).referralCode : null;
-  const notes = "notes" in item ? (item as { notes: string | null }).notes : null;
+  const referralCode =
+    "referralCode" in item
+      ? (item as { referralCode: string | null }).referralCode
+      : null;
+  const notes =
+    "notes" in item ? (item as { notes: string | null }).notes : null;
 
   const copyCode = () => {
     if (referralCode) {
@@ -2356,11 +3272,17 @@ function ItemDetailModal({
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div
         className="relative w-full sm:max-w-md flex flex-col max-h-[85dvh] sm:max-h-[85vh] rounded-t-2xl sm:rounded-2xl overflow-hidden"
-        style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
+        style={{
+          background: "var(--surface)",
+          border: "1px solid rgba(36,63,22,0.10)",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Sticky header */}
-        <div className="flex items-center justify-between px-4 py-3 shrink-0" style={{ borderBottom: "1px solid rgba(36,63,22,0.08)" }}>
+        <div
+          className="flex items-center justify-between px-4 py-3 shrink-0"
+          style={{ borderBottom: "1px solid rgba(36,63,22,0.08)" }}
+        >
           <div className="flex items-center gap-2 min-w-0">
             <span
               className="text-xs px-2.5 py-0.5 rounded-full shrink-0"
@@ -2368,7 +3290,12 @@ function ItemDetailModal({
             >
               {tabLabel}
             </span>
-            <h3 className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>{item.name}</h3>
+            <h3
+              className="text-sm font-semibold truncate"
+              style={{ color: "var(--text)" }}
+            >
+              {item.name}
+            </h3>
           </div>
           <button
             onClick={onClose}
@@ -2380,11 +3307,18 @@ function ItemDetailModal({
         </div>
 
         {/* Scrollable body */}
-        <div className="overflow-y-auto overscroll-contain flex-1" style={{ WebkitOverflowScrolling: "touch" }}>
+        <div
+          className="overflow-y-auto overscroll-contain flex-1"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
           {/* Image / logo */}
           {photoUrl || logoUrl ? (
             <div className="w-full aspect-[4/3]">
-              <img src={(photoUrl || logoUrl)!} alt={item.name} className="w-full h-full object-cover" />
+              <img
+                src={(photoUrl || logoUrl)!}
+                alt={item.name}
+                className="w-full h-full object-cover"
+              />
             </div>
           ) : tab === "affiliates" ? (
             <SiteLogo url={link} name={item.name} gradient={tabGradient} />
@@ -2401,33 +3335,51 @@ function ItemDetailModal({
           {/* Content */}
           <div className="p-5 space-y-4">
             {/* Brand */}
-            {("brand" in item && (item as { brand: string | null }).brand) && (
+            {"brand" in item && (item as { brand: string | null }).brand && (
               <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                 by {(item as { brand: string | null }).brand}
               </p>
             )}
 
-            {detailTags.length > 0 && (
-              <SubcategoryChips tags={detailTags} />
-            )}
+            {detailTags.length > 0 && <SubcategoryChips tags={detailTags} />}
 
             {/* Supplement details */}
-            {tab === "supplements" && ((item as Supplement).dose || (item as Supplement).schedule) && (
-              <div className="flex gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
-                {(item as Supplement).dose && <span>Dose: {(item as Supplement).dose}</span>}
-                {(item as Supplement).schedule && <span>Schedule: {(item as Supplement).schedule}</span>}
-              </div>
-            )}
+            {tab === "supplements" &&
+              ((item as Supplement).dose || (item as Supplement).schedule) && (
+                <div
+                  className="flex gap-4 text-xs"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  {(item as Supplement).dose && (
+                    <span>Dose: {(item as Supplement).dose}</span>
+                  )}
+                  {(item as Supplement).schedule && (
+                    <span>Schedule: {(item as Supplement).schedule}</span>
+                  )}
+                </div>
+              )}
 
             {/* Meal macros */}
-            {tab === "meals" && ((item as SavedMeal).calories || (item as SavedMeal).protein) && (
-              <div className="flex gap-3 text-xs flex-wrap" style={{ color: "var(--text-muted)" }}>
-                {(item as SavedMeal).calories != null && <span>{(item as SavedMeal).calories} cal</span>}
-                {(item as SavedMeal).protein != null && <span>{(item as SavedMeal).protein}g protein</span>}
-                {(item as SavedMeal).carbs != null && <span>{(item as SavedMeal).carbs}g carbs</span>}
-                {(item as SavedMeal).fat != null && <span>{(item as SavedMeal).fat}g fat</span>}
-              </div>
-            )}
+            {tab === "meals" &&
+              ((item as SavedMeal).calories || (item as SavedMeal).protein) && (
+                <div
+                  className="flex gap-3 text-xs flex-wrap"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  {(item as SavedMeal).calories != null && (
+                    <span>{(item as SavedMeal).calories} cal</span>
+                  )}
+                  {(item as SavedMeal).protein != null && (
+                    <span>{(item as SavedMeal).protein}g protein</span>
+                  )}
+                  {(item as SavedMeal).carbs != null && (
+                    <span>{(item as SavedMeal).carbs}g carbs</span>
+                  )}
+                  {(item as SavedMeal).fat != null && (
+                    <span>{(item as SavedMeal).fat}g fat</span>
+                  )}
+                </div>
+              )}
 
             {/* Ingredients */}
             {tab === "meals" && (item as SavedMeal).ingredients?.length > 0 && (
@@ -2440,11 +3392,18 @@ function ItemDetailModal({
             {tab === "workouts" &&
               (() => {
                 try {
-                  const exercises = JSON.parse((item as SavedWorkout).exercisesJson);
+                  const exercises = JSON.parse(
+                    (item as SavedWorkout).exercisesJson,
+                  );
                   if (Array.isArray(exercises) && exercises.length > 0) {
                     return (
-                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                        {exercises.map((e: { name: string }) => e.name).join(", ")}
+                      <p
+                        className="text-xs"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        {exercises
+                          .map((e: { name: string }) => e.name)
+                          .join(", ")}
                       </p>
                     );
                   }
@@ -2455,11 +3414,12 @@ function ItemDetailModal({
               })()}
 
             {/* Duration */}
-            {tab === "wellness" && (item as SavedWellnessItem).durationMinutes != null && (
-              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                {(item as SavedWellnessItem).durationMinutes} minutes
-              </p>
-            )}
+            {tab === "wellness" &&
+              (item as SavedWellnessItem).durationMinutes != null && (
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  {(item as SavedWellnessItem).durationMinutes} minutes
+                </p>
+              )}
 
             {/* Affiliate description */}
             {tab === "affiliates" && (item as AffiliateItem).description && (
@@ -2479,13 +3439,22 @@ function ItemDetailModal({
             {referralCode && (
               <div
                 className="flex items-center justify-between p-3 rounded-xl"
-                style={{ background: "rgba(36,63,22,0.08)", border: "1px solid rgba(36,63,22,0.2)" }}
+                style={{
+                  background: "rgba(36,63,22,0.08)",
+                  border: "1px solid rgba(36,63,22,0.2)",
+                }}
               >
                 <div className="min-w-0 overflow-hidden mr-3">
-                  <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                  <p
+                    className="text-xs font-medium"
+                    style={{ color: "var(--text-muted)" }}
+                  >
                     Promo Code
                   </p>
-                  <p className="text-base font-bold tracking-wider break-all" style={{ color: "#528531" }}>
+                  <p
+                    className="text-base font-bold tracking-wider break-all"
+                    style={{ color: "#528531" }}
+                  >
                     {referralCode}
                   </p>
                 </div>
@@ -2493,7 +3462,9 @@ function ItemDetailModal({
                   onClick={copyCode}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
                   style={{
-                    background: copied ? "rgba(34,197,94,0.2)" : "rgba(36,63,22,0.15)",
+                    background: copied
+                      ? "rgba(34,197,94,0.2)"
+                      : "rgba(36,63,22,0.15)",
                     color: copied ? "#22c55e" : "#528531",
                   }}
                 >
@@ -2530,7 +3501,10 @@ function ItemDetailModal({
           {/* Share to Feed — primary CTA */}
           {onShare && (
             <button
-              onClick={() => { onClose(); onShare(); }}
+              onClick={() => {
+                onClose();
+                onShare();
+              }}
               className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold transition-all"
               style={{
                 background: "linear-gradient(135deg, #243F16 0%, #3A6122 100%)",
@@ -2546,7 +3520,11 @@ function ItemDetailModal({
             <button
               onClick={onEdit}
               className="min-w-[100px] flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
-              style={{ background: "rgba(82,133,49,0.12)", color: "#528531", border: "1px solid rgba(82,133,49,0.25)" }}
+              style={{
+                background: "rgba(82,133,49,0.12)",
+                color: "#528531",
+                border: "1px solid rgba(82,133,49,0.25)",
+              }}
             >
               <HiPencil className="w-4 h-4" />
               Edit
@@ -2555,12 +3533,25 @@ function ItemDetailModal({
               <button
                 onClick={onTogglePin}
                 className="min-w-[100px] flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
-                style={isPinned
-                  ? { background: "rgba(154,123,46,0.15)", color: "#9A7B2E", border: "1px solid rgba(154,123,46,0.3)" }
-                  : { background: "rgba(36,63,22,0.06)", color: "var(--text-muted)", border: "1px solid rgba(36,63,22,0.12)" }
+                style={
+                  isPinned
+                    ? {
+                        background: "rgba(154,123,46,0.15)",
+                        color: "#9A7B2E",
+                        border: "1px solid rgba(154,123,46,0.3)",
+                      }
+                    : {
+                        background: "rgba(36,63,22,0.06)",
+                        color: "var(--text-muted)",
+                        border: "1px solid rgba(36,63,22,0.12)",
+                      }
                 }
               >
-                {isPinned ? <HiBookmark className="w-4 h-4" /> : <HiOutlineBookmark className="w-4 h-4" />}
+                {isPinned ? (
+                  <HiBookmark className="w-4 h-4" />
+                ) : (
+                  <HiOutlineBookmark className="w-4 h-4" />
+                )}
                 {isPinned ? "Pinned" : "Pin"}
               </button>
             )}
@@ -2568,7 +3559,11 @@ function ItemDetailModal({
               onClick={handleDelete}
               disabled={deleting}
               className="min-w-[100px] flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
-              style={{ background: "rgba(248,113,113,0.1)", color: "#f87171", border: "1px solid rgba(248,113,113,0.2)" }}
+              style={{
+                background: "rgba(248,113,113,0.1)",
+                color: "#f87171",
+                border: "1px solid rgba(248,113,113,0.2)",
+              }}
             >
               <HiTrash className="w-4 h-4" />
               {deleting ? "Deleting…" : "Delete"}
@@ -2582,7 +3577,6 @@ function ItemDetailModal({
 
 // ── Category Picker ───────────────────────────────────────────────────────────
 
-
 function CategoryPicker({
   onSelect,
   onCancel,
@@ -2593,10 +3587,16 @@ function CategoryPicker({
   return (
     <div
       className="mb-4 p-3 rounded-xl space-y-2"
-      style={{ background: "rgba(36,63,22,0.04)", border: "1px solid rgba(36,63,22,0.10)" }}
+      style={{
+        background: "rgba(36,63,22,0.04)",
+        border: "1px solid rgba(36,63,22,0.10)",
+      }}
     >
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+        <p
+          className="text-xs font-medium"
+          style={{ color: "var(--text-muted)" }}
+        >
           What are you adding?
         </p>
         <button onClick={onCancel} style={{ color: "var(--text-muted)" }}>
@@ -2612,20 +3612,32 @@ function CategoryPicker({
               onClick={() => onSelect(opt.key)}
               className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all active:scale-[0.99]"
               style={{
-                background: isAffiliate ? "rgba(200,169,81,0.08)" : "rgba(36,63,22,0.06)",
-                border: isAffiliate ? "1px solid rgba(200,169,81,0.35)" : "1px solid transparent",
+                background: isAffiliate
+                  ? "rgba(200,169,81,0.08)"
+                  : "rgba(36,63,22,0.06)",
+                border: isAffiliate
+                  ? "1px solid rgba(200,169,81,0.35)"
+                  : "1px solid transparent",
               }}
             >
               <div>
-                <p className="text-sm font-medium" style={{ color: isAffiliate ? "#c8a951" : "var(--text)" }}>
+                <p
+                  className="text-sm font-medium"
+                  style={{ color: isAffiliate ? "#c8a951" : "var(--text)" }}
+                >
                   {opt.label}
                 </p>
-                <p className="text-xs" style={{ color: "var(--text-muted)" }}>{opt.description}</p>
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  {opt.description}
+                </p>
               </div>
               {isAffiliate && (
                 <span
                   className="flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ml-2"
-                  style={{ background: "rgba(200,169,81,0.15)", color: "#c8a951" }}
+                  style={{
+                    background: "rgba(200,169,81,0.15)",
+                    color: "#c8a951",
+                  }}
                 >
                   Earn
                 </span>
@@ -2693,18 +3705,24 @@ export default function CatalogPage() {
           .then((r) => r.json())
           .then((data) => {
             const items: AnyItem[] = Array.isArray(data) ? data : [];
-            return items.map((item) => ({ ...item, _catalogType: t } as AnyItemWithType));
+            return items.map(
+              (item) => ({ ...item, _catalogType: t }) as AnyItemWithType,
+            );
           })
-          .catch(() => [] as AnyItemWithType[])
-      )
+          .catch(() => [] as AnyItemWithType[]),
+      ),
     ).then((results) => {
-      const merged = results
-        .flat()
-        .sort((a, b) => {
-          const aTime = "createdAt" in a && a.createdAt ? new Date(a.createdAt as string).getTime() : 0;
-          const bTime = "createdAt" in b && b.createdAt ? new Date(b.createdAt as string).getTime() : 0;
-          return bTime - aTime;
-        });
+      const merged = results.flat().sort((a, b) => {
+        const aTime =
+          "createdAt" in a && a.createdAt
+            ? new Date(a.createdAt as string).getTime()
+            : 0;
+        const bTime =
+          "createdAt" in b && b.createdAt
+            ? new Date(b.createdAt as string).getTime()
+            : 0;
+        return bTime - aTime;
+      });
       setAllItems(merged);
       setLoading(false);
 
@@ -2730,9 +3748,13 @@ export default function CatalogPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const stored = JSON.parse(window.localStorage.getItem(CATALOG_PINNED_KEY) ?? "[]");
+      const stored = JSON.parse(
+        window.localStorage.getItem(CATALOG_PINNED_KEY) ?? "[]",
+      );
       if (Array.isArray(stored)) setPinnedIds(new Set(stored as string[]));
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   const togglePin = (itemId: string) => {
@@ -2744,7 +3766,10 @@ export default function CatalogPage() {
         next.add(itemId);
       }
       if (typeof window !== "undefined") {
-        window.localStorage.setItem(CATALOG_PINNED_KEY, JSON.stringify([...next]));
+        window.localStorage.setItem(
+          CATALOG_PINNED_KEY,
+          JSON.stringify([...next]),
+        );
       }
       return next;
     });
@@ -2762,7 +3787,9 @@ export default function CatalogPage() {
       console.error(`[catalog] Cannot delete item ${id}: missing _catalogType`);
       return;
     }
-    const res = await fetch(`${CATALOG_ENDPOINTS[itemCatalogType]}?id=${id}`, { method: "DELETE" });
+    const res = await fetch(`${CATALOG_ENDPOINTS[itemCatalogType]}?id=${id}`, {
+      method: "DELETE",
+    });
     if (res.ok) {
       setAllItems((p) => p.filter((m) => m.id !== id));
     }
@@ -2771,11 +3798,18 @@ export default function CatalogPage() {
 
   const handleSaveEdited = (updated: AnyItem, itemCatalogType?: CatalogTab) => {
     if (!itemCatalogType) {
-      console.error(`[catalog] Cannot save item ${updated.id}: missing _catalogType`);
+      console.error(
+        `[catalog] Cannot save item ${updated.id}: missing _catalogType`,
+      );
       return;
     }
-    const updatedWithType = { ...updated, _catalogType: itemCatalogType } as AnyItemWithType;
-    setAllItems((p) => p.map((item) => (item.id === updated.id ? updatedWithType : item)));
+    const updatedWithType = {
+      ...updated,
+      _catalogType: itemCatalogType,
+    } as AnyItemWithType;
+    setAllItems((p) =>
+      p.map((item) => (item.id === updated.id ? updatedWithType : item)),
+    );
     setSelectedItem(updatedWithType);
   };
 
@@ -2792,7 +3826,8 @@ export default function CatalogPage() {
   const muted = "var(--text-muted)";
 
   const getItemPhotoUrl = (item: AnyItem): string | null => {
-    if ("photoUrl" in item && (item as { photoUrl: string | null }).photoUrl) return (item as { photoUrl: string | null }).photoUrl;
+    if ("photoUrl" in item && (item as { photoUrl: string | null }).photoUrl)
+      return (item as { photoUrl: string | null }).photoUrl;
     if ("logoUrl" in item) return (item as { logoUrl: string | null }).logoUrl;
     return null;
   };
@@ -2803,27 +3838,61 @@ export default function CatalogPage() {
   };
 
   const getItemReferralCode = (item: AnyItem): string | null => {
-    if ("referralCode" in item) return (item as { referralCode: string | null }).referralCode;
+    if ("referralCode" in item)
+      return (item as { referralCode: string | null }).referralCode;
     return null;
+  };
+
+  const buildShareCatalogItem = (
+    item: AnyItem,
+    catalogType: CatalogTab,
+  ): ShareCatalogItem => ({
+    id: item.id,
+    name: item.name,
+    catalogType: tabToShareType(catalogType),
+    photoUrl: getItemPhotoUrl(item),
+    brand: "brand" in item ? (item as { brand: string | null }).brand : null,
+  });
+
+  const openShareToFeed = (item: AnyItem, catalogType?: CatalogTab | null) => {
+    const effectiveType = catalogType ?? getItemCatalogType(item);
+    if (!effectiveType) return;
+    setSharingItem(buildShareCatalogItem(item, effectiveType));
   };
 
   const getDisplayTags = (item: AnyItem): string[] => {
     const effectiveTab = getItemCatalogType(item);
     return getCatalogDisplayTags({
       tags: item.tags,
-      subcategoryTags: effectiveTab === "affiliates" && "subcategoryTags" in item ? item.subcategoryTags as string[] : null,
-      brand: effectiveTab === "supplements" || effectiveTab === "affiliates" ? ("brand" in item ? item.brand : null) : null,
+      subcategoryTags:
+        effectiveTab === "affiliates" && "subcategoryTags" in item
+          ? (item.subcategoryTags as string[])
+          : null,
+      brand:
+        effectiveTab === "supplements" || effectiveTab === "affiliates"
+          ? "brand" in item
+            ? item.brand
+            : null
+          : null,
       type: effectiveTab === "accessories" && "type" in item ? item.type : null,
-      activityType: effectiveTab === "wellness" && "activityType" in item ? item.activityType : null,
+      activityType:
+        effectiveTab === "wellness" && "activityType" in item
+          ? item.activityType
+          : null,
       categoryLabel:
-        effectiveTab === "affiliates" && "category" in item && item.category !== "OTHER"
+        effectiveTab === "affiliates" &&
+        "category" in item &&
+        item.category !== "OTHER"
           ? AFFILIATE_CATEGORY_LABELS[item.category as string]
           : null,
     });
   };
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-8" style={{ color: "var(--text)" }}>
+    <div
+      className="max-w-lg mx-auto px-4 pt-4 pb-8"
+      style={{ color: "var(--text)" }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
@@ -2838,12 +3907,16 @@ export default function CatalogPage() {
         </div>
         <div className="flex items-center gap-2">
           {/* View toggle */}
-          <div className="flex rounded-lg overflow-hidden" style={{ background: "rgba(36,63,22,0.04)" }}>
+          <div
+            className="flex rounded-lg overflow-hidden"
+            style={{ background: "rgba(36,63,22,0.04)" }}
+          >
             <button
               onClick={() => setViewMode("grid")}
               className="p-1.5 transition-all"
               style={{
-                background: viewMode === "grid" ? "rgba(36,63,22,0.3)" : "transparent",
+                background:
+                  viewMode === "grid" ? "rgba(36,63,22,0.3)" : "transparent",
                 color: viewMode === "grid" ? "#528531" : "var(--text-muted)",
               }}
             >
@@ -2853,7 +3926,8 @@ export default function CatalogPage() {
               onClick={() => setViewMode("list")}
               className="p-1.5 transition-all"
               style={{
-                background: viewMode === "list" ? "rgba(36,63,22,0.3)" : "transparent",
+                background:
+                  viewMode === "list" ? "rgba(36,63,22,0.3)" : "transparent",
                 color: viewMode === "list" ? "#528531" : "var(--text-muted)",
               }}
             >
@@ -2886,9 +3960,15 @@ export default function CatalogPage() {
       {showQuickGuide && (
         <div
           className="mb-4 p-4 rounded-xl"
-          style={{ background: "rgba(36,63,22,0.05)", border: "1px solid rgba(36,63,22,0.12)" }}
+          style={{
+            background: "rgba(36,63,22,0.05)",
+            border: "1px solid rgba(36,63,22,0.12)",
+          }}
         >
-          <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--text)" }}>
+          <p
+            className="text-sm font-semibold mb-0.5"
+            style={{ color: "var(--text)" }}
+          >
             Turn your recommendations into royalties
           </p>
           <p className="text-xs mb-3" style={{ color: "var(--text-muted)" }}>
@@ -2896,9 +3976,26 @@ export default function CatalogPage() {
           </p>
           <div className="space-y-2 mb-3">
             {[
-              <>Tap <span style={{ color: "#528531", fontWeight: 600 }}>Add</span> and select <span style={{ color: "#528531", fontWeight: 600 }}>Referral Link</span>, then paste your link or promo code.</>,
-              <>Add a photo and description so it looks great when shared to the feed.</>,
-              <>Open any saved item and tap <span style={{ color: "#528531", fontWeight: 600 }}>Share to Feed</span> — your followers see it, you earn royalties.</>,
+              <>
+                Tap{" "}
+                <span style={{ color: "#528531", fontWeight: 600 }}>Add</span>{" "}
+                and select{" "}
+                <span style={{ color: "#528531", fontWeight: 600 }}>
+                  Referral Link
+                </span>
+                , then paste your link or promo code.
+              </>,
+              <>
+                Add a photo and description so it looks great when shared to the
+                feed.
+              </>,
+              <>
+                Open any saved item and tap{" "}
+                <span style={{ color: "#528531", fontWeight: 600 }}>
+                  Share to Feed
+                </span>{" "}
+                — your followers see it, you earn royalties.
+              </>,
             ].map((step, i) => (
               <div key={i} className="flex items-start gap-2.5">
                 <span
@@ -2907,7 +4004,12 @@ export default function CatalogPage() {
                 >
                   {i + 1}
                 </span>
-                <p className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>{step}</p>
+                <p
+                  className="text-xs leading-relaxed"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  {step}
+                </p>
               </div>
             ))}
           </div>
@@ -2949,126 +4051,194 @@ export default function CatalogPage() {
 
       {/* Add form — driven by addingCategory, independent of current tab */}
       {addingCategory !== null && (
-        <div className="mb-4">
+        <div
+          className="mb-4 rounded-[24px] p-3 shadow-sm"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(253,250,245,0.98) 0%, rgba(36,63,22,0.035) 100%)",
+            border: "1px solid rgba(36,63,22,0.10)",
+          }}
+        >
           <button
             type="button"
-            onClick={() => { setShowPicker(true); setAddingCategory(null); }}
-            className="flex items-center gap-1 text-xs font-medium mb-2"
+            onClick={() => {
+              setShowPicker(true);
+              setAddingCategory(null);
+            }}
+            className="flex items-center gap-1 text-xs font-medium mb-3"
             style={{ color: "var(--text-muted)" }}
           >
             <HiChevronLeft className="w-4 h-4" />
             Change category
           </button>
+          <div className="mb-3">
+            <p className="text-sm font-bold" style={{ color: "var(--text)" }}>
+              Add {CATALOG_TAB_LABELS[addingCategory]}
+            </p>
+            <p
+              className="text-xs mt-0.5"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Save the core details now. You can review, edit, and use Share to
+              Feed right after saving.
+            </p>
+          </div>
           {addingCategory === "meals" && (
             <AddMealForm
               onAdd={(m) => {
                 const newItem = { ...m, _catalogType: "meals" as CatalogTab };
-                const isFirst = allItems.length === 0;
                 setAllItems((p) => [newItem, ...p]);
                 setAddingCategory(null);
-                if (isFirst) setNudgeItem(newItem);
+                setNudgeItem(newItem);
               }}
             />
           )}
           {addingCategory === "workouts" && (
             <AddWorkoutForm
               onAdd={(w) => {
-                const newItem = { ...w, _catalogType: "workouts" as CatalogTab };
-                const isFirst = allItems.length === 0;
+                const newItem = {
+                  ...w,
+                  _catalogType: "workouts" as CatalogTab,
+                };
                 setAllItems((p) => [newItem, ...p]);
                 setAddingCategory(null);
-                if (isFirst) setNudgeItem(newItem);
+                setNudgeItem(newItem);
               }}
             />
           )}
           {addingCategory === "supplements" && (
             <AddSupplementForm
               onAdd={(s) => {
-                const newItem = { ...s, _catalogType: "supplements" as CatalogTab };
-                const isFirst = allItems.length === 0;
+                const newItem = {
+                  ...s,
+                  _catalogType: "supplements" as CatalogTab,
+                };
                 setAllItems((p) => [newItem, ...p]);
                 setAddingCategory(null);
-                if (isFirst) setNudgeItem(newItem);
+                setNudgeItem(newItem);
               }}
             />
           )}
           {addingCategory === "accessories" && (
             <AddAccessoryForm
               onAdd={(a) => {
-                const newItem = { ...a, _catalogType: "accessories" as CatalogTab };
-                const isFirst = allItems.length === 0;
+                const newItem = {
+                  ...a,
+                  _catalogType: "accessories" as CatalogTab,
+                };
                 setAllItems((p) => [newItem, ...p]);
                 setAddingCategory(null);
-                if (isFirst) setNudgeItem(newItem);
+                setNudgeItem(newItem);
               }}
             />
           )}
           {addingCategory === "wellness" && (
             <AddWellnessForm
               onAdd={(w) => {
-                const newItem = { ...w, _catalogType: "wellness" as CatalogTab };
-                const isFirst = allItems.length === 0;
+                const newItem = {
+                  ...w,
+                  _catalogType: "wellness" as CatalogTab,
+                };
                 setAllItems((p) => [newItem, ...p]);
                 setAddingCategory(null);
-                if (isFirst) setNudgeItem(newItem);
+                setNudgeItem(newItem);
               }}
             />
           )}
           {addingCategory === "affiliates" && (
             <AddAffiliateForm
               onAdd={(a) => {
-                const newItem = { ...a, _catalogType: "affiliates" as CatalogTab };
-                const isFirst = allItems.length === 0;
+                const newItem = {
+                  ...a,
+                  _catalogType: "affiliates" as CatalogTab,
+                };
                 setAllItems((p) => [newItem, ...p]);
-                if (isFirst) setNudgeItem(newItem);
+                setNudgeItem(newItem);
               }}
               onBulkSaveComplete={async () => {
                 fetchAllItems();
                 setAddingCategory(null);
               }}
+              onSingleSaveComplete={() => setAddingCategory(null)}
             />
           )}
         </div>
       )}
 
-      {/* First-item nudge */}
+      {/* Post-save share nudge */}
       {nudgeItem && (
         <div
-          className="mb-4 p-4 rounded-xl flex items-start justify-between gap-3"
-          style={{ background: "rgba(36,63,22,0.05)", border: "1px solid rgba(36,63,22,0.12)" }}
+          className="mb-4 p-3 rounded-[22px] flex items-center gap-3 shadow-sm"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(36,63,22,0.06) 0%, rgba(154,123,46,0.08) 100%)",
+            border: "1px solid rgba(36,63,22,0.13)",
+          }}
         >
-          <div className="flex-1">
-            <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--text)" }}>It&apos;s saved.</p>
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              Now share it to your feed so followers can click through and you can start earning.
-            </p>
-          </div>
-          <div className="flex flex-col items-end gap-2 flex-shrink-0">
-            <button
-              type="button"
-              onClick={() => {
-                const catalogType = nudgeItem._catalogType;
-                setSharingItem({
-                  id: nudgeItem.id,
-                  name: "name" in nudgeItem ? (nudgeItem as { name: string }).name : "",
-                  catalogType: tabToShareType(catalogType),
-                });
-                setNudgeItem(null);
-              }}
-              className="text-xs font-semibold px-3 py-1.5 rounded-lg"
-              style={{ background: "#528531", color: "#fff" }}
+          {getItemPhotoUrl(nudgeItem) ? (
+            <img
+              src={getItemPhotoUrl(nudgeItem)!}
+              alt={nudgeItem.name}
+              className="w-14 h-14 rounded-2xl object-cover flex-shrink-0"
+            />
+          ) : (
+            <div
+              className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${getItemGradient(nudgeItem, nudgeItem._catalogType)} flex items-center justify-center flex-shrink-0`}
             >
-              Share to Feed
-            </button>
-            <button
-              type="button"
-              onClick={() => setNudgeItem(null)}
-              className="text-xs"
+              <HiCheck className="w-6 h-6 text-white" />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p
+              className="text-sm font-bold truncate"
+              style={{ color: "var(--text)" }}
+            >
+              Saved to your catalog
+            </p>
+            <p
+              className="text-xs leading-relaxed mt-0.5"
               style={{ color: "var(--text-muted)" }}
             >
-              Maybe later
-            </button>
+              Review looks good. Share to Feed now so followers can tap through.
+            </p>
+            <div className="flex items-center gap-2 mt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  openShareToFeed(nudgeItem, nudgeItem._catalogType);
+                  setNudgeItem(null);
+                }}
+                className="min-h-[36px] text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5"
+                style={{ background: "#528531", color: "#fff" }}
+              >
+                <HiShare className="w-3.5 h-3.5" />
+                Share to Feed
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedItem(nudgeItem);
+                  setNudgeItem(null);
+                }}
+                className="min-h-[36px] text-xs font-semibold px-3 py-2 rounded-xl"
+                style={{ background: "rgba(36,63,22,0.08)", color: "#528531" }}
+              >
+                Review
+              </button>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={() => setNudgeItem(null)}
+            className="p-2 rounded-full flex-shrink-0"
+            style={{
+              background: "rgba(36,63,22,0.06)",
+              color: "var(--text-muted)",
+            }}
+            aria-label="Dismiss saved item prompt"
+          >
+            <HiX className="w-4 h-4" />
+          </button>
         </div>
       )}
 
@@ -3077,13 +4247,21 @@ export default function CatalogPage() {
         viewMode === "grid" ? (
           <div className="grid grid-cols-3 gap-0.5">
             {Array.from({ length: 9 }).map((_, i) => (
-              <div key={i} className="aspect-square rounded-sm animate-pulse" style={{ background: "rgba(36,63,22,0.04)" }} />
+              <div
+                key={i}
+                className="aspect-square rounded-sm animate-pulse"
+                style={{ background: "rgba(36,63,22,0.04)" }}
+              />
             ))}
           </div>
         ) : (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: "rgba(36,63,22,0.04)" }} />
+              <div
+                key={i}
+                className="h-20 rounded-xl animate-pulse"
+                style={{ background: "rgba(36,63,22,0.04)" }}
+              />
             ))}
           </div>
         )
@@ -3094,9 +4272,15 @@ export default function CatalogPage() {
               Catalog
             </span>
           </div>
-          <p className="text-sm font-medium" style={{ color: muted }}>Nothing saved yet.</p>
-          <p className="text-xs leading-relaxed mb-5 max-w-xs mx-auto mt-1" style={{ color: muted }}>
-            Add the products, links, and routines you already recommend. Every click from your followers earns you royalties.
+          <p className="text-sm font-medium" style={{ color: muted }}>
+            Nothing saved yet.
+          </p>
+          <p
+            className="text-xs leading-relaxed mb-5 max-w-xs mx-auto mt-1"
+            style={{ color: muted }}
+          >
+            Add the products, links, and routines you already recommend. Every
+            click from your followers earns you royalties.
           </p>
           <div className="flex flex-col items-center gap-2 max-w-[200px] mx-auto">
             <button
@@ -3154,14 +4338,19 @@ export default function CatalogPage() {
 
                 {/* Bottom gradient overlay with name */}
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 pt-6">
-                  <p className="text-[10px] font-medium text-white truncate leading-tight">{item.name}</p>
+                  <p className="text-[10px] font-medium text-white truncate leading-tight">
+                    {item.name}
+                  </p>
                 </div>
 
                 {/* Category badge — always visible */}
                 <div className="absolute top-1.5 left-1.5">
                   <span
                     className="text-[9px] leading-none px-1.5 py-1 rounded-full"
-                    style={{ background: "rgba(24,25,15,0.72)", color: "#FDFAF5" }}
+                    style={{
+                      background: "rgba(24,25,15,0.72)",
+                      color: "#FDFAF5",
+                    }}
                   >
                     {tileShortLabel}
                   </span>
@@ -3169,17 +4358,24 @@ export default function CatalogPage() {
 
                 {/* Pin badge */}
                 {pinnedIds.has(item.id) && (
-                  <div className="absolute top-1.5 right-1.5 p-1 rounded-full" style={{ background: "rgba(154,123,46,0.9)" }}>
+                  <div
+                    className="absolute top-1.5 right-1.5 p-1 rounded-full"
+                    style={{ background: "rgba(154,123,46,0.9)" }}
+                  >
                     <HiBookmark className="w-2.5 h-2.5 text-white" />
                   </div>
                 )}
 
                 {/* Link/referral badge */}
-                {!pinnedIds.has(item.id) && (getItemLink(item) || getItemReferralCode(item)) && (
-                  <div className="absolute top-1.5 right-1.5 p-1 rounded-full" style={{ background: "rgba(36,63,22,0.85)" }}>
-                    <HiLink className="w-2.5 h-2.5 text-white" />
-                  </div>
-                )}
+                {!pinnedIds.has(item.id) &&
+                  (getItemLink(item) || getItemReferralCode(item)) && (
+                    <div
+                      className="absolute top-1.5 right-1.5 p-1 rounded-full"
+                      style={{ background: "rgba(36,63,22,0.85)" }}
+                    >
+                      <HiLink className="w-2.5 h-2.5 text-white" />
+                    </div>
+                  )}
 
                 {/* Edit indicator — pencil badge so users know tapping opens edit/delete */}
                 <div className="absolute bottom-1.5 right-1.5 p-1 rounded-full bg-black/50">
@@ -3205,7 +4401,10 @@ export default function CatalogPage() {
                 key={item.id}
                 onClick={() => setSelectedItem(item)}
                 className="flex items-center gap-3 p-3 rounded-xl w-full text-left transition-all"
-                style={{ background: "var(--surface)", border: "1px solid rgba(36,63,22,0.10)" }}
+                style={{
+                  background: "var(--surface)",
+                  border: "1px solid rgba(36,63,22,0.10)",
+                }}
               >
                 {/* Thumbnail */}
                 {getItemPhotoUrl(item) ? (
@@ -3227,22 +4426,34 @@ export default function CatalogPage() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <p className="font-semibold text-sm truncate">{item.name}</p>
+                    <p className="font-semibold text-sm truncate">
+                      {item.name}
+                    </p>
                     {pinnedIds.has(item.id) && (
-                      <HiBookmark className="w-3 h-3 shrink-0" style={{ color: "#9A7B2E" }} />
+                      <HiBookmark
+                        className="w-3 h-3 shrink-0"
+                        style={{ color: "#9A7B2E" }}
+                      />
                     )}
                   </div>
-                  {"notes" in item && (item as { notes: string | null }).notes && (
-                    <p className="text-xs truncate mt-0.5" style={{ color: muted }}>
-                      {(item as { notes: string | null }).notes}
-                    </p>
-                  )}
+                  {"notes" in item &&
+                    (item as { notes: string | null }).notes && (
+                      <p
+                        className="text-xs truncate mt-0.5"
+                        style={{ color: muted }}
+                      >
+                        {(item as { notes: string | null }).notes}
+                      </p>
+                    )}
                   <div className="flex gap-1.5 mt-1 flex-wrap">
                     <SubcategoryChips tags={displayTags} limit={2} />
                     {getItemReferralCode(item) && (
                       <span
                         className="text-[10px] px-2 py-0.5 rounded-full"
-                        style={{ background: "rgba(36,63,22,0.12)", color: "#528531" }}
+                        style={{
+                          background: "rgba(36,63,22,0.12)",
+                          color: "#528531",
+                        }}
                       >
                         Code: {getItemReferralCode(item)}
                       </span>
@@ -3250,7 +4461,10 @@ export default function CatalogPage() {
                     {getItemLink(item) && !getItemReferralCode(item) && (
                       <span
                         className="text-[10px] px-2 py-0.5 rounded-full flex items-center gap-0.5"
-                        style={{ background: "rgba(36,63,22,0.04)", color: "var(--text-muted)" }}
+                        style={{
+                          background: "rgba(36,63,22,0.04)",
+                          color: "var(--text-muted)",
+                        }}
                       >
                         <HiLink className="w-2.5 h-2.5" />
                         Open Link
@@ -3265,47 +4479,41 @@ export default function CatalogPage() {
       )}
 
       {/* Detail Modal */}
-      {selectedItem && (() => {
-        const itemType = getItemCatalogType(selectedItem);
-        if (!itemType) return null;
-        return (
-          <ItemDetailModal
-            item={selectedItem}
-            tab={itemType}
-            onClose={() => setSelectedItem(null)}
-            onEdit={() => {
-              const storedItem = selectedItem;
-              setSelectedItem(null);
-              setEditingItem(storedItem);
-            }}
-            onDelete={() => handleDelete(selectedItem.id, itemType)}
-            onShare={() => {
-              setSharingItem({
-                id: selectedItem.id,
-                catalogType: tabToShareType(itemType),
-                name: selectedItem.name,
-                photoUrl: getItemPhotoUrl(selectedItem),
-                brand: "brand" in selectedItem ? (selectedItem as { brand: string | null }).brand : null,
-              });
-            }}
-            isPinned={pinnedIds.has(selectedItem.id)}
-            onTogglePin={() => togglePin(selectedItem.id)}
-          />
-        );
-      })()}
+      {selectedItem &&
+        (() => {
+          const itemType = getItemCatalogType(selectedItem);
+          if (!itemType) return null;
+          return (
+            <ItemDetailModal
+              item={selectedItem}
+              tab={itemType}
+              onClose={() => setSelectedItem(null)}
+              onEdit={() => {
+                const storedItem = selectedItem;
+                setSelectedItem(null);
+                setEditingItem(storedItem);
+              }}
+              onDelete={() => handleDelete(selectedItem.id, itemType)}
+              onShare={() => openShareToFeed(selectedItem, itemType)}
+              isPinned={pinnedIds.has(selectedItem.id)}
+              onTogglePin={() => togglePin(selectedItem.id)}
+            />
+          );
+        })()}
 
-      {editingItem && (() => {
-        const itemType = getItemCatalogType(editingItem);
-        if (!itemType) return null;
-        return (
-          <EditItemModal
-            item={editingItem}
-            tab={itemType}
-            onClose={() => setEditingItem(null)}
-            onSave={(updated) => handleSaveEdited(updated, itemType)}
-          />
-        );
-      })()}
+      {editingItem &&
+        (() => {
+          const itemType = getItemCatalogType(editingItem);
+          if (!itemType) return null;
+          return (
+            <EditItemModal
+              item={editingItem}
+              tab={itemType}
+              onClose={() => setEditingItem(null)}
+              onSave={(updated) => handleSaveEdited(updated, itemType)}
+            />
+          );
+        })()}
 
       {/* Share to Feed Modal */}
       {sharingItem && (
