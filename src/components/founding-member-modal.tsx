@@ -8,7 +8,7 @@ interface Props {
   onDismiss: () => void
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://royalfitness.app'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://royalwellness.app'
 
 export function FoundingMemberModal({ inviteToken, onDismiss }: Props) {
   const [qrSrc, setQrSrc] = useState('')
