@@ -131,7 +131,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!inviteStats?.token) return;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://royalfitness.app';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://royalwellness.app';
     const url = `${appUrl}/api/founding-member/track?ref=${inviteStats.token}`;
     QRCode.toString(url, {
       type: 'svg',
