@@ -24,6 +24,7 @@ import { AFFILIATE_CATEGORY_LABELS } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
 import EmbedMedia, { type ExternalContentItem } from "@/components/embed-media";
+import Linkify from "@/components/linkify";
 import { useLikesStore } from "@/store/likes";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -985,7 +986,7 @@ function CheckInPostCard({
         </p>
         {post.caption && (
           <p className="text-xs leading-relaxed" style={{ color: "#7A7560" }}>
-            {post.caption}
+            <Linkify text={post.caption} />
           </p>
         )}
       </div>
@@ -1869,7 +1870,7 @@ function FullPostCard({
 
         {post.caption && (
           <p className="text-sm text-foreground whitespace-pre-wrap mt-3 mb-1">
-            {post.caption}
+            <Linkify text={post.caption} />
           </p>
         )}
       </div>

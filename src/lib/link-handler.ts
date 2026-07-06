@@ -41,6 +41,29 @@ export function isExternalUrl(url: string): boolean {
 }
 
 /**
+ * Normalizes a raw URL-like token into a safe, fully-qualified external URL.
+ *
+ * - Prepends `https://` to scheme-less tokens that start with `www.`
+ *   (browsers otherwise treat `www.example.com` as a relative path).
+ * - Only allows `http:` / `https:` — blocks `javascript:` and other unsafe
+ *   schemes so the result is always safe to use as an anchor `href`.
+ *
+ * Returns the normalized URL string, or `null` when the token is not a usable
+ * http(s) URL.
+ */
+export function normalizeExternalUrl(token: string): string | null {
+  if (!token) return null;
+  const candidate = /^www\./i.test(token) ? `https://${token}` : token;
+  try {
+    const parsed = new URL(candidate);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+    return candidate;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Opens an external URL:
  * - Capacitor native → system browser via `_system` target
  * - Web browser → new tab via `_blank`
