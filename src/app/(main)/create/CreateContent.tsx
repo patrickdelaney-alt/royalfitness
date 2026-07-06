@@ -1415,9 +1415,10 @@ export default function CreatePostContent() {
     };
     return (
       <div
-        className="fixed inset-0 z-50 flex flex-col items-center justify-center p-6"
+        className="fixed inset-0 z-50 min-h-[100dvh] overflow-y-auto"
         style={{ background: "var(--background)" }}
       >
+        <div className="flex min-h-[100dvh] flex-col items-center justify-center px-6 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <style>{`
           @keyframes rf-pop { 0%{transform:scale(0.5);opacity:0} 65%{transform:scale(1.12)} 100%{transform:scale(1);opacity:1} }
           @keyframes rf-fade-up { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
@@ -1452,7 +1453,11 @@ export default function CreatePostContent() {
 
         <div className="rf-fade-up-3 flex flex-col gap-3 w-full max-w-xs">
           <button
-            onClick={() => router.push(`/posts/${successPost.id}`)}
+            onClick={() => {
+              const postId = successPost.id;
+              setSuccessPost(null);
+              router.push(`/posts/${postId}`);
+            }}
             className="w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2"
             style={{ background: "linear-gradient(135deg, #243F16 0%, #528531 100%)", color: "#ffffff" }}
           >
@@ -1467,14 +1472,15 @@ export default function CreatePostContent() {
           </button>
           <button
             onClick={() => {
-              if (!confirmLeaveIfNeeded()) return;
-              router.push("/feed");
+              setSuccessPost(null);
+              router.replace("/feed");
             }}
             className="w-full py-3 rounded-2xl text-sm font-semibold"
             style={{ background: "rgba(36,63,22,0.10)", color: "var(--text)" }}
           >
             View Feed
           </button>
+        </div>
         </div>
       </div>
     );
