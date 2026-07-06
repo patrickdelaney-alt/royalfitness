@@ -1318,7 +1318,7 @@ export default function CreatePostContent() {
         successNotification();
         clearDraft();
         toast.success("Post updated");
-        router.push(`/p/${editPostId}`);
+        router.push(`/posts/${editPostId}`);
         return;
       }
 
