@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import useSWRInfinite from "swr/infinite";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -41,6 +41,7 @@ export default function FeedContent() {
   const [filter, setFilter] = useState<PostTypeFilter>(normalizeFilter(searchParams.get("filter")));
   const [showOnboarding, setShowOnboarding] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const didInitialPendingRevalidate = useRef(false);
   const { data: session } = useSession();
   const currentUserId = session?.user?.id ?? undefined;
 
@@ -79,7 +80,9 @@ export default function FeedContent() {
       refreshInterval: pendingPosts.length > 0 ? 5000 : 0,
     });
 
-  const posts: Post[] = data ? data.flatMap((page) => page.posts) : [];
+  const posts: Post[] = useMemo(() => (data ? data.flatMap((page) => page.posts) : []), [data]);
+  const liveIds = useMemo(() => new Set(posts.map((p) => p.id)), [posts]);
+  const visiblePendingPosts = pendingPosts.filter((pp) => !liveIds.has(pp.id));
   const hasMore = data ? !!data[data.length - 1]?.nextCursor : true;
   // True when we're fetching a new page (not the very first load)
   const loadingMore = isValidating && size > 1 && !data?.[size - 1];
@@ -118,24 +121,24 @@ export default function FeedContent() {
     }
   }, [filter, router, searchParams]);
 
-  // Force an immediate revalidation on mount when pending posts exist so the
-  // real post shows up as soon as possible rather than waiting for the next poll.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Force one immediate revalidation when pending posts exist so the real post
+  // shows up as soon as possible rather than waiting for the next poll.
   useEffect(() => {
-    if (pendingPosts.length > 0) mutate();
-  }, []); // intentionally runs once on mount
+    if (didInitialPendingRevalidate.current || pendingPosts.length === 0) return;
+    didInitialPendingRevalidate.current = true;
+    mutate();
+  }, [mutate, pendingPosts.length]);
 
-  // When SWR returns data that contains a pending post's real ID, trigger the
-  // fade-out animation. Cleanup (store removal) is handled by onFaded below.
+  // When SWR returns data that contains a pending post's real ID, remove the
+  // pending copy so the confirmed live post does not render twice.
   useEffect(() => {
     if (pendingPosts.length === 0) return;
-    const liveIds = new Set(posts.map((p) => p.id));
     pendingPosts.forEach((pp) => {
-      if (!fadingIds.has(pp.id) && liveIds.has(pp.id)) {
-        setFadingIds((prev) => new Set(prev).add(pp.id));
+      if (liveIds.has(pp.id)) {
+        removePendingPost(pp.id);
       }
     });
-  }, [posts, pendingPosts, fadingIds]);
+  }, [pendingPosts, liveIds, removePendingPost]);
 
   // Optimistically remove a deleted post from every page in the SWR cache.
   const handleDeletePost = useCallback(
@@ -332,7 +335,7 @@ export default function FeedContent() {
             Try again
           </button>
         </div>
-      ) : posts.length === 0 && pendingPosts.length === 0 ? (
+      ) : posts.length === 0 && visiblePendingPosts.length === 0 ? (
         <div className="text-center py-16 px-4">
           <p className="text-2xl mb-3" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>Your feed is quiet</p>
           <p className="text-sm mb-5" style={{ color: "var(--text-muted)", lineHeight: 1.65 }}>
@@ -356,7 +359,7 @@ export default function FeedContent() {
       ) : (
         <div className="space-y-4 pb-4">
           {/* Pending (in-flight) posts always render at the very top */}
-          {pendingPosts.map((pp) => (
+          {visiblePendingPosts.map((pp) => (
             <PendingPostCard
               key={pp.id}
               post={pp}
