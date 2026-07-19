@@ -4,6 +4,14 @@ Issues found during audits but deferred. Address in future sessions.
 
 ---
 
+## From Light Audit — July 19, 2026
+
+### Low
+- **`src/components/founding-member-modal.tsx:29`** — `.catch(console.error)` on QR code generation fires in production on failure. Silence with `.catch(() => {})` or show a fallback UI.
+- **`src/components/pending-post-card.tsx`** — Fade animation (`isFading` prop) no longer triggers since pending posts are removed immediately on dedup. The card vanishes abruptly when the live post arrives. Restore smooth fade by keeping the pending card visible during fade-out before store removal, or remove the unused animation machinery from `PendingPostCard`.
+
+---
+
 ## From Light Audit — April 8, 2026
 
 ### Low

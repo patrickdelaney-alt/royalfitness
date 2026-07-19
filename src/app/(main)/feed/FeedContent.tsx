@@ -47,7 +47,6 @@ export default function FeedContent() {
 
   const pendingPosts = usePendingPostsStore((s) => s.pendingPosts);
   const removePendingPost = usePendingPostsStore((s) => s.removePendingPost);
-  const [fadingIds, setFadingIds] = useState<Set<string>>(new Set());
 
   // Build the SWR cache key for each page of the feed.
   // When `filter` changes, getKey changes identity, so SWR treats it as a
@@ -363,15 +362,8 @@ export default function FeedContent() {
             <PendingPostCard
               key={pp.id}
               post={pp}
-              isFading={fadingIds.has(pp.id)}
-              onFaded={() => {
-                removePendingPost(pp.id);
-                setFadingIds((prev) => {
-                  const next = new Set(prev);
-                  next.delete(pp.id);
-                  return next;
-                });
-              }}
+              isFading={false}
+              onFaded={() => removePendingPost(pp.id)}
             />
           ))}
           {posts.map((post) => (
