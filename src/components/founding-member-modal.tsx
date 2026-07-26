@@ -30,8 +30,11 @@ export function FoundingMemberModal({ inviteToken, onDismiss }: Props) {
   }, [inviteUrl])
 
   const handleDismiss = async () => {
-    await fetch('/api/founding-member/seen', { method: 'POST' })
-    onDismiss()
+    try {
+      await fetch('/api/founding-member/seen', { method: 'POST' })
+    } finally {
+      onDismiss()
+    }
   }
 
   return (
