@@ -38,7 +38,7 @@ export function insertCreatedPost(
 }
 
 /** Produces one renderable item per real server ID across SWR and pending data. */
-export function reconcileFeedItems(pages: ReconciliationPage[] | undefined, pendingPosts: Post[]) {
+export function reconcileFeedItems<T extends Post>(pages: ReconciliationPage[] | undefined, pendingPosts: T[]) {
   const seen = new Set<string>();
   const posts = (pages ?? []).flatMap((page) => page.posts).filter((post) => {
     if (seen.has(post.id)) return false;

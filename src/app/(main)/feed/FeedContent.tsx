@@ -12,7 +12,7 @@ import RecommendationCard from "@/components/recommendation-card";
 import OnboardingModal, { shouldShowOnboarding } from "@/components/onboarding-modal";
 import ReferralAttributionBanner from "@/components/referral-attribution-banner";
 import PendingPostCard from "@/components/pending-post-card";
-import { usePendingPostsStore } from "@/store/pending-posts";
+import { PENDING_POST_RECONCILIATION_MS, usePendingPostsStore } from "@/store/pending-posts";
 import { insertCreatedPost, reconcileFeedItems, type ReconciliationPage } from "@/lib/feed-reconciliation";
 
 const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS"] as const;
@@ -49,7 +49,9 @@ export default function FeedContent() {
 
   const pendingPosts = usePendingPostsStore((s) => s.pendingPosts);
   const removePendingPost = usePendingPostsStore((s) => s.removePendingPost);
-  const [fadingIds, setFadingIds] = useState<Set<string>>(new Set());
+  const setPendingPostStatus = usePendingPostsStore((s) => s.setPendingPostStatus);
+  const retryPendingPost = usePendingPostsStore((s) => s.retryPendingPost);
+  const removeExpiredPendingPosts = usePendingPostsStore((s) => s.removeExpiredPendingPosts);
 
   // Build the SWR cache key for each page of the feed.
   // When `filter` changes, getKey changes identity, so SWR treats it as a
@@ -182,9 +184,28 @@ export default function FeedContent() {
     });
   }, [pendingPosts, liveIds, removePendingPost]);
 
+  // A create is already saved; bound how long we imply that reconciliation is
+  // actively progressing, and regularly discard abandoned notices.
+  useEffect(() => {
+    removeExpiredPendingPosts();
+    const timers = pendingPosts
+      .filter((post) => post.reconciliationStatus === "reconciling")
+      .map((post) => window.setTimeout(
+        () => setPendingPostStatus(post.id, "needs_refresh"),
+        Math.max(0, PENDING_POST_RECONCILIATION_MS - (Date.now() - post.pendingCreatedAt))
+      ));
+    return () => timers.forEach(window.clearTimeout);
+  }, [pendingPosts, removeExpiredPendingPosts, setPendingPostStatus]);
+
+  useEffect(() => {
+    if (!error) return;
+    pendingPosts.forEach((post) => setPendingPostStatus(post.id, "needs_refresh"));
+  }, [error, pendingPosts, setPendingPostStatus]);
+
   // Optimistically remove a deleted post from every page in the SWR cache.
   const handleDeletePost = useCallback(
     (id: string) => {
+      removePendingPost(id);
       mutate(
         (pages) =>
           pages?.map((page) => ({
@@ -194,7 +215,7 @@ export default function FeedContent() {
         { revalidate: false }
       );
     },
-    [mutate]
+    [mutate, removePendingPost]
   );
 
   // Optimistically apply edits to a post in the SWR cache.
@@ -405,16 +426,11 @@ export default function FeedContent() {
             <PendingPostCard
               key={pp.id}
               post={pp}
-              isFading={fadingIds.has(pp.id)}
-              onFaded={() => {
-                removePendingPost(pp.id);
-                setFadingIds((prev) => {
-                  const next = new Set(prev);
-                  next.delete(pp.id);
-                  return next;
-                });
+              onDismiss={() => removePendingPost(pp.id)}
+              onRefresh={() => {
+                retryPendingPost(pp.id);
+                revalidateFirstPage();
               }}
-              onRefresh={() => mutate()}
             />
           ))}
           {posts.map((post) => (
