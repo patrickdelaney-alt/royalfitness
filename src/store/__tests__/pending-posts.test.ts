@@ -32,5 +32,30 @@ describe("pending posts store", () => {
     expect(usePendingPostsStore.getState().pendingPosts).toEqual([
       expect.objectContaining({ id: "post-1", caption: "replacement", _count: { likes: 0, comments: 0 } }),
     ]);
+    expect(usePendingPostsStore.getState().pendingPosts[0]).toEqual(expect.objectContaining({
+      reconciliationStatus: "reconciling", retryCount: 0, pendingCreatedAt: expect.any(Number),
+    }));
+  });
+
+  it("supports timeout, retry, confirmation, dismissal, and expiry", () => {
+    jest.spyOn(Date, "now").mockReturnValue(100);
+    const store = usePendingPostsStore.getState();
+    store.addPendingPost(post("post-1"));
+    store.setPendingPostStatus("post-1", "needs_refresh");
+    expect(usePendingPostsStore.getState().pendingPosts[0].reconciliationStatus).toBe("needs_refresh");
+
+    usePendingPostsStore.getState().retryPendingPost("post-1");
+    expect(usePendingPostsStore.getState().pendingPosts[0]).toEqual(expect.objectContaining({
+      reconciliationStatus: "reconciling", retryCount: 1,
+    }));
+    usePendingPostsStore.getState().setPendingPostStatus("post-1", "confirmed");
+    expect(usePendingPostsStore.getState().pendingPosts[0].reconciliationStatus).toBe("confirmed");
+    usePendingPostsStore.getState().removePendingPost("post-1");
+    expect(usePendingPostsStore.getState().pendingPosts).toHaveLength(0);
+
+    usePendingPostsStore.getState().addPendingPost(post("expired"));
+    usePendingPostsStore.getState().removeExpiredPendingPosts(24 * 60 * 60 * 1_000 + 100);
+    expect(usePendingPostsStore.getState().pendingPosts).toHaveLength(0);
+    jest.restoreAllMocks();
   });
 });
