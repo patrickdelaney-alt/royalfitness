@@ -1712,7 +1712,7 @@ export default function CreatePostContent() {
                         searchGyms(e.target.value);
                       }}
                       placeholder="Search gyms..."
-                      className="input-dark w-full pl-9"
+                      className="input-dark w-full pl-9!"
                     />
                   </div>
                 </div>
@@ -2053,7 +2053,7 @@ export default function CreatePostContent() {
                               searchGyms(e.target.value);
                             }}
                             placeholder="Search gyms..."
-                            className="input-dark w-full pl-9"
+                            className="input-dark w-full pl-9!"
                           />
                         </div>
                       </div>
