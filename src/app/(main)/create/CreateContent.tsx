@@ -1327,8 +1327,14 @@ export default function CreatePostContent() {
       const created = await res.json();
       // The create endpoint returns the fully-related post. Preserve it as the
       // source of truth (including server IDs/timestamps and empty counts) so
-      // the feed can transition from reconciliation feedback to PostCard.
-      addPendingPost({ ...created, likedByMe: created.likedByMe ?? false } as PendingPost);
+      // the feed can optimistically place this exact post into its first SWR
+      // page. This also makes PRIVATE and backdated posts immediately visible
+      // to their author without fabricating client timestamps or visibility.
+      const confirmedPost = {
+        ...created,
+        likedByMe: created.likedByMe ?? false,
+      } as PendingPost;
+      addPendingPost(confirmedPost);
       clearDraft();
       successNotification();
       setSuccessPost({ id: created.id, type: created.type as PostType });
