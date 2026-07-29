@@ -6,6 +6,8 @@ import { checkAndAwardAchievements } from "@/lib/achievements";
 import { parseEmbedUrl } from "@/lib/embed-parser";
 import { invalidateStreakCache } from "@/lib/user-stats";
 
+export const POSTS_CACHE_CONTROL = "private, no-cache";
+
 // ── Catalog item snapshot resolver ────────────────────────────────────────────
 // Looks up a catalog item by ID and type, verifies ownership, returns snapshot.
 // Bypass prevention: keyed to item ID (not content) — edits cannot fool the guard.
@@ -243,7 +245,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       { posts: formattedPosts, nextCursor },
-      { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } }
+      { headers: { "Cache-Control": POSTS_CACHE_CONTROL } }
     );
   } catch (error) {
     console.error("GET /api/posts error:", error);

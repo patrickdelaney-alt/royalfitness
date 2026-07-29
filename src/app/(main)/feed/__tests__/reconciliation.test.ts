@@ -1,5 +1,5 @@
 import type { Post } from "@/components/post-card";
-import { reconcileFeedItems } from "@/lib/feed-reconciliation";
+import { insertCreatedPost, reconcileFeedItems } from "@/lib/feed-reconciliation";
 
 const post = (id: string): Post => ({
   id, type: "GENERAL", caption: "Created", mediaUrl: null, visibility: "PUBLIC", tags: [],
@@ -28,5 +28,28 @@ describe("feed post reconciliation", () => {
 
     const pendingOnly = reconcileFeedItems([], [created, created]);
     expect(pendingOnly.visiblePendingPosts).toHaveLength(1);
+  });
+
+  it("inserts a backdated private create in server order and preserves cursors", () => {
+    const newest = { ...post("newest"), createdAt: "2026-07-29T13:00:00.000Z" };
+    const created = { ...post("created"), visibility: "PRIVATE", createdAt: "2026-07-29T12:30:00.000Z" };
+    const oldest = { ...post("oldest"), createdAt: "2026-07-29T11:00:00.000Z" };
+    const pages = [
+      { posts: [newest, oldest], nextCursor: "cursor-one" },
+      { posts: [created, oldest], nextCursor: "cursor-two" },
+    ];
+
+    const result = insertCreatedPost(pages, created, "ALL")!;
+    expect(result[0].posts.map(({ id }) => id)).toEqual(["newest", "created", "oldest"]);
+    expect(result[1].posts).toEqual([]);
+    expect(result.map(({ nextCursor }) => nextCursor)).toEqual(["cursor-one", "cursor-two"]);
+  });
+
+  it("does not insert a create that does not match the active filter", () => {
+    const duplicate = post("duplicate");
+    const pages = [{ posts: [duplicate] }, { posts: [duplicate] }];
+    const result = insertCreatedPost(pages, post("meal"), "WORKOUT")!;
+
+    expect(result.flatMap(({ posts }) => posts).map(({ id }) => id)).toEqual(["duplicate"]);
   });
 });

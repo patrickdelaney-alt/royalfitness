@@ -13,7 +13,7 @@ import OnboardingModal, { shouldShowOnboarding } from "@/components/onboarding-m
 import ReferralAttributionBanner from "@/components/referral-attribution-banner";
 import PendingPostCard from "@/components/pending-post-card";
 import { usePendingPostsStore } from "@/store/pending-posts";
-import { reconcileFeedItems, type ReconciliationPage } from "@/lib/feed-reconciliation";
+import { insertCreatedPost, reconcileFeedItems, type ReconciliationPage } from "@/lib/feed-reconciliation";
 
 const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS"] as const;
 type PostTypeFilter = typeof POST_TYPES[number];
@@ -31,7 +31,7 @@ const POST_TYPE_LABELS: Record<string, string> = {
 type FeedPage = ReconciliationPage;
 
 const fetcher = (url: string): Promise<FeedPage> =>
-  fetch(url).then((r) => {
+  fetch(url, { cache: "no-store" }).then((r) => {
     if (!r.ok) throw new Error("Failed to fetch");
     return r.json();
   });
@@ -43,6 +43,7 @@ export default function FeedContent() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const revalidatedPendingIds = useRef<Set<string>>(new Set());
+  const lastResumeRefreshAt = useRef(0);
   const { data: session } = useSession();
   const currentUserId = session?.user?.id ?? undefined;
 
@@ -70,8 +71,8 @@ export default function FeedContent() {
 
   const { data, error, isLoading, isValidating, size, setSize, mutate } =
     useSWRInfinite<FeedPage>(getKey, fetcher, {
-      // Don't refetch when the tab regains focus — the HTTP Cache-Control
-      // header on the API already handles background freshness.
+      // Resume freshness is handled below so native/document events share one
+      // throttle and only page one is reconciled.
       revalidateOnFocus: false,
       // Don't re-fetch page 1 every time we load a subsequent page; cursor-
       // based pages are stable so re-fetching page 1 would just shift cursors.
@@ -82,8 +83,11 @@ export default function FeedContent() {
     });
 
   const { posts, visiblePendingPosts } = useMemo(
-    () => reconcileFeedItems(data, pendingPosts),
-    [data, pendingPosts]
+    () => reconcileFeedItems(
+      data,
+      pendingPosts.filter((post) => filter === "ALL" || post.type === filter)
+    ),
+    [data, filter, pendingPosts]
   );
   const liveIds = useMemo(() => new Set(posts.map((p) => p.id)), [posts]);
   // Always key reconciliation by the real server ID. This is also the final
@@ -126,14 +130,46 @@ export default function FeedContent() {
     }
   }, [filter, router, searchParams]);
 
-  // Force an immediate revalidation for every newly-created server ID (not just
-  // the first post during this component lifetime).
+  const revalidateFirstPage = useCallback(() => {
+    void mutate(undefined, {
+      revalidate: (_page, key) => typeof key === "string" && !key.includes("cursor="),
+    });
+  }, [mutate]);
+
+  // Native shells surface resume as visibility/focus/pageshow events. Refresh
+  // at most once per 30 seconds, and never disturb already-loaded cursor pages.
   useEffect(() => {
-    const hasNewId = pendingPosts.some((post) => !revalidatedPendingIds.current.has(post.id));
-    if (!hasNewId) return;
-    pendingPosts.forEach((post) => revalidatedPendingIds.current.add(post.id));
-    mutate();
-  }, [mutate, pendingPosts]);
+    const refreshOnResume = () => {
+      if (document.visibilityState === "hidden") return;
+      const now = Date.now();
+      if (now - lastResumeRefreshAt.current < 30_000) return;
+      lastResumeRefreshAt.current = now;
+      revalidateFirstPage();
+    };
+    document.addEventListener("visibilitychange", refreshOnResume);
+    window.addEventListener("focus", refreshOnResume);
+    window.addEventListener("pageshow", refreshOnResume);
+    return () => {
+      document.removeEventListener("visibilitychange", refreshOnResume);
+      window.removeEventListener("focus", refreshOnResume);
+      window.removeEventListener("pageshow", refreshOnResume);
+    };
+  }, [revalidateFirstPage]);
+
+  // Put each confirmed create response into page one immediately, then fetch
+  // only that page in the background to reconcile visibility and ordering.
+  useEffect(() => {
+    const created = pendingPosts.filter((post) => !revalidatedPendingIds.current.has(post.id));
+    if (created.length === 0) return;
+    created.forEach((post) => revalidatedPendingIds.current.add(post.id));
+    void mutate(
+      (pages) => created.reduce(
+        (nextPages, post) => insertCreatedPost(nextPages, post, filter),
+        pages
+      ),
+      { revalidate: false }
+    ).then(revalidateFirstPage);
+  }, [filter, mutate, pendingPosts, revalidateFirstPage]);
 
   // When SWR returns data that contains a pending post's real ID, remove the
   // pending copy so the confirmed live post does not render twice.
