@@ -31,29 +31,43 @@ export const usePendingPostsStore = create<PendingPostsState>()((set) => ({
         retryCount: 0,
       }, ...state.pendingPosts.filter((item) => item.id !== post.id)],
     })),
+  // Every mutator below returns the untouched `state` when it changes nothing.
+  // `filter`/`map` allocate a new array even on a no-op, and zustand only skips
+  // notifying subscribers when the next state is identical to the current one.
+  // Without these guards a caller that reads `pendingPosts` and invokes a
+  // mutator from the same effect re-renders forever.
   setPendingPostStatus: (id, reconciliationStatus) =>
-    set((state) => ({
-      pendingPosts: state.pendingPosts.map((post) =>
-        post.id === id && post.reconciliationStatus !== reconciliationStatus
-          ? { ...post, reconciliationStatus }
-          : post
-      ),
-    })),
+    set((state) => {
+      let changed = false;
+      const pendingPosts = state.pendingPosts.map((post) => {
+        if (post.id !== id || post.reconciliationStatus === reconciliationStatus) return post;
+        changed = true;
+        return { ...post, reconciliationStatus };
+      });
+      return changed ? { pendingPosts } : state;
+    }),
   retryPendingPost: (id) =>
-    set((state) => ({
-      pendingPosts: state.pendingPosts.map((post) => post.id === id ? {
-        ...post,
-        reconciliationStatus: "reconciling",
-        pendingCreatedAt: Date.now(),
-        retryCount: post.retryCount + 1,
-      } : post),
-    })),
+    set((state) => {
+      if (!state.pendingPosts.some((post) => post.id === id)) return state;
+      return {
+        pendingPosts: state.pendingPosts.map((post) => post.id === id ? {
+          ...post,
+          reconciliationStatus: "reconciling",
+          pendingCreatedAt: Date.now(),
+          retryCount: post.retryCount + 1,
+        } : post),
+      };
+    }),
   removePendingPost: (id) =>
-    set((state) => ({ pendingPosts: state.pendingPosts.filter((post) => post.id !== id) })),
+    set((state) => {
+      const pendingPosts = state.pendingPosts.filter((post) => post.id !== id);
+      return pendingPosts.length === state.pendingPosts.length ? state : { pendingPosts };
+    }),
   removeExpiredPendingPosts: (now = Date.now()) =>
-    set((state) => ({
-      pendingPosts: state.pendingPosts.filter(
+    set((state) => {
+      const pendingPosts = state.pendingPosts.filter(
         (post) => now - post.pendingCreatedAt < PENDING_POST_EXPIRY_MS
-      ),
-    })),
+      );
+      return pendingPosts.length === state.pendingPosts.length ? state : { pendingPosts };
+    }),
 }));
