@@ -184,10 +184,19 @@ export default function FeedContent() {
     });
   }, [pendingPosts, liveIds, removePendingPost]);
 
-  // A create is already saved; bound how long we imply that reconciliation is
-  // actively progressing, and regularly discard abandoned notices.
+  // Discard abandoned notices on mount and hourly after that. This deliberately
+  // does NOT depend on `pendingPosts`: sweeping writes to the store, so keying
+  // the effect on the state it writes would make every sweep retrigger itself.
   useEffect(() => {
     removeExpiredPendingPosts();
+    const interval = window.setInterval(removeExpiredPendingPosts, 60 * 60 * 1_000);
+    return () => window.clearInterval(interval);
+  }, [removeExpiredPendingPosts]);
+
+  // A create is already saved; bound how long we imply that reconciliation is
+  // actively progressing. Arming timers only reads pending state, so depending
+  // on `pendingPosts` here is safe.
+  useEffect(() => {
     const timers = pendingPosts
       .filter((post) => post.reconciliationStatus === "reconciling")
       .map((post) => window.setTimeout(
@@ -195,7 +204,7 @@ export default function FeedContent() {
         Math.max(0, PENDING_POST_RECONCILIATION_MS - (Date.now() - post.pendingCreatedAt))
       ));
     return () => timers.forEach(window.clearTimeout);
-  }, [pendingPosts, removeExpiredPendingPosts, setPendingPostStatus]);
+  }, [pendingPosts, setPendingPostStatus]);
 
   useEffect(() => {
     if (!error) return;

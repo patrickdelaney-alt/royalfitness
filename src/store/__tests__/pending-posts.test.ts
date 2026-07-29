@@ -58,4 +58,50 @@ describe("pending posts store", () => {
     expect(usePendingPostsStore.getState().pendingPosts).toHaveLength(0);
     jest.restoreAllMocks();
   });
+
+  // Consumers read `pendingPosts` and call these mutators from the same effects.
+  // A no-op that still returns a fresh array re-renders the feed forever, so
+  // identity — not just value — is part of the contract. Use toBe, not toEqual.
+  describe("keeps pendingPosts identity stable when nothing changes", () => {
+    it("no-ops when there is nothing to expire", () => {
+      const empty = usePendingPostsStore.getState().pendingPosts;
+      usePendingPostsStore.getState().removeExpiredPendingPosts();
+      expect(usePendingPostsStore.getState().pendingPosts).toBe(empty);
+
+      usePendingPostsStore.getState().addPendingPost(post("fresh"));
+      const fresh = usePendingPostsStore.getState().pendingPosts;
+      usePendingPostsStore.getState().removeExpiredPendingPosts();
+      expect(usePendingPostsStore.getState().pendingPosts).toBe(fresh);
+    });
+
+    it("no-ops when the status already matches or the id is unknown", () => {
+      usePendingPostsStore.getState().addPendingPost(post("post-1"));
+      const before = usePendingPostsStore.getState().pendingPosts;
+
+      usePendingPostsStore.getState().setPendingPostStatus("post-1", "reconciling");
+      expect(usePendingPostsStore.getState().pendingPosts).toBe(before);
+
+      usePendingPostsStore.getState().setPendingPostStatus("missing", "needs_refresh");
+      expect(usePendingPostsStore.getState().pendingPosts).toBe(before);
+
+      usePendingPostsStore.getState().retryPendingPost("missing");
+      expect(usePendingPostsStore.getState().pendingPosts).toBe(before);
+
+      usePendingPostsStore.getState().removePendingPost("missing");
+      expect(usePendingPostsStore.getState().pendingPosts).toBe(before);
+    });
+
+    it("still produces a new array when it really does change something", () => {
+      usePendingPostsStore.getState().addPendingPost(post("post-1"));
+      const before = usePendingPostsStore.getState().pendingPosts;
+
+      usePendingPostsStore.getState().setPendingPostStatus("post-1", "needs_refresh");
+      const afterStatus = usePendingPostsStore.getState().pendingPosts;
+      expect(afterStatus).not.toBe(before);
+
+      usePendingPostsStore.getState().removePendingPost("post-1");
+      expect(usePendingPostsStore.getState().pendingPosts).not.toBe(afterStatus);
+      expect(usePendingPostsStore.getState().pendingPosts).toHaveLength(0);
+    });
+  });
 });
