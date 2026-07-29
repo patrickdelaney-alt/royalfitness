@@ -584,7 +584,9 @@ export async function POST(req: NextRequest) {
       checkAndAwardAchievements(userId, prisma).catch(() => {});
     }
 
-    return NextResponse.json(post, { status: 201 });
+    // Match the feed's Post shape so clients can safely use the successful
+    // creation response as an optimistic/reconciliation item.
+    return NextResponse.json({ ...post, likedByMe: false }, { status: 201 });
   } catch (error) {
     console.error("POST /api/posts error:", error);
     return NextResponse.json(

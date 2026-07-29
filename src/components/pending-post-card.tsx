@@ -18,7 +18,8 @@ const TYPE_RING: Record<string, string> = {
   WELLNESS: "linear-gradient(135deg, rgba(82,133,49,0.6), rgba(36,63,22,0.3))",
 };
 
-function initials(name: string): string {
+function initials(name: string | null): string {
+  if (!name) return "?";
   return name
     .split(" ")
     .slice(0, 2)
@@ -31,10 +32,12 @@ interface PendingPostCardProps {
   post: PendingPost;
   isFading: boolean;
   onFaded: () => void;
+  onRefresh: () => void;
 }
 
-export default function PendingPostCard({ post, isFading, onFaded }: PendingPostCardProps) {
+export default function PendingPostCard({ post, isFading, onFaded, onRefresh }: PendingPostCardProps) {
   const [progress, setProgress] = useState(5);
+  const [reconciliationSlow, setReconciliationSlow] = useState(false);
   const badge = TYPE_BADGE[post.type] ?? TYPE_BADGE.GENERAL;
   const ring = TYPE_RING[post.type];
 
@@ -48,12 +51,9 @@ export default function PendingPostCard({ post, isFading, onFaded }: PendingPost
   useEffect(() => {
     const t1 = setTimeout(() => setProgress(62), 80);
     const t2 = setTimeout(() => setProgress(88), 500);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    const slow = setTimeout(() => setReconciliationSlow(true), 15000);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(slow); };
   }, []);
-
-  useEffect(() => {
-    if (isFading) setProgress(100);
-  }, [isFading]);
 
   return (
     <div
@@ -70,7 +70,8 @@ export default function PendingPostCard({ post, isFading, onFaded }: PendingPost
         if (isFading && e.propertyName === "opacity") onFaded();
       }}
     >
-      {/* Progress bar */}
+      {/* Progress bar (removed once reconciliation needs user action). */}
+      {!reconciliationSlow && (
       <div
         className="w-full"
         style={{ height: "3px", background: "rgba(36,63,22,0.08)" }}
@@ -78,13 +79,14 @@ export default function PendingPostCard({ post, isFading, onFaded }: PendingPost
         <div
           style={{
             height: "100%",
-            width: `${progress}%`,
+            width: `${isFading ? 100 : progress}%`,
             background: "var(--brand)",
             transition: "width 0.65s ease-out",
             borderRadius: "0 2px 2px 0",
           }}
         />
       </div>
+      )}
 
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-3 pb-2">
@@ -124,15 +126,20 @@ export default function PendingPostCard({ post, isFading, onFaded }: PendingPost
               {badge.label}
             </span>
           </div>
-          {/* "Posting..." status row */}
+          {/* The server accepted this post; only the feed cache is catching up. */}
           <div className="flex items-center gap-1.5 mt-0.5">
             <span
-              className="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0"
+              className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${reconciliationSlow ? "" : "animate-pulse"}`}
               style={{ background: "var(--brand)" }}
             />
             <span className="text-xs" style={{ color: "var(--brand)" }}>
-              Posting...
+              {reconciliationSlow ? "Feed update delayed" : "Adding to your feed…"}
             </span>
+            {reconciliationSlow && (
+              <button type="button" onClick={onRefresh} className="text-xs underline ml-1" style={{ color: "var(--brand)" }}>
+                Refresh feed
+              </button>
+            )}
           </div>
         </div>
       </div>
