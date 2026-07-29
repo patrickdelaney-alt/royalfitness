@@ -9,6 +9,7 @@ import { successNotification } from "@/lib/haptics";
 import { parseEmbedUrl, type EmbedProvider } from "@/lib/embed-parser";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 import { photoPrompts } from "@/lib/photo-prompts";
+import { usePendingPostsStore, type PendingPost } from "@/store/pending-posts";
 
 type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN";
 
@@ -507,6 +508,7 @@ function MediaBlock({
 
 export default function CreatePostContent() {
   const router = useRouter();
+  const addPendingPost = usePendingPostsStore((state) => state.addPendingPost);
   const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isFromSession = searchParams.get("fromSession") === "1";
@@ -1323,6 +1325,10 @@ export default function CreatePostContent() {
       }
 
       const created = await res.json();
+      // The create endpoint returns the fully-related post. Preserve it as the
+      // source of truth (including server IDs/timestamps and empty counts) so
+      // the feed can transition from reconciliation feedback to PostCard.
+      addPendingPost({ ...created, likedByMe: created.likedByMe ?? false } as PendingPost);
       clearDraft();
       successNotification();
       setSuccessPost({ id: created.id, type: created.type as PostType });

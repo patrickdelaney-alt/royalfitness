@@ -1,22 +1,10 @@
 import { create } from "zustand";
+import type { Post } from "@/components/post-card";
 
-export interface PendingPost {
-  id: string;
-  type: string;
-  caption: string | null;
-  mediaUrl: string | null;
-  createdAt: string;
-  author: {
-    id: string;
-    name: string;
-    username: string;
-    avatarUrl: string | null;
-  };
-  workoutDetail: { workoutName: string } | null;
-  mealDetail: { mealName: string } | null;
-  wellnessDetail: { activityType: string } | null;
-  gym: { id: string; name: string } | null;
-}
+// Creation returns the same complete shape consumed by PostCard. Keeping that
+// response intact avoids a second, subtly different post model while the feed
+// catches up with the write.
+export type PendingPost = Post;
 
 interface PendingPostsState {
   pendingPosts: PendingPost[];
@@ -27,7 +15,9 @@ interface PendingPostsState {
 export const usePendingPostsStore = create<PendingPostsState>()((set) => ({
   pendingPosts: [],
   addPendingPost: (post) =>
-    set((state) => ({ pendingPosts: [post, ...state.pendingPosts] })),
+    set((state) => ({
+      pendingPosts: [post, ...state.pendingPosts.filter((item) => item.id !== post.id)],
+    })),
   removePendingPost: (id) =>
     set((state) => ({
       pendingPosts: state.pendingPosts.filter((p) => p.id !== id),

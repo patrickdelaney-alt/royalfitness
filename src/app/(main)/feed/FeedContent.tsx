@@ -7,12 +7,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { HiSearch } from "react-icons/hi";
-import PostCard, { Post } from "@/components/post-card";
+import PostCard from "@/components/post-card";
 import RecommendationCard from "@/components/recommendation-card";
 import OnboardingModal, { shouldShowOnboarding } from "@/components/onboarding-modal";
 import ReferralAttributionBanner from "@/components/referral-attribution-banner";
 import PendingPostCard from "@/components/pending-post-card";
 import { usePendingPostsStore } from "@/store/pending-posts";
+import { reconcileFeedItems, type ReconciliationPage } from "@/lib/feed-reconciliation";
 
 const POST_TYPES = ["ALL", "WORKOUT", "MEAL", "WELLNESS"] as const;
 type PostTypeFilter = typeof POST_TYPES[number];
@@ -27,7 +28,7 @@ const POST_TYPE_LABELS: Record<string, string> = {
   WELLNESS: "Wellness",
 };
 
-type FeedPage = { posts: Post[]; nextCursor?: string };
+type FeedPage = ReconciliationPage;
 
 const fetcher = (url: string): Promise<FeedPage> =>
   fetch(url).then((r) => {
@@ -41,7 +42,7 @@ export default function FeedContent() {
   const [filter, setFilter] = useState<PostTypeFilter>(normalizeFilter(searchParams.get("filter")));
   const [showOnboarding, setShowOnboarding] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const didInitialPendingRevalidate = useRef(false);
+  const revalidatedPendingIds = useRef<Set<string>>(new Set());
   const { data: session } = useSession();
   const currentUserId = session?.user?.id ?? undefined;
 
@@ -80,9 +81,13 @@ export default function FeedContent() {
       refreshInterval: pendingPosts.length > 0 ? 5000 : 0,
     });
 
-  const posts: Post[] = useMemo(() => (data ? data.flatMap((page) => page.posts) : []), [data]);
+  const { posts, visiblePendingPosts } = useMemo(
+    () => reconcileFeedItems(data, pendingPosts),
+    [data, pendingPosts]
+  );
   const liveIds = useMemo(() => new Set(posts.map((p) => p.id)), [posts]);
-  const visiblePendingPosts = pendingPosts.filter((pp) => !liveIds.has(pp.id));
+  // Always key reconciliation by the real server ID. This is also the final
+  // duplicate guard if store callbacks or an SWR page repeat an item.
   const hasMore = data ? !!data[data.length - 1]?.nextCursor : true;
   // True when we're fetching a new page (not the very first load)
   const loadingMore = isValidating && size > 1 && !data?.[size - 1];
@@ -121,13 +126,14 @@ export default function FeedContent() {
     }
   }, [filter, router, searchParams]);
 
-  // Force one immediate revalidation when pending posts exist so the real post
-  // shows up as soon as possible rather than waiting for the next poll.
+  // Force an immediate revalidation for every newly-created server ID (not just
+  // the first post during this component lifetime).
   useEffect(() => {
-    if (didInitialPendingRevalidate.current || pendingPosts.length === 0) return;
-    didInitialPendingRevalidate.current = true;
+    const hasNewId = pendingPosts.some((post) => !revalidatedPendingIds.current.has(post.id));
+    if (!hasNewId) return;
+    pendingPosts.forEach((post) => revalidatedPendingIds.current.add(post.id));
     mutate();
-  }, [mutate, pendingPosts.length]);
+  }, [mutate, pendingPosts]);
 
   // When SWR returns data that contains a pending post's real ID, remove the
   // pending copy so the confirmed live post does not render twice.
@@ -372,6 +378,7 @@ export default function FeedContent() {
                   return next;
                 });
               }}
+              onRefresh={() => mutate()}
             />
           ))}
           {posts.map((post) => (
