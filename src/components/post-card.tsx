@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -23,7 +23,9 @@ import { lightImpact } from "@/lib/haptics";
 import { AFFILIATE_CATEGORY_LABELS } from "@/lib/catalog-tags";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 import { getPostBadge, type BadgeData } from "@/lib/workout-badges";
+import type { ShareCardData, ShareMetric } from "@/lib/generate-share-card";
 import EmbedMedia, { type ExternalContentItem } from "@/components/embed-media";
+import SharePostSheet from "@/components/share-post-sheet";
 import Linkify from "@/components/linkify";
 import { useLikesStore } from "@/store/likes";
 
@@ -238,6 +240,62 @@ const TYPE_BADGE: Record<
     emoji: "✨",
   },
 };
+
+// Media that Canvas can't decode for a share card, and that renders as <video>.
+const VIDEO_RE = /\.(mp4|mov|webm)($|\?)/i;
+
+// ── share card mappers ────────────────────────────────────────────────────────
+
+/** Tracked eyebrow above the caption on the share card. */
+function shareEyebrow(post: Post): string | null {
+  if (post.type === "WORKOUT" && post.workoutDetail) {
+    const { workoutName, durationMinutes } = post.workoutDetail;
+    return (
+      [workoutName, durationMinutes ? `${durationMinutes} min` : null]
+        .filter(Boolean)
+        .join(" · ") || null
+    );
+  }
+  if (post.type === "MEAL" && post.mealDetail) {
+    const { mealType, mealName } = post.mealDetail;
+    return [mealType, mealName].filter(Boolean).join(" · ") || null;
+  }
+  if (post.type === "WELLNESS" && post.wellnessDetail) {
+    return post.wellnessDetail.activityType || null;
+  }
+  return null;
+}
+
+/** Up to 3 metrics, in order of interest. Units are spelled out — the brand rule. */
+function shareMetrics(post: Post): ShareMetric[] {
+  const out: ShareMetric[] = [];
+
+  const w = post.workoutDetail;
+  if (w) {
+    if (w.durationMinutes)
+      out.push({ value: String(w.durationMinutes), unit: "min", label: "Duration" });
+    if (w.exercises.length)
+      out.push({ value: String(w.exercises.length), label: "Exercises" });
+    if (w.perceivedExertion)
+      out.push({ value: String(w.perceivedExertion), unit: "/10", label: "Effort" });
+  }
+
+  const m = post.mealDetail;
+  if (m) {
+    if (m.calories) out.push({ value: String(m.calories), unit: "cal", label: "Calories" });
+    if (m.protein) out.push({ value: String(m.protein), unit: "g protein", label: "Protein" });
+  }
+
+  const wl = post.wellnessDetail;
+  if (wl) {
+    if (wl.durationMinutes)
+      out.push({ value: String(wl.durationMinutes), unit: "min", label: "Duration" });
+    if (wl.intensity)
+      out.push({ value: String(wl.intensity), unit: "/10", label: "Intensity" });
+  }
+
+  return out.slice(0, 3);
+}
 
 // ── mood label ────────────────────────────────────────────────────────────────
 
@@ -1040,7 +1098,10 @@ function FullPostCard({
 
   const [showOwnerMenu, setShowOwnerMenu] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [linkLoading, setLinkLoading] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState(
+    `https://royalwellness.app/p/${post.id}`,
+  );
   const [editSaving, setEditSaving] = useState(false);
   const [editCaption, setEditCaption] = useState(post.caption ?? "");
   const [editVisibility, setEditVisibility] = useState(post.visibility);
@@ -1071,6 +1132,24 @@ function FullPostCard({
             : post.type === "CATALOG_SHARE"
               ? post.catalogShareDetail?.title
               : null;
+
+  // ── share card data ──
+  // Memoised: the sheet regenerates its preview whenever this changes, and this
+  // component re-renders on likes, comments and the resolved referral URL.
+  const shareData: ShareCardData = useMemo(() => {
+    // A video has no still frame to crop — fall back to the gradient badge card.
+    const photo =
+      post.mediaUrl && !VIDEO_RE.test(post.mediaUrl) ? post.mediaUrl : null;
+    return {
+      type: "post",
+      caption: post.caption,
+      mediaUrl: photo,
+      authorHandle: post.author.username,
+      eyebrow: shareEyebrow(post),
+      metrics: shareMetrics(post),
+      badge: photo ? null : getPostBadge({ ...post, mediaUrl: null }),
+    };
+  }, [post]);
 
   // ── like toggle ──
 
@@ -1816,7 +1895,7 @@ function FullPostCard({
 
         {post.mediaUrl ? (
           <div className="mt-2 rounded-lg overflow-hidden">
-            {post.mediaUrl.match(/\.(mp4|mov|webm)($|\?)/i) ? (
+            {VIDEO_RE.test(post.mediaUrl) ? (
               <video
                 src={post.mediaUrl}
                 controls
@@ -1912,42 +1991,29 @@ function FullPostCard({
           <span>{commentCount}</span>
         </button>
 
-        {/* Share — own posts only. Shares the public post URL so iMessage previews the OG card. */}
+        {/* Share — own posts only. Opens the card sheet; the referral link travels with it. */}
         {isOwner && (
           <button
-            onClick={async () => {
-              if (linkLoading) return;
-              setLinkLoading(true);
-              try {
-                // Fire-and-forget referral attribution — don't block on it
-                fetch("/api/referral-links", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    sourceType: "post",
-                    sourceId: post.id,
-                  }),
-                }).catch(() => {});
-
-                const url = `https://royalwellness.app/p/${post.id}`;
-                if (navigator.share) {
-                  await navigator.share({ url });
-                } else {
-                  await navigator.clipboard.writeText(url);
-                  toast.success("Link copied");
-                  return;
-                }
-                toast.success("Shared!");
-              } catch (err) {
-                // AbortError means the user dismissed the share sheet — not an error
-                if (err instanceof Error && err.name === "AbortError") return;
-                toast.error("Something went wrong");
-              } finally {
-                setLinkLoading(false);
-              }
+            onClick={() => {
+              void lightImpact();
+              setShareOpen(true);
+              // Resolve the tracked referral URL in the background — the sheet
+              // starts with the plain post URL and picks this up when it lands.
+              fetch("/api/referral-links", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sourceType: "post", sourceId: post.id }),
+              })
+                .then((res) => (res.ok ? res.json() : null))
+                .then((data) => {
+                  // Relative when NEXTAUTH_URL is unset — navigator.share needs
+                  // an absolute URL, so keep the post URL in that case.
+                  if (typeof data?.url === "string" && /^https?:\/\//.test(data.url))
+                    setShareUrl(data.url);
+                })
+                .catch(() => {});
             }}
-            disabled={linkLoading}
-            className="ml-auto flex items-center gap-1.5 text-sm text-muted-dim hover:text-foreground transition-colors disabled:opacity-50"
+            className="ml-auto flex items-center gap-1.5 text-sm text-muted-dim hover:text-foreground transition-colors"
             title="Share"
           >
             <HiShare className="w-4 h-4" />
@@ -2038,6 +2104,15 @@ function FullPostCard({
             </button>
           )}
         </div>
+      )}
+
+      {/* ── share card sheet ── */}
+      {shareOpen && (
+        <SharePostSheet
+          data={shareData}
+          url={shareUrl}
+          onClose={() => setShareOpen(false)}
+        />
       )}
     </article>
   );
