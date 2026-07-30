@@ -5,14 +5,16 @@ import { prisma } from "@/lib/prisma";
 // Public redirect endpoint for referral links.
 // 1. Increments the link's click count.
 // 2. Sets a _royal_ref cookie so attribution can be claimed at signup.
-// 3. Redirects to the App Store so new users can download the app.
+// 3. Sends post referrals to the post itself — it has an OG image and a "Join
+//    Free" CTA, so the link previews properly and the visitor sees something
+//    before being asked to install. Everything else goes to the App Store.
 
 const APP_STORE_URL =
   process.env.APP_STORE_URL?.replace(/\/$/, "") ??
   "https://apps.apple.com/us/app/royal-fitness-wellness/id6759988491";
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ code: string }> }
 ) {
   const { code } = await params;
@@ -22,7 +24,10 @@ export async function GET(
   }
 
   const link = await prisma.referralLink
-    .findUnique({ where: { id: code }, select: { id: true } })
+    .findUnique({
+      where: { id: code },
+      select: { id: true, sourceType: true, sourceId: true },
+    })
     .catch(() => null);
 
   if (!link) {
@@ -34,9 +39,15 @@ export async function GET(
     .update({ where: { id: link.id }, data: { clickCount: { increment: 1 } } })
     .catch(() => {});
 
-  const response = NextResponse.redirect(APP_STORE_URL, { status: 307 });
+  const destination =
+    link.sourceType === "post" && link.sourceId
+      ? new URL(`/p/${link.sourceId}`, req.nextUrl.origin).toString()
+      : APP_STORE_URL;
 
-  // Store the referral code for attribution at signup (7 days)
+  const response = NextResponse.redirect(destination, { status: 307 });
+
+  // Store the referral code for attribution at signup (7 days). Same-origin for
+  // the post destination, so it survives all the way to /signup.
   response.cookies.set("_royal_ref", link.id, {
     path: "/",
     maxAge: 60 * 60 * 24 * 7,

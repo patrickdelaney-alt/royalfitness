@@ -560,36 +560,3 @@ export async function generateShareCard(
     );
   });
 }
-
-/** Hand the card to the OS share sheet with the file attached, so Instagram /
- *  Messages / TikTok are one tap. Falls back to a download where Web Share with
- *  files isn't supported (desktop Safari, older Android browsers). */
-export async function shareCard(
-  data: ShareCardData,
-  opts: { ratio?: ShareRatio; url?: string; text?: string } = {},
-): Promise<"shared" | "downloaded" | "cancelled"> {
-  const blob = await generateShareCard(data, opts.ratio ?? "story");
-  const file = new File([blob], "royal.png", { type: "image/png" });
-
-  if (typeof navigator !== "undefined" && navigator.canShare?.({ files: [file] })) {
-    try {
-      await navigator.share({
-        files: [file],
-        ...(opts.url ? { url: opts.url } : {}),
-        ...(opts.text ? { text: opts.text } : {}),
-      });
-      return "shared";
-    } catch (err) {
-      if ((err as Error)?.name === "AbortError") return "cancelled";
-      // fall through to download
-    }
-  }
-
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "royal.png";
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-  return "downloaded";
-}

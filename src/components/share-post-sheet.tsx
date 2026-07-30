@@ -6,15 +6,16 @@
 // the brand gradient CTA.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { HiShare, HiX, HiDownload } from "react-icons/hi";
+import { HiShare, HiX, HiDownload, HiClipboardCopy } from "react-icons/hi";
 import toast from "react-hot-toast";
 import { BottomCtaBar } from "@/components/layout/bottom-cta";
 import {
   generateShareCard,
-  shareCard,
   type ShareCardData,
   type ShareRatio,
 } from "@/lib/generate-share-card";
+import { copyLink, shareCardImage, type ShareOutcome } from "@/lib/share";
+import { isCapacitorNative } from "@/lib/link-handler";
 import { lightImpact, successNotification } from "@/lib/haptics";
 
 interface Props {
@@ -63,18 +64,27 @@ export default function SharePostSheet({ data, url, onClose }: Props) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const objectUrl = useRef<string | null>(null);
+  // The PNG behind the preview, kept so the Share tap can reach navigator.share
+  // without awaiting generation and losing the user gesture.
+  const previewBlob = useRef<Blob | null>(null);
+  const native = isCapacitorNative();
 
   const key = useMemo(() => cardKey(data), [data]);
-  // Read the latest data inside the effect without making it a dependency.
+  // Read the latest data inside the effect without making it a dependency — a
+  // parent re-render rebuilds the object, and only its contents matter.
   const latestData = useRef(data);
-  latestData.current = data;
+  useEffect(() => {
+    latestData.current = data;
+  }, [data]);
 
   // ── Live preview — regenerate whenever the ratio or the contents change ─────
   useEffect(() => {
     let cancelled = false;
+    previewBlob.current = null;
     generateShareCard(latestData.current, ratio)
       .then((blob) => {
         if (cancelled) return;
+        previewBlob.current = blob;
         if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
         objectUrl.current = URL.createObjectURL(blob);
         setPreviewUrl(objectUrl.current);
@@ -102,33 +112,98 @@ export default function SharePostSheet({ data, url, onClose }: Props) {
     return () => window.removeEventListener("keydown", handler);
   }, [busy, onClose]);
 
-  const handleShare = useCallback(async () => {
-    if (busy) return;
-    setBusy(true);
-    void lightImpact();
-    try {
-      const result = await shareCard(data, { ratio, url });
-      if (result === "shared") {
-        void successNotification();
-        onClose();
-      } else if (result === "downloaded") {
-        toast.success("Saved to your photos");
-        onClose();
-      }
-    } catch {
-      toast.error("Couldn't make your card. Try again.");
-    } finally {
+  // Whether the referral link made it onto the clipboard this attempt — the
+  // toast has to be honest about it, since that link is the only way a Story
+  // viewer can find their way back.
+  const linkCopied = useRef(false);
+
+  const report = useCallback(
+    (outcome: ShareOutcome) => {
       setBusy(false);
+      switch (outcome) {
+        case "shared":
+          void successNotification();
+          if (linkCopied.current) toast.success("Shared — link copied for your caption");
+          onClose();
+          return;
+        case "cancelled":
+          return;
+        case "copied":
+          toast.success("Link copied — paste it wherever you're sharing");
+          onClose();
+          return;
+        case "downloaded":
+          toast.success(
+            linkCopied.current ? "Card saved — link copied too" : "Card saved",
+          );
+          onClose();
+          return;
+        default:
+          // The tap already copied the link before handing off, so even a
+          // failed share leaves the user something to paste.
+          if (linkCopied.current) {
+            toast.success("Link copied — paste it wherever you're sharing");
+            onClose();
+            return;
+          }
+          toast.error("Couldn't share your card. Try “Copy link”.");
+      }
+    },
+    [onClose],
+  );
+
+  // Not async: navigator.share has to be reached in the same tick as the tap or
+  // Safari and the iOS webview refuse it for want of a user gesture.
+  const handleShare = useCallback(() => {
+    if (busy) return;
+    void lightImpact();
+    setBusy(true);
+    linkCopied.current = false;
+    // Copy first, inside the gesture — Instagram and TikTok strip the link from
+    // a shared image, so it has to be pasteable into the caption.
+    if (url) {
+      void copyLink(url).then((ok) => {
+        linkCopied.current = ok;
+      });
     }
-  }, [busy, data, ratio, url, onClose]);
+
+    const blob = previewBlob.current;
+    if (blob) {
+      shareCardImage({ blob, url })
+        .then(report)
+        .catch(() => report("failed"));
+      return;
+    }
+
+    // Preview still rendering — generate first, then share. This path can lose
+    // the gesture on Safari, which is why the blob is cached at all.
+    generateShareCard(latestData.current, ratio)
+      .then((generated) => {
+        previewBlob.current = generated;
+        return shareCardImage({ blob: generated, url });
+      })
+      .then(report)
+      .catch(() => report("failed"));
+  }, [busy, url, ratio, report]);
+
+  const handleCopy = useCallback(() => {
+    if (!url) return;
+    void lightImpact();
+    void copyLink(url).then((ok) => {
+      if (ok) toast.success("Link copied");
+      else toast.error("Couldn't copy the link");
+    });
+  }, [url]);
 
   const handleSave = useCallback(() => {
     if (busy || !previewUrl) return;
     const a = document.createElement("a");
     a.href = previewUrl;
     a.download = "royal.png";
+    document.body.appendChild(a);
     a.click();
-    toast.success("Saved");
+    document.body.removeChild(a);
+    toast.success("Card saved");
   }, [busy, previewUrl]);
 
   const previewW = Math.round(PREVIEW_H * PREVIEW_ASPECT[ratio]);
@@ -286,22 +361,36 @@ export default function SharePostSheet({ data, url, onClose }: Props) {
                 <HiShare className="w-4 h-4" />
                 <span>{busy ? "Preparing…" : "Share"}</span>
               </button>
-              <button
-                onClick={handleSave}
-                disabled={busy || !previewUrl}
-                className="w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-50"
-                style={{ background: "rgba(36,63,22,0.08)", color: "#243F16" }}
-              >
-                <HiDownload className="w-4 h-4" />
-                <span>Save image</span>
-              </button>
+              {url && (
+                <button
+                  onClick={handleCopy}
+                  className="w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200"
+                  style={{ background: "rgba(36,63,22,0.08)", color: "#243F16" }}
+                >
+                  <HiClipboardCopy className="w-4 h-4" />
+                  <span>Copy link</span>
+                </button>
+              )}
+              {/* The iOS share sheet already offers Save Image, and an anchor
+                  download does nothing inside the native webview. */}
+              {!native && (
+                <button
+                  onClick={handleSave}
+                  disabled={busy || !previewUrl}
+                  className="w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-50"
+                  style={{ background: "rgba(36,63,22,0.08)", color: "#243F16" }}
+                >
+                  <HiDownload className="w-4 h-4" />
+                  <span>Save image</span>
+                </button>
+              )}
               {url && (
                 <p
                   className="text-[11px] leading-relaxed text-center"
                   style={{ color: "#7A7560" }}
                 >
-                  Your referral link travels with it. You earn royalties if someone joins
-                  from this.
+                  Your referral link is copied when you share. You earn royalties if
+                  someone joins from it.
                 </p>
               )}
             </BottomCtaBar>

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { signUpSchema } from "@/lib/validations";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sendWelcomeEmail } from "@/lib/email";
+import { claimReferral, REFERRAL_COOKIE } from "@/lib/referral";
 
 export async function POST(req: NextRequest) {
   const rateLimit = checkRateLimit(req, "auth-signup", 8, 10 * 60 * 1000);
@@ -62,11 +63,12 @@ export async function POST(req: NextRequest) {
 
     const passwordHash = await bcrypt.hash(data.password, 12);
 
-    // Optional referral code — passed by the client if the user arrived via /r/<code>
+    // Referral code — the client may pass it explicitly, but normally it comes
+    // from the httpOnly cookie /r/[code] set when the link was opened.
     const refCode =
-      typeof body.refCode === "string" && body.refCode.trim().length <= 50
+      (typeof body.refCode === "string" && body.refCode.trim().length <= 50
         ? body.refCode.trim()
-        : null;
+        : null) ?? req.cookies.get(REFERRAL_COOKIE)?.value ?? null;
 
     const user = await prisma.user.create({
       data: {
@@ -102,32 +104,16 @@ export async function POST(req: NextRequest) {
       // Founding member claim failure must not block account creation
     }
 
-    // Attribution: if a valid refCode was passed, record the referral and auto-follow
-    if (refCode) {
-      try {
-        const link = await prisma.referralLink.findUnique({
-          where: { id: refCode },
-          select: { id: true, userId: true },
-        });
-        if (link && link.userId !== user.id) {
-          await prisma.$transaction([
-            prisma.referralAttribution.create({
-              data: { referralLinkId: link.id, newUserId: user.id },
-            }),
-            prisma.follow.create({
-              data: { followerId: user.id, followingId: link.userId },
-            }),
-          ]);
-        }
-      } catch {
-        // Attribution failure must not block account creation
-      }
-    }
+    // Attribution: record the referral and auto-follow the referrer.
+    const claimed = await claimReferral(user.id, refCode);
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       { id: user.id, username: user.username },
       { status: 201 }
     );
+    // Spent — don't let it attach to the next account created on this device.
+    if (claimed) response.cookies.delete(REFERRAL_COOKIE);
+    return response;
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
       return NextResponse.json(

@@ -9,6 +9,7 @@ import { successNotification } from "@/lib/haptics";
 import { parseEmbedUrl, type EmbedProvider } from "@/lib/embed-parser";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 import { photoPrompts } from "@/lib/photo-prompts";
+import { shareLink } from "@/lib/share";
 import { usePendingPostsStore, type PendingPost } from "@/store/pending-posts";
 
 type PostType = "WORKOUT" | "MEAL" | "WELLNESS" | "GENERAL" | "CHECKIN";
@@ -1394,16 +1395,12 @@ export default function CreatePostContent() {
   if (successPost) {
     const shareUrl = `https://royalwellness.app/p/${successPost.id}`;
     const sharePost = () => {
-      if (typeof navigator.share === "function") {
-        navigator.share({ url: shareUrl }).catch(() => {
-          // User cancelled or share unavailable — fall back silently
-          navigator.clipboard.writeText(shareUrl).catch(() => {});
-        });
-      } else {
-        navigator.clipboard.writeText(shareUrl).then(() => {
-          toast.success("Link copied!");
-        });
-      }
+      // shareLink prefers the native share sheet — plain navigator.share does
+      // nothing inside the iOS webview.
+      void shareLink({ url: shareUrl }).then((outcome) => {
+        if (outcome === "copied") toast.success("Link copied!");
+        else if (outcome === "failed") toast.error("Couldn't share your post");
+      });
     };
     return (
       <div

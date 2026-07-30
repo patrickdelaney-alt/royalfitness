@@ -6,6 +6,7 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { sendWelcomeEmail } from "./email";
+import { claimReferral, REFERRAL_COOKIE } from "./referral";
 
 // AUTH_SECRET is required by NextAuth v5 for JWT signing and cookie encryption.
 // Resolution order:
@@ -234,6 +235,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             }
           } catch {
             // Founding member claim failure must not block sign-in
+          }
+
+          // Referral attribution — Apple/Google is how most iOS users sign up,
+          // so the cookie has to be claimed here too, not just in the
+          // email/password route.
+          try {
+            const { cookies } = await import("next/headers");
+            const store = await cookies();
+            await claimReferral(newUser.id, store.get(REFERRAL_COOKIE)?.value);
+          } catch {
+            // Attribution failure must not block sign-in
           }
         }
         // Existing users: their profile is already set — don't overwrite it.

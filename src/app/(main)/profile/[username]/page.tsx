@@ -10,6 +10,7 @@ import FollowListModal from "@/components/follow-list-modal";
 import UserCatalogSection from "@/components/user-catalog-section";
 import { lightImpact } from "@/lib/haptics";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
+import { shareLink } from "@/lib/share";
 import toast from "react-hot-toast";
 import { FoundingMemberBadge } from "@/components/founding-member-badge";
 
@@ -256,14 +257,16 @@ export default function ProfilePage() {
         body: JSON.stringify({ sourceType: "profile", sourceId: profile.id }),
       });
       const { url } = await res.json();
-      if (navigator.share) {
-        await navigator.share({ url, title: "Royal", text: "Join me on Royal" });
-      } else {
-        await navigator.clipboard.writeText(url);
-        toast.success("Link copied");
-      }
-    } catch (err) {
-      if (err instanceof Error && err.name === "AbortError") return;
+      if (typeof url !== "string" || !url) throw new Error("No invite link");
+      const outcome = await shareLink({
+        url,
+        title: "Royal",
+        text: "Join me on Royal",
+      });
+      if (outcome === "copied") toast.success("Invite link copied");
+      else if (outcome === "failed") toast.error("Couldn't share your invite link");
+    } catch {
+      toast.error("Couldn't create your invite link");
     } finally {
       setInviteLoading(false);
     }
