@@ -4,6 +4,13 @@ Issues found during audits but deferred. Address in future sessions.
 
 ---
 
+## From Light Audit — August 2, 2026
+
+### Low
+- **`src/app/(main)/workout/WorkoutSession.tsx:89-100`** — Two `setState` calls (`setSession`, `setElapsed`) inside a single `useEffect` with empty deps triggers the `react-hooks/react-compiler` cascading-renders lint error. React 18 batches these, so no actual loop occurs, but refactoring to derive `elapsed` from `session` state (single setState) would silence the warning and remove the risk.
+
+---
+
 ## From Light Audit — April 8, 2026
 
 ### Low

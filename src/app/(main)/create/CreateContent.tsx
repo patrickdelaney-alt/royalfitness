@@ -228,7 +228,6 @@ const MUSCLES: MuscleGroup[] = [
     label: "Core",
     icon: (active) => {
       const f = active ? "#528531" : "var(--text-muted)";
-      const gap = active ? "rgba(13,14,25,0.7)" : "rgba(24,25,15,0.09)";
       return (
         <svg viewBox="0 0 32 32" className="w-7 h-7">
           {/* 6-pack: 2 columns × 3 rows */}
