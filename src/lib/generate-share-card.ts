@@ -561,14 +561,20 @@ export async function generateShareCard(
   });
 }
 
-/** Hand the card to the OS share sheet with the file attached, so Instagram /
+/** Hand an already-generated card to the OS share sheet, so Instagram /
  *  Messages / TikTok are one tap. Falls back to a download where Web Share with
- *  files isn't supported (desktop Safari, older Android browsers). */
-export async function shareCard(
-  data: ShareCardData,
-  opts: { ratio?: ShareRatio; url?: string; text?: string } = {},
+ *  files isn't supported (desktop Safari, older Android browsers).
+ *
+ *  Takes a pre-built Blob rather than generating one itself — navigator.share()
+ *  must run inside the "user activation" window of the tap that triggered it,
+ *  and generation (font loading, an image fetch/decode, canvas encoding) is
+ *  slow enough to let that window expire, especially in WKWebView. Callers
+ *  should generate the blob ahead of time (e.g. for a live preview) and pass
+ *  it straight through with no intervening await. */
+export async function shareBlob(
+  blob: Blob,
+  opts: { url?: string; text?: string } = {},
 ): Promise<"shared" | "downloaded" | "cancelled"> {
-  const blob = await generateShareCard(data, opts.ratio ?? "story");
   const file = new File([blob], "royal.png", { type: "image/png" });
 
   if (typeof navigator !== "undefined" && navigator.canShare?.({ files: [file] })) {
@@ -581,6 +587,7 @@ export async function shareCard(
       return "shared";
     } catch (err) {
       if ((err as Error)?.name === "AbortError") return "cancelled";
+      console.error("navigator.share failed", err);
       // fall through to download
     }
   }
