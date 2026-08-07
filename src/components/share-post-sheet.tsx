@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 import { BottomCtaBar } from "@/components/layout/bottom-cta";
 import {
   generateShareCard,
-  shareCard,
+  shareBlob,
   type ShareCardData,
   type ShareRatio,
 } from "@/lib/generate-share-card";
@@ -63,6 +63,9 @@ export default function SharePostSheet({ data, url, onClose }: Props) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const objectUrl = useRef<string | null>(null);
+  // The blob behind `previewUrl` — reused by handleShare so navigator.share()
+  // fires with no await standing between it and the tap that triggered it.
+  const previewBlob = useRef<Blob | null>(null);
 
   const key = useMemo(() => cardKey(data), [data]);
   // Read the latest data inside the effect without making it a dependency.
@@ -72,11 +75,16 @@ export default function SharePostSheet({ data, url, onClose }: Props) {
   // ── Live preview — regenerate whenever the ratio or the contents change ─────
   useEffect(() => {
     let cancelled = false;
+    // Clear stale state immediately so Share/Save disable while a new blob
+    // (for the new ratio/content) is still being generated.
+    previewBlob.current = null;
+    setPreviewUrl(null);
     generateShareCard(latestData.current, ratio)
       .then((blob) => {
         if (cancelled) return;
         if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
         objectUrl.current = URL.createObjectURL(blob);
+        previewBlob.current = blob;
         setPreviewUrl(objectUrl.current);
       })
       .catch(() => {
@@ -103,24 +111,26 @@ export default function SharePostSheet({ data, url, onClose }: Props) {
   }, [busy, onClose]);
 
   const handleShare = useCallback(async () => {
-    if (busy) return;
+    if (busy || !previewBlob.current) return;
     setBusy(true);
     void lightImpact();
     try {
-      const result = await shareCard(data, { ratio, url });
+      const result = await shareBlob(previewBlob.current, { url });
       if (result === "shared") {
         void successNotification();
         onClose();
       } else if (result === "downloaded") {
         toast.success("Saved to your photos");
         onClose();
+      } else {
+        // "cancelled" — the user dismissed the OS share sheet. No feedback needed.
       }
     } catch {
       toast.error("Couldn't make your card. Try again.");
     } finally {
       setBusy(false);
     }
-  }, [busy, data, ratio, url, onClose]);
+  }, [busy, url, onClose]);
 
   const handleSave = useCallback(() => {
     if (busy || !previewUrl) return;
@@ -275,7 +285,7 @@ export default function SharePostSheet({ data, url, onClose }: Props) {
             <BottomCtaBar className="px-6 space-y-3" style={{ background: "#FDFAF5" }}>
               <button
                 onClick={handleShare}
-                disabled={busy}
+                disabled={busy || !previewUrl}
                 className="w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-70"
                 style={{
                   background: "linear-gradient(135deg, #243F16 0%, #3A6122 100%)",
