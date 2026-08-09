@@ -4,6 +4,17 @@ Issues found during audits but deferred. Address in future sessions.
 
 ---
 
+## From Streak Cache / Catalog Cooldown Audit — August 9, 2026
+
+### Fixed this session
+- **`src/app/api/posts/route.ts`**, **`src/app/api/posts/[id]/route.ts`** — `invalidateStreakCache()` was fire-and-forget after post create/delete, racing an immediate `/api/stats` read (which could see the old, still-in-TTL `streakComputedAt` and serve a stale streak). Now awaited before the response is sent.
+- **`src/app/api/posts/route.ts`** — the `CatalogShareCooldown` unique constraint (`P2002`) was only handled via a pre-check `findFirst` before the transaction; a genuine race (double-submit, retry) that slipped past the pre-check hit the real constraint inside `$transaction` and fell into the generic 500 handler. Now caught specifically and returns the same on-brand 409 ("You've already shared this item today...").
+
+### Medium — deferred, out of scope for this session
+- **`src/lib/achievements.ts` (`computeStreaks`), `src/app/api/achievements/route.ts:108-142`, `src/app/api/recommendations/route.ts:98-117`** — each reimplements its own streak calculation directly from `Post` rows instead of using the canonical `getOrRefreshStreaks()` in `src/lib/user-stats.ts`. They're always "live" (no staleness risk), but the three implementations use different lookback windows (500 posts / 200 posts / unbounded vs. the 730-day bounded query backing `/api/stats`), so the streak shown on achievements/recommendations can legitimately disagree with the number on the stats page. Worth consolidating onto one implementation.
+
+---
+
 ## From Light Audit — August 9, 2026
 
 ### Fixed this session
