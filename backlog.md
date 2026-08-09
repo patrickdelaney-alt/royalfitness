@@ -4,6 +4,18 @@ Issues found during audits but deferred. Address in future sessions.
 
 ---
 
+## From Light Audit — August 9, 2026
+
+### Fixed this session
+- **`package.json`** — `@testing-library/dom` (peer dep of `@testing-library/react`) was missing from `devDependencies`, causing 3 test suites to fail with "Cannot find module '@testing-library/dom'". Moved to `devDependencies`. All 36 tests now pass.
+
+### Low
+- **`src/app/api/stats/leaderboard/route.ts:81`** — Parameter `r` implicitly has `any` type; `tsconfig` is strict enough to flag this. Add an explicit type annotation.
+- **`src/app/api/users/suggested/route.ts:31-33`** — Three implicit `any` parameters (`f`, `b`, `b`). Add types matching the Prisma follow/block shapes.
+- **`src/app/api/health/__tests__/route.test.ts:33,42,80`** — Tests write to `process.env.NODE_ENV` (read-only in strict TS). Refactor to use `jest.replaceProperty` or a helper to avoid the TS2540 error.
+
+---
+
 ## From Light Audit — April 8, 2026
 
 ### Low
