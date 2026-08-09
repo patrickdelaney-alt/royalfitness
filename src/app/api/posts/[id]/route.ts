@@ -385,8 +385,9 @@ export async function DELETE(
 
     await prisma.post.delete({ where: { id } });
 
-    // Fire-and-forget: invalidate streak cache — deleting a post may break an active streak
-    invalidateStreakCache(post.authorId).catch(() => {});
+    // Await invalidation so a stats read immediately after this response
+    // can't race the cache-dirty write and serve a stale streak.
+    await invalidateStreakCache(post.authorId).catch(() => {});
 
     return NextResponse.json({ success: true });
   } catch (error) {
