@@ -160,27 +160,26 @@ function wrap(
 ): string[] {
   const lines: string[] = [];
   let current = "";
+  let truncated = false;
   for (const word of text.split(/\s+/)) {
     const candidate = current ? `${current} ${word}` : word;
     if (ctx.measureText(candidate).width > maxWidth && current) {
       lines.push(current);
       current = word;
-      if (lines.length === maxLines) break;
+      if (lines.length === maxLines) { truncated = true; break; }
     } else {
       current = candidate;
     }
   }
   if (lines.length < maxLines && current) lines.push(current);
-  // Ellipsise if we truncated mid-caption
-  if (lines.length === maxLines) {
-    const last = lines[maxLines - 1];
-    if (ctx.measureText(text).width > maxWidth * maxLines) {
-      let trimmed = last;
-      while (trimmed.length > 1 && ctx.measureText(`${trimmed}…`).width > maxWidth) {
-        trimmed = trimmed.slice(0, -1);
-      }
-      lines[maxLines - 1] = `${trimmed.trimEnd()}…`;
+  // Ellipsise whenever content was cut — the width heuristic can miss short
+  // trailing words that keep the total below maxWidth * maxLines.
+  if (truncated) {
+    let trimmed = lines[maxLines - 1];
+    while (trimmed.length > 1 && ctx.measureText(`${trimmed}…`).width > maxWidth) {
+      trimmed = trimmed.slice(0, -1);
     }
+    lines[maxLines - 1] = `${trimmed.trimEnd()}…`;
   }
   return lines;
 }
