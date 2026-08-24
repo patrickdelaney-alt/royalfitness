@@ -22,7 +22,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           BRANCH="${GITHUB_REF#refs/heads/}"
-          EXISTING=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$BRANCH" --state all --json number --jq 'length')
+          EXISTING=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$BRANCH" --state open --json number --jq 'length')
           if [ "$EXISTING" -eq 0 ]; then
             gh pr create --repo "$GITHUB_REPOSITORY" --head "$BRANCH" --base main --draft --fill
           else
