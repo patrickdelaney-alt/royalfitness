@@ -4,6 +4,15 @@ Issues found during audits but deferred. Address in future sessions.
 
 ---
 
+## From Light Audit — August 16, 2026
+
+### Fixed this session
+- **`src/lib/generate-share-card.ts:175-183` (`wrap`)** — The ellipsis condition used `ctx.measureText(text).width > maxWidth * maxLines` to decide whether to add `…`, but this can be false even when content was truncated (short trailing words keep the total below the threshold). Fixed by tracking truncation with an explicit `truncated` flag set on the loop `break`, so an ellipsis is always added whenever words were dropped.
+
+### No new deferred issues this session
+
+---
+
 ## From Streak Cache / Catalog Cooldown Audit — August 9, 2026
 
 ### Fixed this session
