@@ -4,6 +4,16 @@ Issues found during audits but deferred. Address in future sessions.
 
 ---
 
+## From Light Audit — September 6, 2026
+
+### No new findings
+
+Scoped to: share card feature files (`share-post-sheet.tsx`, `post-card.tsx`, `generate-share-card.ts`), post API routes, auto-PR workflow.
+
+All checks clean. Ellipsis fix from Aug 16 confirmed correct. Share flow (owner-only, referral URL resolution, object URL cleanup) looks solid.
+
+---
+
 ## From Light Audit — August 16, 2026
 
 ### Fixed this session
