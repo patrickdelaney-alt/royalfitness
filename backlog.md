@@ -4,6 +4,17 @@ Issues found during audits but deferred. Address in future sessions.
 
 ---
 
+## From Light Audit — September 13, 2026
+
+### No new deferred issues this session
+
+Files reviewed: `src/lib/generate-share-card.ts`, `src/components/share-post-sheet.tsx`,
+`src/components/post-card.tsx`, `src/app/api/posts/route.ts`, `src/app/api/posts/[id]/route.ts`.
+All clean. Ellipsis fix (Aug 16), streak cache await, and catalog cooldown 409 (Aug 9) confirmed correct.
+Stale draft PR #277 (Sep 6 clean audit log) is open with no code to merge.
+
+---
+
 ## From Light Audit — August 16, 2026
 
 ### Fixed this session
