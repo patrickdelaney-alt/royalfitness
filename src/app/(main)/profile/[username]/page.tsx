@@ -12,6 +12,7 @@ import { lightImpact } from "@/lib/haptics";
 import { isCapacitorNative, openExternalLink } from "@/lib/link-handler";
 import toast from "react-hot-toast";
 import { FoundingMemberBadge } from "@/components/founding-member-badge";
+import { referralUrl } from "@/lib/referral-url";
 
 interface UserProfile {
   id: string;
@@ -255,7 +256,10 @@ export default function ProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sourceType: "profile", sourceId: profile.id }),
       });
-      const { url } = await res.json();
+      const { id } = await res.json();
+      if (typeof id !== "string") throw new Error("No referral link");
+      // Build the absolute URL client-side so a message recipient can open it.
+      const url = referralUrl(id);
       if (navigator.share) {
         await navigator.share({ url, title: "Royal", text: "Join me on Royal" });
       } else {
@@ -264,6 +268,7 @@ export default function ProfilePage() {
       }
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") return;
+      toast.error("Couldn't create your invite link");
     } finally {
       setInviteLoading(false);
     }

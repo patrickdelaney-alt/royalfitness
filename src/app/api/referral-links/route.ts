@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeAuth } from "@/lib/safe-auth";
 import { prisma } from "@/lib/prisma";
+import { referralUrl } from "@/lib/referral-url";
 
 const SOURCE_TYPES = ["post", "catalog_item", "profile"] as const;
 type SourceType = (typeof SOURCE_TYPES)[number];
 
 // POST /api/referral-links
 // Creates a referral link for a post or catalog item.
-// Returns { id, url } — the url is the /r/<id> redirect endpoint.
+// Returns { id, url } — url is the absolute https://…/r/<id> redirect endpoint.
 export async function POST(req: NextRequest) {
   try {
     const session = await safeAuth();
@@ -54,11 +55,8 @@ export async function POST(req: NextRequest) {
           })
         ).id;
 
-    const base =
-      process.env.NEXTAUTH_URL?.replace(/\/$/, "") ?? "";
-
     return NextResponse.json(
-      { id: linkId, url: `${base}/r/${linkId}` },
+      { id: linkId, url: referralUrl(linkId) },
       { status: existing ? 200 : 201 }
     );
   } catch (error) {

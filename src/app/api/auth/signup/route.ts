@@ -62,10 +62,15 @@ export async function POST(req: NextRequest) {
 
     const passwordHash = await bcrypt.hash(data.password, 12);
 
-    // Optional referral code — passed by the client if the user arrived via /r/<code>
+    // Optional referral code — passed by the client, or the _royal_ref cookie
+    // set by /r/<code> when the visitor signs up in the same browser.
+    const rawRefCode =
+      typeof body.refCode === "string" && body.refCode.trim()
+        ? body.refCode
+        : req.cookies.get("_royal_ref")?.value;
     const refCode =
-      typeof body.refCode === "string" && body.refCode.trim().length <= 50
-        ? body.refCode.trim()
+      typeof rawRefCode === "string" && rawRefCode.trim().length <= 50
+        ? rawRefCode.trim() || null
         : null;
 
     const user = await prisma.user.create({

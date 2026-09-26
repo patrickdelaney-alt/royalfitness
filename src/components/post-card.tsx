@@ -28,6 +28,7 @@ import EmbedMedia, { type ExternalContentItem } from "@/components/embed-media";
 import SharePostSheet from "@/components/share-post-sheet";
 import Linkify from "@/components/linkify";
 import { useLikesStore } from "@/store/likes";
+import { referralUrl } from "@/lib/referral-url";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -2006,10 +2007,7 @@ function FullPostCard({
               })
                 .then((res) => (res.ok ? res.json() : null))
                 .then((data) => {
-                  // Relative when NEXTAUTH_URL is unset — navigator.share needs
-                  // an absolute URL, so keep the post URL in that case.
-                  if (typeof data?.url === "string" && /^https?:\/\//.test(data.url))
-                    setShareUrl(data.url);
+                  if (typeof data?.id === "string") setShareUrl(referralUrl(data.id));
                 })
                 .catch(() => {});
             }}
