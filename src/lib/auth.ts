@@ -6,6 +6,7 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { sendWelcomeEmail } from "./email";
+import { verifyGoogleIdToken } from "./google-id-token";
 
 // AUTH_SECRET is required by NextAuth v5 for JWT signing and cookie encryption.
 // Resolution order:
@@ -147,6 +148,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           console.error("[authorize]", err);
           return null;
         }
+      },
+    }),
+
+    // Native Google Sign-In from the iOS app. The app signs in with Google's
+    // SDK and posts the resulting ID token here; we verify it with Google's
+    // public keys. New users are created by the signIn callback below, exactly
+    // like the web Google flow (it only skips provider === "credentials").
+    CredentialsProvider({
+      id: "google-native",
+      name: "Google (iOS app)",
+      credentials: { idToken: { label: "ID token", type: "text" } },
+      async authorize(credentials) {
+        const identity = await verifyGoogleIdToken(
+          (credentials?.idToken as string | undefined) ?? ""
+        );
+        if (!identity) return null;
+        return {
+          id: identity.sub,
+          email: identity.email,
+          name: identity.name,
+          image: identity.picture,
+        };
       },
     }),
 

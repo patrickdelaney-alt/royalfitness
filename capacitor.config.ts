@@ -11,6 +11,19 @@ const config: CapacitorConfig = {
     url: 'https://royalwellness.app',
     cleartext: false,
   },
+  plugins: {
+    // Native Google Sign-In (see src/lib/native-google.ts). Only Google is
+    // bundled; the others stay off to keep the app small.
+    SocialLogin: {
+      providers: {
+        google: true,
+        facebook: false,
+        apple: false,
+        twitter: false,
+      },
+      logLevel: 1,
+    },
+  },
 };
 
 export default config;

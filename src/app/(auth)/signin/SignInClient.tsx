@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { canUseNativeGoogle, nativeGoogleSignIn } from "@/lib/native-google";
 
 // Map NextAuth ?error= param values to user-friendly messages
 const ERROR_MESSAGES: Record<string, string> = {
@@ -98,9 +99,10 @@ function EyeOffIcon() {
 interface Props {
   appleEnabled: boolean;
   googleEnabled: boolean;
+  googleIosClientId?: string | null;
 }
 
-function SignInForm({ appleEnabled, googleEnabled }: Props) {
+function SignInForm({ appleEnabled, googleEnabled, googleIosClientId }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -167,7 +169,20 @@ function SignInForm({ appleEnabled, googleEnabled }: Props) {
   }
 
   async function handleOAuth(provider: "apple" | "google") {
+    setError("");
     setOauthLoading(provider);
+    // Inside the iOS app, Google must run natively — the web redirect ends up
+    // in Safari without the app's security cookie and fails.
+    if (provider === "google" && googleIosClientId && canUseNativeGoogle(googleIosClientId)) {
+      const result = await nativeGoogleSignIn(googleIosClientId, "/feed");
+      if (result.ok) {
+        window.location.href = result.url;
+        return;
+      }
+      if (!result.cancelled) setError("Google sign-in failed. Please try again.");
+      setOauthLoading(null);
+      return;
+    }
     await signIn(provider, { callbackUrl: "/feed" });
   }
 

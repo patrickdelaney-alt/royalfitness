@@ -7,6 +7,7 @@ export default function SignUpPage() {
     <SignUpClient
       appleEnabled={!!process.env.APPLE_CLIENT_ID && !!process.env.APPLE_CLIENT_SECRET}
       googleEnabled={!!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET}
+      googleIosClientId={process.env.GOOGLE_IOS_CLIENT_ID ?? null}
       waitlistGated={process.env.WAITLIST_GATE_ENABLED === "true"}
     />
   );

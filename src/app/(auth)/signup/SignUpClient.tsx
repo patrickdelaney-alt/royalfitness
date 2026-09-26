@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { canUseNativeGoogle, nativeGoogleSignIn } from "@/lib/native-google";
 
 function AppleIcon() {
   return (
@@ -75,9 +76,10 @@ interface Props {
   appleEnabled: boolean;
   googleEnabled: boolean;
   waitlistGated: boolean;
+  googleIosClientId?: string | null;
 }
 
-export default function SignUpClient({ appleEnabled, googleEnabled, waitlistGated }: Props) {
+export default function SignUpClient({ appleEnabled, googleEnabled, waitlistGated, googleIosClientId }: Props) {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -125,7 +127,19 @@ export default function SignUpClient({ appleEnabled, googleEnabled, waitlistGate
   }, [debouncedUsername]);
 
   async function handleOAuth(provider: "apple" | "google") {
+    setError("");
     setOauthLoading(provider);
+    // Inside the iOS app, Google must run natively (see lib/native-google.ts).
+    if (provider === "google" && googleIosClientId && canUseNativeGoogle(googleIosClientId)) {
+      const result = await nativeGoogleSignIn(googleIosClientId, "/onboarding/profile");
+      if (result.ok) {
+        window.location.href = result.url;
+        return;
+      }
+      if (!result.cancelled) setError("Google sign-in failed. Please try again.");
+      setOauthLoading(null);
+      return;
+    }
     await signIn(provider, { callbackUrl: "/onboarding/profile" });
   }
 

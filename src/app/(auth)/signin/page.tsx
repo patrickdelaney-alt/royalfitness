@@ -23,6 +23,7 @@ export default function SignInPage() {
       <SignInClient
         appleEnabled={!!process.env.APPLE_CLIENT_ID && !!process.env.APPLE_CLIENT_SECRET}
         googleEnabled={!!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET}
+        googleIosClientId={process.env.GOOGLE_IOS_CLIENT_ID ?? null}
       />
     </Suspense>
   );
