@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import { safeAuth } from "@/lib/safe-auth";
 import SignInClient from "./SignInClient";
 
 // Must be dynamic so env vars are read at request time (not baked at build).
@@ -17,7 +19,16 @@ function SignInSkeleton() {
 
 // Suspense is here (in the SERVER component) so that useSearchParams() inside
 // SignInClient can properly suspend during SSR in Next.js 16.
-export default function SignInPage() {
+export default async function SignInPage() {
+  // A user who is already signed in (e.g. the iOS WKWebView reloads a
+  // /signin tab it had open before the user last logged in) should land on
+  // their feed, not be shown the login form again — same check as the root
+  // page (src/app/page.tsx).
+  const session = await safeAuth();
+  if (session?.user?.id) {
+    redirect("/feed");
+  }
+
   return (
     <Suspense fallback={<SignInSkeleton />}>
       <SignInClient
