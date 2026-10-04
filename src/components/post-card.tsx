@@ -28,7 +28,7 @@ import EmbedMedia, { type ExternalContentItem } from "@/components/embed-media";
 import SharePostSheet from "@/components/share-post-sheet";
 import Linkify from "@/components/linkify";
 import { useLikesStore } from "@/store/likes";
-import { referralUrl } from "@/lib/referral-url";
+import { referralUrl, PUBLIC_APP_URL } from "@/lib/referral-url";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -1101,7 +1101,7 @@ function FullPostCard({
   const [showEditModal, setShowEditModal] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState(
-    `https://royalwellness.app/p/${post.id}`,
+    `${PUBLIC_APP_URL}/p/${post.id}`,
   );
   const [editSaving, setEditSaving] = useState(false);
   const [editCaption, setEditCaption] = useState(post.caption ?? "");
