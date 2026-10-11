@@ -4,6 +4,17 @@ Issues found during audits but deferred. Address in future sessions.
 
 ---
 
+## From Light Audit — October 11, 2026
+
+### Fixed this session
+- **`src/app/(main)/workout/WorkoutSession.tsx:88-100`** — Initialization `useEffect` called two separate `setState`s synchronously, triggering the `react-compiler` lint rule. Replaced with lazy `useState` initializers (SSR-safe via `typeof window` guard), removing the extra render cycle and the lint error.
+
+### Low — deferred
+- **npm audit: 7 critical, 55 high vulnerabilities** — Key issues: Auth.js email homoglyph bypass + malformed Bearer header exception (GHSA-7rqj-j65f-68wh, GHSA-xmf8-cvqr-rfgj), Capacitor iOS remote-origin proxy bypass (GHSA-rvm3-566m-v7fv), Next.js HTTP request smuggling in rewrites (GHSA-ggv3-7p47-pfv8). Run `npm audit fix` for auto-fixable ones; check breaking-change advisories before `--force`. Most fixes require upgrading `next-auth`, `@capacitor/ios`, and `next`.
+- **`@ts-nocheck` suppression on multiple files** — `src/lib/prisma.ts` and ~5 other files use `@ts-nocheck` at the top, masking type errors. Not new, but worth removing incrementally during refactor sessions.
+
+---
+
 ## From Light Audit — August 16, 2026
 
 ### Fixed this session
