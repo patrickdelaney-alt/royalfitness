@@ -23,26 +23,21 @@ const mockedPrisma = prisma as unknown as {
 };
 
 describe("GET /api/health", () => {
-  const originalNodeEnv = process.env.NODE_ENV;
-  const originalHealthDiagnosticsEnabled = process.env.HEALTH_DIAGNOSTICS_ENABLED;
-  const originalHealthToken = process.env.HEALTH_INTERNAL_TOKEN;
-  const originalAdminEmail = process.env.ADMIN_EMAIL;
-
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.NODE_ENV = "development";
-    process.env.HEALTH_DIAGNOSTICS_ENABLED = "true";
-    process.env.HEALTH_INTERNAL_TOKEN = "internal-secret";
-    process.env.ADMIN_EMAIL = "admin@royalfitness.com";
+    jest.replaceProperty(process, "env", {
+      ...process.env,
+      NODE_ENV: "development",
+      HEALTH_DIAGNOSTICS_ENABLED: "true",
+      HEALTH_INTERNAL_TOKEN: "internal-secret",
+      ADMIN_EMAIL: "admin@royalfitness.com",
+    });
     mockedPrisma.user.count.mockResolvedValue(1);
     mockedSafeAuth.mockResolvedValue(null);
   });
 
-  afterAll(() => {
-    process.env.NODE_ENV = originalNodeEnv;
-    process.env.HEALTH_DIAGNOSTICS_ENABLED = originalHealthDiagnosticsEnabled;
-    process.env.HEALTH_INTERNAL_TOKEN = originalHealthToken;
-    process.env.ADMIN_EMAIL = originalAdminEmail;
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it("returns minimal public response for unauthenticated requests", async () => {
@@ -77,7 +72,7 @@ describe("GET /api/health", () => {
   });
 
   it("never exposes diagnostics in production even when authorized", async () => {
-    process.env.NODE_ENV = "production";
+    jest.replaceProperty(process, "env", { ...process.env, NODE_ENV: "production" });
 
     const req = new NextRequest("http://localhost:3000/api/health", {
       headers: { "x-health-token": "internal-secret" },

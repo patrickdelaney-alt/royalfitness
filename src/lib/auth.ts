@@ -270,7 +270,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user, account }) {
       if (user) {
         if (account?.provider === "credentials") {
-          token.id = user.id;
+          token.id = user.id ?? "";
           token.username = (user as { username?: string }).username ?? "";
           try {
             const dbUser = await prisma.user.findUnique({
