@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { PrismaClient } from "@prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaPg } from "@prisma/adapter-pg";
