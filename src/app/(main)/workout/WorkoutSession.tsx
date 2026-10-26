@@ -80,24 +80,21 @@ function uid(): string {
 
 export default function WorkoutSession() {
   const router = useRouter();
-  const [session, setSession] = useState<ActiveWorkoutSession | null>(null);
-  const [elapsed, setElapsed] = useState(0);
+  const [session, setSession] = useState<ActiveWorkoutSession | null>(() => {
+    if (typeof window === "undefined") return null;
+    const existing = loadSession();
+    if (existing) return existing;
+    const s = newSession();
+    saveSession(s);
+    return s;
+  });
+  const [elapsed, setElapsed] = useState<number>(() => {
+    if (typeof window === "undefined") return 0;
+    const existing = loadSession();
+    return existing ? calcElapsed(existing) : 0;
+  });
   const [showAbandon, setShowAbandon] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // ── Init: load or create session ─────────────────────────────────────────
-  useEffect(() => {
-    const existing = loadSession();
-    if (existing) {
-      setSession(existing);
-      setElapsed(calcElapsed(existing));
-    } else {
-      const s = newSession();
-      saveSession(s);
-      setSession(s);
-      setElapsed(0);
-    }
-  }, []);
 
   // ── Tick ─────────────────────────────────────────────────────────────────
   useEffect(() => {
