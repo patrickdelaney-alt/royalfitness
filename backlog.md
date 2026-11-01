@@ -4,6 +4,24 @@ Issues found during audits but deferred. Address in future sessions.
 
 ---
 
+## From Light Audit — November 1, 2026
+
+### No new bugs found this session
+
+Scope: files changed in last 7 days (security remediation PR #286, plus PRs #284, #282, #281).
+
+All recently changed code reviewed and looks correct:
+- `onboarding-guard.ts` — redirect loop fix is solid, no edge cases found.
+- `SignInClient.tsx` / `SignUpClient.tsx` — auth flows, OAuth, native Google, form validation all look correct.
+- `referral-url.ts` / `referral-links/route.ts` — absolute URL generation and dedup logic are correct.
+- `onboarding/layout.tsx` — correctly delegates to onboarding guard.
+
+### Low — pre-release checklist for security remediation (PR #286)
+- **`docs/security/2026-10-25-remediation.md`** — Security patch merged but the "Required before release" section lists 6 manual steps not yet checked off (staging DB test, auth flow test, feature smoke test, Xcode/TestFlight build, website/native compat check, lint cleanup). Do not ship to App Store until these are complete. The production-only npm audit is clean (0 findings); 3 moderate build-tool findings remain (capacitor → xcode → uuid).
+- **Lint** — 81 errors / 58 warnings reported in the remediation doc (pre-existing patterns exposed by updated React hooks rules). Not new, but needs addressing before the codebase can claim a green quality gate.
+
+---
+
 ## From Light Audit — August 16, 2026
 
 ### Fixed this session
